@@ -7,10 +7,11 @@ $g_iSize = isset($_GET['size']) && 3 <= (int)$_GET['size'] && 11 >= (int)$_GET['
 $arrTiles = array();
 for ( $i=0; $i<$g_iSize*$g_iSize; $i++ ) {
 	$arrTiles[$i] = $t = (string)rand(1, 6);
-	if ( ( $t == '1' || $t == '2' ) && 0 == rand(0,2) ) {
+	if ( ( $t == '1' || $t == '2' ) && 0 == rand(0, 2) ) {
 		$arrTiles[$i] .= rand(0, 1) ? 's' : 'f';
 	}
 }
+//print_r($arrTiles);
 
 ?>
 <!doctype html>
@@ -31,7 +32,7 @@ table th.target { background-color: yellow; }
 table td.flooding { background-color: #4169e1; }
 table td.flooded { background-color: #000080; }
 </style>
-<script src="/js/framework.js"></script>
+<link rel="shortcut icon" href="favicon.ico" />
 </head>
 
 <body>
@@ -69,6 +70,7 @@ echo '</table>'."\n\n";
 
 <p><input type="button" onclick="doTick();" value="Tick!" /></p>
 
+<script src="framework.js"></script>
 <script>
 //'use strict';
 
@@ -227,7 +229,7 @@ function unselect() {
 	});
 
 //	setTimeout("ticker = setInterval(\"doTick();\", 1500);", 1000);
-})()
+})();
 </script>
 </body>
 

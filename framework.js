@@ -18,8 +18,8 @@
 	};
 
 	Event.prototype.stop = function() {
-		this.stopPropagation && this.stopPropagation();
 		this.preventDefault && this.preventDefault();
+		this.returnValue = false;
 		return false;
 	};
 
