@@ -1,0 +1,35 @@
+
+* {
+	margin				: 0;
+	padding				: 0;
+}
+#abalone_div img {
+	position			: absolute;
+	cursor				: pointer;
+}
+table#players {
+	border				: solid 1px #000;
+	width				: 230px;
+	position			: absolute;
+	right				: 10px;
+}
+table#players td {
+	font-size			: 16px;
+}
+table#directions {
+	float				: left;
+	margin-right		: 20px;
+	border				: solid 1px #000;
+}
+table#directions td {
+	height				: 55px;
+}
+.b {
+	font-weight			: bold;
+}
+.u {
+	text-decoration		: underline;
+}
+img {
+	border				: none;
+}

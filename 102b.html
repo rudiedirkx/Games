@@ -1,0 +1,481 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+	"http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+
+<head>
+<title>MineSweeper (Hydronous)</title>
+<script type="text/javascript" src="/_inc/prototype_150.js"></script>
+<script type="text/javascript">
+<!--//
+if ( "undefined" == typeof console )
+{
+	function _console(){}
+	_console.prototype.debug = function(f_szMsg){ $('debug').innerHTML += f_szMsg+"<br/>"; $('debug').scrollTop = $('debug').scrollHeight - $('debug').clientHeight; }
+	var console = new _console();
+
+}
+
+function nocontextmenu()
+{
+	return false;
+}
+function nodrag()
+{
+	return false;
+}
+
+function mousedown( e )
+{
+	if ( !e && f_objElement.event ) e = f_objElement.event;
+	if ( !e && event ) e = event;
+
+	event = e;
+
+	var se = event.srcElement || event.target;
+	if (se == smiley)
+	{
+		window.location.href = window.location.href;
+	}
+
+	if (gameover)
+	{
+		return true;
+	}
+
+	if (se.className == "cell" && se.src.match("blank-unpressed")) {
+		if (event.button == "2") {
+			set_src(se, "102b_files/mine-marked.gif");
+			marked++;
+			updateCounter("mine",minecount - marked);
+		} else {
+			mousepressed = true;
+			set_src(smiley, "102b_files/smiley-oh.gif");
+			set_src(se, "102b_files/blank-held.gif");
+		}
+	} else {
+		if (se.className == "cell" && se.src.match("mine-marked") && event.button == "2") {
+			set_src(se, "102b_files/blank-unpressed.gif");
+			marked--;
+			updateCounter("mine",minecount - marked);
+		}
+	}
+	return true;
+}
+
+function mouseup()
+{
+	mousepressed = false;
+	if (!gameover) set_src(smiley, "102b_files/smiley-happy.gif");
+
+	var se = event.srcElement || event.target;
+	var sid = se.id;
+	if (se.className == "cell" && se.src.match("blank-held")) {
+		if (!gamestarted) {
+			gamestarted = true;
+			startTimer();
+		}
+		uncover(sid);
+		if (uncovered == (cells.length - minecount)) {
+			checkForWin();
+		}
+	}
+	return true;
+}
+
+function mouseout()
+{
+	if (!mousepressed)
+		return true;
+	var se = event.srcElement || event.target;
+	if (se.className == "cell" && se.src.match("blank-held"))
+		set_src(se, "102b_files/blank-unpressed.gif");
+	return true;
+}
+
+function mouseover()
+{
+	if (!mousepressed)
+		return true;
+	var se = event.srcElement || event.target;
+	if (se.className == "cell" && se.src.match("blank-unpressed"))
+		set_src(se, "102b_files/blank-held.gif");
+	return true;
+}
+
+function uncover(elemid)
+{
+	var elem = document.getElementById(elemid);
+	if ( !elem.src.match("blank-held") && !elem.src.match("blank-unpressed") )
+	{
+		return true;
+	}
+
+	switch ( cells[elemid] )
+	{
+		case 0: // Empty
+//			if ( !elem.src.match("blank-pressed") )
+//			{
+				set_src(elem, "102b_files/blank-pressed.gif");
+				uncovered++;
+				expandBlanks(elemid);
+//			}
+		break;
+
+/*
+		case 1: elem.src = "102b_files/1.gif"; uncovered++; break;
+		case 2: elem.src = "102b_files/2.gif"; uncovered++; break;
+		case 3: elem.src = "102b_files/3.gif"; uncovered++; break;
+		case 4: elem.src = "102b_files/4.gif"; uncovered++; break;
+		case 5: elem.src = "102b_files/5.gif"; uncovered++; break;
+		case 6: elem.src = "102b_files/6.gif"; uncovered++; break;
+		case 7: elem.src = "102b_files/7.gif"; uncovered++; break;
+		case 8: elem.src = "102b_files/8.gif"; uncovered++; break;
+*/
+
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+			set_src(elem, "102b_files/" + cells[elemid] + ".gif");
+			uncovered++;
+		break;
+
+		case -1: // Mine
+			gameover = true;
+			stopTimer();
+			revealMines();
+			set_src(elem, "102b_files/mine-hit.gif");
+			set_src(smiley, "102b_files/smiley-sad.gif");
+		break;
+	}
+	return true;
+}
+
+function revealMines() {
+	for (var i = 0; i < cells.length; i++ ) {
+		var elem = document.getElementById(i);
+		if (cells[i] == -1 && elem.src.match("blank-unpressed"))
+			set_src(elem, "102b_files/mine.gif");
+		if (cells[i] != -1 && elem.src.match("mine-marked"))
+			set_src(elem, "102b_files/mine-wrong.gif");
+	}
+	return true;
+}
+
+function expandBlanks(elemid)
+{
+	var totest = getSurrounding(elemid);
+	for (var i = 0; i < totest.length; i++) {
+		uncover(totest[i]);
+	}
+	return true;
+}
+
+function getSurrounding(loc)
+{
+	//   0  1  2
+	//   3     4
+	//   5  6  7
+
+	var locn = parseInt(loc)
+	var cellthere = new Array(true, true, true, true, true, true, true, true);
+	var celladj = new Array(locn-width-1,locn-width,locn-width+1,locn-1,locn+1,locn+width-1,locn+width,locn+width+1);
+	var returnset = new Array();
+
+	if (locn % width == 0) {				// it's on the left edge
+		cellthere[0] = false;
+		cellthere[3] = false;
+		cellthere[5] = false;
+	}
+	if ((locn+1) % width == 0) {				// it's on the right edge
+		cellthere[2] = false;
+		cellthere[4] = false;
+		cellthere[7] = false;
+	}
+	if (locn - width < 0) {
+		cellthere[0] = false;
+		cellthere[1] = false;
+		cellthere[2] = false;
+	}
+	if (locn + width > cells.length - 1) {
+		cellthere[5] = false;
+		cellthere[6] = false;
+		cellthere[7] = false;
+	}
+	for (var i = 0; i<=7; i++) {
+		if (cellthere[i]) {
+			returnset[returnset.length] = celladj[i];
+		}
+	}
+	return returnset;
+}
+
+function countMarked()
+{
+	var marked = 0;
+	for (var i = 0; i < cells.length; i++ ) {
+		var elem = document.getElementById(i);
+		if (elem.src.match("mine-marked"))
+			marked++;
+	}
+	updateCounter("mine",minecount - marked);
+	return true;
+}
+
+function checkForWin()
+{
+	var covered = 0;
+	for (var i = 0; i < cells.length; i++) {
+		var elem = document.getElementById(i);
+		if (elem.src.match("blank-unpressed") || elem.src.match("mine-marked")) {
+			covered++;
+		}
+	}
+
+	if (covered == minecount)
+	{
+		gameover = true;
+		stopTimer();
+		set_src(smiley, "102b_files/smiley-sunglasses.gif");
+		for (var i = 0; i < cells.length; i++) {
+			var elem = document.getElementById(i);
+			if (cells[i] == -1 && elem.src.match("blank-unpressed"))
+				set_src(elem, "102b_files/mine-marked.gif");
+		}
+		countMarked()
+	}
+	return true;
+}
+
+function clearBoard()
+{
+	for (var i = 0; i < cells.length; i++ ) {
+		var elem = document.getElementById(i);
+		set_src(elem, "102b_files/blank-unpressed.gif");
+	}
+}
+
+function startTimer()
+{
+	timerobj = window.setInterval("doTimer()",1000);
+	var dummy = doTimer();
+	return true;
+}
+
+function stopTimer()
+{
+	window.clearInterval(timerobj);
+	return true;
+}
+
+function doTimer()
+{
+	timerval++;
+	updateCounter("timer",timerval);
+	return true;
+}
+
+function updateCounter(counter, val)
+{
+	var newval = Math.round(val);
+	if (newval > 999)
+		newval = 999;
+	if (newval < -99)
+		newval = newval%100;
+	var newvals = "" + newval;
+	if (newvals.length == 2 && newvals.substr(0,1) == "-") {
+		newvals = "-0" + newvals.substr(1,1);
+	}
+	while (newvals.length < 3) {
+		newvals = "0" + newvals;
+	}
+
+	digit1 = newvals.substr(0,1);
+	digit2 = newvals.substr(1,1);
+	digit3 = newvals.substr(2,1);
+	var ct1 = document.getElementById(counter+"1");
+	var ct2 = document.getElementById(counter+"2");
+	var ct3 = document.getElementById(counter+"3");
+	set_src(ct1, "102b_files/digital" + digit1 + ".gif");
+	set_src(ct2, "102b_files/digital" + digit2 + ".gif");
+	set_src(ct3, "102b_files/digital" + digit3 + ".gif");
+}
+
+function setupEvents()
+{
+	document.oncontextmenu	= nocontextmenu;
+	document.onmouseout		= mouseout;
+	document.onmouseover	= mouseover;
+	document.onmousemove	= nodrag;
+	document.onmousedown	= mousedown;
+	document.onmouseup		= mouseup;
+
+	countMarked();
+	clearBoard();
+}
+
+window.onload = function()
+{
+	cells = [1,2,1,1,1,2,2,1,0,-1,2,-1,1,1,-1,-1,2,1,2,4,3,2,1,2,3,-1,1,2,-1,-1,1,0,0,1,1,1,2,-1,3,1,0,0,0,1,1,1,1,1,0,0,0,0,1,-1,0,0,0,0,0,0,0,1,1,0,0,1,1,1,0,0,0,0,0,0,1,-1,1,0,0,0,0];
+	width = 9;
+	height = 9;
+	minecount = 10;
+
+	mousepressed = false;
+	gamestarted = false;
+	gameover = false;
+	timerval = 0;
+	timerobj = "";
+	uncovered = 0;
+	marked = 0;
+
+	smiley = document.getElementById("smileyimg");
+
+	setupEvents();
+}
+
+function set_src( f_obj, f_src )
+{
+	f_obj.src = f_src;
+console.debug( "'" + f_obj.id + "'.src => " + f_src );
+
+}
+
+//-->
+</script>
+<style type="text/css">
+* {
+	margin		: 0;
+	padding		: 0;
+}
+table {
+	border		: solid 3px #bbb;
+}
+td {
+	font-size	: 3px;
+	background	: #bbb;
+	padding		: 0;
+	border		: 0;
+}
+</style>
+</head>
+
+<body>
+<table border="0" cellpadding="0" cellspacing="0">
+	<tbody>
+		<tr>
+			<td colspan="9" align="center"><img src="102b_files/digital0.gif" id="mine1" /><img src="102b_files/digital1.gif" id="mine2" /><img src="102b_files/digital0.gif" id="mine3" /><img src="102b_files/header-inneredge-left.gif" /><img src="102b_files/smiley-happy.gif" id="smileyimg" /><img src="102b_files/header-inneredge-right.gif" /><img src="102b_files/digital0.gif" id="timer1" /><img src="102b_files/digital0.gif" id="timer2" /><img src="102b_files/digital0.gif" id="timer3" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="0" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="1" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="2" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="3" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="4" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="5" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="6" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="7" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="8" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="9" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="10" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="11" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="12" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="13" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="14" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="15" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="16" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="17" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="18" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="19" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="20" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="21" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="22" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="23" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="24" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="25" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="26" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="27" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="28" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="29" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="30" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="31" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="32" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="33" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="34" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="35" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="36" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="37" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="38" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="39" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="40" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="41" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="42" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="43" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="44" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="45" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="46" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="47" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="48" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="49" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="50" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="51" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="52" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="53" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="54" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="55" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="56" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="57" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="58" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="59" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="60" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="61" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="62" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="63" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="64" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="65" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="66" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="67" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="68" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="69" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="70" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="71" class="cell" /></td>
+		</tr>
+		<tr>
+			<td><img src="102b_files/blank-unpressed.gif" id="72" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="73" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="74" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="75" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="76" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="77" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="78" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="79" class="cell" /></td>
+			<td><img src="102b_files/blank-unpressed.gif" id="80" class="cell" /></td>
+		</tr>
+	</tbody>
+</table>
+
+<br/>
+
+<div id="debug" style="border:solid 1px #000;height:200px;overflow:scroll;"></div>
+
+</body>
+
+</html>

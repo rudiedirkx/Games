@@ -1,0 +1,16 @@
+-- Sunday, August 13th, 2006
+- Version 0.1 is done!
+  It includes:
+   * Every possible hand is checked;
+   * After a round, the last winner and its hand are shown in the middle/center box;
+   * A 'hand' can be written as a FLOAT and as readable STRING;
+   * If a player is broke, he's automatically folded the next round;
+   * A game ends when one of four people leaves; A game starts when the 4th of 4 people joins;
+   * Big and Small Blind are not posted automatically. The player has to hit a button (no textfield);
+   * There is no minimum or maximum bet/raise;
+
+-- Monday, August 14th, 2006
+- Game starts when 2 players have joined
+- A game doesn't stop when a player leaves and there are >=2 players left
+- Added final straight: A-2-3-4-5
+- Game shows your current best hand when flop is open

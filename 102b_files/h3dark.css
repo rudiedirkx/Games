@@ -1,0 +1,173 @@
+body {
+	background-color: #111;
+	color: #999;
+	font-family: "Trebuchet MS", "Arial", sans-serif;
+	font-size: small;
+}
+a {
+	color: #bbb;
+	text-decoration: none;
+}
+a:hover {
+	color: #fff;
+}
+acronym {
+	border-bottom: 1px dashed #080;
+	cursor: help;
+}
+td {
+	color: #999;
+	font-family: "Trebuchet MS", "Arial", sans-serif;
+	font-size: small;
+	vertical-align: top;
+}
+img {
+	border: none;
+}
+input {
+	background-color: #000;
+	border: 1px solid #555;
+	color: #999;
+	font-family: "Trebuchet MS", "Arial", sans-serif;
+	font-size: 85%;
+	padding-left: 3px;
+	padding-right: 3px;
+}
+pre {
+	font-family: "Lucida Console", "Courier New", monospace;
+	font-size: 100%;
+}
+select {
+	background-color: #000;
+	border: 1px solid #555;
+	color: #999;
+	font-family: "Trebuchet MS", "Arial", sans-serif;
+	font-size: 85%;
+}
+textarea {
+	background-color: #000;
+	border: 1px solid #555;
+	color: #999;
+	font-family: "Trebuchet MS", "Arial", sans-serif;
+	font-size: 85%;
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+#footer td {
+	color: #555;
+	font-size: 85%;
+}
+#footerbox {
+	border-top: 1px solid #555;
+	border-bottom: none;
+	margin-top: 25px;
+}
+#phototitle {
+	font-size: 85%;
+	font-weight: bold;
+}
+#photodesc {
+	font-size: 85%;
+}
+#photodesc a {
+	text-decoration: underline;
+}
+#toplinkbar {
+	color: #bbb;
+	font-size: 85%;
+}
+
+.archdayempty {
+	color: #999;
+	line-height: 12pt;
+	padding-top: 4px;
+	position: absolute;
+}
+.archdayfull {
+	color: #fff;
+	line-height: 12pt;
+	padding-top: 4px;
+	position: absolute;
+}
+.archthumbnailcell {
+	background-color: #000;
+	text-align: left;
+	vertical-align: top;
+	white-space: nowrap;
+}
+.bottomborder {
+	border-bottom: 1px solid #555;
+}
+.boxbody {
+	background-color: #000;
+	border: 1px solid #555;
+	border-top: none;
+	padding: 7px 9px 7px 9px;
+}
+.boxheader {
+	background-color: #000;
+	border: 1px solid #555;
+	border-bottom: none;
+	font-weight: bold;
+	padding: 2px 6px 2px 6px;
+}
+.boxtopedge {
+	border-bottom: 1px solid #555;
+}
+.button {
+	background-color: #333;
+}
+.code {
+	font-family: "Lucida Console", "Courier New", monospace;
+}
+.dimtext {
+	color: #555;
+}
+.dividerline {
+	border-top: 1px solid #555;
+	height: 5px;
+	line-height: 5px;
+	margin-top: 5px;
+}
+.dividerlinetight {
+	border-top: 1px solid #555;
+	height: 4px;
+	line-height: 4px;
+}
+.fakelink {
+	color: #bbb;
+	text-decoration: none;
+}
+.guestbookentry {
+	clear: both;
+	margin-bottom: 15px;
+	width: 48%;
+}
+.headline {
+	color: #bbb;
+	font-size: large;
+}
+.pagetitle {
+	color: #bbb;
+	font-size: small;
+	font-weight: bold;
+}
+.photowithreminder {
+	background: url(images/dark/sizereminder.gif) #000 no-repeat center center;
+}
+.photowithoutreminder {
+	background: #000 no-repeat center center;
+}
+.smalltext {
+	font-size: 85%;
+}
+.smalltexttable td {
+	font-size: 85%;
+}
+.topborder {
+	border-top: 1px solid #555;
+}
+.underline {
+	text-decoration: underline;
+}

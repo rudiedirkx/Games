@@ -1,0 +1,94 @@
+<html>
+
+<head>
+<title>Tetris test</title>
+<style type="text/css">
+html { background-color:black; }
+#tetris { border-collapse:collapse; }
+#tetris td { border:solid 1px #111; font-size:2px; width:20px; height:20px; }
+#tetris td.blue { background-color:blue; }
+#tetris td.red { background-color:red; }
+#tetris td.yellow { background-color:yellow; }
+#tetris td.green { background-color:green; }
+</style>
+<script type="text/javascript">
+<!--//
+var g_blocks = [
+	{	coords : [[1,0],[2,0],[0,1],[1,1]],
+		color : 'blue'
+	},
+	{	coords : [[0,0],[1,0],[1,1],[2,1]],
+		color : 'yellow'
+	}
+];
+var g_tbl, g_block = [], g_class = '';
+function blockTowards(dc) {
+	for ( var i=0; i<g_block.length; i++ ) {
+		var x = g_block[i][0], y = g_block[i][1];
+		g_tbl.rows[y].cells[x].className = '';
+	}
+	var nb = [];
+	for ( var i=0; i<g_block.length; i++ ) {
+		var x = g_block[i][0], y = g_block[i][1];
+		nb.push([x+dc[0], y+dc[1]]);
+		g_tbl.rows[y+dc[1]].cells[x+dc[0]].className = g_class;
+	}
+	g_block = nb;
+	return false;
+}
+function blockDown() {
+	return blockTowards([0, 1]);
+}
+function blockLeft() {
+	return blockTowards([-1, 0]);
+}
+function blockRight() {
+	return blockTowards([1, 0]);
+}
+function startBlock(f_iBlock) {
+	if ( !g_blocks[f_iBlock] ) { return false; }
+	var b = g_blocks[f_iBlock], c = [];
+	for ( var i=0; i<b.coords.length; i++ ) {
+		c.push([b.coords[i][0]+4, b.coords[i][1]]);
+	}
+	return false;
+}
+function newBlock(f_coords, f_class) {
+	for ( var i=0; i<f_coords.length; i++ ) {
+		g_tbl.rows[f_coords[i][1]].cells[f_coords[i][0]].className = f_class;
+	}
+	g_block = f_coords;
+	g_class = f_class;
+}
+//-->
+</script>
+</head>
+
+<body>
+<table border="0" id="tetris" cellpadding="0" cellspacing="1">
+<?php echo str_repeat('<tr>'.str_repeat('<td><br /></td>', 10)."</tr>\n", 20); ?>
+</table>
+<a href="#" onclick="startBlock(1);return false;">click</a>
+<script type="text/javascript">
+<!--//
+g_tbl = document.getElementById('tetris');
+newBlock([[4,1],[5,1],[5,0],[6,0]], 'blue');
+document.onkeyup = function(e) {
+	e = e || window.event || this.event;
+	switch ( e.keyCode ) {
+		case 40:
+			return blockDown();
+		break;
+		case 37:
+			return blockLeft();
+		break;
+		case 39:
+			return blockRight();
+		break;
+	}
+}
+//-->
+</script>
+</body>
+
+</html>
