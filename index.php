@@ -83,83 +83,333 @@ $g_iEmptyCells = $g_iHeight*$g_iWidth-count($g_arrGames);
 $arrUseGames = 0 < $g_iEmptyCells ? array_merge(array_fill(0, $g_iEmptyCells, false), $g_arrGames) : $g_arrGames;
 shuffle($arrUseGames);
 
+$iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
+
 ?>
-<!DOCTYPE html> 
-<html lang="en"> 
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+<meta name="viewport" content="width=device-width" />
+<meta charset="utf-8" />
 <title><?php echo strtoupper($_SERVER['HTTP_HOST']); ?></title>
 <style>
 * { margin:0; padding:0; }
-body, html { background-color:#111; width:100%; height:100%; }
-canvas { position:fixed; top:0; left:0; z-index:1; }
-#tiles { -webkit-box-shadow:0 0 150px #000; -moz-box-shadow:0 0 150px #000; z-index:2; list-style:none; border:solid 1px #fff; overflow:visible; position:absolute; left:50%; top:50%; width:<?php echo $g_iWidth*$g_iTileWidth; ?>px; height:<?php echo $g_iHeight*$g_iTileHeight; ?>px; margin:-<?php echo $g_iHeight*$g_iTileHeight/2; ?>px 0 0 -<?php echo $g_iWidth*$g_iTileWidth/2; ?>px; }
+body, html { background:#111; width:100%; height:100%; font-family: sans-serif; }
+canvas { position:fixed; top:0; left:0; z-index: 1; }
+#tiles { background: #000; box-shadow:0 0 150px #000; z-index: 2; list-style:none; border:solid 1px #fff; overflow:visible; position:absolute; left:50%; top:50%; width:<?php echo $g_iWidth*$g_iTileWidth; ?>px; height:<?php echo $g_iHeight*$g_iTileHeight; ?>px; margin:-<?php echo $g_iHeight*$g_iTileHeight/2; ?>px 0 0 -<?php echo $g_iWidth*$g_iTileWidth/2; ?>px; }
 #tiles li, #tiles img { width:<?php echo $g_iTileWidth; ?>px; height:<?php echo $g_iTileHeight; ?>px; }
-#tiles li { display:block; float:left; background-color:#000; position:relative; }
-#tiles img { border:0; position:absolute; }
-#tiles:hover img { opacity:0.75;  filter:alpha(opacity=75); -webkit-transition: all 100ms ease-out; }
+#tiles li {
+	display: block;
+	float: left;
+	background: #000;
+	position: relative;
+	-webkit-transition: all 300ms ease-out;
+	-moz-transition: all 300ms ease-out;
+}
+#tiles.positioned > li {
+	position: absolute;
+}
+#tiles a {
+	display: block;
+}
+#tiles img { display:block; border:0; position:absolute; color: #fff; font-size: 20px; font-family: Arial; }
+#tiles:hover img { opacity:0.75; filter:alpha(opacity=75); -webkit-transition: all 40ms ease-out; -moz-transition: all 40ms ease-out; }
 #tiles a:hover img { box-shadow:0 0 45px #fff; -moz-box-shadow:0 0 45px #fff; opacity:1.0; filter:alpha(opacity=100); top:-15px; left:-15px; z-index:3; width:120px; height:120px; }
+#tiles h2, #tiles p {
+	display: none;
+}
+
+#contact {
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 3;
+}
+#contact a {
+	display: block;
+	color: white;
+	background: rgba(0, 0, 0, 0.6);
+	font-size: 24px;
+	line-height: 50px;
+	width: 150px;
+	text-align: center;
+	text-decoration: none;
+}
+#contact a:not(:hover):not(:focus) {
+	-webkit-transition: all 300ms linear;
+	-moz-transition: all 300ms linear;
+}
+#contact a:hover,
+#contact a:focus {
+	background: rgba(0, 0, 0, 1);
+	line-height: 100px;
+	width: 250px;
+}
+
+@media (max-width: <?=$iMediaQueryLimit?>px) {
+	body, html {
+		background: white;
+	}
+	canvas {
+		display: none;
+	}
+	#tiles {
+		position: static;
+		width: auto;
+		height: auto;
+		background: transparent;
+		border: 0;
+		margin: 0 auto;
+		box-shadow: none;
+		padding-bottom: 15px;
+	}
+	#tiles li {
+		display: block;
+		float: none;
+		position: static;
+		width: auto;
+		height: auto;
+		background: #eee;
+		margin-top: 15px;
+	}
+	#tiles li.empty {
+		display: none;
+	}
+	#tiles img {
+		float: left;
+		margin-right: 15px;
+	}
+	#tiles img {
+		position: static;
+	}
+	#tiles a:hover img {
+		width: <?php echo $g_iTileWidth; ?>px;
+		height: <?php echo $g_iTileHeight; ?>px;
+	}
+	#tiles h2, #tiles p {
+		display: block;
+	}
+	#tiles a {
+		padding: 15px;
+		color: #000;
+		text-decoration: none;
+		display: block;
+	}
+
+	#contact {
+		display: none;
+	}
+
+	.clearfix:after,
+	#tiles a:after {
+		content: "";
+		display: block;
+		clear: both;
+		height: 0;
+		visibility: hidden;
+	}
+}
 </style>
-<script> 
-function rand(b) {
-//	return 0;
-	return Math.floor( Math.random() * (b+1) );
-}
-var g_drawspeed = 2000, g_drawtimer;
-var g_colours = [
-	['rgb(87,11,43)', 'rgb(141,18,70)', 'rgb(135,17,67)', 'rgb(175,23,87)', 'rgb(222,51,123)'],
-	['#5096CA', '#A0B5CA', '#C7D6ED', '#5C739C', '#58473F'],
-	['#B58348', '#ED8806', '#ED9306', '#ED9E38', '#EDA850']
-];
-var g_useColours = g_colours[rand(g_colours.length-1)];
-var g_superRandom = 0 == rand(g_colours.length);
-function setCanvasSize() {
-	var cv = document.getElementById('cv');
-	cv.width = document.body.offsetWidth;
-	cv.height = document.body.offsetHeight;
-}
-function draw(f_initial) {
-	clearTimeout(g_drawtimer);
-	var cv = document.getElementById('cv');
-	if ( f_initial ) {
-		setCanvasSize();
-	}
-	var ct = cv.getContext("2d");
-	var w = cv.offsetWidth, h = cv.offsetHeight;
-	for ( var x=0; x<w; x+=50 ) {
-		for ( var y=0; y<h; y+=50 ) {
-			if ( g_superRandom ) {
-				ct.fillStyle = 'rgb(' + rand(255) + ', ' + rand(255) + ', ' + rand(255) + ')';
-			}
-			else {
-				ct.fillStyle = g_useColours[rand(g_useColours.length-1)];
-			}
-			ct.fillRect(x, y, 50, 50);
-		}
-	}
-	g_drawtimer = setTimeout(draw, g_drawspeed);
-}
-</script> 
 </head>
 
-<body onload="draw(1);" onclick="draw();" onresize="draw(1);"> 
+<body>
 
-<canvas style="" width="800" height="600" id="cv"></canvas> 
+<canvas width="800" height="600" id="cv"></canvas>
 
-<ul id="tiles">
+<ul id="tiles" data-width="<?=$g_iWidth?>" data-height="<?=$g_iHeight?>">
 <?php
 
 foreach ( $arrUseGames AS $i => $game ) {
 	if ( $game ) {
 		$img = $g_szImageDir . '_' . str_replace('/', '_', $game[0]) . '.gif';
 		$file = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . ( '/' == substr($g_szImageDir, 0, 1) ? '' : dirname($_SERVER['PHP_SELF']).'/' ) . $img;
+		$ext = preg_match('/^\d+[a-f]?$/', $game[0]) ? '' : '.php';
 	}
-	echo "\t".'<li class="item-'.($i+1).'">'.( $game ? '<a title="'.$game[1].'" href="'.$game[0].'"><img alt="'.$game[1].'" src="'.( file_exists($file) ? $img : $g_szImageDir.'__.gif' ).'" /></a>' : '&nbsp;' ).'</li>'."\n";
+
+	$y = floor($i / $g_iWidth);
+	$x = $i % $g_iWidth;
+
+	echo "\t".'<li data-x="'.$x.'" data-y="'.$y.'" class="item-'.($i+1).( $game ? '' : ' empty' ).'">';
+	if ( $game ) {
+		echo '<a title="'.$game[1].'" href="'.$game[0].$ext.'">';
+		echo '<img alt="'.$game[1].'" src="'.( file_exists($file) ? $img : $g_szImageDir.'__.gif' ).'" />';
+		echo '<h2>'.$game[1].'</h2>';
+		echo '<p>'.$game[2].'</p>';
+		echo '</a>';
+	}
+	echo '</li>'."\n";
 }
 
 ?>
 </ul>
 
+<p id="contact"><a href="mailto:games@webblocks.nl?subject=About your awesome <?=$_SERVER['HTTP_HOST']?>...">Contact me</a></p>
+
+<script src="/js/mootools_1_11.js"></script>
+<script>
+Array.prototype.shuffle = function() {
+	this.sort(function() {
+		return 0.5 - Math.random()
+	})
+	return this
+}
+function clone(obj) {
+	return JSON.parse(JSON.stringify(obj))
+}
+
+(function() {
+	if ( innerWidth < <?=$iMediaQueryLimit?> ) {
+		return;
+	}
+
+	var g_draw = true, g_drawspeed = 5000, g_drawtimer, g_crawlspeed = 300, g_empties = [], g_crawling = 0
+
+	function log() {
+		window.console.log.apply(window.console, arguments)
+	}
+
+	function rand(b) {
+		return Math.floor( Math.random() * (b+1) )
+	}
+
+	function posneg() {
+		return rand(1) ? 1 : -1
+	}
+
+	// Moving game icons
+	$$$('#tiles > li').each(function( li ) {
+		var empty = li.classList.contains('empty')
+		if ( empty ) {
+			li.remove()
+			g_empties.push([parseInt(li.dataset.x), parseInt(li.dataset.y)])
+		}
+		else {
+			position(li)
+			/*li.css({
+				left: <?=$g_iTileWidth?> * parseInt(li.dataset.x),
+				top: <?=$g_iTileHeight?> * parseInt(li.dataset.y)
+			})*/
+		}
+	})
+	$('tiles').addClass('positioned')
+	log(g_empties)
+
+	function neighbour( f_coords ) {
+		var options = [[0, 1], [0, -1], [1, 0], [-1, 0]], i=0
+		options.shuffle()
+		log(options)
+		for ( ; i<4; i++ ) {
+			var coords = clone(f_coords)
+			coords[0] += options[i][0]
+			coords[1] += options[i][1]
+			var id = 'li[data-x="' + coords[0] + '"][data-y="' + coords[1] + '"]', el = $$$(id)[0]
+			log(id)
+			if ( el ) {
+				return el
+			}
+		}
+	}
+
+	function position(li) {
+		return li.css({
+			left: li.dataset.x * <?=$g_iTileWidth?>,
+			top: li.dataset.y * <?=$g_iTileHeight?>
+		})
+	}
+
+	function crawl( ci ) {
+		if ( undefined == ci ) {
+			g_empties.forEach(function( c, ci ) {
+				crawl(ci)
+			})
+			return log(g_empties)
+		}
+
+		var coords = clone(g_empties[ci])
+
+		// pick a direction
+		var li = neighbour(coords)
+		if ( li ) {
+			var licoords = [parseInt(li.dataset.x), parseInt(li.dataset.y)]
+
+			li.dataset.x = String(coords[0])
+			li.dataset.y = String(coords[1])
+			position(li)
+
+			g_empties[ci] = clone(licoords)
+		}
+	}
+
+//	window.neighbour = neighbour
+//	window.crawl = crawl
+//	window.g_empties = g_empties
+
+
+	// Background tiles
+	var g_colours = [
+		['rgb(87,11,43)', 'rgb(141,18,70)', 'rgb(135,17,67)', 'rgb(175,23,87)', 'rgb(222,51,123)'],
+		['#5096CA', '#A0B5CA', '#C7D6ED', '#5C739C', '#58473F'],
+		['#B58348', '#ED8806', '#ED9306', '#ED9E38', '#EDA850']
+	]
+	var g_useColours = g_colours[rand(g_colours.length-1)]
+	var g_superRandom = 0 == rand(g_colours.length)
+
+	function setCanvasSize() {
+		var cv = document.getElementById('cv')
+		cv.width = document.body.offsetWidth
+		cv.height = document.body.offsetHeight
+	}
+
+	function draw(f_initial) {
+		log('disable drawing')
+		if ( g_draw ) {
+			setTimeout(function() {
+				log('enable drawing')
+				g_draw = true
+			}, g_drawspeed)
+		}
+		g_draw = false
+		var cv = document.getElementById('cv')
+		if ( f_initial ) {
+			setCanvasSize()
+		}
+		var ct = cv.getContext("2d")
+		var w = cv.offsetWidth, h = cv.offsetHeight
+		for ( var x=0; x<w; x+=50 ) {
+			for ( var y=0; y<h; y+=50 ) {
+				if ( g_superRandom ) {
+					ct.fillStyle = 'rgb(' + rand(255) + ', ' + rand(255) + ', ' + rand(255) + ')'
+				}
+				else {
+					ct.fillStyle = g_useColours[rand(g_useColours.length-1)]
+				}
+				ct.fillRect(x, y, 50, 50)
+			}
+		}
+	}
+
+	Window.addEvent('load', function(e) {
+		log('window.onload')
+
+		draw(1)
+
+		setInterval(function() {
+			crawl(g_crawling++%g_empties.length)
+		}, g_crawlspeed)
+	})
+
+	Document.addEvent('mousemove', function(e) {
+		log('window.onmousemove')
+		g_draw && draw()
+	})
+
+	Window.addEvent('resize', function(e) {
+		log('window.onresize')
+		draw(1)
+	})
+})()
+</script>
 </body>
 
 </html>
