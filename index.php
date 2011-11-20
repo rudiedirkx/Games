@@ -86,91 +86,41 @@ shuffle($arrUseGames);
 $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-<meta name="viewport" content="width=device-width" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
 <meta charset="utf-8" />
 <title><?php echo strtoupper($_SERVER['HTTP_HOST']); ?></title>
 <style>
 * { margin:0; padding:0; }
-body, html { background:#111; width:100%; height:100%; font-family: sans-serif; }
-canvas { position:fixed; top:0; left:0; z-index: 1; }
-#tiles { background: #000; box-shadow:0 0 150px #000; z-index: 2; list-style:none; border:solid 1px #fff; overflow:visible; position:absolute; left:50%; top:50%; width:<?php echo $g_iWidth*$g_iTileWidth; ?>px; height:<?php echo $g_iHeight*$g_iTileHeight; ?>px; margin:-<?php echo $g_iHeight*$g_iTileHeight/2; ?>px 0 0 -<?php echo $g_iWidth*$g_iTileWidth/2; ?>px; }
-#tiles li, #tiles img { width:<?php echo $g_iTileWidth; ?>px; height:<?php echo $g_iTileHeight; ?>px; }
-#tiles li {
-	display: block;
-	float: left;
-	background: #000;
-	position: relative;
-	-webkit-transition: all 300ms ease-out;
-	-moz-transition: all 300ms ease-out;
+body,
+html {
+	width: 100%;
+	height: 100%;
+	font-family: sans-serif;
 }
-#tiles.positioned > li {
-	position: absolute;
-}
-#tiles a {
-	display: block;
-}
-#tiles img { display:block; border:0; position:absolute; color: #fff; font-size: 20px; font-family: Arial; }
-#tiles:hover img { opacity:0.75; filter:alpha(opacity=75); -webkit-transition: all 40ms ease-out; -moz-transition: all 40ms ease-out; }
-#tiles a:hover img { box-shadow:0 0 45px #fff; -moz-box-shadow:0 0 45px #fff; opacity:1.0; filter:alpha(opacity=100); top:-15px; left:-15px; z-index:3; width:120px; height:120px; }
-#tiles h2, #tiles p {
-	display: none;
-}
-
-#contact {
-	position: fixed;
-	left: 0;
-	top: 0;
-	z-index: 3;
-}
-#contact a {
-	display: block;
-	color: white;
-	background: rgba(0, 0, 0, 0.6);
-	font-size: 24px;
-	line-height: 50px;
-	width: 150px;
-	text-align: center;
-	text-decoration: none;
-}
-#contact a:not(:hover):not(:focus) {
-	-webkit-transition: all 300ms linear;
-	-moz-transition: all 300ms linear;
-}
-#contact a:hover,
-#contact a:focus {
-	background: rgba(0, 0, 0, 1);
-	line-height: 100px;
-	width: 250px;
+canvas {
+	position:fixed;
+	top:0;
+	left:0;
+	z-index: 1;
 }
 
 @media (max-width: <?=$iMediaQueryLimit?>px) {
-	body, html {
-		background: white;
-	}
 	canvas {
 		display: none;
 	}
+	#contact {
+		padding: 15px 0 0;
+		text-align: center;
+	}
 	#tiles {
-		position: static;
-		width: auto;
-		height: auto;
-		background: transparent;
-		border: 0;
-		margin: 0 auto;
-		box-shadow: none;
 		padding-bottom: 15px;
 	}
 	#tiles li {
 		display: block;
-		float: none;
-		position: static;
-		width: auto;
-		height: auto;
-		background: #eee;
 		margin-top: 15px;
 	}
 	#tiles li.empty {
@@ -180,35 +130,128 @@ canvas { position:fixed; top:0; left:0; z-index: 1; }
 		float: left;
 		margin-right: 15px;
 	}
-	#tiles img {
-		position: static;
-	}
-	#tiles a:hover img {
-		width: <?php echo $g_iTileWidth; ?>px;
-		height: <?php echo $g_iTileHeight; ?>px;
-	}
-	#tiles h2, #tiles p {
-		display: block;
-	}
 	#tiles a {
+		display: block;
+		background: #eee;
 		padding: 15px;
+		min-height: 91px;
 		color: #000;
 		text-decoration: none;
+	}
+	#tiles a:hover,
+	#tiles a:focus	{
+		background: #ccc;
+	}
+	#tiles a:active	{
+		background: #000;
+		color: #fff;
+	}
+}
+
+@media (min-width: <?=$iMediaQueryLimit?>px) {
+	body {
+		background: #000;
+	}
+	#tiles {
+		box-shadow:0 0 150px #000;
+		z-index: 2;
+		list-style:none;
+		border:solid 1px #fff;
+		overflow:visible;
+		position:absolute;
+		left:50%;
+		top:50%;
+		width:<?php echo $g_iWidth*$g_iTileWidth; ?>px;
+		height:<?php echo $g_iHeight*$g_iTileHeight; ?>px;
+		margin:-<?php echo $g_iHeight*$g_iTileHeight/2; ?>px 0 0 -<?php echo $g_iWidth*$g_iTileWidth/2; ?>px;
+	}
+	#tiles li,
+	#tiles img {
+		width:<?php echo $g_iTileWidth; ?>px;
+		height:<?php echo $g_iTileHeight; ?>px;
+	}
+	#tiles li {
+		display: block;
+		float: left;
+		background: #000;
+		position: relative;
+		-webkit-transition: all 300ms ease-out;
+		-moz-transition: all 300ms ease-out;
+	}
+	#tiles.positioned li {
+		position: absolute;
+	}
+	#tiles li.empty {
+		background: transparent;
+	}
+	#tiles a {
 		display: block;
 	}
-
-	#contact {
+	#tiles img {
+		display:block;
+		border:0;
+		position:absolute;
+		color: #fff;
+		font-size: 20px;
+		font-family: Arial;
+	}
+	#tiles:hover img {
+		opacity:0.75;
+		filter:alpha(opacity=75);
+		-webkit-transition: all 80ms ease-out;
+		-moz-transition: all 80ms ease-out;
+	}
+	#tiles a:hover img {
+		box-shadow:0 0 45px #fff;
+		-moz-box-shadow:0 0 45px #fff;
+		opacity:1.0;
+		filter:alpha(opacity=100);
+		top:-15px;
+		left:-15px;
+		z-index:3;
+		width:120px;
+		height:120px;
+	}
+	#tiles h2, #tiles p {
 		display: none;
 	}
 
-	.clearfix:after,
-	#tiles a:after {
-		content: "";
-		display: block;
-		clear: both;
-		height: 0;
-		visibility: hidden;
+	#contact {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 3;
 	}
+	#contact a {
+		display: block;
+		color: white;
+		background: rgba(0, 0, 0, 0.6);
+		font-size: 24px;
+		line-height: 50px;
+		width: 150px;
+		text-align: center;
+		text-decoration: none;
+	}
+	#contact a:not(:hover):not(:focus) {
+		-webkit-transition: all 300ms linear;
+		-moz-transition: all 300ms linear;
+	}
+	#contact a:hover,
+	#contact a:focus {
+		background: rgba(0, 0, 0, 1);
+		line-height: 100px;
+		width: 250px;
+	}
+}
+
+.clearfix:after,
+#tiles a:after,
+#tiles:after {
+	content: "";
+	display: block;
+	clear: both;
+	height: 0;
+	visibility: hidden;
 }
 </style>
 </head>
@@ -216,6 +259,8 @@ canvas { position:fixed; top:0; left:0; z-index: 1; }
 <body>
 
 <canvas width="800" height="600" id="cv"></canvas>
+
+<p id="contact"><a href="mailto:games@webblocks.nl?subject=About your awesome <?=$_SERVER['HTTP_HOST']?>...">Contact me</a></p>
 
 <ul id="tiles" data-width="<?=$g_iWidth?>" data-height="<?=$g_iHeight?>">
 <?php
@@ -244,8 +289,6 @@ foreach ( $arrUseGames AS $i => $game ) {
 ?>
 </ul>
 
-<p id="contact"><a href="mailto:games@webblocks.nl?subject=About your awesome <?=$_SERVER['HTTP_HOST']?>...">Contact me</a></p>
-
 <script src="/js/mootools_1_11.js"></script>
 <script>
 Array.prototype.shuffle = function() {
@@ -259,11 +302,15 @@ function clone(obj) {
 }
 
 (function() {
-	if ( innerWidth < <?=$iMediaQueryLimit?> ) {
-		return;
-	}
 
-	var g_draw = true, g_drawspeed = 5000, g_drawtimer, g_crawlspeed = 300, g_empties = [], g_crawling = 0
+	if ( navigator.mobile ) return
+
+	var g_draw = true,
+		g_drawspeed = 250,
+		g_drawtimer,
+		g_crawlspeed = 300,
+		g_empties = [],
+		g_crawling = 0
 
 	function log() {
 		window.console.log.apply(window.console, arguments)
@@ -276,75 +323,6 @@ function clone(obj) {
 	function posneg() {
 		return rand(1) ? 1 : -1
 	}
-
-	// Moving game icons
-	$$$('#tiles > li').each(function( li ) {
-		var empty = li.classList.contains('empty')
-		if ( empty ) {
-			li.remove()
-			g_empties.push([parseInt(li.dataset.x), parseInt(li.dataset.y)])
-		}
-		else {
-			position(li)
-			/*li.css({
-				left: <?=$g_iTileWidth?> * parseInt(li.dataset.x),
-				top: <?=$g_iTileHeight?> * parseInt(li.dataset.y)
-			})*/
-		}
-	})
-	$('tiles').addClass('positioned')
-	log(g_empties)
-
-	function neighbour( f_coords ) {
-		var options = [[0, 1], [0, -1], [1, 0], [-1, 0]], i=0
-		options.shuffle()
-		log(options)
-		for ( ; i<4; i++ ) {
-			var coords = clone(f_coords)
-			coords[0] += options[i][0]
-			coords[1] += options[i][1]
-			var id = 'li[data-x="' + coords[0] + '"][data-y="' + coords[1] + '"]', el = $$$(id)[0]
-			log(id)
-			if ( el ) {
-				return el
-			}
-		}
-	}
-
-	function position(li) {
-		return li.css({
-			left: li.dataset.x * <?=$g_iTileWidth?>,
-			top: li.dataset.y * <?=$g_iTileHeight?>
-		})
-	}
-
-	function crawl( ci ) {
-		if ( undefined == ci ) {
-			g_empties.forEach(function( c, ci ) {
-				crawl(ci)
-			})
-			return log(g_empties)
-		}
-
-		var coords = clone(g_empties[ci])
-
-		// pick a direction
-		var li = neighbour(coords)
-		if ( li ) {
-			var licoords = [parseInt(li.dataset.x), parseInt(li.dataset.y)]
-
-			li.dataset.x = String(coords[0])
-			li.dataset.y = String(coords[1])
-			position(li)
-
-			g_empties[ci] = clone(licoords)
-		}
-	}
-
-//	window.neighbour = neighbour
-//	window.crawl = crawl
-//	window.g_empties = g_empties
-
 
 	// Background tiles
 	var g_colours = [
@@ -408,6 +386,71 @@ function clone(obj) {
 		log('window.onresize')
 		draw(1)
 	})
+
+	if ( innerWidth < <?=$iMediaQueryLimit?> ) {
+		return;
+	}
+
+	// Moving game icons
+	$$$('#tiles > li').each(function( li ) {
+		var empty = li.classList.contains('empty')
+		if ( empty ) {
+			li.remove()
+			g_empties.push([parseInt(li.dataset.x), parseInt(li.dataset.y)])
+		}
+		else {
+			position(li)
+		}
+	})
+	$('tiles').addClass('positioned')
+	log(g_empties)
+
+	function neighbour( f_coords ) {
+		var options = [[0, 1], [0, -1], [1, 0], [-1, 0]], i=0
+		options.shuffle()
+		log(options)
+		for ( ; i<4; i++ ) {
+			var coords = clone(f_coords)
+			coords[0] += options[i][0]
+			coords[1] += options[i][1]
+			var id = 'li[data-x="' + coords[0] + '"][data-y="' + coords[1] + '"]', el = $$$(id)[0]
+			log(id)
+			if ( el ) {
+				return el
+			}
+		}
+	}
+
+	function position(li) {
+		return li.css({
+			left: li.dataset.x * <?=$g_iTileWidth?>,
+			top: li.dataset.y * <?=$g_iTileHeight?>
+		})
+	}
+
+	function crawl( ci ) {
+		if ( undefined == ci ) {
+			g_empties.forEach(function( c, ci ) {
+				crawl(ci)
+			})
+			return log(g_empties)
+		}
+
+		var coords = clone(g_empties[ci])
+
+		// pick a direction
+		var li = neighbour(coords)
+		if ( li ) {
+			var licoords = [parseInt(li.dataset.x), parseInt(li.dataset.y)]
+
+			li.dataset.x = String(coords[0])
+			li.dataset.y = String(coords[1])
+			position(li)
+
+			g_empties[ci] = clone(licoords)
+		}
+	}
+
 })()
 </script>
 </body>

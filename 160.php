@@ -254,67 +254,59 @@ if ( isset($_POST['action']) && 'get_maps' === $_POST['action'] ) {
 }
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!doctype html>
+<html lang="en">
 
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, maximum-scale=1.0, minimum-scale=1.0" />
+<meta charset="utf-8" />
 <title>Pixelus</title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<style type="text/css">
+<script src="/js/mootools_1_11.js"></script>
+<style>
 #loading { border:medium none; height:100px; left:50%; margin-left:-50px; margin-top:-50px; position:absolute; top:50%; visibility:hidden; width:100px; }
 table#pixelus { border-collapse:collapse; font-family:verdana,arial; }
+#pixelus_tb { -webkit-tap-highlight-color: rgba(0,0,0,0); }
 table#pixelus td { border:solid 1px #eee; font-size:18px; text-align:center; }
-tbody#pixelus_tb td { width:25px; height:25px; color:white; font-weight:bold; cursor:pointer; }
+tbody#pixelus_tb td { width:35px; height:35px; color:white; font-weight:bold; cursor:pointer; }
+tbody#pixelus_tb span { display: block; height:100%; width: 100%; border-radius: 50px; }
 tbody#pixelus_tb td.target { background-color:#87cefa; }
 table tbody#pixelus_tb td.wall1 { background-color:#111; cursor:default; }
 table tbody#pixelus_tb td.wall2 { background-color:#222; cursor:default; }
-table#pixelus tbody#pixelus_tb td.stone { background:#8b4513 url(images/159_underlay.gif) center center no-repeat; }
+table#pixelus tbody#pixelus_tb td.stone span { background-color: #8b4513; }
 table#pixelus tbody#pixelus_tb td.valid { background-color:green; }
 table#pixelus tbody#pixelus_tb td.invalid { background-color:red; }
 </style>
-<script type="text/javascript">
-<!--//
+<script>
+navigator.mobile = navigator.userAgent.toLowerCase().contains('mobile')
 function Pixelus(f_level) {
 	// empty constructor
 	this.loadLevel(f_level);
-	$('pixelus_tb').onmouseover = function(e) {
-		e = new Event(e);
-		if ( 'TD' == e.target.nodeName && !e.target.wall && !e.target.stone ) {
-			e.target.addClass(objPixelus.isReachable(e.target) ? 'valid' : 'invalid');
+	if ( !navigator.mobile ) {
+		$('pixelus_tb').onmouseover = function(e, cell) {
+			e = new Event(e);
+			if ( 'SPAN' == e.target.nodeName && (cell=e.target.parentNode) && !cell.wall && !cell.stone ) {
+				cell.addClass(objPixelus.isReachable(cell) ? 'valid' : 'invalid');
+			}
+		}
+		$('pixelus_tb').onmouseout = function(e, cell) {
+			e = new Event(e);
+			if ( 'SPAN' == e.target.nodeName && (cell=e.target.parentNode) && !cell.wall ) {
+				cell.removeClass('valid').removeClass('invalid');
+			}
 		}
 	}
-	$('pixelus_tb').onmouseout = function(e) {
+	$('pixelus_tb').onclick = function(e, cell) {
 		e = new Event(e);
-		if ( 'TD' == e.target.nodeName && !e.target.wall ) {
-			e.target.removeClass('valid');
-			e.target.removeClass('invalid');
-		}
-	}
-	$('pixelus_tb').onclick = function(e) {
-		e = new Event(e);
-		if ( 'TD' == e.target.nodeName && !e.target.wall ) {
-			if ( !e.target.stone ) {
-				objPixelus.slingStone(e.target);
+		if ( 'SPAN' == e.target.nodeName && (cell=e.target.parentNode) && !cell.wall ) {
+			if ( !cell.stone ) {
+				objPixelus.slingStone(cell);
 			}
 			else {
-				objPixelus.removeStone(e.target);
+				objPixelus.removeStone(cell);
 			}
+			cell.removeClass('valid').removeClass('invalid');
 		}
 	}
-	document.onkeydown = function(e) {
-		e = new Event(e);
-		var dir;
-		switch ( e.code ) {
-			case 37: if ( e.control ) { return objPixelus.prevLevel(); } dir = 'left';	break;
-			case 38: dir = 'up';	break;
-			case 39: if ( e.control ) { return objPixelus.nextLevel(); } dir = 'right';	break;
-			case 40: dir = 'down';	break;
-			default: return;	break;
-		}
-		e.stop();
-		objPixelus.moveAtom(dir);
-	};
 }
 Pixelus.prototype = {
 	level : 0,
@@ -337,7 +329,7 @@ Pixelus.prototype = {
 				this.wrongStones--;
 			}
 			if ( 0 == this.stones && 0 == this.wrongStones ) {
-				alert('Level complete!');
+				setTimeout("alert('Level complete!')", 50)
 			}
 		}
 	},
@@ -438,7 +430,7 @@ Pixelus.prototype = {
 					var nr = $('pixelus_tb').insertRow($('pixelus_tb').rows.length);
 					for ( var x=0; x<row.length; x++ ) {
 						var nc = nr.insertCell(nr.cells.length);
-						nc.innerHTML = '';
+						nc.innerHTML = '<span></span>';
 						nc.wall = false;
 						nc.target = false;
 						nc.stone = false;
@@ -457,7 +449,6 @@ Pixelus.prototype = {
 		return false;
 	}
 };
-//-->
 </script>
 </head>
 
@@ -501,7 +492,6 @@ Pixelus.prototype = {
 </table>
 
 <script type="text/javascript">
-<!--//
 Ajax.setGlobalHandlers({
 	onStart : function() {
 		$('loading').style.visibility = 'visible';
@@ -513,7 +503,6 @@ Ajax.setGlobalHandlers({
 	}
 });
 var objPixelus = new Pixelus(1);
-//-->
 </script>
 </body>
 
@@ -534,4 +523,4 @@ function reset_game( $f_iLevel = 0 ) {
 
 }
 
-?>
+
