@@ -238,13 +238,16 @@ $g_arrLevels = array(
 );
 
 /** START GAME **/
-if ( isset($_POST['action']) && 'get_maps' === $_POST['action'] ) {
-	if ( !isset($_POST['level'], $g_arrLevels[(int)$_POST['level']]) ) {
-		exit(json::encode(array('error' => 'Invalid level ['.(int)$_POST['level'].']')));
-	}
-	$arrLevel = $g_arrLevels[(int)$_POST['level']];
+if ( isset($_REQUEST['get_map']) ) {
+	$level = (int)$_REQUEST['get_map'];
 
-	reset_game((int)$_POST['level']);
+	if ( !isset($g_arrLevels[$level]) ) {
+		exit('Invalid level ['.$level.']');
+	}
+
+	$arrLevel = $g_arrLevels[$level];
+
+	reset_game($level);
 
 	exit(json::encode(array(
 		'level'		=> $_SESSION[S_NAME]['level'],
@@ -261,23 +264,17 @@ if ( isset($_POST['action']) && 'get_maps' === $_POST['action'] ) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, maximum-scale=1.0, minimum-scale=1.0" />
 <meta charset="utf-8" />
 <title>Pixelus</title>
-<script src="/js/mootools_1_11.js"></script>
+<link rel="stylesheet" href="games.css" />
 <style>
 #loading { border:medium none; height:100px; left:50%; margin-left:-50px; margin-top:-50px; position:absolute; top:50%; visibility:hidden; width:100px; }
-table#pixelus { border-collapse:collapse; font-family:verdana,arial; }
-#pixelus_tb { -webkit-tap-highlight-color: rgba(0,0,0,0); }
-table#pixelus td { border:solid 1px #eee; font-size:18px; text-align:center; }
-tbody#pixelus_tb td { width:35px; height:35px; color:white; font-weight:bold; cursor:pointer; }
-tbody#pixelus_tb span { display: block; height:100%; width: 100%; border-radius: 50px; }
-tbody#pixelus_tb td.target { background-color:#87cefa; }
-table tbody#pixelus_tb td.wall1 { background-color:#111; cursor:default; }
-table tbody#pixelus_tb td.wall2 { background-color:#222; cursor:default; }
-table#pixelus tbody#pixelus_tb td.stone span { background-color: #8b4513; }
-table#pixelus tbody#pixelus_tb td.valid { background-color:green; }
-table#pixelus tbody#pixelus_tb td.invalid { background-color:red; }
+#map-container span { display: block; height:100%; width: 100%; border-radius: 50px; }
+#map-container td.target { background-color:#87cefa; }
+#map-table #map-container td.stone span { background-color: #8b4513; }
+#map-table #map-container td.valid { background-color:green; }
+#map-table #map-container td.invalid { background-color:red; }
+#map-container.actionless td.stone { cursor: pointer; }
 </style>
-<script>
-navigator.mobile = navigator.userAgent.toLowerCase().contains('mobile')
+<script type=ignore>
 function Pixelus(f_level) {
 	// empty constructor
 	this.loadLevel(f_level);
@@ -455,30 +452,28 @@ Pixelus.prototype = {
 <body>
 <img id="loading" alt="loading" src="images/loading.gif" />
 
-<script type="text/javascript">if ( window.console && 'object' == typeof window.console && window.console.firebug ) { document.write('<div style="background-color:pink;font-weight:bold;margin:10px;padding:10px;color:white;">Firebug can slow this page down... It\'s not necessary but advised to shut it down.</div>'); }</script>
-
 <table border="1" cellpadding="15" cellspacing="0">
 <tr>
-	<th class="pad">LEVEL <span id="stats_level">0</span></th>
+	<th class="pad">LEVEL <span id="stats-level">0</span></th>
 	<td></td>
 </tr>
 <tr>
 	<td class="pad" style="padding-top:0;">
-	<table id="pixelus" border="0">
+	<table id="map-table">
 		<thead>
 			<tr><th class="pad" colspan="30">Your name: <span id="your_name">?</span></th></tr>
 		</thead>
-		<tbody id="pixelus_tb"></tbody>
+		<tbody id="map-container"></tbody>
 		<tfoot>
-			<tr><th class="pad" colspan="30">Stones left: <span id="stones_left">0</span><br />Moves: <span id="stats_moves">0</span></th></tr>
+			<tr><th class="pad" colspan="30">Stones left: <span id="stats-stones">0</span><br />Moves: <span id="stats-moves">0</span></th></tr>
 		</tfoot>
 	</table></td>
 	<td valign="top" align="left" class="pad">
-		<a href="#" onclick="objPixelus.loadLevel(prompt('Map #:', objPixelus.level));return false;">load level #</a><br />
+		<a href="#" id="btn-load-level">load level #</a><br />
 		<br />
-		<a href="#" onclick="return objPixelus.prevLevel();">&lt;&lt;</a> &nbsp; <a href="#" onclick="return objPixelus.nextLevel();">&gt;&gt;</a><br />
+		<a href="#" id="btn-prev-level">&lt;&lt;</a> &nbsp; <a href="#" id="btn-next-level">&gt;&gt;</a><br />
 		<br />
-		<a href="#" onclick="objPixelus.loadLevel(objPixelus.level);return false;">restart</a><br />
+		<a href="#" id="btn-restart-level">restart</a><br />
 		<br />
 		<a href="?action=reset">reset</a><br />
 		<br />
@@ -491,7 +486,10 @@ Pixelus.prototype = {
 </tr>
 </table>
 
-<script type="text/javascript">
+<script src="/js/mootools_1_11.js"></script>
+<script src="games.js"></script>
+<script src="160.js"></script>
+<script>
 Ajax.setGlobalHandlers({
 	onStart : function() {
 		$('loading').style.visibility = 'visible';
@@ -502,7 +500,9 @@ Ajax.setGlobalHandlers({
 		}
 	}
 });
-var objPixelus = new Pixelus(1);
+
+//var objPixelus = new Pixelus(1);
+game = new Pixelus
 </script>
 </body>
 
