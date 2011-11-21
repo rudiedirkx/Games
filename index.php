@@ -316,7 +316,7 @@ function clone(obj) {
 		g_crawling = 0
 
 	function log() {
-		window.console.log.apply(window.console, arguments)
+		//window.console.log.apply(window.console, arguments)
 	}
 
 	function rand(b) {
@@ -376,13 +376,17 @@ function clone(obj) {
 		draw(1)
 
 		setInterval(function() {
+			log('crawl')
 			crawl(g_crawling++%g_empties.length)
 		}, g_crawlspeed)
 	})
 
+	var lc = '', c
 	Document.addEvent('mousemove', function(e) {
 		log('window.onmousemove')
-		g_draw && draw()
+		c = e.clientX + ':' + e.clientY // stupid Chrome bug fires mousemove events when the mouse doesn't move
+		'CANVAS' == e.target.nodeName && c != lc && g_draw && draw()
+		lc = c
 	})
 
 	Window.addEvent('resize', function(e) {
@@ -391,7 +395,7 @@ function clone(obj) {
 	})
 
 	if ( innerWidth < <?=$iMediaQueryLimit?> ) {
-		return;
+		return
 	}
 
 	// Moving game icons
@@ -406,18 +410,18 @@ function clone(obj) {
 		}
 	})
 	$('tiles').addClass('positioned')
-	log(g_empties)
+	//log(g_empties)
 
 	function neighbour( f_coords ) {
-		var options = [[0, 1], [0, -1], [1, 0], [-1, 0]], i=0
+		var options = [[0, 1], [0, -1], [1, 0], [-1, 0]], i = 0
 		options.shuffle()
-		log(options)
+		//log(options)
 		for ( ; i<4; i++ ) {
 			var coords = clone(f_coords)
 			coords[0] += options[i][0]
 			coords[1] += options[i][1]
 			var id = 'li[data-x="' + coords[0] + '"][data-y="' + coords[1] + '"]', el = $$$(id)[0]
-			log(id)
+			//log(id)
 			if ( el ) {
 				return el
 			}
@@ -436,7 +440,7 @@ function clone(obj) {
 			g_empties.forEach(function( c, ci ) {
 				crawl(ci)
 			})
-			return log(g_empties)
+			return //log(g_empties)
 		}
 
 		var coords = clone(g_empties[ci])
