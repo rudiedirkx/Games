@@ -94,18 +94,21 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 <meta charset="utf-8" />
 <title><?php echo strtoupper($_SERVER['HTTP_HOST']); ?></title>
 <style>
-* { margin:0; padding:0; }
-body,
-html {
-	width: 100%;
-	height: 100%;
-	font-family: sans-serif;
-}
-canvas {
-	position:fixed;
-	top:0;
-	left:0;
-	z-index: 1;
+/* A big Fuck you! to IE */
+@media (min-width: 0) {
+	* { margin:0; padding:0; }
+	body,
+	html {
+		width: 100%;
+		height: 100%;
+		font-family: sans-serif;
+	}
+	canvas {
+		position:fixed;
+		top:0;
+		left:0;
+		z-index: 1;
+	}
 }
 
 @media (max-width: <?=$iMediaQueryLimit?>px) {
