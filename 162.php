@@ -1,5 +1,5 @@
 <!DOCTYPE>
-<html manifest="162.manifest?c">
+<html manifest="162.manifest">
 
 <head>
 <title>Game # 162</title>
