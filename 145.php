@@ -1,6 +1,8 @@
 <?php
 // LINX
 
+header('Content-type: text/html; charset="utf-8"');
+
 $g_arrBoards = array(1=>
 	array(
 		'',
@@ -37,9 +39,11 @@ $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] :
 $arrBoard = $g_arrBoards[$iBoard];
 
 ?>
-<html>
+<!doctype html>
+<html lang="en">
 
 <head> 
+<meta charset="utf-8" />
 <title>Linx</title>
 <link rel="stylesheet" href="/145.css" />
 </head>
