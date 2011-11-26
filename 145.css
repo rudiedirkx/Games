@@ -35,6 +35,9 @@ html { font-size: 16px; }
 	color: #ccc;
 }
 
+.game {
+	height: 100%;
+}
 .game:before {
 	content: "";
 	display: inline-block;

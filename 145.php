@@ -39,7 +39,7 @@ $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] :
 $arrBoard = $g_arrBoards[$iBoard];
 
 ?>
-<!-- screw a doctype <!doctype html> -->
+<!doctype html>
 <html lang="en">
 
 <head> 
