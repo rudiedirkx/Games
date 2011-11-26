@@ -29,10 +29,20 @@ $arrBoard = $g_arrBoards[$iBoard];
 <title>Linx</title>
 <style>
 * { margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; text-align: center; }
+
+body:before {
+	content: "";
+	display: inline-block;
+	vertical-align: middle;
+	height: 100%;
+}
+
 #map-table {
-	margin: 20px 0 0 20px;
 	border-collapse: collapse;
 	box-shadow: 0 0 20px #666;
+	display: inline-block;
+	vertical-align: middle;
 }
 #map-container {
 
@@ -78,116 +88,120 @@ $arrBoard = $g_arrBoards[$iBoard];
 	background-color: blue;
 }
 
-.line {
+.line a {
 	background: url(/images/145-lines.png);
 }
-.line.type-1.dir-v {
+.line.type-1.dir-v a {
 	background-position: 0 0;
 }
-.line.type-1.dir-h {
+.line.type-1.dir-h a {
 	background-position: -50px 0;
 }
-.line.type-1.dir-sw {
+.line.type-1.dir-sw a {
 	background-position: -100px 0;
 }
-.line.type-1.dir-nw {
+.line.type-1.dir-nw a {
 	background-position: -150px 0;
 }
-.line.type-1.dir-ne {
+.line.type-1.dir-ne a {
 	background-position: -200px 0;
 }
-.line.type-1.dir-se {
+.line.type-1.dir-se a {
 	background-position: -250px 0;
 }
-.line.type-2.dir-v {
+.line.type-2.dir-v a {
 	background-position: 0 -50px;
 }
-.line.type-2.dir-h {
+.line.type-2.dir-h a {
 	background-position: -50px -50px;
 }
-.line.type-2.dir-sw {
+.line.type-2.dir-sw a {
 	background-position: -100px -50px;
 }
-.line.type-2.dir-nw {
+.line.type-2.dir-nw a {
 	background-position: -150px -50px;
 }
-.line.type-2.dir-ne {
+.line.type-2.dir-ne a {
 	background-position: -200px -50px;
 }
-.line.type-2.dir-se {
+.line.type-2.dir-se a {
 	background-position: -250px -50px;
 }
-.line.type-3.dir-v {
+.line.type-3.dir-v a {
 	background-position: 0 -100px;
 }
-.line.type-3.dir-h {
+.line.type-3.dir-h a {
 	background-position: -50px -100px;
 }
-.line.type-3.dir-sw {
+.line.type-3.dir-sw a {
 	background-position: -100px -100px;
 }
-.line.type-3.dir-nw {
+.line.type-3.dir-nw a {
 	background-position: -150px -100px;
 }
-.line.type-3.dir-ne {
+.line.type-3.dir-ne a {
 	background-position: -200px -100px;
 }
-.line.type-3.dir-se {
+.line.type-3.dir-se a {
 	background-position: -250px -100px;
 }
-.line.type-4.dir-v {
+.line.type-4.dir-v a {
 	background-position: 0 -150px;
 }
-.line.type-4.dir-h {
+.line.type-4.dir-h a {
 	background-position: -50px -150px;
 }
-.line.type-4.dir-sw {
+.line.type-4.dir-sw a {
 	background-position: -100px -150px;
 }
-.line.type-4.dir-nw {
+.line.type-4.dir-nw a {
 	background-position: -150px -150px;
 }
-.line.type-4.dir-ne {
+.line.type-4.dir-ne a {
 	background-position: -200px -150px;
 }
-.line.type-4.dir-se {
+.line.type-4.dir-se a {
 	background-position: -250px -150px;
 }
-.line.type-5.dir-v {
+.line.type-5.dir-v a {
 	background-position: 0 -200px;
 }
-.line.type-5.dir-h {
+.line.type-5.dir-h a {
 	background-position: -50px -200px;
 }
-.line.type-5.dir-sw {
+.line.type-5.dir-sw a {
 	background-position: -100px -200px;
 }
-.line.type-5.dir-nw {
+.line.type-5.dir-nw a {
 	background-position: -150px -200px;
 }
-.line.type-5.dir-ne {
+.line.type-5.dir-ne a {
 	background-position: -200px -200px;
 }
-.line.type-5.dir-se {
+.line.type-5.dir-se a {
 	background-position: -250px -200px;
 }
-.line.type-6.dir-v {
+.line.type-6.dir-v a {
 	background-position: 0 -250px;
 }
-.line.type-6.dir-h {
+.line.type-6.dir-h a {
 	background-position: -50px -250px;
 }
-.line.type-6.dir-sw {
+.line.type-6.dir-sw a {
 	background-position: -100px -250px;
 }
-.line.type-6.dir-nw {
+.line.type-6.dir-nw a {
 	background-position: -150px -250px;
 }
-.line.type-6.dir-ne {
+.line.type-6.dir-ne a {
 	background-position: -200px -250px;
 }
-.line.type-6.dir-se {
+.line.type-6.dir-se a {
 	background-position: -250px -250px;
+}
+
+.test a {
+	background: pink;
 }
 
 img.preload {
@@ -254,7 +268,9 @@ $.shuffle = function(arr) {
 				// line
 				cell.addClass('line')
 				// type
+					.removeClass('type-' + cell.data('last-type'))
 					.addClass('type-' + type)
+					.data('last-type', type)
 				// direction
 					.removeClass('dir-' + cell.data('last-dir'))
 					.addClass('dir-' + d)
@@ -272,7 +288,7 @@ $.shuffle = function(arr) {
 		if ( cell.hasClass('line') ) {
 			e.preventDefault()
 
-			cell.removeClass('line').removeClass('dir-' + cell.data('last-dir'))
+			cell.removeClass('line').removeClass('dir-' + cell.data('last-dir')).removeClass('type-' + cell.data('last-type'))
 		}
 	})
 //})
