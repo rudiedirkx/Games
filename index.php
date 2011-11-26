@@ -88,6 +88,7 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 ?>
 <!doctype html>
 <html lang="en">
+<!-- { server: <?=$_SERVER['SERVER_ADDR']?> } -->
 
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
