@@ -39,7 +39,7 @@ $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] :
 $arrBoard = $g_arrBoards[$iBoard];
 
 ?>
-<!doctype html>
+<!-- screw a doctype <!doctype html> -->
 <html lang="en">
 
 <head> 
@@ -90,7 +90,7 @@ $arrBoard = $g_arrBoards[$iBoard];
 	</div>
 </div>
 
-<img class="preload" src="/images/145-lines.png" />
+<img class="preload" src="/images/145-lines.png" alt="preloading lines sprite" />
 
 <script src="//code.jquery.com/jquery-latest.js"></script>
 <script src="/145.js"></script>
