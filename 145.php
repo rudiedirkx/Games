@@ -47,7 +47,7 @@ $arrBoard = $g_arrBoards[$iBoard];
 <body>
 
 <div class="help">
-	<p>Connect the big dots. Drag a colored big dot to another big dot of the same color.</p>
+	<p>Connect the big dots. Drag a <span title="Yes, I know black and white aren't colors. But I don't care and neither do you.">colored</span> big dot to another big dot of the same color.</p>
 	<p>[<?=$iBoard?>] | <a href="?board=<?=$iBoard+1?>">Next level</a></p>
 </div>
 
