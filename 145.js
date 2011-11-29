@@ -1,31 +1,60 @@
 
-var debug = 1;
+var debug = window.console && 'function' == typeof window.console.log;
 
 function log() {
-	debug && window.console && 'function' == typeof window.console.log && window.console.log.apply(console, arguments)
+	debug && window.console.log.apply(console, arguments)
 }
 
 $(function() {
-	var directions = ['v', 'h', 'sw', 'nw', 'ne', 'se']
 
+	// env vars
 	var c = $('#map-container'),
 		cells = c.find('a')
-	var type, dragIndex = 0, start
+	// process vars
+	var type, dragIndex = 0, start, last
+
+	function validOrigin(cell, dragIndex) {
+		var cx = cell.data('x'),
+			cy = cell.data('y'),
+			lx = last.data('x'),
+			ly = last.data('y')
+
+		if ( ly == cy ) {
+			if ( lx + 1 == cx || lx - 1 == cx ) {
+				return 'h'
+			}
+		}
+		else if ( lx == cx ) {
+			if ( ly + 1 == cy || ly - 1 == cy ) {
+				return 'v'
+			}
+		}
+	}
 
 	function drag(e, cell) {
 		cell = $(e.target)
+
 		if ( cell.hasClass('cell') ) {
+			// valid dragover
 			if ( !cell.hasClass('line') && !cell.hasClass('pad') ) {
-				cell.addClass('drag-' + dragIndex).addClass('line').addClass('type-' + type)
-			}
-			else {
-				if ( cell.hasClass('pad') ) {
-					if ( cell.data('type') == type && !cell.data('drag') && start[0] != cell[0] ) {
-						return dragoff(1, cell)
-					}
+				var o = validOrigin(cell, dragIndex)
+				if ( o ) {
+					cell.addClass('drag-' + dragIndex)
+						.addClass('line')
+						.addClass('type-' + type)
+						.addClass('dir-' + o)
+					last = cell
+					return
 				}
-				dragoff()
 			}
+
+			if ( cell.hasClass('pad') ) {
+				// end pad
+				if ( cell.data('type') == type && !cell.data('drag') && start[0] != cell[0] ) {
+					return dragoff(1, cell)
+				}
+			}
+			dragoff()
 		}
 	}
 
@@ -37,7 +66,7 @@ $(function() {
 			if ( cell.hasClass('pad') ) {
 				if ( !cell.data('drag') ) {
 					type = cell.data('type')
-					start = cell
+					last = start = cell
 					dragIndex++
 
 					log('on: drag')
@@ -51,6 +80,8 @@ $(function() {
 	})
 
 	function dragoff(correctly, end) {
+		last = null
+
 		if ( type ) {
 			log('off: drag')
 			cells.off('mouseover', drag)
