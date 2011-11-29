@@ -2,6 +2,7 @@
 * { margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; text-align: center; }
 html { font-size: 16px; }
+a { color: inherit; }
 
 .help,
 .status {
@@ -30,6 +31,8 @@ html { font-size: 16px; }
 #message.news {
 	font-weight: bold;
 	color: green;
+	font-size: 2em;
+	text-shadow: 0 0 10px lime;
 }
 #message:not(.news) {
 	color: #ccc;
@@ -53,7 +56,7 @@ html { font-size: 16px; }
 	padding: 10px;
 	border-radius: 6px;
 }
-.m a {
+.cell {
 	display: block;
 	float: left;
 	width: 33px;
@@ -62,14 +65,33 @@ html { font-size: 16px; }
 	border-color: #aaa #888 #888 #aaa;
 	border-radius: 4px;
 }
-.m a:hover {
+.cell:not(.done):hover {
 	border-color: #fff;
 }
-.m .line {
+.line {
 	width: 35px;
 	height: 35px;
 	border: 0;
-	border-image: initial;
+}
+
+.pad.done {
+	border-radius: 10px;
+}
+.pad.done.exit-n {
+	border-top-left-radius: 20px 32px;
+	border-top-right-radius: 20px 32px;
+}
+.pad.done.exit-e {
+	border-top-right-radius: 32px 20px;
+	border-bottom-right-radius: 32px 20px;
+}
+.pad.done.exit-s {
+	border-bottom-left-radius: 20px 32px;
+	border-bottom-right-radius: 20px 32px;
+}
+.pad.done.exit-w {
+	border-top-left-radius: 32px 20px;
+	border-bottom-left-radius: 32px 20px;
 }
 
 .pad.type-1 {
@@ -97,127 +119,127 @@ html { font-size: 16px; }
 .line.type-1 {
 	background-position: -300px 0;
 }
-.line.type-1.dir-v {
+.line.done.type-1.dir-v {
 	background-position: 0 0;
 }
-.line.type-1.dir-h {
+.line.done.type-1.dir-h {
 	background-position: -50px 0;
 }
-.line.type-1.dir-sw {
+.line.done.type-1.dir-sw {
 	background-position: -100px 0;
 }
-.line.type-1.dir-nw {
+.line.done.type-1.dir-nw {
 	background-position: -150px 0;
 }
-.line.type-1.dir-ne {
+.line.done.type-1.dir-ne {
 	background-position: -200px 0;
 }
-.line.type-1.dir-se {
+.line.done.type-1.dir-se {
 	background-position: -250px 0;
 }
 .line.type-2 {
 	background-position: -300px -50px;
 }
-.line.type-2.dir-v {
+.line.done.type-2.dir-v {
 	background-position: 0 -50px;
 }
-.line.type-2.dir-h {
+.line.done.type-2.dir-h {
 	background-position: -50px -50px;
 }
-.line.type-2.dir-sw {
+.line.done.type-2.dir-sw {
 	background-position: -100px -50px;
 }
-.line.type-2.dir-nw {
+.line.done.type-2.dir-nw {
 	background-position: -150px -50px;
 }
-.line.type-2.dir-ne {
+.line.done.type-2.dir-ne {
 	background-position: -200px -50px;
 }
-.line.type-2.dir-se {
+.line.done.type-2.dir-se {
 	background-position: -250px -50px;
 }
 .line.type-3 {
 	background-position: -300px -100px;
 }
-.line.type-3.dir-v {
+.line.done.type-3.dir-v {
 	background-position: 0 -100px;
 }
-.line.type-3.dir-h {
+.line.done.type-3.dir-h {
 	background-position: -50px -100px;
 }
-.line.type-3.dir-sw {
+.line.done.type-3.dir-sw {
 	background-position: -100px -100px;
 }
-.line.type-3.dir-nw {
+.line.done.type-3.dir-nw {
 	background-position: -150px -100px;
 }
-.line.type-3.dir-ne {
+.line.done.type-3.dir-ne {
 	background-position: -200px -100px;
 }
-.line.type-3.dir-se {
+.line.done.type-3.dir-se {
 	background-position: -250px -100px;
 }
 .line.type-4 {
 	background-position: -300px -150px;
 }
-.line.type-4.dir-v {
+.line.done.type-4.dir-v {
 	background-position: 0 -150px;
 }
-.line.type-4.dir-h {
+.line.done.type-4.dir-h {
 	background-position: -50px -150px;
 }
-.line.type-4.dir-sw {
+.line.done.type-4.dir-sw {
 	background-position: -100px -150px;
 }
-.line.type-4.dir-nw {
+.line.done.type-4.dir-nw {
 	background-position: -150px -150px;
 }
-.line.type-4.dir-ne {
+.line.done.type-4.dir-ne {
 	background-position: -200px -150px;
 }
-.line.type-4.dir-se {
+.line.done.type-4.dir-se {
 	background-position: -250px -150px;
 }
 .line.type-5 {
 	background-position: -300px -200px;
 }
-.line.type-5.dir-v {
+.line.done.type-5.dir-v {
 	background-position: 0 -200px;
 }
-.line.type-5.dir-h {
+.line.done.type-5.dir-h {
 	background-position: -50px -200px;
 }
-.line.type-5.dir-sw {
+.line.done.type-5.dir-sw {
 	background-position: -100px -200px;
 }
-.line.type-5.dir-nw {
+.line.done.type-5.dir-nw {
 	background-position: -150px -200px;
 }
-.line.type-5.dir-ne {
+.line.done.type-5.dir-ne {
 	background-position: -200px -200px;
 }
-.line.type-5.dir-se {
+.line.done.type-5.dir-se {
 	background-position: -250px -200px;
 }
 .line.type-6 {
 	background-position: -300px -250px;
 }
-.line.type-6.dir-v {
+.line.done.type-6.dir-v {
 	background-position: 0 -250px;
 }
-.line.type-6.dir-h {
+.line.done.type-6.dir-h {
 	background-position: -50px -250px;
 }
-.line.type-6.dir-sw {
+.line.done.type-6.dir-sw {
 	background-position: -100px -250px;
 }
-.line.type-6.dir-nw {
+.line.done.type-6.dir-nw {
 	background-position: -150px -250px;
 }
-.line.type-6.dir-ne {
+.line.done.type-6.dir-ne {
 	background-position: -200px -250px;
 }
-.line.type-6.dir-se {
+.line.done.type-6.dir-se {
 	background-position: -250px -250px;
 }
 

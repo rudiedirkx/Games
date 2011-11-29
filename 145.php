@@ -52,7 +52,7 @@ $arrBoard = $g_arrBoards[$iBoard];
 
 <div class="help">
 	<p>Connect the big dots. Drag a <span title="Yes, I know black and white aren't colors. But I don't care and neither do you.">colored</span> big dot to another big dot of the same color.</p>
-	<p>[<?=$iBoard?>] | <a href="?board=<?=$iBoard+1?>">Next level</a></p>
+	<p>[<?=$iBoard?>] | <a href="?board=<?=$iBoard+1?>">Next board</a></p>
 </div>
 
 <div class="status">
@@ -93,6 +93,7 @@ $arrBoard = $g_arrBoards[$iBoard];
 <img class="preload" src="/images/145-lines.png" alt="preloading lines sprite" />
 
 <script src="//code.jquery.com/jquery-latest.js"></script>
+<script>var LEVEL = <?=$iBoard?></script>
 <script src="/145.js"></script>
 
 </body>
