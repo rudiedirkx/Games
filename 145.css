@@ -52,7 +52,7 @@ a { color: inherit; }
 	box-shadow: 0 0 20px #666;
 	display: inline-block;
 	vertical-align: middle;
-	background-color: #999;
+	background-color: #aaa;
 	padding: 10px;
 	border-radius: 6px;
 }
@@ -62,8 +62,9 @@ a { color: inherit; }
 	width: 33px;
 	height: 33px;
 	border: solid 1px #fff;
-	border-color: #aaa #888 #888 #aaa;
+	border-color: #bbb #888 #888 #bbb;
 	border-radius: 4px;
+	background-color: #999;
 }
 .cell:not(.done):hover {
 	border-color: #fff;
@@ -94,6 +95,10 @@ a { color: inherit; }
 	border-bottom-left-radius: 32px 20px;
 }
 
+.cell.na {
+	border-color: transparent;
+	background-color: #aaa;
+}
 .pad.type-1 {
 	background-color: red;
 }
@@ -114,7 +119,7 @@ a { color: inherit; }
 }
 
 .line {
-	background: url(/images/145-lines.png);
+	background-image: url(/images/145-lines.png);
 }
 .line.type-1 {
 	background-position: -300px 0;

@@ -62,7 +62,7 @@ $(function() {
 
 		if ( cell.hasClass('cell') ) {
 			// valid dragover
-			if ( !cell.hasClass('line') && !cell.hasClass('pad') ) {
+			if ( !cell.hasClass('line') && !cell.hasClass('pad') && !cell.hasClass('na') ) {
 				var o = validOrigin(cell, dragIndex), lo
 				if ( o ) {
 log('drag', o)

@@ -33,6 +33,18 @@ $g_arrBoards = array(1=>
 		'',
 		'',
 	),
+	array(
+		'xx      xx',
+		'xx      xx',
+		'    12',
+		'',
+		'  3    4',
+		'  4    3',
+		'',
+		'    21',
+		'xx      xx',
+		'xx      xx',
+	),
 );
 
 $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] : key($g_arrBoards);
@@ -70,10 +82,13 @@ $arrBoard = $g_arrBoards[$iBoard];
 			echo '<div class="row">' . "\n";
 
 			for ( $x=0; $x<$_cols; $x++ ) {
-				$tile = isset($arrBoard[$y][$x]) ? (int)trim($arrBoard[$y][$x]) : 0;
+				$tile = isset($arrBoard[$y][$x]) ? trim($arrBoard[$y][$x]) : '';
 
 				$classes = array('cell');
-				if ( $tile ) {
+				if ( 'x' == $tile ) {
+					$classes[] = 'na';
+				}
+				else if ( $tile ) {
 					$classes[] = 'pad';
 					$classes[] = 'type-' . $tile;
 				}
