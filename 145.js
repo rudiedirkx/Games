@@ -19,11 +19,16 @@ $(function() {
 	var o2d = {"n": 'v', "s": 'v', "w": 'h', "e": 'h'},
 		o2o = {"n": 's', "s": 'n', "w": 'e', "e": 'w'}
 
+	// board config
+	var singular = 'singular' == TYPE,
+		multiple = 'multiple' == TYPE,
+		symmetric = !singular && !multiple
+log(singular, multiple, symmetric)
 	// env vars
 	var c = $('#map-container'),
 		cells = c.find('a')
 	// process vars
-	var type, dragIndex = 0, start, last
+	var type, dragIndex = 0, start, last, mousedowned
 
 	function validOrigin(cell, dragIndex) {
 		var cx = cell.data('x'),
@@ -71,6 +76,8 @@ log('drag', o)
 						.addClass('line')
 						.addClass('type-' + type)
 						.addClass('dir-' + o2d[o])
+						// temp?
+						//.addClass('done')
 					if ( (lo = last.data('origin')) != o ) {
 						if ( lo ) {
 							last.nodirs().addClass('dir-' + bend(o2o[lo], o))
@@ -79,6 +86,7 @@ log('drag', o)
 							last.addClass('exit-' + o)
 						}
 					}
+					last.addClass('done')
 					last = cell
 					return
 				}
@@ -86,12 +94,12 @@ log('drag', o)
 
 			if ( cell.hasClass('pad') ) {
 				// end pad
-				if ( cell.data('type') == type && !cell.data('drag') && start[0] != cell[0] ) {
-					var o = validOrigin(cell, dragIndex)
+				if ( cell.data('type') == type && !cell.data('drag') && ( singular || start[0] != cell[0] ) ) {
+					var o = validOrigin(cell, dragIndex), lo
 					if ( o ) {
 						cell.addClass('exit-' + o2o[o])
-						if ( last.data('origin') != o ) {
-							last.nodirs().addClass('dir-' + bend(o2o[last.data('origin')], o))
+						if ( (lo = last.data('origin')) != o ) {
+							last.nodirs().addClass('dir-' + bend(o2o[lo], o))
 						}
 						return dragoff(1, cell)
 					}
@@ -104,6 +112,9 @@ log('drag', o)
 	c.on('mousedown', function(e, cell) {
 		e.preventDefault()
 		cell = $(e.target)
+
+		mousedowned = +new Date
+log(mousedowned)
 
 		if ( cell.hasClass('cell') ) {
 			if ( cell.hasClass('pad') ) {
@@ -157,25 +168,29 @@ log('drag', o)
 	c.on('click', function(e) {
 		e.preventDefault()
 
-		cell = $(e.target)
-		if ( cell.hasClass('pad') && cell.data('drag') ) {
-			var di = cell.data('drag')
-			// undo lines
-			c.find('.line.drag-' + di)
-				.nodirs()
-				.removeClass('drag-' + di)
-				.removeClass('type-' + cell.data('type'))
-				.removeClass('line')
-				.removeClass('done')
-			// undo pads
-			c.find('.pad.drag-' + di)
-				.removeClass('drag-' + di)
-				.removeClass('done')
-				.data('drag', null)
-				.removeClass('exit-n')
-				.removeClass('exit-e')
-				.removeClass('exit-s')
-				.removeClass('exit-w')
+		var klicktime = +new Date - mousedowned
+log(klicktime)
+		if ( 250 > klicktime ) {
+			cell = $(e.target)
+			if ( cell.hasClass('pad') && cell.data('drag') ) {
+				var di = cell.data('drag')
+				// undo lines
+				c.find('.line.drag-' + di)
+					.nodirs()
+					.removeClass('drag-' + di)
+					.removeClass('type-' + cell.data('type'))
+					.removeClass('line')
+					.removeClass('done')
+				// undo pads
+				c.find('.pad.drag-' + di)
+					.removeClass('drag-' + di)
+					.removeClass('done')
+					.data('drag', null)
+					.removeClass('exit-n')
+					.removeClass('exit-e')
+					.removeClass('exit-s')
+					.removeClass('exit-w')
+			}
 		}
 	})
 

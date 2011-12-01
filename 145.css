@@ -66,8 +66,11 @@ a { color: inherit; }
 	border-radius: 4px;
 	background-color: #999;
 }
-.cell:not(.done):hover {
+.cell:not(.done):not(.na):hover {
 	border-color: #fff;
+}
+.cell.na {
+	cursor: default;
 }
 .line {
 	width: 35px;

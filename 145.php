@@ -3,6 +3,7 @@
 
 header('Content-type: text/html; charset="utf-8"');
 
+//type = singular | symmetric | multiple
 $g_arrBoards = array(1=>
 	array(
 		'',
@@ -45,6 +46,26 @@ $g_arrBoards = array(1=>
 		'xx      xx',
 		'xx      xx',
 	),
+	array(
+		'type' => 'singular',
+		'map' => array(
+			'',
+			'        x',
+			'        x',
+			'   xxx  x',
+			'   xxx  x',
+			'   xxx  x',
+			' 1 xxx2 x3',
+			'   xxx  x',
+			'   xxx  x',
+			'   xxx  x',
+			'        x',
+			'        x',
+			'',
+		),
+		'max' => 52,
+		'best' => 43,
+	),
 );
 
 $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] : key($g_arrBoards);
@@ -75,14 +96,14 @@ $arrBoard = $g_arrBoards[$iBoard];
 	<div id="map-container" class="m">
 		<?php
 
-		$_cols = max(array_map('strlen', $arrBoard));
-		$_rows = count($arrBoard);
+		$board = board($arrBoard);
+		$map = $board->map;
 
-		for ( $y=0; $y<$_rows; $y++ ) {
+		for ( $y=0; $y<$board->rows; $y++ ) {
 			echo '<div class="row">' . "\n";
 
-			for ( $x=0; $x<$_cols; $x++ ) {
-				$tile = isset($arrBoard[$y][$x]) ? trim($arrBoard[$y][$x]) : '';
+			for ( $x=0; $x<$board->cols; $x++ ) {
+				$tile = isset($map[$y][$x]) ? trim($map[$y][$x]) : '';
 
 				$classes = array('cell');
 				if ( 'x' == $tile ) {
@@ -108,9 +129,31 @@ $arrBoard = $g_arrBoards[$iBoard];
 <img class="preload" src="/images/145-lines.png" alt="preloading lines sprite" />
 
 <script src="//code.jquery.com/jquery-latest.js"></script>
-<script>var LEVEL = <?=$iBoard?></script>
+<script>var LEVEL = <?=$iBoard?>, TYPE = '<?=$board->type?>'</script>
 <script src="/145.js"></script>
 
 </body>
 
 </html>
+<?php
+
+function board( $arrBoard ) {
+	isset($arrBoard['map']) || $arrBoard = array('map' => $arrBoard);
+	$type = strtolower(@$arrBoard['type']);
+	$map = $arrBoard['map'];
+
+	$singular = 'singular' == $type;
+	$multiple = 'multiple' == $type;
+
+	return (object)array(
+		'type' => $type,
+		'map' => $map,
+		'cols' => max(array_map('strlen', $map)),
+		'rows' => count($map),
+		'singular' => $singular,
+		'multiple' => $multiple,
+		'symmetric' => !$singular && !$multiple,
+	);
+}
+
+
