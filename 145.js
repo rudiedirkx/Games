@@ -14,6 +14,15 @@ jQuery.fn.nodirs = function() {
 		.removeClass('dir-se')
 		.removeClass('dir-sw')
 }
+jQuery.fn.noexits = function() {
+	return this
+		.removeClass('exit-n')
+		.removeClass('exit-e')
+		.removeClass('exit-s')
+		.removeClass('exit-w')
+		.removeClass('single-exit')
+		.removeClass('multiple-exit')
+}
 
 $(function() {
 	var o2d = {"n": 'v', "s": 'v', "w": 'h', "e": 'h'},
@@ -83,25 +92,32 @@ log('drag', o)
 							last.nodirs().addClass('dir-' + bend(o2o[lo], o))
 						}
 						else {
-							last.addClass('exit-' + o)
+							last.addClass('single-exit').addClass('exit').addClass('exit-' + o)
 						}
 					}
-					last.addClass('done')
+					!last.hasClass('pad') && last.addClass('done')
 					last = cell
 					return
 				}
 			}
 
+			// drag target (pad)
 			if ( cell.hasClass('pad') ) {
-				// end pad
 				if ( cell.data('type') == type && !cell.data('drag') && ( singular || start[0] != cell[0] ) ) {
-					var o = validOrigin(cell, dragIndex), lo
-					if ( o ) {
-						cell.addClass('exit-' + o2o[o])
-						if ( (lo = last.data('origin')) != o ) {
-							last.nodirs().addClass('dir-' + bend(o2o[lo], o))
+					if ( 1 < $('.drag-' + dragIndex).length ) {
+						var o = validOrigin(cell, dragIndex), lo
+						if ( o ) {
+							if ( cell.hasClass('exit') ) {
+								cell.noexits().addClass('multiple-exit')
+							}
+							else {
+								cell.addClass('single-exit').addClass('exit').addClass('exit-' + o2o[o])
+							}
+							if ( (lo = last.data('origin')) != o ) {
+								last.nodirs().addClass('dir-' + bend(o2o[lo], o))
+							}
+							return dragoff(1, cell)
 						}
-						return dragoff(1, cell)
 					}
 				}
 			}

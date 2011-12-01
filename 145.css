@@ -78,22 +78,22 @@ a { color: inherit; }
 	border: 0;
 }
 
-.pad.done {
-	border-radius: 10px;
+.pad:not(.single-exit).done {
+	border-radius: 15px;
 }
-.pad.done.exit-n {
+.pad.single-exit.done.exit-n {
 	border-top-left-radius: 20px 32px;
 	border-top-right-radius: 20px 32px;
 }
-.pad.done.exit-e {
+.pad.single-exit.done.exit-e {
 	border-top-right-radius: 32px 20px;
 	border-bottom-right-radius: 32px 20px;
 }
-.pad.done.exit-s {
+.pad.single-exit.done.exit-s {
 	border-bottom-left-radius: 20px 32px;
 	border-bottom-right-radius: 20px 32px;
 }
-.pad.done.exit-w {
+.pad.single-exit.done.exit-w {
 	border-top-left-radius: 32px 20px;
 	border-bottom-left-radius: 32px 20px;
 }
