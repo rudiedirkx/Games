@@ -100,7 +100,7 @@ $board = board($arrBoard, $iBoard);
 
 <div class="help">
 	<p>Connect the big dots. Drag a <span title="Yes, I know black and white aren't colors. But I don't care and neither do you.">colored</span> big dot to another big dot of the same color.</p>
-	<p>[<?=$iBoard?>] | <a href="?board=<?=$iBoard+1?>">Next board</a></p>
+	<p>[<?=$iBoard?>] | <a href="?board=<?=$iBoard+1?>">Next board</a> | <a href="/145B">Do it yourself</a></p>
 </div>
 
 <div class="status">
