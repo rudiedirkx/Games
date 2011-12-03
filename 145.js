@@ -78,15 +78,13 @@ log(singular, multiple, symmetric)
 			// valid dragover
 			if ( !cell.hasClass('line') && !cell.hasClass('pad') && !cell.hasClass('na') ) {
 				var o = validOrigin(cell, dragIndex), lo
+log('origin:', o)
 				if ( o ) {
-log('drag', o)
 					cell.data('origin', o)
 						.addClass('drag-' + dragIndex)
 						.addClass('line')
 						.addClass('type-' + type)
 						.addClass('dir-' + o2d[o])
-						// temp?
-						//.addClass('done')
 					if ( (lo = last.data('origin')) != o ) {
 						if ( lo ) {
 							last.nodirs().addClass('dir-' + bend(o2o[lo], o))
@@ -95,7 +93,7 @@ log('drag', o)
 							last.addClass('single-exit').addClass('exit').addClass('exit-' + o)
 						}
 					}
-					!last.hasClass('pad') && last.addClass('done')
+					// !last.hasClass('pad') && last.addClass('done')
 					last = cell
 					return
 				}
@@ -103,21 +101,31 @@ log('drag', o)
 
 			// drag target (pad)
 			if ( cell.hasClass('pad') ) {
-				if ( cell.data('type') == type && !cell.data('drag') && ( singular || start[0] != cell[0] ) ) {
-					if ( 1 < $('.drag-' + dragIndex).length ) {
-						var o = validOrigin(cell, dragIndex), lo
-						if ( o ) {
-							if ( cell.hasClass('exit') ) {
-								cell.noexits().addClass('multiple-exit')
+				if ( cell.data('type') == type && !cell.data('drag') ) {
+					var sameOrigin = start[0] == cell[0],
+						padsLeft = c.find('.pad.type-' + type + ':not(.drag-' + dragIndex + ')').filter(function(i, pad) {
+							return cell[0] != pad && start[0] != pad
+						}).length
+log('sameOrigin:', sameOrigin, ', padsLeft:', padsLeft)
+					if ( ( singular && sameOrigin ) || ( multiple && !sameOrigin && !padsLeft ) || ( symmetric && !sameOrigin ) ) {
+						if ( !singular || 1 < $('.drag-' + dragIndex).length ) {
+							var o = validOrigin(cell, dragIndex), lo
+							if ( o ) {
+								if ( cell.hasClass('exit') ) {
+									cell.noexits().addClass('multiple-exit')
+								}
+								else {
+									cell.addClass('single-exit').addClass('exit').addClass('exit-' + o2o[o])
+								}
+								if ( (lo = last.data('origin')) != o ) {
+									last.nodirs().addClass('dir-' + bend(o2o[lo], o))
+								}
+								return dragoff(1, cell)
 							}
-							else {
-								cell.addClass('single-exit').addClass('exit').addClass('exit-' + o2o[o])
-							}
-							if ( (lo = last.data('origin')) != o ) {
-								last.nodirs().addClass('dir-' + bend(o2o[lo], o))
-							}
-							return dragoff(1, cell)
 						}
+					}
+					if ( multiple && !sameOrigin && padsLeft ) {
+						return
 					}
 				}
 			}
@@ -217,7 +225,7 @@ log(klicktime)
 			if ( cell.hasClass('pad') ) {
 				//log('c.mouseup')
 				if ( type == cell.data('type') && start[0] != cell[0] ) {
-					dragoff(1, cell)
+					//dragoff(1, cell)
 				}
 			}
 		}

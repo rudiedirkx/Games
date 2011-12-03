@@ -66,6 +66,19 @@ $g_arrBoards = array(1=>
 		'max' => 52,
 		'best' => 43,
 	),
+	array(
+		'type' => 'multiple',
+		'map' => array(
+			'        ',
+			' 1    2 ',
+			'        ',
+			'        ',
+			'        ',
+			'  2  1  ',
+			' 1    2 ',
+			'        ',
+		),
+	),
 );
 
 $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] : key($g_arrBoards);
