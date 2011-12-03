@@ -84,6 +84,8 @@ $g_arrBoards = array(1=>
 $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] : key($g_arrBoards);
 $arrBoard = $g_arrBoards[$iBoard];
 
+$board = board($arrBoard, $iBoard);
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -109,7 +111,6 @@ $arrBoard = $g_arrBoards[$iBoard];
 	<div id="map-container" class="m">
 		<?php
 
-		$board = board($arrBoard);
 		$map = $board->map;
 
 		for ( $y=0; $y<$board->rows; $y++ ) {
@@ -142,7 +143,7 @@ $arrBoard = $g_arrBoards[$iBoard];
 <img class="preload" src="/images/145-lines.png" alt="preloading lines sprite" />
 
 <script src="//code.jquery.com/jquery-latest.js"></script>
-<script>var LEVEL = <?=$iBoard?>, TYPE = '<?=$board->type?>'</script>
+<script>var LEVEL = <?=(int)$iBoard?>, TYPE = '<?=$board->type?>'</script>
 <script src="/145.js"></script>
 
 </body>
@@ -150,8 +151,14 @@ $arrBoard = $g_arrBoards[$iBoard];
 </html>
 <?php
 
-function board( $arrBoard ) {
+function board( $arrBoard, &$iBoard = null ) {
 	isset($arrBoard['map']) || $arrBoard = array('map' => $arrBoard);
+
+	if ( isset($_GET['type'], $_GET['map']) ) {
+		$arrBoard = $_GET;
+		$iBoard = 'CUSTOM';
+	}
+
 	$type = strtolower(@$arrBoard['type']);
 	$map = $arrBoard['map'];
 

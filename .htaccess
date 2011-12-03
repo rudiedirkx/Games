@@ -1,5 +1,5 @@
 RewriteEngine on
-RewriteRule ^([0-9]{3}[a-f]{0,1})$ $1.php
+RewriteRule ^([0-9]{3}[Ba-f]{0,1})$ $1.php
 RewriteRule ^inc.cls.(.+).phps source.php?$1
 
 AddType text/cache-manifest .manifest

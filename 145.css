@@ -61,6 +61,9 @@ a { color: inherit; }
 	float: left;
 	width: 33px;
 	height: 33px;
+	line-height: 33px;
+	font-size: 23px;
+	text-align: center;
 	border: solid 1px #fff;
 	border-color: #bbb #888 #888 #bbb;
 	border-radius: 4px;
@@ -113,12 +116,14 @@ a { color: inherit; }
 }
 .pad.type-4 {
 	background-color: black;
+	color: #fff;
 }
 .pad.type-5 {
 	background-color: #0d0;
 }
 .pad.type-6 {
 	background-color: blue;
+	color: #fff;
 }
 
 .line {
