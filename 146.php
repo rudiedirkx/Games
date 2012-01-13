@@ -562,9 +562,8 @@ th.clue {
 	font-size			: 16px;
 }
 </style>
-<script type="text/javascript" src="general_1_2_4.js"></script>
-<script type="text/javascript">
-<!--//
+<script src="/js/mootools_1_11.js"></script>
+<script>
 var g_c = <?php echo $c; ?>, g_r = <?php echo $r; ?>, g_l = <?php echo $iGame; ?>, g_max = <?php echo max($ak=array_keys($g_arrBoards[$szDifficulty])); ?>, g_min = <?php echo min($ak=array_keys($g_arrBoards[$szDifficulty])); ?>;
 
 (new Image()).src = 'images/146_horbor_not.bmp';
@@ -775,7 +774,6 @@ function hiliteNextBorder() {
 	}
 	return false;
 }
-//-->
 </script>
 </head>
 
