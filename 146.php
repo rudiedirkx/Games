@@ -507,6 +507,9 @@ $g_arrBoards = array(
 );
 
 
+$done = isset($_COOKIE['g146']) ? explode(',', $_COOKIE['g146']) : array();
+
+
 $iGame = isset($_GET['lvl']) && ( isset($g_arrBoards['easy'][$_GET['lvl']]) || isset($g_arrBoards['normal'][$_GET['lvl']]) || isset($g_arrBoards['hard'][$_GET['lvl']]) ) ? (int)$_GET['lvl'] : 101;
 $szDifficulty = !isset($_GET['lvl'])  ? 'easy' : ( isset($g_arrBoards['normal'][$_GET['lvl']]) ? 'normal' : ( isset($g_arrBoards['hard'][$_GET['lvl']]) ? 'hard' : 'easy' ) );
 $arrGame = (array)$g_arrBoards[$szDifficulty][$iGame];
@@ -526,13 +529,13 @@ $h = 40 + ($r+1)*$b + $r*$t;	// total table height
 
 <head>
 <title>SLITHER | LEVEL <?php echo str_pad((string)$iGame,3,'0',STR_PAD_LEFT).' '.strtoupper($szDifficulty); ?></title>
-<style type="text/css">
-body, html, form {
-	padding				: 0;
-	margin				: 0;
+<style>
+* {
+	padding: 0;
+	margin: 0;
 }
-body {
-	overflow			: auto;
+html {
+	background: #bde4a3;
 }
 td, table {
 	border				: 0;
@@ -565,6 +568,8 @@ th.clue {
 <script src="/js/mootools_1_11.js"></script>
 <script>
 var g_c = <?php echo $c; ?>, g_r = <?php echo $r; ?>, g_l = <?php echo $iGame; ?>, g_max = <?php echo max($ak=array_keys($g_arrBoards[$szDifficulty])); ?>, g_min = <?php echo min($ak=array_keys($g_arrBoards[$szDifficulty])); ?>;
+
+var done = [];
 
 (new Image()).src = 'images/146_horbor_not.bmp';
 (new Image()).src = 'images/146_verbor_not.bmp';
@@ -774,20 +779,35 @@ function hiliteNextBorder() {
 	}
 	return false;
 }
+function levelDone() {
+	if ( !done.contains(g_l) ) {
+		done.push(g_l);
+		Cookie.set('g146', done.join(','));
+	}
+	$('notices').html('<a href="?lvl=' + (g_l+1) + '">Continue to level ' + (g_l+1) + '...</a>');
+}
 </script>
 </head>
 
-<body background="images/146_bg.bmp">
+<body>
 
-<form style="margin:10px;"><select onchange="if(''!=this.value&&<?php echo $iGame; ?>!=this.value){document.location='?lvl='+this.value;}">
-	<optgroup label="-- Select a level!"></optgroup>
-<?php foreach ( $g_arrBoards AS $szD => $arrBoards ) { echo '	<optgroup label="'.ucfirst(strtolower($szD)).'">'."\n"; foreach ( $arrBoards AS $iL => $arrL ) { echo '	<option value="'.$iL.'"'.( $iGame == $iL ? ' selected>-&gt; ' : '>' ).'Level '.str_pad((string)$iL,3,'0',STR_PAD_LEFT).( !empty($_COOKIE['l_'.$iL]) ? ' (done)' : '' ).'</option>'."\n"; } echo "	</optgroup>\n"; } ?>
-</select></form>
+<form style="margin:10px;">
+	<select onchange="if(''!=this.value&&<?php echo $iGame; ?>!=this.value){document.location='?lvl='+this.value;}">
+		<optgroup label="-- Select a level!"></optgroup>
+		<?foreach( $g_arrBoards AS $szD => $arrBoards ):?>
+			<optgroup label="<?=ucfirst(strtolower($szD))?>">
+			<?foreach( $arrBoards AS $iL => $arrL ):?>
+				<option value="<?=$iL?>"<?if( $iGame == $iL ):?>selected>&gt; <?else:?>><?endif?>Level <?=$iL?><?if( in_array($iL, $done) ):?> (done)<?endif?></option>
+			<?endforeach?>
+			</optgroup>
+		<?endforeach?>
+	</select>
+</form>
 
 <div id="slither_div" style="margin-left:-<?php echo $w/2; ?>px;position:absolute;left:50%;margin-top:-<?php echo ($h+80)/2; ?>px;top:50%;">
-<table border="0" cellpadding="0" cellspacing="0">
+<table border="0" cellpadding="0" cellspacing="0" width=160>
 <thead><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>" id="notices">&nbsp;</th></tr></thead>
-<tfoot><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>"><input type="button" value="check" onclick="g_bHB=false;if(checkClues()){this.value='... or retry';this.onclick=function(){document.location.reload();};hiliteBorders();setCookie('l_'+g_l, true);$('notices').innerHTML = '<a href=\'?lvl='+( g_l+1 > g_max ? g_min : g_l+1 )+'\'>Continue to level '+( g_l+1 > g_max ? g_min : g_l+1 )+'...</a>';}else{alert('Nope... :(');}" /></th></tr></tfoot>
+<tfoot><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>"><input type="button" value="check" onclick="g_bHB=false;if(checkClues()){this.value='... or retry';this.onclick=function(){document.location.reload();};hiliteBorders();levelDone();}else{alert('Nope... :(');}" /></th></tr></tfoot>
 <tbody id="slither"><?php
 echo $szRow = '<tr><td class="dot" on="0"></td>'.str_repeat('<td class="horbor"></td><td class="dot" on="0"></td>', $c).'</tr>';
 for ( $i=0; $i<$r; $i++ )
