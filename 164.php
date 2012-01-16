@@ -8,6 +8,16 @@ $maps = array(1 =>
 		array(0, 5),
 		array(5, 5),
 	),
+	array(
+		array(0, 0),
+		array(5, 5),
+	),
+	array(
+		array(0, 0),
+		array(1, 0),
+		array(4, 5),
+		array(5, 5),
+	),
 );
 
 $g_w = $g_h = 6;
@@ -244,13 +254,11 @@ function loadMap(m) {
 	}
 }
 
-// env
-var grid = document.getElementById('grid'),
-	cells = [].slice.call(grid.getElementsByClassName('cell')).split(6);
-
 // game
-var lastMap = 1,
+var grid = document.getElementById('grid'),
+	lastMap = 1,
 	started = false,
+	hasReset = false,
 	lastClick,
 	lastHilite;
 
@@ -274,6 +282,17 @@ var lastMap = 1,
 
 			// show neighbours
 			this.showNeighbours();
+		}
+
+		else if ( this.classList.contains('start') ) {
+			// notify once
+			if ( !hasReset ) {
+				hasReset = true;
+				//alert('Resetting...');
+			}
+
+			// reset
+			loadMap(lastMap);
 		}
 
 		else if ( this.classList.contains('neighbour') ) {
