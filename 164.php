@@ -1,26 +1,42 @@
 <?php
 
 $maps = array(1 =>
+	array(),
 	array(
-		array(3, 5),
+		array(2, 4),
 	),
 	array(
-		array(0, 5),
-		array(5, 5),
+		array(4, 4),
+		array(3, 1),
 	),
 	array(
-		array(0, 0),
-		array(5, 5),
+		array(2, 2),
+		array(4, 2),
 	),
 	array(
-		array(0, 0),
-		array(1, 0),
-		array(4, 5),
-		array(5, 5),
+		array(1, 1),
+		array(3, 1),
+		array(1, 3),
+		array(2, 3),
+		array(4, 3),
+		array(4, 4),
+	),
+	array(
+		array(4, 0),
+		array(3, 2),
+		array(0, 3),
+		array(2, 4),
+	),
+	array(
+		array(2, 0),
+		array(3, 0),
+		array(4, 0),
+		array(0, 4),
+		array(1, 4),
 	),
 );
 
-$g_w = $g_h = 6;
+$g_w = $g_h = 5;
 
 ?>
 <!doctype html>
@@ -49,12 +65,15 @@ $g_w = $g_h = 6;
 	text-decoration: none;
 	color: green;
 }
+.maps a:target {
+	font-weight: bold;
+}
 .maps a:active,
 .maps a:focus {
 	color: red;
 }
 .grid {
-	width: 300px;
+	width: 250px;
 	margin: 0 auto;
 }
 .cell {
@@ -227,7 +246,7 @@ NodeList.prototype.clearClasses = Array.prototype.clearClasses;
 // config
 var maps = <?=json_encode($maps)?>, mapsel = document.getElementById('maps');
 for ( var m in maps ) {
-	simple.last(mapsel, simple('li', [simple('a', {"data-map": m, "href": '#'}, {"click": function(e) {
+	simple.last(mapsel, simple('li', [simple('a', {"id": 'm'+m, "data-map": m, "href": '#'}, {"click": function(e) {
 		e.preventDefault();
 		loadMap(this.dataset.map);
 	}}, ''+m)]));
@@ -236,6 +255,7 @@ for ( var m in maps ) {
 function loadMap(m) {
 	var map = maps[m];
 	lastMap = m;
+	location.hash = 'm' + m;
 
 	// reset grid
 	grid.all('.cell').clearClasses('cell');
