@@ -72,6 +72,7 @@ $g_arrGames = array(
 	array(161,		'Bioshock hacker',						'From the game: hack a machine'),
 	array(162,		'Marbles',								'My very own marbles2.com ripoff'),
 	array(163,		'Entangled',							'Entangled ripoff: less HTML5, more CSS3 and JS'),
+	array(164,		'Machinarium I',						'Stole a fun game from Machinarium'),
 	array('mpoker/poker',	'JANUS POKER',				'Multiplayer Texas Hold\'em BY Janus'),
 	array('102c_test_field_analysis', 'MINESWEEPER TEST',	'A minesweeper test in JS'),
 	array('create_minesweeper_field', 'CREATE MINESWEEPER FIELD FOR `MINESWEEPER TEST`', 'A minesweeper test in JS'),

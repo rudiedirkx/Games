@@ -47,6 +47,10 @@ $g_w = $g_h = 5;
 <meta name="viewport" content="width=device-width" />
 <title>Machinarium I</title>
 <style>
+html, body {
+	margin: 0;
+	padding: 0;
+}
 .maps {
 	height: 1.5em;
 	line-height: 1.5em;
@@ -75,14 +79,18 @@ $g_w = $g_h = 5;
 	color: red;
 }
 .grid {
-	width: 250px;
+	width: 300px;
+	height: 300px;
 	margin: 0 auto;
 }
 .cell {
 	display: block;
 	float: left;
-	width: 48px;
-	height: 48px;
+	width: 20%;
+	height: 20%;
+	box-sizing: border-box;
+	box-sizing: -webkit-border-box;
+	-webkit-box-sizing: border-box;
 	background: #ddd;
 	border: solid 1px #000;
 	border-color: #eee #ccc #ccc #eee;
@@ -133,22 +141,22 @@ $g_w = $g_h = 5;
 
 <body>
 
-<ul class=maps id=maps></ul>
-
 <div class="grid" id="grid">
 <?php
 for ( $y=0; $y<$g_h; $y++ ) {
-	echo '<div class="row">';
+	//echo '<div class="row">';
 	for ( $x=0; $x<$g_w; $x++ ) {
 		echo '<a data-x="'.$x.'" data-y="'.$y.'" class="cell"></a>';
 	}
-	echo '</div>';
+	//echo '</div>';
 }
 ?>
 </div>
 
+<ul class=maps id=maps></ul>
+
 <!-- script src="http://code.jquery.com/jquery-latest.js"></script -->
-<script src="https://raw.github.com/rudiedirkx/simpledom/master/simpledom.js"></script>
+<script src="simpledom.js"></script>
 <script>
 function extend(C, m) {
 	for ( var x in m ) {
@@ -247,12 +255,6 @@ NodeList.prototype.clearClasses = Array.prototype.clearClasses;
 
 // config
 var maps = <?=json_encode($maps)?>, mapsel = document.getElementById('maps');
-for ( var m in maps ) {
-	simple.last(mapsel, simple('li', [simple('a', {"id": 'm'+m, "data-map": m, "href": '#'}, {"click": function(e) {
-		e.preventDefault();
-		loadMap(this.dataset.map);
-	}}, ''+m)]));
-}
 
 function loadMap(m) {
 	var map = maps[m];
@@ -285,7 +287,9 @@ var grid = document.getElementById('grid'),
 	lastHilite;
 
 // process
-//window.onload = function(e) {
+window.onload = function(e) {
+//	grid.style.width = grid.style.height = Math.min(window.innerHeight, window.innerWidth, 400) + 'px';
+
 	// load map
 	loadMap(lastMap);
 
@@ -350,7 +354,15 @@ var grid = document.getElementById('grid'),
 			}
 		}
 	});
-//}
+
+	// maps links
+	for ( var m in maps ) {
+		simple.last(mapsel, simple('li', [simple('a', {"id": 'm'+m, "data-map": m, "href": '#'}, {"click": function(e) {
+			e.preventDefault();
+			loadMap(this.dataset.map);
+		}}, ''+m)]));
+	}
+}
 </script>
 </body>
 
