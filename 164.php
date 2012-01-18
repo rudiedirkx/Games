@@ -43,6 +43,8 @@ $g_w = $g_h = 5;
 <html>
 
 <head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width" />
 <title>Machinarium I</title>
 <style>
 .maps {
