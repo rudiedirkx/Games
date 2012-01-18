@@ -82,6 +82,7 @@ html, body {
 	width: 300px;
 	height: 300px;
 	margin: 0 auto;
+	-webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 .cell {
 	display: block;
@@ -91,40 +92,43 @@ html, body {
 	box-sizing: border-box;
 	box-sizing: -webkit-border-box;
 	-webkit-box-sizing: border-box;
-	background: #ddd;
+	background-color: #ddd;
 	border: solid 1px #000;
 	border-color: #eee #ccc #ccc #eee;
 	border-radius: 3px;
 	cursor: pointer;
 }
 .cell.had {
-	background: yellow;
+	background-color: yellow;
 }
 .cell.not {
-	background: red;
+	background-color: red;
 }
 .cell.start {
-	background: green;
+	background-color: green;
 }
-.cell.neighbour:after {
-	content: "";
-	display: block;
-	width: 100%;
-	height: 100%;
-	background: url(http://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Right_arrow.svg/434px-Right_arrow.svg.png) center center no-repeat;
+.cell.end {
+	background-color: blue;
+}
+.cell.neighbour {
+	background-image: url(images/right.png);
+	background-position: center center;
+	background-repeat: no-repeat;
 	background-size: cover;
+	-webkit-background-size: cover;
+	border-color: #ddd;
 }
-.cell.left:after {
+.neighbour.left {
 	-webkit-transform: rotate(180deg);
 	-moz-transform: rotate(180deg);
 	-o-transform: rotate(180deg);
 }
-.cell.down:after {
+.neighbour.down {
 	-webkit-transform: rotate(90deg);
 	-moz-transform: rotate(90deg);
 	-o-transform: rotate(90deg);
 }
-.cell.up:after {
+.neighbour.up {
 	-webkit-transform: rotate(-90deg);
 	-moz-transform: rotate(-90deg);
 	-o-transform: rotate(-90deg);
@@ -157,6 +161,7 @@ for ( $y=0; $y<$g_h; $y++ ) {
 
 <!-- script src="http://code.jquery.com/jquery-latest.js"></script -->
 <script src="simpledom.js"></script>
+<script src="classlist.js"></script>
 <script>
 function extend(C, m) {
 	for ( var x in m ) {
@@ -204,7 +209,7 @@ extend(HTMLElement, {
 		left: [-1, 0]
 	},
 	neighbours: function() {
-		var x = ~~this.dataset.x, y = ~~this.dataset.y;
+		var x = ~~this.data('x'), y = ~~this.data('y');
 		var dirs = this.dirs, el, els = {};
 		for ( var d in dirs ) {
 			var nx = x+dirs[d][0], ny = y+dirs[d][1];
@@ -225,7 +230,7 @@ extend(HTMLElement, {
 		return this;
 	},
 	next: function(dir) {
-		var x = ~~this.dataset.x, y = ~~this.dataset.y, d = this.dirs[dir];
+		var x = ~~this.data('x'), y = ~~this.data('y'), d = this.dirs[dir];
 		var nx = x+d[0], ny = y+d[1];
 		return grid.querySelector('.cell[data-x="' + nx + '"][data-y="' + ny + '"]');
 	},
@@ -245,6 +250,9 @@ extend(HTMLElement, {
 	},
 	available: function() {
 		return !this.classList.contains('had') && !this.classList.contains('not');
+	},
+	data: function(name) {
+		return this.getAttribute('data-' + name);
 	}
 });
 NodeList.prototype.each = Array.prototype.forEach;
@@ -280,7 +288,7 @@ function loadMap(m) {
 
 // game
 var grid = document.getElementById('grid'),
-	lastMap = 1,
+	lastMap = (location.hash.match(/^\#m(\d+)$/) || [0,1])[1],
 	started = false,
 	hasReset = false,
 	lastClick,
@@ -288,13 +296,14 @@ var grid = document.getElementById('grid'),
 
 // process
 window.onload = function(e) {
-//	grid.style.width = grid.style.height = Math.min(window.innerHeight, window.innerWidth, 400) + 'px';
+	grid.style.width = grid.style.height = Math.min(window.innerHeight, window.innerWidth, 400) + 'px';
 
 	// load map
 	loadMap(lastMap);
 
 	// attach listeners
-	grid.on('click', 'cell', function(e) {
+	var evType = 'ontouchstart' in document.documentElement ? 'touchstart' : 'mousedown';
+	grid.on(evType, 'cell', function(e) {
 		e.preventDefault();
 
 		if ( !started ) {
@@ -340,6 +349,7 @@ window.onload = function(e) {
 				if ( !el || !el.available() ) {
 					// last -- show neighbours
 					if ( !lel.showNeighbours() ) {
+						lel.classList.add('end');
 						var win = !grid.all('.cell:not(.had):not(.not)').length;
 						if ( win ) {
 							alert("YOU WIN!\n\nGo for next, you rule!");
@@ -359,7 +369,7 @@ window.onload = function(e) {
 	for ( var m in maps ) {
 		simple.last(mapsel, simple('li', [simple('a', {"id": 'm'+m, "data-map": m, "href": '#'}, {"click": function(e) {
 			e.preventDefault();
-			loadMap(this.dataset.map);
+			loadMap(this.data('map'));
 		}}, ''+m)]));
 	}
 }
