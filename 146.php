@@ -507,7 +507,7 @@ $g_arrBoards = array(
 );
 
 
-$done = isset($_COOKIE['g146']) ? explode(',', $_COOKIE['g146']) : array();
+$done = isset($_COOKIE['g146']) ? array_map('intval', explode(',', $_COOKIE['g146'])) : array();
 
 
 $iGame = isset($_GET['lvl']) && ( isset($g_arrBoards['easy'][$_GET['lvl']]) || isset($g_arrBoards['normal'][$_GET['lvl']]) || isset($g_arrBoards['hard'][$_GET['lvl']]) ) ? (int)$_GET['lvl'] : 101;
@@ -564,12 +564,15 @@ th.clue {
 	font-family			: arial 'courier new';
 	font-size			: 16px;
 }
+button {
+	padding: 5px 12px;
+}
 </style>
 <script src="/js/mootools_1_11.js"></script>
 <script>
 var g_c = <?php echo $c; ?>, g_r = <?php echo $r; ?>, g_l = <?php echo $iGame; ?>, g_max = <?php echo max($ak=array_keys($g_arrBoards[$szDifficulty])); ?>, g_min = <?php echo min($ak=array_keys($g_arrBoards[$szDifficulty])); ?>;
 
-var done = [];
+var done = <?=json_encode($done)?>;
 
 (new Image()).src = 'images/146_horbor_not.bmp';
 (new Image()).src = 'images/146_verbor_not.bmp';
@@ -786,6 +789,18 @@ function levelDone() {
 	}
 	$('notices').html('<a href="?lvl=' + (g_l+1) + '">Continue to level ' + (g_l+1) + '...</a>');
 }
+function checkDone(btn) {
+	g_bHB = false;
+	if ( checkClues() ) {
+		this.innerText = 'WOOHOO';
+		this.onclick = null;
+		hiliteBorders();
+		levelDone();
+	}
+	else {
+		alert("That's not it... One link. White numbers. A slithering snake.");
+	}
+}
 </script>
 </head>
 
@@ -807,7 +822,7 @@ function levelDone() {
 <div id="slither_div" style="margin-left:-<?php echo $w/2; ?>px;position:absolute;left:50%;margin-top:-<?php echo ($h+80)/2; ?>px;top:50%;">
 <table border="0" cellpadding="0" cellspacing="0" width=160>
 <thead><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>" id="notices">&nbsp;</th></tr></thead>
-<tfoot><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>"><input type="button" value="check" onclick="g_bHB=false;if(checkClues()){this.value='... or retry';this.onclick=function(){document.location.reload();};hiliteBorders();levelDone();}else{alert('Nope... :(');}" /></th></tr></tfoot>
+<tfoot><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>"><button onclick="checkDone(this);">check</button></th></tr></tfoot>
 <tbody id="slither"><?php
 echo $szRow = '<tr><td class="dot" on="0"></td>'.str_repeat('<td class="horbor"></td><td class="dot" on="0"></td>', $c).'</tr>';
 for ( $i=0; $i<$r; $i++ )
@@ -824,9 +839,11 @@ for ( $i=0; $i<$r; $i++ )
 </table>
 </div>
 
-<script type="text/javascript">
-<!--//
-var g_szTable = $('slither_div').innerHTML, init = function() {
+<script>
+var evType = 'ontouchstart' in document.documentElement ? 'touchstart' : 'mousedown',
+	g_szTable = $('slither_div').innerHTML;
+
+function init() {
 	$('slither_div').oncontextmenu = function() {
 		return false;
 	};
@@ -851,16 +868,8 @@ var g_szTable = $('slither_div').innerHTML, init = function() {
 				return false;
 			};
 		}
-//		else if ( 'dot' == t[i].className ) {
-//			t[i].oncontextmenu = function() {
-//				alert(this.getAttribute('on'));
-//				return false;
-//			};
-//		}
 	}
-	document.onclick = function(){return false;};
-	document.oncontextmenu = function(){return false;};
-};
+}
 document.onkeydown = function(e) {
 	if ( !e && window.event ) {
 		e = window.event;
@@ -875,7 +884,8 @@ document.onkeydown = function(e) {
 }
 init();
 document.forms[0].reset();
-//-->
+document.ondragstart = function(e){ return false; };
+document.onmousedown = function(e){ return false; };
 </script>
 
 </body>
