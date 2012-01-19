@@ -307,16 +307,18 @@ window.onload = function(e) {
 		e.preventDefault();
 
 		if ( !started ) {
-			// this = start
-			this.classList.add('had');
-			this.classList.add('start');
-			started = true;
+			if ( this.available() ) {
+				// this = start
+				this.classList.add('had');
+				this.classList.add('start');
+				started = true;
 
-			// this = clicked = hilited
-			lastClicked = lastHilite = this;
+				// this = clicked = hilited
+				lastClicked = lastHilite = this;
 
-			// show neighbours
-			this.showNeighbours();
+				// show neighbours
+				this.showNeighbours();
+			}
 		}
 
 		else if ( this.classList.contains('start') ) {
