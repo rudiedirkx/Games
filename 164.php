@@ -354,10 +354,10 @@ window.onload = function(e) {
 						lel.classList.add('end');
 						var win = !grid.all('.cell:not(.had):not(.not)').length;
 						if ( win ) {
-							alert("YOU WIN!\n\nGo for next, you rule!");
+							alert("YOU WIN!");
 						}
 						else {
-							alert("FAIL!\n\nYou can try again, but you suck...");
+							alert("FAIL!");
 							loadMap(lastMap);
 						}
 					}
