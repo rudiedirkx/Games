@@ -2,29 +2,12 @@
 // ABALONE
 
 session_start();
-define( 'S_NAME', 'abalone' );
+define('S_NAME', 'abalone');
 
-require_once('inc.cls.json.php');
-require_once('connect.php');
-
-function db_select( $f_tbl, $f_where = '1' ) {
-	$szQuery = "SELECT * FROM ".$f_tbl." WHERE ".$f_where.";";
-	$q = mysql_query($szQuery) or die(mysql_error());
-	$a = array();
-	while ( $r = mysql_fetch_assoc($q) ) {
-		$a[] = $r;
-	}
-	return $a;
-}
-function db_count( $f_tbl, $f_where = '1' ) {
-	$q = mysql_query('SELECT COUNT(1) FROM '.$f_tbl.' WHERE '.$f_where.';') or die(mysql_error());
-	return mysql_result($q, 0);
-}
-function db_delete($f_tbl, $f_where) {
-	return mysql_query('DELETE FROM '.$f_tbl.' WHERE '.$f_where.';');
-}
-function db_insert($f_tbl, $f_insert) {
-	return mysql_query('INSERT INTO '.$f_tbl.' ('.implode(',', array_keys($f_insert)).') VALUES (\''.implode("','", array_map('addslashes', $f_insert)).'\')');
+require '../inc/db/db_mysql.php';
+$db = db_mysql::open(array('user' => 'usager', 'pass' => 'usager', 'db' => 'games'));
+if ( !$db ) {
+	exit('No connecto!');
 }
 
 
@@ -34,30 +17,37 @@ if ( empty($_SESSION[S_NAME]['player_id']) ) {
 $_player = $_SESSION[S_NAME]['player_id'];
 
 
-$arrPlayer = db_select('abalone_players', "id = ".(int)$_player."");
-if ( 0 == count($arrPlayer) ) { exit('Invalid login'); }
-$arrPlayer = $arrPlayer[0];
-$arrPlayer['balls_left'] = db_count('abalone_balls', 'player_id = '.$arrPlayer['id']);
+$objPlayer = $db->select('abalone_players', array('id' => $_player), null, true);
+if ( !$objPlayer ) {
+	exit('Invalid login');
+}
+$objPlayer->balls_left = $db->count('abalone_balls', array('player_id' => $objPlayer->id));
+#print_r($objPlayer);
 
-$arrGame = db_select('abalone_games', "id = ".(int)$arrPlayer['game_id']."");
-$arrGame = $arrGame[0];
+$objGame = $db->select('abalone_games', array('id' => $objPlayer->game_id), null, true);
+#print_r($objGame);
 
-$arrOpponent = db_select('abalone_players', "game_id = ".(int)$arrPlayer['game_id']." AND id <> ".(int)$arrPlayer['id']."");
-$arrOpponent = $arrOpponent[0];
-$arrOpponent['balls_left'] = db_count('abalone_balls', 'player_id = '.$arrOpponent['id']);
+$objOpponent = $db->select('abalone_players', 'game_id = ? AND id <> ?', array($objPlayer->game_id, $objPlayer->id), true);
+$objOpponent->balls_left = $db->count('abalone_balls', array('player_id' => $objOpponent->id));
+#print_r($objOpponent);
 
-$arrPlayerByColor = array( $arrPlayer['color'] => $arrPlayer['id'], $arrOpponent['color'] => $arrOpponent['id'] );
+$arrPlayerByColor = array(
+	$objPlayer->color => $objPlayer->id,
+	$objOpponent->color => $objOpponent->id,
+);
+#print_r($arrPlayerByColor);
 
 
 // FETCH MAP
 if ( isset($_POST['fetch_map']) ) {
-//	sleep(1);
-	$arrAllBalls = db_select('abalone_players p, abalone_balls b', 'b.player_id = p.id AND p.id IN ('.$arrPlayer['id'].','.$arrOpponent['id'].')');
+	$arrAllBalls = $db->fetch('SELECT coord_1, coord_2, color FROM abalone_players p, abalone_balls b WHERE b.player_id = p.id AND p.id IN (?)', array($arrPlayerByColor));
+
 	$arrBalls = array();
 	foreach ( $arrAllBalls AS $b ) {
-		$arrBalls[] = array((int)$b['x'], (int)$b['y'], $b['color']);
+		$arrBalls[] = array((int)$b['coord_1'], (int)$b['coord_2'], $b['color']);
 	}
-	exit(json::encode($arrBalls));
+
+	exit(json_encode($arrBalls));
 }
 
 // MOVE
@@ -76,6 +66,7 @@ else if ( isset($_POST['changes']) ) {
 	exit('OK');
 }
 
+// SWITCH PLAYER
 else if ( isset($_GET['player_id']) ) {
 	$_SESSION[S_NAME]['player_id'] = (int)$_GET['player_id'];
 	header('Location: 143.php');
@@ -104,23 +95,17 @@ else if ( isset($_GET['player_id']) ) {
 </tr>
 <tr class="b">
 	<th><img src="/icons/right.gif" /></th>
-	<td><span><?php echo ucfirst($arrPlayer['color']); ?> (<?php echo $arrPlayer['balls_left']; ?>)</span></td>
+	<td><span><?php echo ucfirst($objPlayer->color); ?> (<?php echo $objPlayer->balls_left; ?>)</span></td>
 	<td>:</td>
-	<td><?php echo ucfirst($arrPlayer['username']); ?></td>
-	<th><img id="<?php echo $arrPlayer['color']; ?>_turn" src="/icons/<?php echo $arrGame['turn'] == $arrPlayer['color'] ? 'left' : 'blank'; ?>.gif" /></th>
+	<td><?php echo ucfirst($objPlayer->username); ?></td>
+	<th><img id="<?php echo $objPlayer->color; ?>_turn" src="/icons/<?php echo $objGame->turn == $objPlayer->color ? 'left' : 'blank'; ?>.gif" /></th>
 </tr>
 <tr>
 	<th><img src="/icons/blank.gif" /></th>
-	<td><span><?php echo ucfirst($arrOpponent['color']); ?> (<?php echo $arrOpponent['balls_left']; ?>)</span></td>
+	<td><span><?php echo ucfirst($objOpponent->color); ?> (<?php echo $objOpponent->balls_left; ?>)</span></td>
 	<td>:</td>
-	<td><?php echo ucfirst($arrOpponent['username']); ?></td>
-	<th><img id="<?php echo $arrOpponent['color']; ?>_turn" src="/icons/<?php echo $arrGame['turn'] == $arrOpponent['color'] ? 'left' : 'blank'; ?>.gif" /></th>
-</tr>
-<tr>
-	<td colspan="5" style="padding-top:5px;" align="center"><input type="button" value="Unselect All" onclick="return objAbalone.unselectAllBalls();" /></td>
-</tr>
-<tr>
-	<td align="center" style="padding:5px;" colspan="5"><img usemap="#dirmap" src="images/143_dir_map.gif" /></td>
+	<td><?php echo ucfirst($objOpponent->username); ?></td>
+	<th><img id="<?php echo $objOpponent->color; ?>_turn" src="/icons/<?php echo $objGame->turn == $objOpponent->color ? 'left' : 'blank'; ?>.gif" /></th>
 </tr>
 </table>
 </div>
@@ -131,26 +116,16 @@ else if ( isset($_GET['player_id']) ) {
 } ?>
 </div>
 
-<!--<map id="dirmap" name="dirmap">
-	<area shape="rect" coords="46,12,93,53" href="#topleft" onclick="return false;" title="topleft" />
-	<area shape="rect" coords="112,135,161,177" href="#bottomright" onclick="return false;" title="bottomright" />
-	<area shape="rect" coords="116,12,162,53" href="#topright" onclick="return false;" title="topright" />
-	<area shape="rect" coords="45,135,91,177" href="#bottomleft" onclick="return false;" title="bottomleft" />
-	<area shape="rect" coords="161,74,196,115" href="#right" onclick="return false;" title="right" />
-	<area shape="rect" coords="11,75,45,115" href="#left" onclick="return false;" title="left" />
-</map>-->
-
-<script type="text/javascript">
-<!--//
-var objAbalone = new Abalone('<?php echo $arrPlayer['color']; ?>', '<?php echo $arrGame['turn']; ?>');
+<script>
+var objAbalone = new Abalone('<?php echo $objPlayer->color; ?>', '<?php echo $objGame->turn; ?>');
 objAbalone.fetchMap();
 
 $('abalone_div').addEvent('click', function(e) {
 	e = new Event(e).stop();
-	if ( 'IMG' !== e.target.nodeName ) { return false; }
-	objAbalone.clickedOn(e.target);
+	if ( e.target.is('.ball.<?=$objPlayer->color?>') ) {
+		objAbalone.clickedOn(e.target);
+	}
 });
-//-->
 </script>
 </body>
 
@@ -158,7 +133,7 @@ $('abalone_div').addEvent('click', function(e) {
 <?php
 
 function printHtmlBall( $f_x, $f_y ) {
-	return '<img title="'.$f_x.':'.$f_y.'" id="ball_'.$f_x.'_'.$f_y.'" style="top:'.(337-$f_y*40).'px;left:'.(15+$f_x*45+($f_y>4?-22*($f_y-4):($f_y<4?22*(4-$f_y):0))).'px;" src="/images/143_empty.gif" />'."\n";
+	return '<span title="' . $f_x . ':' . $f_y . '" id="ball_' . $f_x . '_' . $f_y . '" style="top: ' . (337 - $f_y * 40) . 'px; left: ' . (15 + $f_x * 45 + ($f_y > 4 ? -22 * ($f_y - 4) : ($f_y < 4 ? 22 * (4 - $f_y) : 0))) . 'px;" class="ball"></span>'."\n";
 }
 
 function nextCoords( $f_arrCoords, $f_iDir ) {

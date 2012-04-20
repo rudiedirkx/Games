@@ -3,10 +3,28 @@
 	margin				: 0;
 	padding				: 0;
 }
-#abalone_div img {
-	position			: absolute;
-	cursor				: pointer;
+
+.ball {
+	position: absolute;
+	cursor: pointer;
+	width: 15px;
+	height: 15px;
+	background: #aaa;
+	border-radius: 50%;
+	box-shadow: 0 0 10px #666 inset;
 }
+.ball.black {
+	background: #666;
+	box-shadow: 0 0 10px #666, 0 0 10px #000 inset;
+}
+.ball.white {
+	background: white;
+	box-shadow: 0 0 10px #666, 0 0 10px #666 inset;
+}
+.ball.selected {
+	background: green;
+}
+
 table#players {
 	border				: solid 1px #000;
 	width				: 230px;

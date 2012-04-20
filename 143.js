@@ -27,13 +27,14 @@ Abalone.prototype = {
 	/**
 	 * Clicked on an Abalone IMG (why and the consequences are yet unknown)
 	 */
-	clickedOn : function( f_objIMG ) {
+	clickedOn : function( ball ) {
 		if ( this.m_szPlayerColor === this.m_szTurnColor ) {
-			if ( f_objIMG.owner === this.m_szPlayerColor ) {
-				return this.toggleSelectBall(f_objIMG);
+			if ( ball.owner === this.m_szPlayerColor ) {
+				return this.toggleSelectBall(ball);
 			}
+
 			if ( 0 < this.m_arrSelectedBalls.length ) {
-				return this.moveSelectedTo(f_objIMG);
+				return this.moveSelectedTo(ball);
 			}
 		}
 
@@ -59,17 +60,18 @@ Abalone.prototype = {
 					return;
 				}
 				// Clear map
-				$('abalone_div').getElements('img').each(function(img) {
-					var x = img.id.split('_');
-					img.coords = new Coord(x[1].toInt(), x[2].toInt());
-					img.owner = null;
-					img.src = 'images/143_empty.gif';
-					img.selected = false;
+				$('abalone_div').select('.ball').each(function(ball) {
+					var x = ball.id.split('_');
+					ball.coords = new Coord(~~x[1], ~~x[2]);
+					ball.owner = null;
+					ball.selected = false;
+					ball.className = 'ball';
 				});
 				// Populate map
-				$A(rv).each(function(ball) {
-					$('ball_'+ball[0]+'_'+ball[1]).owner = ball[2];
-					$('ball_'+ball[0]+'_'+ball[1]).src = 'images/143_' + ball[2] + '.gif';
+				$A(rv).each(function(details) {
+					ball = $('ball_' + details[0] + '_' + details[1]);
+					ball.owner = details[2];
+					ball.className = 'ball ' + details[2];
 				});
 			}
 		}).request();
@@ -207,13 +209,15 @@ this.debug(to3Position);
 	/**
 	 * Check if coords are aligned
 	 */
-	coordsAreAligned : function( f_coords ) {
-		if ( 1 >= f_coords.length ) {
+	coordsAreAligned : function( balls ) {
+console.log(balls);
+		if ( 1 >= balls.length ) {
 			return true;
 		}
-		var _x = f_coords[0].x, _y = f_coords[0].y, _d = false;
-		for ( var i=1; i<f_coords.length; i++ ) {
-			var c = f_coords[i], x = c.x, y = c.y;
+
+		var _x = balls[0].x, _y = balls[0].y, _d = false;
+		for ( var i=1; i<balls.length; i++ ) {
+			var c = balls[i], x = c.x, y = c.y;
 			var _1, _2, _3, _4, _5, _6;
 			_1 = 1*( (x+1 == _x) && (y+1 == _y) );	// bottom left
 			_2 = 1*( (x-1 == _x) && (y-1 == _y) );	// top right
@@ -270,15 +274,13 @@ this.debug(to3Position);
 	/**
 	 * A player selects a ball with this function (his own color ofcourse), by clicking on the board
 	 */
-	toggleSelectBall : function( f_objBall ) {
-		var ball = f_objBall;
-		if ( this.m_szPlayerColor !== ball.owner ) {
-			return false;
-		}
+	toggleSelectBall : function( ball ) {
 		var s = this.search(ball, this.m_arrSelectedBalls);
+console.log(s);
 		if ( false === s ) {
 			return this.selectBall(ball);
 		}
+
 		return this.unselectBall(s);
 
 	}, // END toggleSelectBall
@@ -287,22 +289,22 @@ this.debug(to3Position);
 	/**
 	 * Add coords to list and color ball on board to hilite
 	 */
-	selectBall : function( f_objBall ) {
+	selectBall : function( ball ) {
 		if ( 3 <= this.m_arrSelectedBalls.length ) {
 			return false;
 		}
-		var c = [];
-		$A(this.m_arrSelectedBalls).each(function(b) {
-			c.push(b.coords);
-		});
-		c.push(f_objBall.coords);
-		var caa = this.coordsAreAligned(c);
+
+		this.m_arrSelectedBalls.push(ball);
+
+		var caa = this.coordsAreAligned(this.m_arrSelectedBalls);
 		if ( !caa ) {
-this.debug('Won\'t select because already out of line!');
+			this.m_arrSelectedBalls.pop();
+			this.debug('Won\'t select because already out of line!');
 			return false;
 		}
-		this.m_arrSelectedBalls.push(f_objBall);
-		f_objBall.src = '/images/143_selected.gif';
+
+		ball.addClass('selected');
+
 		return false;
 
 	}, // END selectBall
