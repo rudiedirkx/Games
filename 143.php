@@ -39,7 +39,7 @@ $arrPlayerByColor = array(
 
 
 // FETCH MAP
-if ( isset($_POST['fetch_map']) ) {
+if ( isset($_GET['fetch_map']) ) {
 	$arrAllBalls = $db->fetch('SELECT coord_1, coord_2, color FROM abalone_players p, abalone_balls b WHERE b.player_id = p.id AND p.id IN (?)', array($arrPlayerByColor));
 
 	$arrBalls = array();
@@ -84,30 +84,27 @@ else if ( isset($_GET['player_id']) ) {
 </head>
 
 <body>
-<div style="position:absolute;width:900px;margin-left:-450px;left:50%;height:370px;margin-top:-185px;top:50%;">
-<table id="players" border="0" cellpadding="2" cellspacing="0">
-<tr class="u">
-	<td align="center">You</td>
-	<td></td>
-	<td></td>
-	<td></td>
-	<td align="center">Turn</td>
-</tr>
-<tr class="b">
-	<th><img src="/icons/right.gif" /></th>
-	<td><span><?php echo ucfirst($objPlayer->color); ?> (<?php echo $objPlayer->balls_left; ?>)</span></td>
-	<td>:</td>
-	<td><?php echo ucfirst($objPlayer->username); ?></td>
-	<th><img id="<?php echo $objPlayer->color; ?>_turn" src="/icons/<?php echo $objGame->turn == $objPlayer->color ? 'left' : 'blank'; ?>.gif" /></th>
-</tr>
-<tr>
-	<th><img src="/icons/blank.gif" /></th>
-	<td><span><?php echo ucfirst($objOpponent->color); ?> (<?php echo $objOpponent->balls_left; ?>)</span></td>
-	<td>:</td>
-	<td><?php echo ucfirst($objOpponent->username); ?></td>
-	<th><img id="<?php echo $objOpponent->color; ?>_turn" src="/icons/<?php echo $objGame->turn == $objOpponent->color ? 'left' : 'blank'; ?>.gif" /></th>
-</tr>
-</table>
+
+<div id="players">
+	<table class="players">
+		<tr class="u">
+			<td align="center">You</td>
+			<td colspan="2"></td>
+			<td align="center">Turn</td>
+		</tr>
+		<tr class="self <?if($objGame->turn == $objPlayer->color):?>turn<?endif?>">
+			<td class="img"><span class="img self"></span></td>
+			<td><?php echo ucfirst($objPlayer->color); ?> (<?php echo $objPlayer->balls_left; ?>)</td>
+			<td><?php echo ucfirst($objPlayer->username); ?></td>
+			<td class="img"><span class="img turn"></span></td>
+		</tr>
+		<tr class="other <?if($objGame->turn == $objOpponent->color):?>turn<?endif?>">
+			<td class="img"><span class="img self"></span></td>
+			<td><span><?php echo ucfirst($objOpponent->color); ?> (<?php echo $objOpponent->balls_left; ?>)</span></td>
+			<td><?php echo ucfirst($objOpponent->username); ?></td>
+			<td class="img"><span class="img turn"></span></td>
+		</tr>
+	</table>
 </div>
 
 <div id="abalone_div" style="width:408px;height:370px;position:absolute;margin-left:-210px;left:50%;margin-top:-185px;top:50%;background-color:#999;border:solid 1px black;">

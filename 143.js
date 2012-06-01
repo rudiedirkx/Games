@@ -46,8 +46,8 @@ Abalone.prototype = {
 	 */
 	fetchMap : function() {
 		var self = this;
-		new Ajax('?', {
-			data : 'fetch_map=1',
+		new Ajax('?fetch_map=1', {
+			method: 'get',
 			onComplete : function(t) {
 				try {
 					var rv = eval( "(" + t + ")" );
