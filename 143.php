@@ -4,8 +4,10 @@
 session_start();
 define('S_NAME', 'abalone');
 
-require '../inc/db/db_mysql.php';
-$db = db_mysql::open(array('user' => 'usager', 'pass' => 'usager', 'db' => 'games'));
+require 'inc.env.php';
+
+require DB_LIB_PATH . '/db_mysql.php';
+$db = db_mysql::open(array('user' => DB_USER, 'pass' => DB_PASS, 'db' => DB_NAME));
 if ( !$db ) {
 	exit('No connecto!');
 }
