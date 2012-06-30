@@ -8,11 +8,9 @@ require 'inc.env.php';
 require 'inc.db.php';
 
 
-if ( empty($_SESSION[S_NAME]['player_id']) ) {
-	$_SESSION[S_NAME]['player_id'] = 1;
-}
-$_player = $_SESSION[S_NAME]['player_id'];
+	// debug //
 	$_player = @$_GET['player'] ?: 1;
+	// debug //
 
 
 $objPlayer = $db->select('abalone_players', array('id' => $_player), null, true);
@@ -20,21 +18,19 @@ if ( !$objPlayer ) {
 	exit('Invalid login');
 }
 $objPlayer->balls_left = $db->count('abalone_balls', array('player_id' => $objPlayer->id));
-#print_r($objPlayer);
 
 $objGame = $db->select('abalone_games', array('id' => $objPlayer->game_id), null, true);
-#print_r($objGame);
+	// debug //
 	$objGame->turn = $objPlayer->color;
+	// debug //
 
 $objOpponent = $db->select('abalone_players', 'game_id = ? AND id <> ?', array($objPlayer->game_id, $objPlayer->id), true);
 $objOpponent->balls_left = $db->count('abalone_balls', array('player_id' => $objOpponent->id));
-#print_r($objOpponent);
 
 $arrPlayerByColor = array(
 	$objPlayer->color => $objPlayer->id,
 	$objOpponent->color => $objOpponent->id,
 );
-#print_r($arrPlayerByColor);
 
 
 // FETCH MAP
@@ -52,25 +48,31 @@ if ( isset($_GET['fetch_map']) ) {
 
 // MOVE
 else if ( isset($_POST['changes']) ) {
-	if ( $arrPlayer['color'] === $arrGame['turn'] ) {
-		$arrChanges = array_map(create_function('$a', 'return explode(\',\', $a);'), $_POST['changes']);
-		foreach ( $arrChanges AS $c ) {
-			db_delete('abalone_balls', 'x = '.$c[0].' AND y = '.(int)$c[1]);
-			if ( $c[2] ) {
-				db_insert('abalone_balls', array('x' => $c[0], 'y' => $c[1], 'player_id' => $arrPlayerByColor[$c[2]]));
-			}
-		}
-		mysql_query('UPDATE abalone_games SET turn = \''.$arrOpponent['color'].'\' WHERE id = '.$arrGame['id']);
-		$_SESSION[S_NAME]['player_id'] = $arrOpponent['id'];
-	}
-	exit('OK');
-}
+	if ( $objGame->turn == $objPlayer->color ) {
+		$changes = array();
+		foreach ( $_POST['changes'] AS $change ) {
+			$x = explode(',', $change);
 
-// SWITCH PLAYER
-else if ( isset($_GET['player_id']) ) {
-	$_SESSION[S_NAME]['player_id'] = (int)$_GET['player_id'];
-	header('Location: 143.php');
-	exit;
+			$color = array_pop($x);
+			$coord = implode('_', $x);
+
+			$changes[$coord] = $color;
+		}
+
+		$db->transaction(function($db, $context) use ($changes, $arrPlayerByColor) {
+			$db->delete('abalone_balls', "CONCAT(x, '_', y, '_', z) IN (?) AND player_id IN (?)", array(array_keys($changes), $arrPlayerByColor));
+
+			foreach ( array_filter($changes) AS $coord => $color ) {
+				$insert = array_combine(array('x', 'y', 'z'), explode('_', $coord));
+				$insert['player_id'] = $arrPlayerByColor[$color];
+
+				$db->insert('abalone_balls', $insert);
+			}
+		}, $context);
+	}
+
+	header('Content-type: text/json');
+	exit(json_encode(array('error' => false)));
 }
 
 ?>
@@ -78,7 +80,7 @@ else if ( isset($_GET['player_id']) ) {
 
 <head>
 <title>Abalone</title>
-<link rel="stylesheet" type="text/css" href="143.css" />
+<link rel="stylesheet" href="143.css" />
 </head>
 
 <body>

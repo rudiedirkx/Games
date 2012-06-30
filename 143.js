@@ -62,7 +62,7 @@ Abalone.prototype = {
 	/**
 	 * Clicked on an Abalone IMG (why and the consequences are yet unknown)
 	 */
-	createIndex : function() {
+	createIndex: function() {
 		var self = this;
 
 		$balls = this.$container.find('.ball').each(function(i, el) {
@@ -71,13 +71,13 @@ Abalone.prototype = {
 
 		return this.index;
 
-	}, // END createIndex
+	}, // createIndex
 
 
 	/**
 	 * Clicked on an Abalone IMG (why and the consequences are yet unknown)
 	 */
-	clickedOn : function( id ) {
+	clickedOn: function( id ) {
 		var ball = this.index[id];
 
 		// Is my turn?
@@ -93,13 +93,13 @@ Abalone.prototype = {
 			}
 		}
 
-	}, // END clickedOn
+	}, // clickedOn
 
 
 	/**
 	 * A player selects a ball with this function (his own color ofcourse), by clicking on the board
 	 */
-	fetchMap : function() {
+	fetchMap: function() {
 		var self = this;
 		return $.get('?fetch_map=1', function(rv) {
 			// Populate map
@@ -118,40 +118,9 @@ Abalone.prototype = {
 
 
 	/**
-	 * S e n d   o r d e r
-	 */
-	sendOrder : function( f_changes ) {
-		var d = [];
-		$A(f_changes).each(function(c) {
-			d.push(c.join(','));
-		});
-		var data = 'changes[]=' + d.join('&changes[]=');
-		var self = this;
-		new Ajax('?', {
-			data : data,
-			onComplete : function(t) {
-				return document.location.reload();
-				self.fetchMap();
-			}
-		}).request();
-		return false;
-
-	}, // sendOrder
-
-
-	/**
-	 * N e x t   f i e l d
-	 */
-	getNextField : function( f_coord, f_dir ) {
-		return this.getCoordInfo(f_dir).add(f_coord).img();
-
-	}, // getNextField
-
-
-	/**
 	 * Move selected balls into a direction (Coord)
 	 */
-	move : function( direction ) {
+	move: function( direction ) {
 		var self = this, info, u, u1, u2, balls, Cnexts, i, M, C, pushables, P, Clast, B, Blast;
 
 		balls = this.selectedBalls();
@@ -252,7 +221,7 @@ this.debug('move', B, B.owner, 'to', Blast, Blast.owner);
 
 		// Update straggler
 		B = this.index[C.underscore()];
-this.debug('left over:', B); 
+this.debug('left over:', B);
 		$(B).removeClass('' + B.owner);
 		delete B.owner;
 
@@ -260,110 +229,43 @@ this.debug('left over:', B);
 		this.m_arrSelectedBalls = [];
 		this.$container.find('.selected').removeClass('selected');
 
+		// Send to server
+		this.sendChange(movables);
+
 		return true;
 
 	}, // move
 
 
 	/**
-	 * Move the selected balls to another position (clicked on a ball or an empty field)
 	 *
-	moveSelectedTo : function( f_objBall ) {
-		// Min 1 ball selected and max Abalone.selectMaxBalls
-		if ( 0 == this.m_arrSelectedBalls.length || Abalone.selectMaxBalls < this.m_arrSelectedBalls.length ) {
-			return false;
-		}
-		// Check if all selected balls + target are in one line
-		var c = [];
-		$A(this.m_arrSelectedBalls).each(function(b) {
-			c.push(b.coords);
+	 */
+	sendChange: function( coords ) {
+		var self = this, changes, B, data;
+
+		// Collect changes
+		changes = [];
+		$.each(coords, function(i, C) {
+			B = self.index[ C.underscore() ];
+			changes.push(C.x + ',' + C.y + ',' + C.z + ',' + (B.owner || ''));
 		});
-		c.push(f_objBall.coords);
-		var caa = this.coordsAreAligned(c)
-		if ( !caa ) {
-this.debug('Selected balls & target ball are not in one line!');
-			return false;
-		}
+this.debug('changes:', changes);
 
-		// Player wants to push the opponent away
-		var toPosition = f_objBall;
-		if ( this.m_szOpponentColor === toPosition.owner ) {
-this.debug('Wanna push opponent...');
-			if ( 1 == this.m_arrSelectedBalls.length ) {
-				return false;
-			}
-			var to2Position = this.getNextField(toPosition.coords, caa);
-this.debug(to2Position);
-			if ( 2 <= this.m_arrSelectedBalls.length && ( !to2Position || !to2Position.owner ) ) {
-				var c = [];
-				// Pushing 1 opponent ball
-				if ( to2Position ) {
-					// Opponent one forward
-					to2Position.owner = this.m_szOpponentColor;
-					to2Position.src = 'images/143_' + this.m_szOpponentColor + '.gif';
-					c.push([ to2Position.coords.x, to2Position.coords.y, this.m_szOpponentColor ]);
-				}
-				// Player one forward
-				toPosition.owner = this.m_szPlayerColor;
-				toPosition.src = 'images/143_' + this.m_szPlayerColor + '.gif';
-					c.push([ toPosition.coords.x, toPosition.coords.y, this.m_szPlayerColor ]);
-				// 'Remove' last position
-				var firstBall = this.m_arrSelectedBalls[0];
-				this.unselectAllBalls();
-				firstBall.owner = null;
-				firstBall.src = 'images/143_empty.gif';
-				c.push([ firstBall.coords.x, firstBall.coords.y, '' ]);
-				this.sendOrder(c);
-				return false;
-			}
-			var to3Position = this.getNextField(to2Position.coords, caa);
-this.debug(to3Position);
-			if ( Abalone.selectMaxBalls <= this.m_arrSelectedBalls.length && to2Position.owner == this.m_szOpponentColor && ( !to3Position || !to3Position.owner ) ) {
-				var c = [];
-				// Pushing 2 opponent balls
-				if ( to3Position ) {
-					// Opponent one forward
-					to3Position.owner = this.m_szOpponentColor;
-					to3Position.src = 'images/143_' + this.m_szOpponentColor + '.gif';
-					c.push([ to3Position.coords.x, to3Position.coords.y, this.m_szOpponentColor ]);
-				}
-				// Player one forward
-				toPosition.owner = this.m_szPlayerColor;
-				toPosition.src = 'images/143_' + this.m_szPlayerColor + '.gif';
-				c.push([ toPosition.coords.x, toPosition.coords.y, this.m_szPlayerColor ]);
-				// 'Remove' last position
-				var firstBall = this.m_arrSelectedBalls[0];
-				this.unselectAllBalls();
-				firstBall.owner = null;
-				firstBall.src = 'images/143_empty.gif';
-				c.push([ firstBall.coords.x, firstBall.coords.y, '' ]);
-				this.sendOrder(c);
-				return false;
-			}
-		}
-		// Player pushes toward empty
-		else {
-			var c = [];
-			// Move first ball to the empty position
-			var firstBall = this.m_arrSelectedBalls[0];
-			this.unselectAllBalls();
-			firstBall.owner = null;
-			firstBall.src = 'images/143_empty.gif';
-			c.push([ firstBall.coords.x, firstBall.coords.y, '' ]);
-			toPosition.owner = this.m_szPlayerColor;
-			toPosition.src = 'images/143_' + this.m_szPlayerColor + '.gif';
-			c.push([ toPosition.coords.x, toPosition.coords.y, this.m_szPlayerColor ]);
-			this.sendOrder(c);
-		}
-		return false;
+		// Prep & send data
+		data = {changes: changes};
+		$.post('?send_changes=1', data, function(rv) {
+			
+		}).error(function(xhr, error) {
+			alert('Fetch failed. Response:' + "\n\n" + xhr.responseText);
+		});
 
-	}, // moveSelectedTo
+	}, // sendChange
 
 
 	/**
 	 * Selected balls in Coord format
 	 */
-	selectedBalls : function() {
+	selectedBalls: function() {
 		return this.m_arrSelectedBalls.map(function(id) {
 			C = id.split('_');
 			return new Coord(~~C[0], ~~C[1], ~~C[2]);
@@ -375,7 +277,7 @@ this.debug(to3Position);
 	/**
 	 * Check if coords are aligned
 	 */
-	coordsAreAligned : function() {
+	coordsAreAligned: function() {
 		var self = this, balls, C, axis, values, i, diffs, direction, M;
 
 		balls = this.selectedBalls();
@@ -399,7 +301,7 @@ self.debug('found common axis: ' + ax);
 		});
 
 		if ( !axis ) {
-self.debug('found no common axis');
+this.debug('found no common axis');
 			return false;
 		}
 
@@ -408,12 +310,12 @@ self.debug('found no common axis');
 		$.each(values, function(ax, values) {
 			direction[ax] = balls[0][ax] > balls[1][ax] ? 1 : -1;
 		});
-self.debug('reversable direction:', direction);
+this.debug('reversable direction:', direction);
 
 		// The rest must have that axis as well
 		for ( i=2, L=balls.length; i<L; i++ ) {
 			if ( balls[i][axis] != balls[0][axis] ) {
-self.debug('ball # ' + i + ' has different axis ' + axis + ' value: ' + balls[i][axis]);
+this.debug('ball # ' + i + ' has different axis ' + axis + ' value: ' + balls[i][axis]);
 				return false;
 			}
 
@@ -421,14 +323,14 @@ self.debug('ball # ' + i + ' has different axis ' + axis + ' value: ' + balls[i]
 			values.y && values.y.push(balls[i].y);
 			values.z && values.z.push(balls[i].z);
 		}
-self.debug('ball coord values:', values);
+this.debug('ball coord values:', values);
 
 		// Find distance between ends
 		diffs = [];
 		$.each(values, function(ax, values) {
 			diffs.push(Math.max.apply(Math, values) - Math.min.apply(Math, values));
 		});
-self.debug('diffs:', diffs);
+this.debug('diffs:', diffs);
 
 		// Shortest distance
 		M = balls.length-1;
@@ -439,7 +341,7 @@ self.debug('diffs:', diffs);
 		// Aaaaight!
 
 		var potentials = this.potentialNexts(balls, direction);
-self.debug('potentials:', potentials);
+this.debug('potentials:', potentials);
 
 		return {
 			axis: axis,
@@ -453,7 +355,7 @@ self.debug('potentials:', potentials);
 	/**
 	 * All the next holes into one direction (Coord)
 	 */
-	nexts : function( balls, direction ) {
+	nexts: function( balls, direction ) {
 		var self = this, next, nexts;
 
 		nexts = [];
@@ -478,7 +380,7 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 	/**
 	 * The two potential next coordinates (or one if oneWay)
 	 */
-	potentialNexts : function( balls, direction, oneWay ) {
+	potentialNexts: function( balls, direction, oneWay ) {
 		var self = this, potentials, Ca, Cb, C, coords;
 
 		potentials = {};
@@ -521,7 +423,7 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 	/**
 	 * A player selects a ball with this function (his own color ofcourse), by clicking on the board
 	 */
-	toggleSelectBall : function( id ) {
+	toggleSelectBall: function( id ) {
 		var i = $.inArray(id, this.m_arrSelectedBalls);
 
 		if ( i < 0 ) {
@@ -536,7 +438,7 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 	/**
 	 * Add coords to list and color ball on board to hilite
 	 */
-	selectBall : function( id ) {
+	selectBall: function( id ) {
 		if ( Abalone.selectMaxBalls <= this.m_arrSelectedBalls.length ) {
 			return false;
 		}
@@ -563,7 +465,7 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 	/**
 	 * Remove coords from list and color ball on board to normal
 	 */
-	unselectBall : function( i ) {
+	unselectBall: function( i ) {
 		var id = this.m_arrSelectedBalls[i],
 			$ball = $(this.index[id]);
 
@@ -576,82 +478,14 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 
 
 	/**
-	 * Unselects all balls, maybe not a necessary function
+	 * Dev helper
 	 */
-	unselectAllBalls : function() {
-		while ( 0 < this.m_arrSelectedBalls.length ) {
-			this.unselectBall(0);
-		}
-		return false;
-
-	}, // unselectAllBalls
-
-
-	/**
-	 * Get coord delta by direction name
-	 */
-	getCoordInfo : function( f_dir ) {
-		var d = [0, 0];
-		switch ( f_dir ) {
-			case 'topright':
-			case 2:
-				d = [1,1];
-			break;
-			case 'bottomleft':
-			case 1:
-				d = [-1,-1];
-			break;
-			case 'topleft':
-			case 4:
-				d = [0,1];
-			break;
-			case 'bottomright':
-			case 3:
-				d = [0,-1];
-			break;
-			case 'right':
-			case 6:
-				d = [1,0];
-			break;
-			case 'left':
-			case 5:
-				d = [-1,0];
-			break;
-		}
-		return new Coord(d[0], d[1]);
-
-	}, // getCoordInfo
-
-
-	/**
-	 * The opposite direction of the argument
-	 */
-	getOppositeDirection : function( f_dir ) {
-		switch ( f_dir ) {
-			case 2:
-				return 1;
-			case 1:
-				return 2;
-			case 4:
-				return 3;
-			case 3:
-				return 4;
-			case 6:
-				return 5;
-			case 5:
-				return 6;
-		}
-		return 0;
-
-	}, // getOppositeDirection
-
-
-	debug : function( msg ) {
+	debug: function( msg ) {
 		if ( window.console && window.console.debug ) {
 			window.console.debug.apply(window.console, arguments);
 		}
 
-	}, // debug
+	} // debug
 
 
 }; // var Abalone
