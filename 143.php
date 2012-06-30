@@ -83,35 +83,14 @@ else if ( isset($_GET['player_id']) ) {
 
 <body>
 
-<div id="players">
-	<table class="players">
-		<tr class="u">
-			<td align="center">You</td>
-			<td colspan="2"></td>
-			<td align="center">Turn</td>
-		</tr>
-		<tr class="self <?if($objGame->turn == $objPlayer->color):?>turn<?endif?>">
-			<td class="img"><span class="img self"></span></td>
-			<td>
-				<?= ucfirst($objPlayer->color) ?> (<?= $objPlayer->balls_left ?>)
-			</td>
-			<td><?= ucfirst($objPlayer->username) ?></td>
-			<td class="img"><span class="img turn"></span></td>
-		</tr>
-		<tr class="other <?if($objGame->turn == $objOpponent->color):?>turn<?endif?>">
-			<td class="img"><span class="img self"></span></td>
-			<td>
-				<a href="?player=<?= $objOpponent->id ?>">
-					<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
-				</a>
-			</td>
-			<td><?= ucfirst($objOpponent->username) ?></td>
-			<td class="img"><span class="img turn"></span></td>
-		</tr>
-	</table>
-</div>
+<div id="board">
+	<a href="#" class="direction tl" data-dir="-1,-1,0">tl</a>
+	<a href="#" class="direction tr" data-dir="0,-1,-1">tr</a>
+	<a href="#" class="direction r"  data-dir="1,0,-1">r </a>
+	<a href="#" class="direction br" data-dir="1,1,0">br</a>
+	<a href="#" class="direction bl" data-dir="0,1,1">bl</a>
+	<a href="#" class="direction l"  data-dir="-1,0,1">l </a>
 
-<div id="abalone_div" style="width:408px;height:370px;position:absolute;margin-left:-210px;left:50%;margin-top:-185px;top:50%;background-color:#999;border:solid 1px black;">
 	<span id="ball_1_1_5" style="top: 17px; left: 107px;" class="ball" title="1:1:5"></span>
 	<span id="ball_2_1_4" style="top: 17px; left: 152px;" class="ball" title="2:1:4"></span>
 	<span id="ball_3_1_3" style="top: 17px; left: 197px;" class="ball" title="3:1:3"></span>
@@ -175,14 +154,40 @@ else if ( isset($_GET['player_id']) ) {
 	<span id="ball_9_9_5" style="top: 337px; left: 283px;" class="ball" title="9:9:5"></span>
 </div>
 
+<div id="players">
+	<table class="players">
+		<tr>
+			<th>You</th>
+			<th colspan="2"></td>
+			<th>Turn</th>
+		</tr>
+		<tr class="self <?if($objGame->turn == $objPlayer->color):?>turn<?endif?>">
+			<td class="img"><span class="img self"></span></td>
+			<td>
+				<?= ucfirst($objPlayer->color) ?> (<?= $objPlayer->balls_left ?>)
+			</td>
+			<td><?= ucfirst($objPlayer->username) ?></td>
+			<td class="img"><span class="img turn"></span></td>
+		</tr>
+		<tr class="other <?if($objGame->turn == $objOpponent->color):?>turn<?endif?>">
+			<td class="img"><span class="img self"></span></td>
+			<td>
+				<a href="?player=<?= $objOpponent->id ?>">
+					<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
+				</a>
+			</td>
+			<td><?= ucfirst($objOpponent->username) ?></td>
+			<td class="img"><span class="img turn"></span></td>
+		</tr>
+	</table>
+</div>
+
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script>THREE = {}</script>
+<script src="Vector3.js"></script>
 <script src="143.js"></script>
 <script>
-var objAbalone = new Abalone('#abalone_div', '<?= $objPlayer->color ?>', '<?= $objGame->turn ?>', true);
-
-$('#abalone_div').on('click', '.ball.<?= $objPlayer->color ?>', function(e) {
-	objAbalone.clickedOn(e.target.id);
-});
+var objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame->turn ?>', true);
 </script>
 </body>
 

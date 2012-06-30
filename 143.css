@@ -4,46 +4,20 @@
 	padding: 0;
 }
 
-#players {
-	position: absolute;
-	width: 900px;
-	margin-left: -450px;
-	left: 50%;
-	height: 370px;
-	margin-top: -185px;
-	top: 50%;
-}
-table.players {
-	border: solid 1px #000;
-	width: 230px;
-	position: absolute;
-	right: 10px;
-}
-td.img {
-	text-align: center;
-}
-tr.self .img.self,
-tr.turn .img.turn {
-	display: inline-block;
-	height: 0;
-	width: 0;
-	border-top: 12px solid transparent;
-	border-bottom: 12px solid transparent;
-}
-tr.self .img.self {
-	border-left: 18px solid black;
-}
-tr.turn .img.turn {
-	border-right: 18px solid black;
-}
 
-table#directions {
-	float				: left;
-	margin-right		: 20px;
-	border				: solid 1px #000;
-}
-table#directions td {
-	height				: 55px;
+
+/**
+ * Module: board
+ */
+
+#board {
+	width: 408px;
+	height: 370px;
+	position: relative;
+	background-color: #999;
+	border: solid 1px black;
+	margin: 30px;
+	float: left;
 }
 
 .ball {
@@ -67,12 +41,84 @@ table#directions td {
 	background: green;
 }
 
-.b {
-	font-weight			: bold;
+
+
+/**
+ * Module: players
+ */
+
+table.players {
+	border: solid 1px #000;
+	width: 230px;
+	margin: 30px;
+	float: left;
 }
-.u {
-	text-decoration		: underline;
+table.players th {
+	text-decoration: underline;
+	font-weight: normal;
+	text-align: center;
 }
-img {
-	border				: none;
+table.players td.img {
+	text-align: center;
 }
+table.players tr.self .img.self,
+table.players tr.turn .img.turn {
+	display: inline-block;
+	height: 0;
+	width: 0;
+	border-top: 12px solid transparent;
+	border-bottom: 12px solid transparent;
+}
+table.players tr.self .img.self {
+	border-left: 18px solid black;
+}
+table.players tr.turn .img.turn {
+	border-right: 18px solid black;
+}
+
+
+
+/**
+ * Module: direction
+ */
+
+.direction {
+	position: absolute;
+	display: block;
+	width: 40px;
+	height: 40px;
+	text-align: center;
+	line-height: 40px;
+	font-size: 20px;
+	text-transform: uppercase;
+	text-decoration: none;
+	font-weight: bold;
+	color: black;
+	background: yellow;
+}
+.direction.tl {
+	top: -18px;
+	left: 88px;
+}
+.direction.tr {
+	top: -18px;
+	right: 88px;
+}
+.direction.r {
+	top: 163px;
+	right: -19px;
+}
+.direction.br {
+	bottom: -18px;
+	right: 88px;
+}
+.direction.bl {
+	bottom: -18px;
+	left: 88px;
+}
+.direction.l {
+	top: 163px;
+	left: -19px;
+}
+
+
