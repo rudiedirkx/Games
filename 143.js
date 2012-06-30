@@ -41,6 +41,8 @@ function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
 	var self = this,
 		match = '.ball.' + this.m_szPlayerColor;
 	this.$container.on('click', match, function(e) {
+		e.preventDefault();
+
 		self.clickedOn(e.target.id.substr(5));
 	});
 	this.$container.on('click', 'a.direction', function(e) {
