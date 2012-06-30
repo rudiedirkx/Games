@@ -83,6 +83,8 @@ else if ( isset($_GET['player_id']) ) {
 
 <body>
 
+<h1>Abalone</h1>
+
 <div id="board">
 	<a href="#" class="direction tl" data-dir="-1,-1,0">tl</a>
 	<a href="#" class="direction tr" data-dir="0,-1,-1">tr</a>
@@ -180,6 +182,11 @@ else if ( isset($_GET['player_id']) ) {
 			<td class="img"><span class="img turn"></span></td>
 		</tr>
 	</table>
+</div>
+
+<div id="help">
+	<h2>What's this then?</h2>
+	<p><a href="http://en.wikipedia.org/wiki/Abalone_(board_game)">It's Abalone.</a></p>
 </div>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>

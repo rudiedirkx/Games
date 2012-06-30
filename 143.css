@@ -5,6 +5,18 @@
 }
 
 
+h1,
+#board,
+#players,
+#help {
+	margin: 30px 0 0 30px;
+}
+#board,
+#players,
+#help {
+	float: left;
+}
+
 
 /**
  * Module: board
@@ -16,8 +28,6 @@
 	position: relative;
 	background-color: #999;
 	border: solid 1px black;
-	margin: 30px;
-	float: left;
 }
 
 .ball {
@@ -50,8 +60,6 @@
 table.players {
 	border: solid 1px #000;
 	width: 230px;
-	margin: 30px;
-	float: left;
 }
 table.players th {
 	text-decoration: underline;
