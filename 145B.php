@@ -12,6 +12,34 @@ $board = (object)array(
 );
 if ( isset($_GET['map'], $_GET['type']) ) {
 	$board = (object)$_GET;
+
+	// Trim
+	$top = $bottom = $broken = 0;
+	$left = $right = 999;
+	foreach ( $board->map AS $i => $row ) {
+		// Left & right
+		$left = min($left, strlen($row) - strlen(ltrim($row, 'x')));
+		$right = min($right, strlen($row) - strlen(rtrim($row, 'x')));
+
+		// Top & bottom
+		if ( !trim($row, 'x') ) {
+			$bottom++;
+			!$broken && $top++;
+		}
+		else {
+			$broken = 1;
+			$bottom = 0;
+		}
+	}
+
+	$board->map = array_slice($board->map, $top, count($board->map) - $bottom - $top);
+	if ( $left || $right ) {
+		foreach ( $board->map AS &$row ) {
+			$row = substr($row, $left, -$right ?: 999);
+			unset($row);
+		}
+	}
+
 	$board->rows = count($board->map);
 	$board->cols = strlen($board->map[0]);
 }
@@ -56,6 +84,7 @@ if ( isset($_GET['map'], $_GET['type']) ) {
 .btn {
 	font-weight: bold;
 	text-decoration: none;
+	text-transform: uppercase;
 }
 .btn:before,
 .btn:after {
@@ -70,6 +99,14 @@ if ( isset($_GET['map'], $_GET['type']) ) {
 	display: block;
 	clear: both;
 	height: 0;
+}
+#export {
+	position: fixed;
+	top: 10px;
+	left: 10px;
+	border: solid 10px red;
+	width: 400px;
+	overflow: hidden;
 }
 </style>
 </head>
@@ -138,12 +175,13 @@ if ( isset($_GET['map'], $_GET['type']) ) {
 				), @$_GET['type'])?>
 			</select>
 		</p>
-		<p><a id="btn-save" class="btn" href="#" title="Creates a reusable URL that you can share, try and alter">'SAVE'</a></p>
+		<p><a id="btn-save" class="btn" href="#" title="Creates a reusable URL that you can share, try and alter">Save</a></p>
 		<p><a id="btn-play" class="btn" href="#" title="REMEMBER TO SAVE FIRST!
 
 Uses the resusable URL on the actual game so you can try it out.
 
-REMEMBER TO SAVE FIRST!">PLAY</a></p>
+REMEMBER TO SAVE FIRST!">Play</a></p>
+		<p><a id="btn-export" class="btn" href="#" title="Creates PHP code to paste into the actual game files">Export</a></p>
 		<p>Remember to always SAVE!</p>
 	</div>
 </div>
@@ -158,7 +196,7 @@ $(function() {
 		pads = $('.legend a.pad')
 
 	// process
-	var type;
+	var type
 
 	function setType(pad) {
 		pad.parents('p').addClass('active')
@@ -355,12 +393,44 @@ $(function() {
 
 	$('#btn-save').on('click', function(e) {
 		e.preventDefault()
+
 		location.search = getBoard()
 	})
 
 	$('#btn-play').on('click', function(e) {
 		e.preventDefault()
+
 		location = '/145?' + getBoard()
+	})
+
+	var $exportTextarea
+	$('#btn-export').on('click', function(e) {
+		e.preventDefault()
+
+		var map = getMap(),
+			mapExport = "array(\n\t'" + map.join("',\n\t'") + "',\n),"
+
+		$exportTextarea || ($exportTextarea = $((function(t) {
+			t.id = 'export'
+			document.body.appendChild(t)
+			t.ondblclick = function() {
+				this.select()
+			}
+			return t
+		})(document.createElement('textarea'))))
+
+		$exportTextarea
+			.val(mapExport)
+			.attr('rows', map.length+2)
+			.show()
+	})
+
+	$('body').on('click', function(e) {
+		if ( $exportTextarea ) {
+			if ( 'TEXTAREA' != e.target.nodeName && 'A' != e.target.nodeName ) {
+				$exportTextarea.hide()
+			}
+		}
 	})
 })
 </script>
