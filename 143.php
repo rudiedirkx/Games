@@ -7,10 +7,47 @@ define('S_NAME', 'abalone');
 require 'inc.env.php';
 require 'inc.db.php';
 
+$db->schema(require '143.schema.php');
 
-	// debug //
+// Log out
+if ( isset($_GET['logout']) ) {
+	unset($_SESSION[S_NAME]);
+}
+
+// Log in
+if ( isset($_POST['username'], $_POST['password']) ) {
+	$user = $db->select('abalone_players', array(
+		'username' => $_POST['username'],
+		'password' => $_POST['password'],
+	), null, true);
+
+	if ( $user ) {
+		$_SESSION[S_NAME]['player_id'] = (int)$user->id;
+
+		header('Location: 143');
+	}
+
+	exit('Nope...');
+}
+
+// Log in form
+if ( empty($_SESSION[S_NAME]['player_id']) ) {
+	?>
+<form action method=post>
+	<p>Username: <input name=username autofocus /></p>
+	<p>Password: <input type=password name=password /></p>
+	<p><input type=submit /></p>
+</form>
+	<?php
+	exit;
+}
+
+$_player = $_SESSION[S_NAME]['player_id'];
+
+
+	/** debug **
 	$_player = @$_GET['player'] ?: 1;
-	// debug //
+	/** debug **/
 
 
 $objPlayer = $db->select('abalone_players', array('id' => $_player), null, true);
@@ -20,9 +57,9 @@ if ( !$objPlayer ) {
 $objPlayer->balls_left = $db->count('abalone_balls', array('player_id' => $objPlayer->id));
 
 $objGame = $db->select('abalone_games', array('id' => $objPlayer->game_id), null, true);
-	// debug //
+	/** debug **
 	$objGame->turn = $objPlayer->color;
-	// debug //
+	/** debug **/
 
 $objOpponent = $db->select('abalone_players', 'game_id = ? AND id <> ?', array($objPlayer->game_id, $objPlayer->id), true);
 $objOpponent->balls_left = $db->count('abalone_balls', array('player_id' => $objOpponent->id));
@@ -33,7 +70,7 @@ $arrPlayerByColor = array(
 );
 
 
-// FETCH MAP
+// Fetch balls
 if ( isset($_GET['fetch_map']) ) {
 	$arrAllBalls = $db->fetch('SELECT x, y, z, color FROM abalone_players p, abalone_balls b WHERE b.player_id = p.id AND p.id IN (?)', array($arrPlayerByColor));
 
@@ -46,7 +83,7 @@ if ( isset($_GET['fetch_map']) ) {
 	exit(json_encode(array('balls' => $arrBalls)));
 }
 
-// MOVE
+// Move
 else if ( isset($_POST['changes']) ) {
 	if ( $objGame->turn == $objPlayer->color ) {
 		$changes = array();
@@ -176,12 +213,15 @@ else if ( isset($_POST['changes']) ) {
 		<tr class="other <?if($objGame->turn == $objOpponent->color):?>turn<?endif?>">
 			<td class="img"><span class="img self"></span></td>
 			<td>
-				<a href="?player=<?= $objOpponent->id ?>">
-					<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
-				</a>
+				<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
 			</td>
 			<td><?= ucfirst($objOpponent->username) ?></td>
 			<td class="img"><span class="img turn"></span></td>
+		</tr>
+		<tr>
+			<td colspan="4" align="center">
+				<a href="?logout">Log out</a>
+			</td>
 		</tr>
 	</table>
 </div>
@@ -202,6 +242,13 @@ var objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame
 
 </html>
 <?php
+
+function initialBalls() {
+	return array(
+		'black' => array('1:1:5', '2:1:4', '3:1:3', '4:1:2', '5:1:1', '1:2:6', '2:2:5', '3:2:4', '4:2:3', '5:2:2', '6:2:1', '3:3:5', '4:3:4', '5:3:3'),
+		'white' => array('5:7:7', '6:7:6', '7:7:5', '4:8:9', '5:8:8', '6:8:7', '7:8:6', '8:8:5', '9:8:4', '5:9:9', '6:9:8', '7:9:7', '8:9:6', '9:9:5'),
+	);
+}
 
 function nextCoords( $f_arrCoords, $f_iDir ) {
 	$d = array(0, 0);
@@ -234,4 +281,4 @@ function nextCoords( $f_arrCoords, $f_iDir ) {
 	return array( $f_arrCoords[0]+$d[0], $f_arrCoords[1]+$d[1] );
 }
 
-?>
+
