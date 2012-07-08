@@ -33,6 +33,8 @@ if ( isset($_POST['username'], $_POST['password']) ) {
 // Log in form
 if ( empty($_SESSION[S_NAME]['player_id']) ) {
 	?>
+<style>html, body, h1 { margin: 0; } body { padding: 30px; }</style>
+<h1>Abalone: log in</h1>
 <form action method=post>
 	<p>Username: <input name=username autofocus /></p>
 	<p>Password: <input type=password name=password /></p>
