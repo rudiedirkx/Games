@@ -24,6 +24,8 @@ Coord.prototype.reverse = function(cb) {
 };
 
 function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
+	var self = this;
+
 	this.$container = $(container);
 	this.m_szPlayerColor = f_szYouColor;
 	this.m_szOpponentColor = Abalone.oppositeColor(this.m_szPlayerColor);
@@ -35,14 +37,20 @@ function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
 	this.createIndex();
 
 	// Fetch balls
-	fetch && this.fetchMap();
+	fetch && this.fetchMap().success(function() {
+		// STAAAART THE ... waiting...
+		if ( self.m_szTurnColor != self.m_szPlayerColor ) {
+			self.wait();
+		}
+	});
 
 	// Attach DOM handlers
 	var self = this,
 		match = '.ball.' + this.m_szPlayerColor;
-	this.$container.on('click', match, function(e) {
+	this.$container.on('click', function(e) {
 		e.preventDefault();
-
+	});
+	this.$container.on('click', match, function(e) {
 		self.clickedOn(e.target.id.substr(5));
 	});
 	this.$container.on('click', 'a.direction', function(e) {
@@ -99,11 +107,17 @@ Abalone.prototype = {
 
 
 	/**
-	 * A player selects a ball with this function (his own color ofcourse), by clicking on the board
+	 * Pull the current map state and present it
 	 */
-	fetchMap: function() {
+	fetchMap: function(succeed, fail) {
 		var self = this;
-		return $.get('?fetch_map=1', function(rv) {
+
+		return $.get('?fetch_map=1', succeed || function(rv) {
+			// Clear map
+			self.$container.find('.ball')
+				.removeClass('black')
+				.removeClass('white');
+
 			// Populate map
 			$.each(rv.balls, function(i, b) {
 				var $ball = $('#ball_' + b[0] + '_' + b[1] + '_' + b[2]);
@@ -112,8 +126,52 @@ Abalone.prototype = {
 					.addClass(b[3]);
 				$ball[0].owner = b[3];
 			});
+		}).error(fail || function(xhr, error) {
+			alert('Pull failed. Response:' + "\n\n" + xhr.responseText);
+		});
+
+	}, // fetchMap
+
+
+	/**
+	 * Flash body
+	 */
+	flash: function( type ) {
+		var self = this;
+
+		type || (type = 'status-change');
+
+		document.body.classList.add(type);
+		setTimeout("document.body.classList.remove('" + type + "');", 3000);
+
+	}, // flash
+
+
+	/**
+	 * Waiting for turn or other player
+	 */
+	wait: function() {
+		var self = this;
+
+		return $.get('?status', function(rv) {
+			if ( rv.error || !rv.status ) {
+				console.log(this, arguments);
+			}
+			else if ( rv.status.reload ) {
+				self.fetchMap();
+				return self.flash();
+			}
+			else if ( rv.status.turn == self.m_szPlayerColor ) {
+				self.m_szTurnColor = rv.status.turn;
+				self.fetchMap();
+				return self.flash();
+			}
+
+			setTimeout(function() {
+				self.wait();
+			}, 1000);
 		}).error(function(xhr, error) {
-			alert('Fetch failed. Response:' + "\n\n" + xhr.responseText);
+			alert('Waiting failed. Response:' + "\n\n" + xhr.responseText);
 		});
 
 	}, // fetchMap
@@ -244,21 +302,35 @@ this.debug('left over:', B);
 	 */
 	sendChange: function( coords ) {
 		var self = this, changes, B, data;
+console.log('sendChange', coords);
+
+		$body.addClass('loading');
 
 		// Collect changes
 		changes = [];
 		$.each(coords, function(i, C) {
-			B = self.index[ C.underscore() ];
-			changes.push(C.x + ',' + C.y + ',' + C.z + ',' + (B.owner || ''));
+			if ( C ) {
+				B = self.index[ C.underscore() ];
+				changes.push(C.x + ',' + C.y + ',' + C.z + ',' + (B.owner || ''));
+			}
 		});
 this.debug('changes:', changes);
+
+		// Update state
+		this.m_szTurnColor = this.m_szOpponentColor;
 
 		// Prep & send data
 		data = {changes: changes};
 		$.post('?send_changes=1', data, function(rv) {
-			
+			// Ok, whatever?
 		}).error(function(xhr, error) {
-			alert('Fetch failed. Response:' + "\n\n" + xhr.responseText);
+			alert('Push failed. Response:' + "\n\n" + xhr.responseText + "\n\n" + 'Reload page?');
+		}).always(function() {
+			$body.removeClass('loading');
+
+			setTimeout(function() {
+				self.wait();
+			}, 1000);
 		});
 
 	}, // sendChange

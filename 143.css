@@ -2,6 +2,28 @@
 * {
 	margin: 0;
 	padding: 0;
+	box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+}
+
+html, body {
+	height: 100%;
+}
+body {
+	border: solid 30px white;
+}
+body.loading {
+	background: url(/images/loading.gif) no-repeat center center;
+	background-size: 100px 100px;
+}
+body.status-change {
+	border-color: red;
+}
+body:not(.status-change) {
+	-webkit-transition: border-color 2s ease-out;
+	-moz-transition: border-color 2s ease-out;
 }
 
 
@@ -9,7 +31,7 @@ h1,
 #board,
 #players,
 #help {
-	margin: 30px 0 0 30px;
+	margin: 20px 0 0 20px;
 }
 #board,
 #players,
@@ -33,22 +55,26 @@ h1,
 .ball {
 	position: absolute;
 	cursor: pointer;
-	width: 15px;
-	height: 15px;
+	width: 21px;
+	height: 21px;
+	margin: -3px 0 0-3px;
 	background: #aaa;
 	border-radius: 50%;
 	box-shadow: 0 0 10px #666 inset;
 }
 .ball.black {
 	background: #666;
-	box-shadow: 0 0 10px #666, 0 0 10px #000 inset;
+	box-shadow: 0 0 10px #666, 0 0 5px #000 inset;
+	-webkit-box-shadow: 0 0 10px #666, 0 0 10px #000 inset;
 }
 .ball.white {
 	background: white;
-	box-shadow: 0 0 10px #666, 0 0 10px #666 inset;
+	box-shadow: 0 0 10px #666, 0 0 5px #666 inset;
+	-webkit-box-shadow: 0 0 10px #666, 0 0 10px #666 inset;
 }
 .ball.selected {
-	background: green;
+	background: lime;
+	box-shadow: none;
 }
 
 
@@ -130,6 +156,16 @@ table.players tr.turn .img.turn {
 .direction.l {
 	top: 163px;
 	left: -19px;
+}
+
+
+
+body:after {
+	content: "";
+	display: block;
+	clear: both;
+	height: 0;
+	visibility: hidden;
 }
 
 

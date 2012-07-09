@@ -1,6 +1,8 @@
 <?php
 // ABALONE
 
+define('REQUEST_TIME', time());
+
 session_start();
 define('S_NAME', 'abalone');
 
@@ -9,13 +11,22 @@ require 'inc.db.php';
 
 $db->schema(require '143.schema.php');
 
+
+
 // Log out
 if ( isset($_GET['logout']) ) {
 	unset($_SESSION[S_NAME]);
 }
 
+// DEBUG Log in
+else if ( isset($_GET['login']) ) {
+	$_SESSION[S_NAME]['player_id'] = (int)$_GET['login'];
+	header('Location: 143');
+	exit('Sure...');
+}
+
 // Log in
-if ( isset($_POST['username'], $_POST['password']) ) {
+else if ( isset($_POST['username'], $_POST['password']) ) {
 	$user = $db->select('abalone_players', array(
 		'username' => $_POST['username'],
 		'password' => $_POST['password'],
@@ -31,45 +42,52 @@ if ( isset($_POST['username'], $_POST['password']) ) {
 }
 
 // Log in form
-if ( empty($_SESSION[S_NAME]['player_id']) ) {
+else if ( empty($_SESSION[S_NAME]['player_id']) ) {
 	?>
-<style>html, body, h1 { margin: 0; } body { padding: 30px; }</style>
-<h1>Abalone: log in</h1>
-<form action method=post>
-	<p>Username: <input name=username autofocus /></p>
-	<p>Password: <input type=password name=password /></p>
-	<p><input type=submit /></p>
-</form>
+	<style>html, body, h1 { margin: 0; } body { padding: 30px; }</style>
+
+	<h1>Abalone: log in</h1>
+
+	<form action method=post>
+		<p>Username: <input name=username autofocus /></p>
+		<p>Password: <input type=password name=password /></p>
+		<p><input type=submit /></p>
+	</form>
 	<?php
+
 	exit;
 }
+
+
 
 $_player = $_SESSION[S_NAME]['player_id'];
 
 
-	/** debug **
-	$_player = @$_GET['player'] ?: 1;
-	/** debug **/
 
-
+// Load player
 $objPlayer = $db->select('abalone_players', array('id' => $_player), null, true);
 if ( !$objPlayer ) {
 	exit('Invalid login');
 }
 $objPlayer->balls_left = $db->count('abalone_balls', array('player_id' => $objPlayer->id));
 
+// Load game
 $objGame = $db->select('abalone_games', array('id' => $objPlayer->game_id), null, true);
-	/** debug **
-	$objGame->turn = $objPlayer->color;
-	/** debug **/
 
+// Load opponent (might be empty)
 $objOpponent = $db->select('abalone_players', 'game_id = ? AND id <> ?', array($objPlayer->game_id, $objPlayer->id), true);
-$objOpponent->balls_left = $db->count('abalone_balls', array('player_id' => $objOpponent->id));
+if ( $objOpponent ) {
+	$objOpponent->balls_left = $db->count('abalone_balls', array('player_id' => $objOpponent->id));
+}
 
+
+
+// Helper mapping
 $arrPlayerByColor = array(
 	$objPlayer->color => $objPlayer->id,
 	$objOpponent->color => $objOpponent->id,
 );
+
 
 
 // Fetch balls
@@ -81,8 +99,7 @@ if ( isset($_GET['fetch_map']) ) {
 		$arrBalls[] = array((int)$b['x'], (int)$b['y'], (int)$b['z'], $b['color']);
 	}
 
-	header('Content-type: text/json');
-	exit(json_encode(array('balls' => $arrBalls)));
+	return json_respond(array('error' => 0, 'balls' => $arrBalls));
 }
 
 // Move
@@ -98,7 +115,7 @@ else if ( isset($_POST['changes']) ) {
 			$changes[$coord] = $color;
 		}
 
-		$db->transaction(function($db, $context) use ($changes, $arrPlayerByColor) {
+		$success = $db->transaction(function($db, $context) use ($changes, $arrPlayerByColor, $objOpponent, $objGame) {
 			$db->delete('abalone_balls', "CONCAT(x, '_', y, '_', z) IN (?) AND player_id IN (?)", array(array_keys($changes), $arrPlayerByColor));
 
 			foreach ( array_filter($changes) AS $coord => $color ) {
@@ -107,11 +124,60 @@ else if ( isset($_POST['changes']) ) {
 
 				$db->insert('abalone_balls', $insert);
 			}
+
+			$db->update('abalone_games', array('turn' => $objOpponent->color), array('id' => $objGame->id));
 		}, $context);
+
+		if ( $success ) {
+			return json_respond(array('error' => 0));
+		}
+
+		return json_respond(array('error' => 'Db exception?'));
 	}
 
-	header('Content-type: text/json');
-	exit(json_encode(array('error' => false)));
+	return json_respond(array('error' => 'Not your turn!'));
+}
+
+// Fetch status
+else if ( isset($_GET['status']) ) {
+	$status = (object) array(
+		'turn' => '',
+		'opponent' => null,
+		'waiting' => true,
+		'reload' => false,
+		'iter' => 0,
+	);
+
+	if ( $objOpponent ) {
+		$status->opponent = (int)$objOpponent->id;
+	}
+
+	while ( time() < REQUEST_TIME + 10 ) {
+
+		$status->iter++;
+
+		// Waiting for other player?
+		if ( !$objOpponent && ($objOpponent = getOpponent($objGame, $objPlayer)) ) {
+			$status->opponent = (int)$objOpponent->id;
+			$status->reload = true;
+			$status->turn = $objGame->turn;
+
+			break;
+		}
+
+		// Waiting for turn?
+		if ( $objPlayer->color == $db->select_one('abalone_games', 'turn', array('id' => $objGame->id)) ) {
+			$status->waiting = false;
+			$status->turn = $objPlayer->color;
+
+			break;
+		}
+
+		usleep(500000);
+
+	}
+
+	return json_respond(array('error' => 0, 'status' => $status));
 }
 
 ?>
@@ -215,7 +281,9 @@ else if ( isset($_POST['changes']) ) {
 		<tr class="other <?if($objGame->turn == $objOpponent->color):?>turn<?endif?>">
 			<td class="img"><span class="img self"></span></td>
 			<td>
-				<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
+				<a href="?login=<?= $objOpponent->id ?>">
+					<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
+				</a>
 			</td>
 			<td><?= ucfirst($objOpponent->username) ?></td>
 			<td class="img"><span class="img turn"></span></td>
@@ -238,18 +306,33 @@ else if ( isset($_POST['changes']) ) {
 <script src="Vector3.js"></script>
 <script src="143.js"></script>
 <script>
-var objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame->turn ?>', true);
+$body = $('body');
+objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame->turn ?>', true);
 </script>
+
 </body>
 
 </html>
 <?php
+
+function getOpponent( $game, $player ) {
+	$objOpponent = $db->select('abalone_players', 'game_id = ? AND id <> ?', array($player->game_id, $player->id), true);
+	if ( $objOpponent ) {
+		$objOpponent->balls_left = $db->count('abalone_balls', array('player_id' => $objOpponent->id));
+	}
+	return $objOpponent;
+}
 
 function initialBalls() {
 	return array(
 		'black' => array('1:1:5', '2:1:4', '3:1:3', '4:1:2', '5:1:1', '1:2:6', '2:2:5', '3:2:4', '4:2:3', '5:2:2', '6:2:1', '3:3:5', '4:3:4', '5:3:3'),
 		'white' => array('5:7:7', '6:7:6', '7:7:5', '4:8:9', '5:8:8', '6:8:7', '7:8:6', '8:8:5', '9:8:4', '5:9:9', '6:9:8', '7:9:7', '8:9:6', '9:9:5'),
 	);
+}
+
+function json_respond( $object ) {
+	header('Content-type: text/json');
+	exit(json_encode($object));
 }
 
 function nextCoords( $f_arrCoords, $f_iDir ) {
