@@ -16,14 +16,20 @@ $db->schema(require '143.schema.php');
 // Log out
 if ( isset($_GET['logout']) ) {
 	unset($_SESSION[S_NAME]);
+
+	header('Location: 143');
+	exit('Bye');
 }
 
 // DEBUG Log in
+/**
 else if ( isset($_GET['login']) ) {
 	$_SESSION[S_NAME]['player_id'] = (int)$_GET['login'];
+
 	header('Location: 143');
 	exit('Sure...');
 }
+/**/
 
 // Log in
 else if ( isset($_POST['username'], $_POST['password']) ) {
@@ -43,6 +49,17 @@ else if ( isset($_POST['username'], $_POST['password']) ) {
 
 // Log in form
 else if ( empty($_SESSION[S_NAME]['player_id']) ) {
+
+	// New game
+	if ( isset($_GET['newgame']) ) {
+		$info = newGame($white, $black);
+
+		$_SESSION[S_NAME]['player_id'] = (int)$info['white'];
+
+		header('Location: ?msg=Your+passwords+are+"boele".+Your+friend\'s+username+is+"' . $black . '".');
+		exit('game created?');
+	}
+
 	?>
 	<style>html, body, h1 { margin: 0; } body { padding: 30px; }</style>
 
@@ -53,6 +70,8 @@ else if ( empty($_SESSION[S_NAME]['player_id']) ) {
 		<p>Password: <input type=password name=password /></p>
 		<p><input type=submit /></p>
 	</form>
+
+	<p><a href="?newgame">Start a new game for 2</a></p>
 	<?php
 
 	exit;
@@ -190,6 +209,10 @@ else if ( isset($_GET['status']) ) {
 
 <body>
 
+<? if (@$_GET['msg']): ?>
+	<p class="message"><?= strip_tags($_GET['msg']) ?></p>
+<? endif ?>
+
 <h1>Abalone</h1>
 
 <div id="board">
@@ -275,17 +298,17 @@ else if ( isset($_GET['status']) ) {
 			<td>
 				<?= ucfirst($objPlayer->color) ?> (<?= $objPlayer->balls_left ?>)
 			</td>
-			<td><?= ucfirst($objPlayer->username) ?></td>
+			<td><?= $objPlayer->username ?></td>
 			<td class="img"><span class="img turn"></span></td>
 		</tr>
 		<tr class="other <?if($objGame->turn == $objOpponent->color):?>turn<?endif?>">
 			<td class="img"><span class="img self"></span></td>
 			<td>
-				<a href="?login=<?= $objOpponent->id ?>">
+				<!--<a href="?login=<?= $objOpponent->id ?>">-->
 					<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
-				</a>
+				<!--</a>-->
 			</td>
-			<td><?= ucfirst($objOpponent->username) ?></td>
+			<td><?= $objOpponent->username ?></td>
 			<td class="img"><span class="img turn"></span></td>
 		</tr>
 		<tr>
@@ -316,10 +339,13 @@ objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame->tu
 <?php
 
 function getOpponent( $game, $player ) {
+	global $db;
+
 	$objOpponent = $db->select('abalone_players', 'game_id = ? AND id <> ?', array($player->game_id, $player->id), true);
 	if ( $objOpponent ) {
 		$objOpponent->balls_left = $db->count('abalone_balls', array('player_id' => $objOpponent->id));
 	}
+
 	return $objOpponent;
 }
 
@@ -335,35 +361,41 @@ function json_respond( $object ) {
 	exit(json_encode($object));
 }
 
-function nextCoords( $f_arrCoords, $f_iDir ) {
-	$d = array(0, 0);
-	switch ( $f_iDir ) {
-		case 'topright':
-		case 2:
-			$d = array(1, 1);
-		break;
-		case 'bottomleft':
-		case 1:
-			$d = array(-1, -1);
-		break;
-		case 'topleft':
-		case 4:
-			$d = array(0, 1);
-		break;
-		case 'bottomright':
-		case 3:
-			$d = array(0, -1);
-		break;
-		case 'right':
-		case 6:
-			$d = array(1, 0);
-		break;
-		case 'left':
-		case 5:
-			$d = array(-1, 0);
-		break;
+function newGame(&$white, &$black) {
+	global $db;
+
+	$db->begin();
+
+	// create game
+	$db->insert('abalone_games', array(
+		'turn' => rand(0, 1) ? 'white' : 'black',
+		'password' => '',
+	));
+	$return['game'] = $gameId = $db->insert_id();
+
+	$balls = initialBalls();
+
+	// create players
+	foreach ( array('white', 'black') AS $color ) {
+		$db->insert('abalone_players', array(
+			'game_id' => $gameId,
+			'username' => $$color = $color . $gameId,
+			'password' => 'boele',
+			'color' => $color,
+		));
+		$return[$color] = $db->insert_id();
+
+		// create balls
+		foreach ( $balls[$color] AS $ball ) {
+			$ball = array_combine(array('x', 'y', 'z'), explode(':', $ball));
+			$ball['player_id'] = $return[$color];
+			$db->insert('abalone_balls', $ball);
+		}
 	}
-	return array( $f_arrCoords[0]+$d[0], $f_arrCoords[1]+$d[1] );
+
+	$db->commit();
+
+	return $return;
 }
 
 
