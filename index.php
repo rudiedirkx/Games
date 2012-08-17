@@ -179,12 +179,11 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 		display: block;
 		float: left;
 		background: #000;
-		position: relative;
-		-webkit-transition: all 300ms ease-out;
-		-moz-transition: all 300ms ease-out;
+		position: absolute;
 	}
 	#tiles.positioned li {
-		position: absolute;
+		-webkit-transition: all 300ms ease-out;
+		-moz-transition: all 300ms ease-out;
 	}
 	#tiles li.empty {
 		background: transparent;
@@ -411,7 +410,7 @@ function clone(obj) {
 			position(li)
 		}
 	})
-	$('tiles').addClass('positioned')
+	setTimeout("$('tiles').addClass('positioned')", 300)
 	//log(g_empties)
 
 	function neighbour( f_coords ) {
