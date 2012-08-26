@@ -1,6 +1,20 @@
 <?php
 // ABALONE
 
+/**
+exit(json_encode(initialBalls()));
+/**
+exit(json_encode(call_user_func(function($_balls) {
+	$all = array();
+	foreach ( $_balls as $c => $balls ) {
+		array_map(function($ball) use (&$all, $c) {
+			$all[] = array_merge(array_map('intval', explode(':', $ball)), array($c));
+		}, $balls);
+	}
+	return $all;
+}, initialBalls())));
+/**/
+
 define('REQUEST_TIME', time());
 
 session_start();

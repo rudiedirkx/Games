@@ -4,6 +4,7 @@ var _websocket = require('websocket'),
 	HTTPServer = require('http').Server,
 	WebSocketConnectionManager = require('wsconnmgr'),
 	MysqlClient = require('mysql'),
+	dbConfig = require('./inc.abalone.js.php'),
 	util = require('util'),
 	httpServer,
 	wsServer,
@@ -36,39 +37,30 @@ WSC.sendCmd = function(cmd, data, action) {
 
 
 /**
- * Init HTTP server for initial connection/request
- */
-
-httpServer = new HTTPServer(function(request, response) {
-	log('Received request for ' + request.url);
-
-	response.writeHead(404);
-	response.end();
-});
-
-httpServer.listen(8083, function() {
-	var port = this._connectionKey.split(':')[2];
-	log('Server is listening on port ' + port);
-});
-
-
-
-/**
  * Database
  */
 
 var db = MysqlClient.createConnection({
 	host: 'localhost',
-	user: 'root',
-	password: 'rybinsk',
-	database: 'games',
+	user: dbConfig.user,
+	password: dbConfig.password,
+	database: dbConfig.database,
+});
+
+db.on('error', function() {
+	inspect(arguments);
 });
 
 // Truncate that shit
-db.query('DELETE FROM abalone_players');
-db.query('ALTER TABLE abalone_players AUTO_INCREMENT = 1');
-db.query('DELETE FROM abalone_games');
-db.query('ALTER TABLE abalone_games AUTO_INCREMENT = 1');
+log('Truncating tables...');
+var t=0;
+['balls', 'players', 'games'].forEach(function(tbl) {
+	db.query('DELETE FROM abalone_' + tbl, function() {
+		db.query('ALTER TABLE abalone_' + tbl + ' AUTO_INCREMENT = 1', function() {
+			2 == ++t && log('Done. Truncated tables.');
+		});
+	});
+});
 
 
 
@@ -95,10 +87,11 @@ games.add = function() {
 };
 
 function newGame(client, callback) {
+	var turn = Math.random() > 0.5 ? 'white' : 'black';
 	db.query('INSERT INTO abalone_games SET ?', {
-		turn: Math.random() > 0.5 ? 'white' : 'black'
+		turn: turn,
 	}, function(err, result) {
-		callback(result.insertId);
+		callback({id: result.insertId, turn: turn});
 	});
 }
 
@@ -114,33 +107,55 @@ function newPlayer(client, gameId, callback) {
 	});
 }
 
-function getGameStatus(playerId, callback) {
+function getGameStatus(playerId, balls, callback) {
+log(':: starting full stack fetch');
 	db.query('SELECT * FROM abalone_players WHERE id = ' + playerId, function(err, rows) {
 		var player = rows[0],
 			gameId = player.game_id;
 		db.query('SELECT * FROM abalone_games WHERE id = ' + gameId, function(err, rows) {
 			var game = rows[0];
 			q = db.query('SELECT * FROM abalone_players WHERE game_id = ' + gameId + ' AND id <> ' + playerId, function(err, rows) {
+log(':: full stack fetch done');
 				var opponent = rows[0];
-				callback(player, game, opponent);
+				callback(player, game, opponent, false);
 			});
 		});
 	});
 }
 
-function sendGameStatus(client, action) {
-	// Get game status
-	var playerId = client.data.db_player_id;
-	getGameStatus(playerId, function(player, game, opponent) {
-		var status = {
-			waiting_for_turn: game.turn != player.color,
-			waiting_for_player: !opponent,
-			color: player.color,
-			name: player.username,
-			opponent_name: opponent ? opponent.username : '',
-			balls: [],
-		};
-		client.sendCmd('status', status, action);
+function sendGameStatus(client, player, game, opponent, balls, action) {
+	var status = {
+		waiting_for_turn: game.turn != player.color,
+		waiting_for_player: !opponent,
+		color: player.color,
+		name: player.username,
+		opponent_name: opponent ? opponent.username : '',
+		balls: balls,
+	};
+	client.sendCmd('status', status, action);
+}
+
+function startGame(white, black, callback) {
+	var players = {black: black, white: white};
+		balls = {"black":["1:1:5","2:1:4","3:1:3","4:1:2","5:1:1","1:2:6","2:2:5","3:2:4","4:2:3","5:2:2","6:2:1","3:3:5","4:3:4","5:3:3"],"white":["5:7:7","6:7:6","7:7:5","4:8:9","5:8:8","6:8:7","7:8:6","8:8:5","9:8:4","5:9:9","6:9:8","7:9:7","8:9:6","9:9:5"]},
+		done = 0,
+		ballsALaStatus = [];
+	['white', 'black'].forEach(function(color) {
+		var colorBalls = balls[color].map(function(ball) {
+			ball = ball.split(':').map(parseFloat);
+			ball.unshift(players[color].id);
+
+			var ballALaStatus = ball.slice();
+			ballALaStatus[0] = color;
+			ballsALaStatus.push(ballALaStatus);
+
+			return ball;
+		});
+		q = db.query('INSERT INTO abalone_balls (player_id, x, y, z) VALUES (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?), (?)', colorBalls, function(err, result) {
+			if ( 2 == ++done ) {
+				callback(ballsALaStatus);
+			}
+		});
 	});
 }
 
@@ -151,7 +166,10 @@ function sendGameStatus(client, action) {
  */
 
 wsServer = new WebSocketServer({
-	httpServer: httpServer
+	httpServer: new HTTPServer().listen(8083, function() {
+		var port = this._connectionKey.split(':')[2];
+		log('Server is listening on port ' + port);
+	})
 });
 
 wsServer.on('request', function(request) {
@@ -169,18 +187,23 @@ client.send('You are player 1 (white)');
 		lastGame = games.add();
 		lastGame.add(client);
 		client.data.color = 'white';
+		client.data.name = client.data.id;
 
-		newGame(client, function(dbGameId) {
+		newGame(client, function(game) {
+			var dbGameId = game.id;
 client.send('I created a game for you: ' + dbGameId);
 			lastGame.data.db_game_id = dbGameId;
 			client.data.db_game_id = dbGameId;
+client.send("It's " + game.turn + "'s turn. " + ( 'white' == game.turn ? 'Yeeeh!' : 'Sorry =(' ));
 
 			newPlayer(client, dbGameId, function(dbPlayerId) {
 client.send('I created a player for you: ' + dbPlayerId);
 				client.data.db_player_id = dbPlayerId;
 
 				// Send game status
-				sendGameStatus(client, 'created game');
+				getGameStatus(dbPlayerId, false, function(player, game, opponent) {
+					sendGameStatus(client, player, game, opponent, [], 'created game');
+				});
 			});
 		});
 	}
@@ -190,18 +213,24 @@ client.send('You are player 2 (black)');
 		lastGame.add(client);
 		client.data.db_game_id = lastGame.data.db_game_id;
 		client.data.color = 'black';
+		client.data.name = client.data.id;
 
 		newPlayer(client, lastGame.data.db_game_id, function(dbPlayerId) {
 client.send('I created a player for you: ' + dbPlayerId);
 			client.data.db_player_id = dbPlayerId;
 
-			var opponent = client.data.getOpponent();
-			client.data.opponent = opponent;
-			opponent.data.opponent = client;
+			var opponentClient = client.data.getOpponent();
+			client.data.opponent = opponentClient;
+			opponentClient.data.opponent = client;
 
-			// Send game status
-			sendGameStatus(client, 'joined game');
-			sendGameStatus(opponent, 'opponent joined game');
+			getGameStatus(dbPlayerId, false, function(player, game, opponent) {
+				// Start game
+				startGame(opponent, player, function(balls) {
+					// Send game status
+					sendGameStatus(client, player, game, opponent, balls, 'joined game');
+					sendGameStatus(opponentClient, opponent, game, player, balls, 'opponent joined game');
+				});
+			});
 		});
 	}
 
@@ -225,16 +254,23 @@ log('Incoming: ' + message.utf8Data);
 					break;
 
 				case 'name':
-					var name = msg.data,
+					var name = String(msg.data),
 						opponent = client.data.game.allButId(client.data.id)[0];
 
-					// Save name
+					// Save name locally
 					client.data.name = name;
 
-					// Notify opponent
-					if ( opponent ) {
-						opponent.sendCmd('opponent name', name);
-					}
+					// Save name in database
+					db.query('UPDATE abalone_players SET ? WHERE id = ?', [{username: name}, client.data.db_player_id], function() {
+						// Notify opponent
+						if ( opponent ) {
+							opponent.sendCmd('names', {
+								//name: opponent.data.name,
+								opponent_name: name,
+							});
+						}
+					});
+
 					break;
 			}
 		}
