@@ -3,7 +3,7 @@
 
 //session_start();
 
-//require_once( "connect.php" );
+require_once( "connect.php" );
 require_once( "json_php".(int)PHP_VERSION.".php" );
 //define( "S_NAME", "nn_user" );
 
