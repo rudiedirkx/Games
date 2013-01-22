@@ -60,7 +60,8 @@ if ( isset($_POST['fetch_map'], $_POST['field']) ) {
 		),
 		'mines'	=> $arrLevel['mines'],
 	);
-	exit(json::encode($arrMap));
+	header('Content-type: text/json');
+	exit(json_encode($arrMap));
 }
 
 // Click on field //
@@ -71,8 +72,9 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	$f_y = (int)$_POST['y'];
 
 	if ( !isset($_SESSION[S_NAME]['map'][$f_y][$f_x]) ) {
-		exit(json::encode(array('updates' => array(), 'msg' => '', 'gameover' => false)));
-//		exit(json::encode(array('error' => 'Invalid coordinate!')));
+		header('Content-type: text/json');
+		exit(json_encode(array('updates' => array(), 'msg' => '', 'gameover' => false)));
+//		exit(json_encode(array('error' => 'Invalid coordinate!')));
 	}
 
 	if ( null === $_SESSION[S_NAME]['starttime'] ) {
@@ -116,7 +118,9 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 		$s = $playtime % 60;
 		$szMsg = 'LEVEL "'.$arrLevel['name'].'" ACHIEVEMENT SAVED ('.( 0 < $m ? $m.'m ' : '' ).$s.'s)';
 	}
-	exit(json::encode(array('updates' => $arrUpdates, 'msg' => $szMsg, 'gameover' => $bGameOver)).'/*closed='.$iClosed.'*/');
+
+	header('Content-type: text/json');
+	exit(json_encode(array('updates' => $arrUpdates, 'msg' => $szMsg, 'gameover' => $bGameOver)));
 }
 
 // Change name //
