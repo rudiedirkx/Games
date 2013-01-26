@@ -6,18 +6,26 @@ if ( isset($_GET['source']) ) {
 	exit;
 }
 
+// Must have a MS session!
+if ( !isset($_GET['session']) ) {
+	$session = mt_rand();
+
+	$qs = http_build_query($_GET);
+	$location = $qs ? '?' . $qs . '&session=' . $session : '?session=' . $session;
+
+	header('Location: ' . $location);
+	exit;
+}
+
+define('SESSION', $_GET['session']);
+
+
 session_start();
 
 require_once('connect.php');
-require_once('inc.cls.json.php');
-define( 'S_NAME', 'ms2' );
+define('S_NAME', 'ms2');
 
-define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
-define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
-
-$OPENSOURCE = false;
-$LEVEL_TO_EXTEND_TO = 15;
-
+$g_szDefaultField = "b";
 $_FIELDS = array(
 	"a" => array(
 		"name"	=> "Beginner",
@@ -36,22 +44,19 @@ $_FIELDS = array(
 	),
 );
 
-$g_szDefaultField = "b";
-$SIDES = !empty($_SESSION['ms_user']['sides']) ? $_SESSION['ms_user']['sides'] : $_FIELDS[$g_szDefaultField]['sides'];
-$MINES = !empty($_SESSION['ms_user']['mines']) ? $_SESSION['ms_user']['mines'] : $_FIELDS[$g_szDefaultField]['mines'];
-
 
 
 // Start new game //
 if ( isset($_POST['fetch_map'], $_POST['field']) ) {
 	if ( !isset($_FIELDS[$_POST['field']]) ) {
-		exit(json::encode(array('error' => 'Invalid field!')));
+		exit(json_encode(array('error' => 'Invalid field!')));
 	}
+
 	$arrLevel = $_FIELDS[$_POST['field']];
-	$_SESSION[S_NAME]['map'] = create_map($arrLevel['sides'][0], $arrLevel['sides'][1], $arrLevel['mines']);
-	$_SESSION[S_NAME]['starttime'] = null;
-	$_SESSION[S_NAME]['field'] = $_POST['field'];
-	$_SESSION[S_NAME]['mines'] = (int)$arrLevel['mines'];
+	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = create_map($arrLevel['sides'][0], $arrLevel['sides'][1], $arrLevel['mines']);
+	$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = null;
+	$_SESSION[S_NAME]['sessions'][SESSION]['field'] = $_POST['field'];
+	$_SESSION[S_NAME]['sessions'][SESSION]['mines'] = (int)$arrLevel['mines'];
 	$arrMap = array(
 		'field'	=> $_POST['field'],
 		'size'	=> array(
@@ -60,6 +65,7 @@ if ( isset($_POST['fetch_map'], $_POST['field']) ) {
 		),
 		'mines'	=> $arrLevel['mines'],
 	);
+
 	header('Content-type: text/json');
 	exit(json_encode($arrMap));
 }
@@ -71,21 +77,21 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	$f_x = (int)$_POST['x'];
 	$f_y = (int)$_POST['y'];
 
-	if ( !isset($_SESSION[S_NAME]['map'][$f_y][$f_x]) ) {
+	if ( !isset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x]) ) {
 		header('Content-type: text/json');
 		exit(json_encode(array('updates' => array(), 'msg' => '', 'gameover' => false)));
 //		exit(json_encode(array('error' => 'Invalid coordinate!')));
 	}
 
-	if ( null === $_SESSION[S_NAME]['starttime'] ) {
-		$_SESSION[S_NAME]['starttime'] = time();
+	if ( null === $_SESSION[S_NAME]['sessions'][SESSION]['starttime'] ) {
+		$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = time();
 	}
 	$bGameOver = false;
 
-	$f = $_SESSION[S_NAME]['map'][$f_y][$f_x];
+	$f = $_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x];
 	if ( 'm' === $f ) {
 		$bGameOver = true;
-		foreach ( $_SESSION[S_NAME]['map'] AS $y => $row ) {
+		foreach ( $_SESSION[S_NAME]['sessions'][SESSION]['map'] AS $y => $row ) {
 			foreach ( $row AS $x => $c ) {
 				if ( 'm' === $c ) {
 					$arrUpdates[] = array($x, $y, 'm');
@@ -102,17 +108,17 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	else {
 		$arrUpdates[] = array($f_x, $f_y, $f);
 	}
-	unset($_SESSION[S_NAME]['map'][$f_y][$f_x]);
+	unset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x]);
 	$iClosed = 0;
-	foreach ( $_SESSION[S_NAME]['map'] AS $r ) {
+	foreach ( $_SESSION[S_NAME]['sessions'][SESSION]['map'] AS $r ) {
 		$iClosed += count($r);
 	}
 	$szMsg = '';
-	if ( $iClosed === $_SESSION[S_NAME]['mines'] ) {
+	if ( $iClosed === $_SESSION[S_NAME]['sessions'][SESSION]['mines'] ) {
 		$bGameOver = true;
-		$arrLevel = $_FIELDS[$_SESSION[S_NAME]['field']];
+		$arrLevel = $_FIELDS[$_SESSION[S_NAME]['sessions'][SESSION]['field']];
 		$_SESSION[S_NAME]['name'] = isset($_SESSION[S_NAME]['name']) ? $_SESSION[S_NAME]['name'] : 'Anonymous';
-		$playtime = time()-$_SESSION[S_NAME]['starttime'];
+		$playtime = time()-$_SESSION[S_NAME]['sessions'][SESSION]['starttime'];
 		mysql_query("INSERT INTO minesweeper (name,size_x,size_y,mines,playtime,utc, ip, user_agent) VALUES ('".addslashes($_SESSION[S_NAME]['name'])."',".$arrLevel['sides'][0].",".$arrLevel['sides'][1].",".$arrLevel['mines'].",".$playtime.",".time().", '".addslashes($_SERVER['REMOTE_ADDR'])."', '".addslashes($_SERVER['HTTP_USER_AGENT'])."');");
 		$m = floor($playtime / 60);
 		$s = $playtime % 60;
@@ -167,6 +173,7 @@ if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 <head>
 <title>MINESWEEPER</title>
 <script src="/js/mootools_1_11.js"></script>
+<script src="/102.js"></script>
 <style>
 * {
 	margin			: 0;
@@ -238,149 +245,6 @@ table tbody#ms_tbody td.f {
 	background-image	: url(images/flag.gif);
 }
 </style>
-<script>
-<!--//
-var Minesweeper = new Class({
-	initialize: function(f_field) {
-		this.m_szName = '?';
-		this.fetchMap(f_field);
-	},
-
-	fetchMap : function(f_field) {
-		new Ajax('?fetch', {
-			element : this,
-			data : 'fetch_map=1&field=' + f_field,
-			onComplete : function(t) {
-				try {
-					var rv = eval( "(" + t + ")" );
-				} catch (e) {
-					alert('Response error: '+t);
-					return;
-				}
-				if ( rv.error ) {
-					alert(rv.error);
-					return;
-				}
-				var self = this.element;
-				// Save level
-				self.m_szField = f_field;
-				self.m_bGameOver = false;
-				self.m_iMines = rv.mines;
-				self.m_arrFlags = [];
-				$('mines_to_find').innerHTML = '' + self.m_iMines + '';
-				$('flags_left').innerHTML = '' + self.m_iMines + '';
-				$('mine_percentage').innerHTML = '' + Math.round(100 * rv.mines / (rv.size.y * rv.size.x)) + '';
-				self.m_iFlagsUsed = 0;
-				// empty current map
-				while ( 0 < $('ms_tbody').childNodes.length ) {
-					$('ms_tbody').removeChild($('ms_tbody').firstChild);
-				}
-				// Save new map
-				for ( var y=0; y<rv.size.y; y++ ) {
-					var nr = $('ms_tbody').insertRow($('ms_tbody').rows.length);
-					for ( var x=0; x<rv.size.x; x++ ) {
-						var nc = nr.insertCell(nr.cells.length);
-						nc.className = 'c';
-					}
-				}
-			}
-		}).request();
-		return false;
-	},
-
-	handleChanges : function(cs) {
-		for ( var i=0; i<cs.length; i++ ) {
-			var c = cs[i], f = $('ms_tbody').rows[c[1]].cells[c[0]];
-//			if ( 'f' != f.className || !$range(0, 8).contains(c[2]) ) {
-				f.className = 'o' + c[2] + '';
-//			}
-		}
-		return false;
-	},
-
-	showWrongFlags : function( go ) {
-		if ( !go ) { return; }
-		for ( var i=0; i<this.m_arrFlags.length; i++ ) {
-			var f = this.m_arrFlags[i];
-			if ( f.className == 'f' ) {
-				f.className = 'ow';
-			}
-			else {
-				f.className = 'f';
-			}
-		}
-	},
-
-	openField : function(o) {
-		if ( this.m_bGameOver ) { return this.restart(); }
-		if ( 'c' != o.className ) { return false; }
-		var self = this;
-		new Ajax('?click', {
-			data : 'click=1&x=' + o.cellIndex + '&y=' + o.parentNode.sectionRowIndex,
-			onComplete : function(t) {
-				var rv;
-				try {
-					rv = eval( "(" + t + ")" );
-				} catch (e) {
-					alert('Response error: '+t);
-					return;
-				}
-				if ( rv.error ) {
-					alert(rv.error);
-					return;
-				}
-				if ( rv.gameover ) {
-					self.m_bGameOver = true;
-					self.m_arrFlags = $$('#ms_tbody td.f');
-				}
-				self.handleChanges(rv.updates);
-				self.showWrongFlags( self.m_bGameOver && 1 < rv.updates.length && rv.updates.last().last() === 'x' );
-				if ( rv.msg ) {
-					alert(rv.msg);
-				}
-			}
-		}).request();
-		return false;
-	},
-
-	toggleFlag : function(o) {
-		if ( this.m_bGameOver ) { return this.restart(); }
-		if ( o.className == 'f' ) {
-			o.className = 'c';
-			o.flag = false;
-			this.m_iFlagsUsed--;
-//			this.m_arrFlags.splice(this.m_arrFlags.indexOf(o), 1);
-		}
-		else if ( o.className == 'c' ) {
-			o.className = 'f';
-			o.flag = true;
-			this.m_iFlagsUsed++;
-//			this.m_arrFlags.push(o);
-		}
-		$('flags_left').innerHTML = '' + ( this.m_iMines-this.m_iFlagsUsed ) + '';
-	},
-
-	restart : function() {
-		return this.fetchMap(this.m_szField);
-	},
-
-	changeName : function(name) {
-		name = name || prompt('New name:', this.m_szName);
-		if ( !name ) return false;
-		new Ajax('?', {
-			data : 'new_name=' + name,
-			onComplete : this.setName.bind(this)
-		}).request();
-		return false;
-	},
-
-	setName: function(name) {
-		this.m_szName = name;
-		$('your_name').innerHTML = name;
-	}
-});
-//-->
-</script>
 </head>
 
 <body>
@@ -413,8 +277,7 @@ var Minesweeper = new Class({
 </tr>
 </table>
 
-<script type="text/javascript">
-<!--//
+<script>
 Ajax.setGlobalHandlers({
 	onStart : function() {
 		$('loading').style.display = "block";
@@ -426,7 +289,7 @@ Ajax.setGlobalHandlers({
 	}
 });
 
-var objMinesweeper = new Minesweeper('<?php echo !empty($_SESSION[S_NAME]['field']) ? $_SESSION[S_NAME]['field'] : $g_szDefaultField; ?>');
+var objMinesweeper = new Minesweeper('<?= @$_SESSION[S_NAME]['sessions'][SESSION]['field'] ?: $g_szDefaultField ?>', '<?= $_GET['session'] ?>');
 objMinesweeper.<?php echo empty($_SESSION[S_NAME]['name']) ? 'changeName()' : "setName('".addslashes($_SESSION[S_NAME]['name'])."')"; ?>;
 
 $('ms_tbody').addEvents({
@@ -443,7 +306,6 @@ $('ms_tbody').addEvents({
 		}
 	}
 });
-//-->
 </script>
 </body>
 
@@ -486,10 +348,10 @@ function surrounders_plus_one(&$f_map, $f_x, $f_y) {
 function click_on_surrounders($f_x, $f_y) {
 	global $arrUpdates;
 	foreach ( array(array(0,-1),array(1,-1),array(1,0),array(1,1),array(0,1),array(-1,1),array(-1,0),array(-1,-1)) AS $d ) {
-		if ( isset($_SESSION[S_NAME]['map'][$f_y+$d[0]][$f_x+$d[1]]) ) {
-			$f = $_SESSION[S_NAME]['map'][$f_y+$d[0]][$f_x+$d[1]];
+		if ( isset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]]) ) {
+			$f = $_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]];
 			$arrUpdates[] = array($f_x+$d[1], $f_y+$d[0], $f);
-			unset($_SESSION[S_NAME]['map'][$f_y+$d[0]][$f_x+$d[1]]);
+			unset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]]);
 			if ( 0 === $f ) {
 				click_on_surrounders($f_x+$d[1], $f_y+$d[0]);
 			}
