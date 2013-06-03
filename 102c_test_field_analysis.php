@@ -206,7 +206,7 @@ div.br {
 	clear			: both;
 }
 </style>
-<script src="https://rawgithub.com/rudiedirkx/rjs/master/rjs.min.js"></script>
+<script src="rjs.js"></script>
 <script>
 var Minesweeper = {
 	m_arrImgs : {

@@ -328,7 +328,7 @@ div#loading {
 	z-index: 54;
 }
 </style>
-<script src="https://rawgithub.com/rudiedirkx/rjs/master/rjs.min.js"></script>
+<script src="rjs.js"></script>
 <script>
 var xhrBusy = 0;
 window.on('xhrStart', function() {

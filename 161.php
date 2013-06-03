@@ -1,4 +1,5 @@
 <?php
+// BIOSHOCK HACKER
 
 // Tiles: left-to-right, top-to-bottom, left-to-top, left-to-bottom, right-to-top, right-to-bottom
 
@@ -70,7 +71,7 @@ echo '</table>'."\n\n";
 
 <p><input type="button" onclick="doTick();" value="Tick!" /></p>
 
-<script src="https://rawgithub.com/rudiedirkx/rjs/master/rjs.min.js"></script>
+<script src="rjs.js"></script>
 <script>
 //'use strict';
 
