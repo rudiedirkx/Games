@@ -9,8 +9,6 @@ require_once("connect.php");
 define( "S_NAME",	"st_2_user" );
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 
-require_once('json_php'.(int)PHP_VERSION.'.php' );
-
 $SIDES				= 8;
 $ATOMS				= 5;
 $OPENSOURCE			= false;
@@ -57,7 +55,7 @@ else if ( $_action == "get_map" )
 {
 	$_SESSION[S_NAME]['_secret'] = rand_string(24);
 	$arrOutput = array($_SESSION[S_NAME]['_secret'], Create_Field($SIDES, $ATOMS));
-	exit(JSON::encode( $arrOutput ));
+	exit(json_encode( $arrOutput ));
 }
 
 /** STOP **/
@@ -75,7 +73,7 @@ else if ( $_action == "stop")
 /** GAME RULES **/
 else if ( $_page == "gamerules" )
 {
-	echo '<p><a href="#" onclick="return ToggleGameRules();">Less...</a></p>';
+	echo '<p><a href="#" onclick="return Blackbox.ShowGameRules();">Less...</a></p>';
 	echo "You must find all Atoms! The Atoms are hidden in the grey field.<br/>";
 	echo "You can fire beams that might tell you the location of the Atoms.<br/>";
 	echo "You do that by clicking on side cells (the lighter grey ones).<br/>";
@@ -91,7 +89,7 @@ else if ( $_page == "gamerules" )
 	echo "or it must make a U-turn:<br/>";
 	echo "<img src=\"?image=bb3\"><br/>";
 	echo "<b>The side cell is then WHITE!</b><br/>";
-	echo '<a href="#" onclick="return ToggleGameRules();">Less...</a>';
+	echo '<a href="#" onclick="return Blackbox.ShowGameRules();">Less...</a>';
 	exit;
 }
 
@@ -146,31 +144,27 @@ if ( empty($_SESSION[S_NAME]['play']) )
 	}
 
 	?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html>
 
 <head>
 <title>BLACKBOX</title>
-<script type="text/javascript">
-<!--//
-if (top.location!=this.location)
-	top.location='<?php echo $_SERVER['SCRIPT_NAME']; ?>';
-//-->
+<script>
+if (top.location!=this.location) top.location='<?php echo $_SERVER['SCRIPT_NAME']; ?>';
 </script>
 </head>
 
-<body onload="document.forms[0]['name'].select();">
+<body>
 <form method="post" action="">
-<table border="1">
-<tr>
-<td align="center">
-Name <input type="text" name="name" value="<?php echo !empty($_SESSION[S_NAME]['name']) ? $_SESSION[S_NAME]['name'] : "Anonymous"; ?>" maxlength="12" /><br/>
-<br/>
-<input type=submit value="PLAY" />
-</td>
-</tr>
-</table>
+	<table border="1">
+		<tr>
+			<td align="center">
+				Name <input autofocus name="name" value="<?php echo !empty($_SESSION[S_NAME]['name']) ? $_SESSION[S_NAME]['name'] : "Anonymous"; ?>" maxlength="12" /><br/>
+				<br/>
+				<input type=submit value="PLAY" />
+			</td>
+		</tr>
+	</table>
 </form>
 </body>
 
@@ -184,13 +178,12 @@ $szActionFieldColor	= ( "stop" == $szActionTrackBeam ) ? "stop" : "fieldcolor";
 $OPENSOURCE = ( "stop" == $szActionTrackBeam && $_SESSION[S_NAME]['gameover'] == 3 ) ? 1 : $OPENSOURCE;
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html>
 
 <head>
 <title>BLACKBOX</title>
-<style type="text/css">
+<style>
 * {
 	margin				: 0;
 	padding				: 0;
@@ -327,35 +320,30 @@ table#top10 th.d {
 div#loading {
 	position			: absolute;
 	top					: 10px;
-	right				: 10px;
+	left				: 10px;
 	padding				: 5px;
 	display				: none;
 	background-color	: #f00;
 	color				: #fff;
+	z-index: 54;
 }
 </style>
-<script type="text/javascript" src="/js/ajax_1_2_1.js"></script>
-<script type="text/javascript" src="/js/general_1_2_6.js"></script>
-<script type="text/javascript">
-<!--//
-Ajax.setGlobalHandlers({
-	'onStart' : function()
-	{
-		if ( $('loading') ) $('loading').style.display = "block";
-	},
-	'onComplete' : function()
-	{
-		if ( !Ajax.busy && $('loading') )
-		{
-			$('loading').style.display = "none";
-		}
-	}
+<script src="https://rawgithub.com/rudiedirkx/rjs/master/rjs.min.js"></script>
+<script>
+var xhrBusy = 0;
+window.on('xhrStart', function() {
+	xhrBusy++;
+	$('loading').show();
+}).on('xhrDone', function() {
+	xhrBusy--;
+	xhrBusy == 0 && $('loading').hide();
 });
-var time = function() {
-	return Math.floor((new Date()).getTime()/1000);
+
+function time() {
+	return Math.floor(Date.now() / 1000);
 }
 
-var move = function( url, target ) {
+function move( url, target ) {
 	if ( target ) {
 		window.popup( url, target );
 		return false;
@@ -365,70 +353,57 @@ var move = function( url, target ) {
 }
 
 
-var Blackbox = function()
-{
-	// C O N S T R U C T O R //
-	this.m_opensource		= <?php echo $arrBoolean[(int)(bool)$OPENSOURCE]; ?>;
+function Blackbox() {
+	this.m_opensource = <?php echo $arrBoolean[(int)(bool)$OPENSOURCE]; ?>;
 
-	// map with atoms (only atoms)
-	this.m_mapAtoms			= {};
-	// map with hilighted fields (only highlighted)
-	this.m_mapUser			= {};
+	this.m_mapAtoms = {};
+	this.m_mapUser = {};
 
-	this.m_iHighlights		= 0;
-	this.m_iMaxHilights		= <?php echo (int)$ATOMS; ?>;
-	this.m_iAtomsFound		= 0;
+	this.m_iHighlights = 0;
+	this.m_iMaxHilights = <?php echo (int)$ATOMS; ?>;
+	this.m_iAtomsFound = 0;
 
-	this.m_secret			= "";
+	this.m_secret = "";
 
-	this.m_iColor			= 0;
-	this.m_arrColors		= <?php echo JSON::encode($RECHTDOORKLEUREN); ?>;
-	this.m_sides			= <?php echo (int)$SIDES; ?>;
+	this.m_iColor = 0;
+	this.m_arrColors = <?php echo json_encode($RECHTDOORKLEUREN); ?>;
+	this.m_sides = <?php echo (int)$SIDES; ?>;
 
-	this.m_GameOver			= false;
-	Blackbox.m_iStartTime	= 0;
-	if ( $('playtime') ) $('playtime').innerHTML = "-";
+	this.m_GameOver = false;
+	Blackbox.m_iStartTime = 0;
+	$('playtime').setHTML("-");
 
-	this.m_szAbsorbed		= '#555';
-	this.m_szWhite			= '#fff';
+	this.m_szAbsorbed = '#555';
+	this.m_szWhite = '#fff';
 
-	this.m_arrUpdates		= [];
+	this.m_arrUpdates = [];
 }
 
-Blackbox.m_iStartTime		= 0;
-Blackbox.UpdateTimer		= function()
-{
-	if ( $('playtime') && 0 < Blackbox.m_iStartTime )
-	{
-		iPlaytime = time() - this.m_iStartTime;
-		output = "" + iPlaytime + " sec";
+Blackbox.m_iStartTime = 0;
+Blackbox.UpdateTimer = function() {
+	if ( 0 < Blackbox.m_iStartTime ) {
+		var iPlaytime = time() - this.m_iStartTime,
+			output = iPlaytime + " sec";
 
-		if ( $('playtime').innerHTML != output ) $('playtime').innerHTML = output;
+		$('playtime').setHTML(output);
 
 		setTimeout('Blackbox.UpdateTimer()', 100);
 	}
 };
 
-Blackbox.ChangeName = function( )
-{
-	new_name = prompt( 'New name?', $('your_name').innerHTML );
-	if ( new_name )
-	{
-		new Ajax(false, {
-			'params'		: 'new_name=' + escape(new_name),
-			'onComplete'	: function(ajax)
-			{
-				$('your_name').innerHTML = ajax.responseText;
-			}
+Blackbox.ChangeName = function() {
+	var new_name = prompt('New name?', $('your_name').getHTML());
+	if ( new_name ) {
+		var data = 'new_name=' + encodeURIComponent(new_name);
+		$.post(location.pathname, data).on('done', function(e) {
+			$('your_name').setHTML(this.responseText);
 		});
 	}
 	return false;
 };
 
-Blackbox.ShowGameRules = function()
-{
-	if ( oldgamerulesinnerhtml )
-	{
+Blackbox.ShowGameRules = function() {
+	if ( oldgamerulesinnerhtml ) {
 		$('game_rules').innerHTML = oldgamerulesinnerhtml;
 		oldgamerulesinnerhtml = false;
 		$('right_frame').style.width = '200px';
@@ -444,14 +419,11 @@ Blackbox.ShowGameRules = function()
 	}
 	else
 	{
-		new Ajax('?page=gamerules', {
-			'onComplete'	: function(ajax)
-			{
-				oldgamerulesinnerhtml = $('game_rules').innerHTML;
-				gamerulesinnerhtml = ajax.responseText;
-				$('game_rules').innerHTML = gamerulesinnerhtml;
-				$('right_frame').style.width = '400px';
-			}
+		$.get(location.pathname + '?page=gamerules').on('done', function(e) {
+			oldgamerulesinnerhtml = $('game_rules').innerHTML;
+			gamerulesinnerhtml = this.responseText;
+			$('game_rules').innerHTML = gamerulesinnerhtml;
+			$('right_frame').style.width = '400px';
 		});
 	}
 	return false;
@@ -459,41 +431,7 @@ Blackbox.ShowGameRules = function()
 var oldgamerulesinnerhtml = false;
 var gamerulesinnerhtml = false;
 
-Blackbox.ShowTop10 = function()
-{
-	if ( oldtop10innerhtml )
-	{
-		$('content_frame').innerHTML = oldtop10innerhtml;
-		oldtop10innerhtml = false;
-		$('top10_html').innerHTML = 'Top 10';
-		return false;
-	}
-
-	if ( top10innerhtml )
-	{
-		oldtop10innerhtml = $('content_frame').innerHTML;
-		$('content_frame').innerHTML = top10innerhtml;
-		$('top10_html').innerHTML = '&lt;&lt; Back';
-	}
-	else
-	{
-		new Ajax('104.php?top10=1', {
-			'onComplete'	: function(ajax)
-			{
-				oldtop10innerhtml = $('content_frame').innerHTML;
-				top10innerhtml = ajax.responseText;
-				$('content_frame').innerHTML = top10innerhtml;
-				$('top10_html').innerHTML = '&lt;&lt; Back';
-			}
-		});
-	}
-	return false;
-};
-var oldtop10innerhtml = false;
-var top10innerhtml = false;
-
-Blackbox.reset = function( f_bResetAll )
-{
+Blackbox.reset = function( f_bResetAll ) {
 	// delete old instance
 	objBlackbox = null;
 
@@ -501,30 +439,25 @@ Blackbox.reset = function( f_bResetAll )
 	objBlackbox = new Blackbox();
 
 	// fetch map & secret
-	new Ajax(false, {
-		'params'		: 'action=get_map',
-		'onComplete'	: function(ajax) {
-			var retval = eval( "(" + ajax.responseText + ")" );
-			objBlackbox.m_secret	= retval[0];
-			objBlackbox.m_mapAtoms	= retval[1];
-		}
+	$.get(location.pathname + '?action=get_map').on('done', function(e) {
+		var retval = JSON.parse(this.responseText);
+		objBlackbox.m_secret = retval[0];
+		objBlackbox.m_mapAtoms = retval[1];
 	});
 
-	if ( f_bResetAll )
-	{
-		$('stats_hilighted').innerHTML = objBlackbox.m_iHighlights;
+	if ( f_bResetAll ) {
+		$('stats_hilighted').setHTML(objBlackbox.m_iHighlights);
 
 		// Recreate field
-		for ( x=-1; x<=objBlackbox.m_sides; x++ )
-		{
-			for ( y=-1; y<=objBlackbox.m_sides; y++ )
-			{
+		for ( x=-1; x<=objBlackbox.m_sides; x++ ) {
+			for ( y=-1; y<=objBlackbox.m_sides; y++ ) {
 				fld_id = 'fld_'+x+'_'+y+'';
-				if ( $(fld_id) )
-				{
+				if ( $(fld_id) ) {
 					$(fld_id).innerHTML = "";
 					$(fld_id).style.backgroundColor = "";
-					if ( objBlackbox._ValidCoords(x,y) ) $(fld_id).className = "cfield";
+					if ( objBlackbox._ValidCoords(x,y) ) {
+						$(fld_id).className = "cfield";
+					}
 				}
 			}
 		}
@@ -966,15 +899,8 @@ for ( $i=-1; $i<=$SIDES; $i++ )
 
 
 <div id="left_frame">
-	<p>
-		<a href="#reset" onclick="return Blackbox.reset(true);">Restart</a>
-	</p>
-	<p>
-		<a href="#showtop10" id="top10_html" onclick="return Blackbox.ShowTop10();">Top 10</a>
-	</p>
-	<p>
-		<a href="#changename" onclick="return Blackbox.ChangeName();">Change Name</a>
-	</p>
+	<p><a href="#reset" onclick="return Blackbox.reset(true);">Restart</a></p>
+	<p><a href="#changename" onclick="return Blackbox.ChangeName();">Change Name</a></p>
 </div>
 
 

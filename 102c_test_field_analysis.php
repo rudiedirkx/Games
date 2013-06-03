@@ -177,15 +177,37 @@ if ( isset($_POST['field']) && is_array($_POST['field']) )
 $g_arrSides = array(count($arrMap), count($arrMap[0]));
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE html>
 <html>
 
 <head> 
 <title>MS 2c - Test - Board Analysis</title>
-<script type="text/javascript" src="general_1_2_1.js"></script>
-<script type="text/javascript">
-<!--//
-
+<style>
+* {
+	margin			: 0;
+	padding			: 0;
+}
+p {
+	margin			: 5px 0;
+}
+div#board {
+	font-size		: 1px;
+	line-height		: 10%;
+}
+div#board img {
+	width			: 16px;
+	height			: 16px;
+	border			: 0;
+	margin			: 0;
+	padding			: 0;
+}
+div.br {
+	margin			: 0;
+	clear			: both;
+}
+</style>
+<script src="https://rawgithub.com/rudiedirkx/rjs/master/rjs.min.js"></script>
+<script>
 var Minesweeper = {
 	m_arrImgs : {
 		'-1' : 'images/dicht.gif',
@@ -369,32 +391,7 @@ var sizeof = function( f_arrSource )
 	return iLength;
 };
 
-//-->
 </script>
-<style type="text/css">
-* {
-	margin			: 0;
-	padding			: 0;
-}
-p {
-	margin			: 5px 0;
-}
-div#board {
-	font-size		: 1px;
-	line-height		: 10%;
-}
-div#board img {
-	width			: 16px;
-	height			: 16px;
-	border			: 0;
-	margin			: 0;
-	padding			: 0;
-}
-div.br {
-	margin			: 0;
-	clear			: both;
-}
-</style>
 </head>
 
 <body>
