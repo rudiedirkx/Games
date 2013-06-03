@@ -32,7 +32,7 @@ $start = array($directions[rand(0, 3)], rand(0, BOARD_SIZE-1));
 <html lang="en">
 
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="viewport" content="width=500, initial-scale=0.5" />
 	<link rel="shortcut icon" href="favicon.ico" />
 	<style>
 	ul, li { margin: 0; padding: 0; list-style: none; }
@@ -41,6 +41,7 @@ $start = array($directions[rand(0, 3)], rand(0, BOARD_SIZE-1));
 	ul .tile { float: left; margin: 0 20px 0 0; }
 	ul:after { content: ''; display: block; clear: both; }
 	table { border-collapse: separate; cell-spacing: 1px; background: #ddd; }
+	#board { -webkit-tap-highlight-color: rgba(0,0,0,0); }
 	th, td { padding: 0; height: 60px; width: 60px; }
 	th { background-color: #eee; }
 	.tile.end { background-color: yellow; }
@@ -101,7 +102,10 @@ $start = array($directions[rand(0, 3)], rand(0, BOARD_SIZE-1));
 	</tbody>
 </table>
 
-<p><button id="tick">Tick</button></p>
+<p>
+	<button id="tick">tick once</button>
+	<button id="start">start ticker</button>
+</p>
 
 <script src="rjs.js"></script>
 <script>
@@ -113,6 +117,8 @@ var BOARD_SIZE = <?= BOARD_SIZE ?>;
 var rawMap = <?= json_encode($map) ?>;
 var start = <?= json_encode($start) ?>;
 var directionDeltas = {top: new Coords2D(0, -1), right: new Coords2D(1, 0), bottom: new Coords2D(0, 1), left: new Coords2D(-1, 0)};
+
+// document.on('touchstart', function(e) { e.preventDefault(); });
 
 $(function() {
 
@@ -126,6 +132,29 @@ $(function() {
 		}
 		else if ( true === result ) {
 			alert('Great success! =)');
+		}
+	});
+
+	var autoTicker = 0;
+	$('start').on('click', function(e) {
+		if ( autoTicker ) {
+			clearInterval(autoTicker);
+			autoTicker = 0;
+			this.setHTML('start ticker');
+		}
+		else {
+			autoTicker = setInterval(function() {
+				var result = game.tick();
+				if ( false === result ) {
+					clearInterval(autoTicker);
+					alert('Fail =(');
+				}
+				else if ( true === result ) {
+					clearInterval(autoTicker);
+					alert('Great success! =)');
+				}
+			}, 1000);
+			this.setHTML('stop ticker');
 		}
 	});
 
