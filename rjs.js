@@ -30,14 +30,17 @@
 		return typeof obj.length == 'number' && typeof obj != 'string' && obj.constructor != Object;
 	}
 
+	function $array(list) {
+		var arr = [];
+		$each(list, function(el, i) {
+			arr.push(el);
+		});
+		return arr;
+	}
+
 	function $class(obj) {
-		var code = String(obj);
-		try {
-			return code.match(/ (.+?)[\(\]]/)[1];
-		}
-		catch (ex) {
-			return $class(obj.constructor);
-		}
+		var code = String(obj.constructor);
+		return code.match(/ (.+?)[\(\]]/)[1];
 	}
 
 	function $each(source, callback, context) {
@@ -285,11 +288,23 @@
 		this.which = this.key || this.button;
 		this.detail = e.detail;
 
-		if ( e.pageX != null && e.pageY != null ) {
-			this.pageXY = new Coords2D(e.pageX, e.pageY);
+		this.pageX = e.pageX;
+		this.pageY = e.pageY;
+		this.clientX = e.clientX;
+		this.clientY = e.clientY;
+
+		this.touches = e.touches ? $array(e.touches) : undefined;
+
+		if ( this.touches && this.touches[0] ) {
+			this.pageX = this.touches[0].pageX;
+			this.pageY = this.touches[0].pageY;
 		}
-		else if ( e.clientX != null && e.clientY != null ) {
-			this.pageXY = new Coords2D(e.clientX, e.clientY).add(W.getScroll());
+
+		if ( this.pageX != null && this.pageY != null ) {
+			this.pageXY = new Coords2D(this.pageX, this.pageY);
+		}
+		else if ( this.clientX != null && this.clientY != null ) {
+			this.pageXY = new Coords2D(this.clientX, this.clientY).add(W.getScroll());
 		}
 
 		this.data = e.clipboardData;
@@ -299,13 +314,21 @@
 		this.loaded = e.loaded || e.position;
 	}
 	$extend(AnyEvent, {
-		summary: function() {
+		summary: function(prefix) {
+			prefix || (prefix = '');
 			var summary = [];
 			$each(this, function(value, name) {
-				if ( value && typeof value == 'object' ) {
-					value = $class(value);
+				var original = value;
+				if ( original && original instanceof Coords2D ) {
+					value = original.join();
 				}
-				summary.push(name + ' => ' + value);
+				else if ( original && typeof original == 'object' ) {
+					value = $class(value);
+					if ( original instanceof Event || name == 'touches' || typeof name == 'number' ) {
+						value += ":\n" + AnyEvent.prototype.summary.call(original, prefix + '  ');
+					}
+				}
+				summary.push(prefix + name + ' => ' + value);
 			});
 			return summary.join("\n");
 		},

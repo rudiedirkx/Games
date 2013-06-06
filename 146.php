@@ -525,54 +525,71 @@ $w = ($c+1)*$b + $c*$t;			// total table width
 $h = 40 + ($r+1)*$b + $r*$t;	// total table height
 
 ?>
+<!doctype html>
 <html>
 
 <head>
-<title>SLITHER | LEVEL <?php echo str_pad((string)$iGame,3,'0',STR_PAD_LEFT).' '.strtoupper($szDifficulty); ?></title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title>SLITHER | LEVEL <?= str_pad((string)$iGame,3,'0',STR_PAD_LEFT).' '.strtoupper($szDifficulty) ?></title>
 <style>
 * {
 	padding: 0;
 	margin: 0;
 }
+html, body {
+	height: 100%;
+}
 html {
 	background: #bde4a3;
 }
-td, table {
-	border				: 0;
+form {
+	padding: 10px;
+}
+table, td {
+	border: 0;
+}
+table {
+	-webkit-transform: scale(1.8);
+}
+td.horbor,
+td.verbor {
+	x-webkit-transform: scale(1.2);
 }
 td.horbor {
-	width				: <?php echo $t; ?>px;
-	height				: <?php echo $b; ?>px;
-	background			: #888 url(images/146_horbor.bmp) center center repeat-x;
-	cursor				: pointer;
+	width: <?= $t ?>px;
+	height: <?= $b ?>px;
+	background: #888 url(images/146_horbor.bmp) center center repeat-x;
+	cursor: pointer;
 }
 td.verbor {
-	width				: <?php echo $b; ?>px;
-	height				: <?php echo $t; ?>px;
-	background			: #888 url(images/146_verbor.bmp) center center repeat-y;
-	cursor				: pointer;
+	width: <?= $b ?>px;
+	height: <?= $t ?>px;
+	background: #888 url(images/146_verbor.bmp) center center repeat-y;
+	cursor: pointer;
 }
 td.dot {
-	width				: <?php echo $b; ?>px;
-	height				: <?php echo $b; ?>px;
-	background			: green url(images/146_dot.bmp) center center no-repeat;
+	width: <?= $b ?>px;
+	height: <?= $b ?>px;
+	background: green url(images/146_dot.bmp) center center no-repeat;
 }
 th.clue {
-	width				: <?php echo $t; ?>px;
-	height				: <?php echo $t; ?>px;
-	background			: lime url(images/146_clue.gif) center center no-repeat;
-	font-family			: arial 'courier new';
-	font-size			: 16px;
+	width: <?= $t ?>px;
+	height: <?= $t ?>px;
+	background: lime url(images/146_clue.gif) center center no-repeat;
+	font-family: arial 'courier new';
+	font-size: 16px;
 }
 button {
 	padding: 5px 12px;
 }
 </style>
-<script src="/js/mootools_1_11.js"></script>
+<script src="rjs.js"></script>
 <script>
-var g_c = <?php echo $c; ?>, g_r = <?php echo $r; ?>, g_l = <?php echo $iGame; ?>, g_max = <?php echo max($ak=array_keys($g_arrBoards[$szDifficulty])); ?>, g_min = <?php echo min($ak=array_keys($g_arrBoards[$szDifficulty])); ?>;
+var g_c = <?= $c ?>, g_r = <?= $r ?>, g_l = <?= $iGame ?>, g_max = <?= max($ak=array_keys($g_arrBoards[$szDifficulty])) ?>, g_min = <?= min($ak=array_keys($g_arrBoards[$szDifficulty])) ?>;
 
-var done = <?=json_encode($done)?>;
+var done = <?= json_encode($done) ?>;
 
 (new Image()).src = 'images/146_horbor_not.bmp';
 (new Image()).src = 'images/146_verbor_not.bmp';
@@ -642,6 +659,17 @@ function clickBorder(o) {
 			ld.setAttribute( 'on', parseInt(ld.getAttribute('on'))-1 );
 			rd.setAttribute( 'on', parseInt(rd.getAttribute('on'))-1 );
 		}
+	}
+}
+
+function rightClickBorder(o) {
+	if ( '1' != o.getAttribute('not') ) {
+		o.style.backgroundImage = 'url(images/146_' + o.className + '_not.bmp)';
+		o.setAttribute('not', '1');
+	}
+	else {
+		o.style.backgroundImage = 'url(images/146_' + o.className + '.bmp)';
+		o.setAttribute('not', '0');
 	}
 }
 
@@ -806,23 +834,23 @@ function checkDone(btn) {
 
 <body>
 
-<form style="margin:10px;">
-	<select onchange="if(''!=this.value&&<?php echo $iGame; ?>!=this.value){document.location='?lvl='+this.value;}">
+<form>
+	<select id="levelselect0r">
 		<optgroup label="-- Select a level!"></optgroup>
 		<?foreach( $g_arrBoards AS $szD => $arrBoards ):?>
 			<optgroup label="<?=ucfirst(strtolower($szD))?>">
 			<?foreach( $arrBoards AS $iL => $arrL ):?>
-				<option value="<?=$iL?>"<?if( $iGame == $iL ):?>selected>&gt; <?else:?>><?endif?>Level <?=$iL?><?if( in_array($iL, $done) ):?> (done)<?endif?></option>
+				<option value="<?= $iL ?>"<?if( $iGame == $iL ):?>selected>&gt; <?else:?>><?endif?>Level <?= $iL ?><?if( in_array($iL, $done) ):?> (done)<?endif?></option>
 			<?endforeach?>
 			</optgroup>
 		<?endforeach?>
 	</select>
 </form>
 
-<div id="slither_div" style="margin-left:-<?php echo $w/2; ?>px;position:absolute;left:50%;margin-top:-<?php echo ($h+80)/2; ?>px;top:50%;">
+<div id="slither_div" style="margin-left:-<?= $w/2 ?>px;position:absolute;left:50%;margin-top:-<?= ($h+80)/2 ?>px;top:50%;">
 <table border="0" cellpadding="0" cellspacing="0" width=160>
-<thead><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>" id="notices">&nbsp;</th></tr></thead>
-<tfoot><tr><th style="height:40px;" colspan="<?php echo (2*$c+1); ?>"><button onclick="checkDone(this);">check</button></th></tr></tfoot>
+<thead><tr><th style="height:40px;" colspan="<?= (2*$c+1) ?>" id="notices">&nbsp;</th></tr></thead>
+<tfoot><tr><th style="height:40px;" colspan="<?= (2*$c+1) ?>"><button onclick="checkDone(this);">check</button></th></tr></tfoot>
 <tbody id="slither"><?php
 echo $szRow = '<tr><td class="dot" on="0"></td>'.str_repeat('<td class="horbor"></td><td class="dot" on="0"></td>', $c).'</tr>';
 for ( $i=0; $i<$r; $i++ )
@@ -839,53 +867,51 @@ for ( $i=0; $i<$r; $i++ )
 </table>
 </div>
 
+<div id="red" style="position: absolute; width: 6px; height: 6px; background: red;"></div>
+
 <script>
 var evType = 'ontouchstart' in document.documentElement ? 'touchstart' : 'mousedown',
 	g_szTable = $('slither_div').innerHTML;
 
 function init() {
-	$('slither_div').oncontextmenu = function() {
-		return false;
-	};
-	var t = $('slither').getElementsByTagName('td'), i = t.length;
-	while (i--) {
-		if ( 'horbor' == t[i].className || 'verbor' == t[i].className ) {
-			t[i].onclick = function(e) {
-				return e && e.shiftKey ? this.oncontextmenu() : ( '1' != this.getAttribute('not') ? clickBorder(this) : false );
-			};
-			t[i].oncontextmenu = function() {
-				if ( '1' == this.getAttribute('on') ) {
-					return clickBorder(this);
-				}
-				if ( '1' != this.getAttribute('not') ) {
-					this.style.backgroundImage = 'url(images/146_'+this.className+'_not.bmp)';
-					this.setAttribute('not', '1');
-				}
-				else {
-					this.style.backgroundImage = 'url(images/146_'+this.className+'.bmp)';
-					this.setAttribute('not', '0');
-				}
-				return false;
-			};
+	$('slither').on(evType, '.horbor, .verbor', function(e) {
+		this.attr('not') == '1' || clickBorder(this);
+		$('red').css(e.pageXY.subtract({x:3, y:3}).toCSS());
+	}).on('contextmenu', '.horbor, .verbor', function(e) {
+		e.preventDefault();
+
+		if ( this.attr('on') == '1' ) {
+			clickBorder(this);
+			rightClickBorder(this);
+			return;
 		}
-	}
+
+		rightClickBorder(this);
+	});
 }
-document.onkeydown = function(e) {
-	if ( !e && window.event ) {
-		e = window.event;
-	}
-	else if ( !e && document.event ) {
-		e = document.event;
-	}
-	if ( 67 == e.keyCode ) {
-		$('slither_div').innerHTML = g_szTable;
+
+document.on('keydown', function(e) {
+	if ( 67 == e.key ) {
+		$('slither_div').setHTML(g_szTable);
 		init();
 	}
-}
+});
+
 init();
-document.forms[0].reset();
-document.ondragstart = function(e){ return false; };
-document.onmousedown = function(e){ return false; };
+
+$('slither_div').on('contextmenu', function(e) {
+	e.preventDefault();
+});
+
+
+$('levelselect0r').on('change', function(e) {
+	if ( this.value && <?= $iGame ?> != this.value ) {
+		location = '?lvl=' + this.value;
+	}
+}).form.reset();
+
+document.on('dragstart', function(e) { ['INPUT', 'SELECT', 'BUTTON'].contains(e.target.nodeName) || e.preventDefault(); });
+document.on('mousedown', function(e) { ['INPUT', 'SELECT', 'BUTTON'].contains(e.target.nodeName) || e.preventDefault(); });
 </script>
 
 </body>
