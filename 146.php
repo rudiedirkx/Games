@@ -49,11 +49,7 @@ table, td {
 	border: 0;
 }
 table {
-	-webkit-transform: scale(1.8);
-}
-td.horbor,
-td.verbor {
-	x-webkit-transform: scale(1.2);
+	-webkit-transform: scale(<?= $c == 5? 1.8 : 1.5 ?>);
 }
 td.horbor {
 	width: <?= $t ?>px;
