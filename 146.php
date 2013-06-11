@@ -23,7 +23,7 @@ $h = 40 + ($r+1)*$b + $r*$t;	// total table height
 <html>
 
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=0.5" />
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 <title>SLITHER | LEVEL <?= str_pad((string)$iGame,3,'0',STR_PAD_LEFT).' '.strtoupper($szDifficulty) ?></title>
@@ -40,6 +40,10 @@ html {
 }
 form {
 	padding: 10px;
+}
+#slither_div {
+	margin: 0 auto;
+	margin-top: 80px;
 }
 table, td {
 	border: 0;
@@ -307,15 +311,15 @@ function hiliteNextBorder() {
 function levelDone() {
 	if ( !done.contains(g_l) ) {
 		done.push(g_l);
-		Cookie.set('g146', done.join(','));
+		document.cookie = 'g146=' + done.join(',') + ';expires=' + new Date('2020-01-01');
 	}
-	$('notices').html('<a href="?lvl=' + (g_l+1) + '">Continue to level ' + (g_l+1) + '...</a>');
+	$('notices').setHTML('<a href="?lvl=' + (g_l+1) + '">Go to lvl ' + (g_l+1) + '...</a>');
 }
 function checkDone(btn) {
 	g_bHB = false;
 	if ( checkClues() ) {
-		this.innerText = 'WOOHOO';
-		this.onclick = null;
+		btn.setText('WOOHOO');
+		btn.onclick = null;
 		hiliteBorders();
 		levelDone();
 	}
@@ -345,8 +349,8 @@ function xor(a, b) {
 	</select>
 </form>
 
-<div id="slither_div" style="margin-left:-<?= $w/2 ?>px;position:absolute;left:50%;margin-top:-<?= ($h+80)/2 ?>px;top:50%;">
-<table border="0" cellpadding="0" cellspacing="0" width=160>
+<div id="slither_div" style="width: <?= $w ?>px">
+<table border="0" cellpadding="0" cellspacing="0">
 <thead><tr><th style="height:40px;" colspan="<?= (2*$c+1) ?>" id="notices">&nbsp;</th></tr></thead>
 <tfoot><tr><th style="height:40px;" colspan="<?= (2*$c+1) ?>"><button onclick="checkDone(this);">check</button></th></tr></tfoot>
 <tbody id="slither"><?php
@@ -377,10 +381,10 @@ function init() {
 
 		var tw = $slither.getBoundingClientRect().width,
 			bw = $slither.getElement('.verbor').getBoundingClientRect().width,
-			ss = (tw-bw) / 5;
+			ss = (tw-bw) / g_c;
 
-		var col = Math.floor(e.subjectXY.x / (tw / 16)),
-			row = Math.floor(e.subjectXY.y / (tw / 16));
+		var col = Math.floor(e.subjectXY.x / (tw / (g_c*3+1))),
+			row = Math.floor(e.subjectXY.y / (tw / (g_c*3+1)));
 
 		if ( xor(col % 3 == 0, row % 3 == 0) ) {
 			$('red').css(e.pageXY.toCSS());
