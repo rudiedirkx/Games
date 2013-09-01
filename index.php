@@ -4,8 +4,8 @@
 include('connect.php');
 
 $g_iWidth		= 10;
-$g_iTileWidth	= 90;
-$g_iTileHeight	= 90;
+$g_iTileWidth	= 91;
+$g_iTileHeight	= 91;
 $g_szImageDir	= 'images/';
 $g_iTdBorder	= 3;
 $g_szBgColor	= '#000000';
@@ -111,6 +111,13 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 		left:0;
 		z-index: 1;
 	}
+	#tiles .img {
+		width: 91px;
+		height: 91px;
+		display: block;
+		background: black url(/cached/thumbs.gif) 0 0 no-repeat;
+		border: 0;
+	}
 }
 
 @media (max-width: <?=$iMediaQueryLimit?>px) {
@@ -131,7 +138,7 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 	#tiles li.empty {
 		display: none;
 	}
-	#tiles img {
+	#tiles .img {
 		float: left;
 		margin-right: 15px;
 	}
@@ -171,7 +178,7 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 		margin:-<?php echo $g_iHeight*$g_iTileHeight/2; ?>px 0 0 -<?php echo $g_iWidth*$g_iTileWidth/2; ?>px;
 	}
 	#tiles li,
-	#tiles img {
+	#tiles .img {
 		width:<?php echo $g_iTileWidth; ?>px;
 		height:<?php echo $g_iTileHeight; ?>px;
 	}
@@ -191,7 +198,7 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 	#tiles a {
 		display: block;
 	}
-	#tiles img {
+	#tiles .img {
 		display:block;
 		border:0;
 		position:absolute;
@@ -199,22 +206,26 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 		font-size: 20px;
 		font-family: Arial;
 	}
-	#tiles:hover img {
+	#tiles:hover .img {
 		opacity:0.75;
-		filter:alpha(opacity=75);
-		-webkit-transition: all 80ms ease-out;
-		-moz-transition: all 80ms ease-out;
+		-webkit-transition: -webkit-transform 80ms ease-out;
+		-moz-transition: -moz-transform 80ms ease-out;
+		transition: -moz-transform 80ms ease-out;
+
+		-webkit-transform: translateZ(0);
+		-moz-transform: translateZ(0);
+		transform: translateZ(0);
 	}
-	#tiles a:hover img {
+	#tiles a:hover .img {
 		box-shadow:0 0 45px #fff;
 		-moz-box-shadow:0 0 45px #fff;
 		opacity:1.0;
-		filter:alpha(opacity=100);
-		top:-15px;
-		left:-15px;
-		z-index:3;
-		width:120px;
-		height:120px;
+		position: relative;
+		z-index: 2;
+
+		-webkit-transform: translateZ(0) scale(1.3);
+		-moz-transform: translateZ(0) scale(1.3);
+		transform: translateZ(0) scale(1.3);
 	}
 	#tiles h2, #tiles p {
 		display: none;
@@ -269,20 +280,24 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 <ul id="tiles" data-width="<?=$g_iWidth?>" data-height="<?=$g_iHeight?>">
 <?php
 
-foreach ( $arrUseGames AS $i => $game ) {
-	if ( $game ) {
-		$img = $g_szImageDir . '_' . str_replace('/', '_', $game[0]) . '.gif';
-		$file = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . ( '/' == substr($g_szImageDir, 0, 1) ? '' : dirname($_SERVER['PHP_SELF']).'/' ) . $img;
-		$ext = preg_match('/^\d+[a-f]?$/', $game[0]) ? '' : '.php';
-	}
+$thumbs = get_thumbs_positions();
+echo '<!-- ';
+print_r($thumbs);
+echo ' -->';
 
+foreach ( $arrUseGames AS $i => $game ) {
 	$y = floor($i / $g_iWidth);
 	$x = $i % $g_iWidth;
 
 	echo "\t".'<li data-x="'.$x.'" data-y="'.$y.'" class="item-'.($i+1).( $game ? '' : ' empty' ).'">';
 	if ( $game ) {
+		$ext = preg_match('/^\d+[a-f]?$/', $game[0]) ? '' : '.php';
+
+		$bgname = '_' . str_replace('/', '_', $game[0]);
+		$bgpos = isset($thumbs[$bgname]) ? $thumbs[$bgname] : $thumbs['__'];
+
 		echo '<a title="'.$game[1].'" href="'.$game[0].$ext.'">';
-		echo '<img alt="'.$game[1].'" src="'.( file_exists($file) ? $img : $g_szImageDir.'__.gif' ).'" />';
+		echo '<span class="img" style="background-position: 0 -' . $bgpos . 'px"></span>';
 		echo '<h2>'.$game[1].'</h2>';
 		echo '<p>'.$game[2].'</p>';
 		echo '</a>';
@@ -307,10 +322,12 @@ function clone(obj) {
 
 (function() {
 
-	if ( navigator.mobile ) return
+	var cd = getComputedStyle(document.getElementById('cv')).getPropertyValue('display');
+
+	if ( cd == 'none' ) return;
 
 	var g_draw = true,
-		g_drawspeed = 250,
+		g_drawspeed = 500,
 		g_drawtimer,
 		g_crawlspeed = 300,
 		g_empties = [],
@@ -460,6 +477,12 @@ function clone(obj) {
 	}
 
 })()
+
+Window.addEvent('load', function(e) {
+	try {
+		console.log((Date.now() - performance.timing.requestStart)/1000);
+	} catch (ex) {}
+});
 </script>
 </body>
 

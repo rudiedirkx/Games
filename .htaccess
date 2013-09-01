@@ -1,5 +1,11 @@
+
 RewriteEngine on
+
 RewriteRule ^([0-9]{3}[Ba-f]{0,1})$ $1.php
+
 RewriteRule ^inc.cls.(.+).phps source.php?$1
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^cached/thumbs.gif thumbs.php
 
 AddType text/cache-manifest .manifest
