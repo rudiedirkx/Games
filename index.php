@@ -281,10 +281,11 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 <ul id="tiles" data-width="<?=$g_iWidth?>" data-height="<?=$g_iHeight?>">
 <?php
 
-$thumbs = get_thumbs_positions($thumbs);
-echo '<!-- ';
-print_r($thumbs);
-echo ' -->';
+$thumbs = get_thumbs_positions();
+$thumbsRange = count($thumbs) - 1;
+// echo '<!-- ';
+// print_r($thumbs);
+// echo ' -->';
 
 foreach ( $arrUseGames AS $i => $game ) {
 	$y = floor($i / $g_iWidth);
@@ -298,13 +299,10 @@ foreach ( $arrUseGames AS $i => $game ) {
 		$bgpos = isset($thumbs[$bgname]) ? $thumbs[$bgname] : $thumbs['__'];
 
 		$index = $bgpos / THUMB_SIZE;
-		$bgpos = function( $prefix = '' ) use ($thumbs, $index) {
-			$prefix and $prefix = '-' . $prefix . '-';
-			return 'background-position: 0 ' . $prefix . 'calc(100% / ' . (count($thumbs)-1) . ' * ' . $index . ')';
-		};
+		$bgposY = round(100 / $thumbsRange * $index, 3);
 
 		echo '<a title="'.$game[1].'" href="'.$game[0].$ext.'">';
-		echo '  <span class="img" style="' . $bgpos('webkit') . '; ' . $bgpos('moz') . '; ' . $bgpos() . '"></span>';
+		echo '  <span class="img" style="background-position: 0 ' . $bgposY . '%; background-position: 0 calc(100% / ' . $thumbsRange . ' * ' . $index . ')"></span>';
 		echo '  <h2>'.$game[1].'</h2>';
 		echo '  <p>'.$game[2].'</p>';
 		echo '</a>';
