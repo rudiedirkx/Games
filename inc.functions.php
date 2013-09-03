@@ -2,7 +2,7 @@
 
 define('THUMB_SIZE', 91);
 
-function get_thumbs_positions() {
+function get_thumbs_positions( &$thumbs = array() ) {
 	$thumbs = get_thumbs();
 	$positions = array();
 	foreach ( $thumbs as $index => $thumb ) {

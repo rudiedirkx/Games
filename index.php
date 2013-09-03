@@ -116,6 +116,7 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 		height: 91px;
 		display: block;
 		background: black url(/cached/thumbs.gif) 0 0 no-repeat;
+		background-size: 100% auto;
 		border: 0;
 	}
 }
@@ -205,27 +206,27 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 		color: #fff;
 		font-size: 20px;
 		font-family: Arial;
-	}
-	#tiles:hover .img {
-		opacity:0.75;
-		-webkit-transition: -webkit-transform 80ms ease-out;
-		-moz-transition: -moz-transform 80ms ease-out;
-		transition: -moz-transform 80ms ease-out;
+
+		-webkit-transition: width 80ms ease-out, height 80ms ease-out, margin 80ms ease-out;
+		-moz-transition: width 80ms ease-out, height 80ms ease-out, margin 80ms ease-out;
+		transition: width 80ms ease-out, height 80ms ease-out, margin 80ms ease-out;
 
 		-webkit-transform: translateZ(0);
 		-moz-transform: translateZ(0);
 		transform: translateZ(0);
 	}
+	#tiles:hover .img {
+		opacity:0.75;
+	}
 	#tiles a:hover .img {
-		box-shadow:0 0 45px #fff;
-		-moz-box-shadow:0 0 45px #fff;
-		opacity:1.0;
+		box-shadow: 0 0 45px #fff;
+		opacity: 1.0;
 		position: relative;
 		z-index: 2;
 
-		-webkit-transform: translateZ(0) scale(1.3);
-		-moz-transform: translateZ(0) scale(1.3);
-		transform: translateZ(0) scale(1.3);
+		width: 141px;
+		height: 141px;
+		margin: -25px 0 0 -25px;
 	}
 	#tiles h2, #tiles p {
 		display: none;
@@ -280,7 +281,7 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 <ul id="tiles" data-width="<?=$g_iWidth?>" data-height="<?=$g_iHeight?>">
 <?php
 
-$thumbs = get_thumbs_positions();
+$thumbs = get_thumbs_positions($thumbs);
 echo '<!-- ';
 print_r($thumbs);
 echo ' -->';
@@ -296,10 +297,16 @@ foreach ( $arrUseGames AS $i => $game ) {
 		$bgname = '_' . str_replace('/', '_', $game[0]);
 		$bgpos = isset($thumbs[$bgname]) ? $thumbs[$bgname] : $thumbs['__'];
 
+		$index = $bgpos / THUMB_SIZE;
+		$bgpos = function( $prefix = '' ) use ($thumbs, $index) {
+			$prefix and $prefix = '-' . $prefix . '-';
+			return 'background-position: 0 ' . $prefix . 'calc(100% / ' . (count($thumbs)-1) . ' * ' . $index . ')';
+		};
+
 		echo '<a title="'.$game[1].'" href="'.$game[0].$ext.'">';
-		echo '<span class="img" style="background-position: 0 -' . $bgpos . 'px"></span>';
-		echo '<h2>'.$game[1].'</h2>';
-		echo '<p>'.$game[2].'</p>';
+		echo '  <span class="img" style="' . $bgpos('webkit') . '; ' . $bgpos('moz') . '; ' . $bgpos() . '"></span>';
+		echo '  <h2>'.$game[1].'</h2>';
+		echo '  <p>'.$game[2].'</p>';
 		echo '</a>';
 	}
 	echo '</li>'."\n";
@@ -310,12 +317,16 @@ foreach ( $arrUseGames AS $i => $game ) {
 
 <script src="/js/mootools_1_11.js"></script>
 <script>
+var MOVING_TILES = true;
+var DRAWING_BACKGROUND = true;
+
 Array.prototype.shuffle = function() {
 	this.sort(function() {
 		return 0.5 - Math.random()
 	})
 	return this
 }
+
 function clone(obj) {
 	return JSON.parse(JSON.stringify(obj))
 }
@@ -391,25 +402,34 @@ function clone(obj) {
 	Window.addEvent('load', function(e) {
 		log('window.onload')
 
-		draw(1)
-
-		setInterval(function() {
-			log('crawl')
-			crawl(g_crawling++%g_empties.length)
-		}, g_crawlspeed)
+		if ( MOVING_TILES && Math.random() > 0.5 ) {
+			DRAWING_BACKGROUND = false;
+			setInterval(function() {
+				log('crawl');
+				crawl(g_crawling++%g_empties.length);
+			}, g_crawlspeed);
+		}
+		else if ( DRAWING_BACKGROUND ) {
+			MOVING_TILES = false;
+			draw(1);
+		}
 	})
 
 	var lc = '', c
 	Document.addEvent('mousemove', function(e) {
 		log('window.onmousemove')
-		c = e.clientX + ':' + e.clientY // stupid Chrome bug fires mousemove events when the mouse doesn't move
-		'CANVAS' == e.target.nodeName && c != lc && g_draw && draw()
-		lc = c
+		if ( DRAWING_BACKGROUND ) {
+			c = e.clientX + ':' + e.clientY // stupid Chrome bug fires mousemove events when the mouse doesn't move
+			'CANVAS' == e.target.nodeName && c != lc && g_draw && draw()
+			lc = c
+		}
 	})
 
 	Window.addEvent('resize', function(e) {
 		log('window.onresize')
-		draw(1)
+		if ( DRAWING_BACKGROUND ) {
+			draw(1)
+		}
 	})
 
 	if ( innerWidth < <?=$iMediaQueryLimit?> ) {
