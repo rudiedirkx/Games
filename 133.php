@@ -55,16 +55,6 @@ define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
 
 
 
-/////////////////////////////////////////////////////////////////////////////////
-// CONFIG
-
-define( "MAX_USERS",	20 );
-
-define( "MAX_LOAN",		2000000 );
-define( "MAX_BITCHES",	25 );
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////////
 // MYSQL CONNECT + SESSION START
@@ -75,11 +65,23 @@ session_start();
 
 
 
+/////////////////////////////////////////////////////////////////////////////////
+// CONFIG
+
+define( 'ADMIN_PASSWORD', defined('GAMES_ADMIN_PASSWORD') ? GAMES_ADMIN_PASSWORD : rand(999999, 9999999) );
+
+define( "MAX_USERS",	20 );
+
+define( "MAX_LOAN",		2000000 );
+define( "MAX_BITCHES",	25 );
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////
 // GET LANGUAGE STUFF
 
-get_language_stuff( );
+get_language_stuff();
 
 
 
@@ -87,10 +89,8 @@ get_language_stuff( );
 /////////////////////////////////////////////////////////////////////////////////
 // PREPARING USER VARIABLES
 
-$player = Array( );
-if ( isset($_SESSION['player']) )	$player	= $_SESSION['player'];
-$uid = '';
-if ( isset($_SESSION['uid']) )		$uid	= $_SESSION['uid'];
+$player = @$_SESSION['player'] ?: array();
+$uid = @$_SESSION['uid'] ?: 0;
 
 
 
@@ -110,13 +110,11 @@ if ( isset($_SESSION['uid']) )		$uid	= $_SESSION['uid'];
 /////////////////////////////////////////////////////////////////////////////////
 // UPDATING
 
-if ( 0 < mysql_result(mysql_query("SELECT COUNT(*) AS a FROM dopewars WHERE gameoff='1' LIMIT 1;"),0,'a') && !($_GET['action'] == "overnight" && $_GET['pwd'] == "aarde") )
-{
+if ( 0 < mysql_result(mysql_query("SELECT COUNT(*) AS a FROM dopewars WHERE gameoff='1' LIMIT 1;"),0,'a') && !($_GET['action'] == "overnight" && @$_GET['pwd'] == ADMIN_PASSWORD) ) {
 	die("Updating... Back in a sec!");
 }
 
-if ( isset($_GET['action']) && "overnight" == $_GET['action'] && $_GET['pwd'] == "aarde")
-{
+if ( @$_GET['action'] == 'overnight' && @$_GET['pwd'] == ADMIN_PASSWORD) {
 	// GAME OFF
 	echo "setting GAME-OFF<br><br>".EOL.EOL;
 	mysql_query("UPDATE dopewars SET gameoff='1';");
@@ -154,12 +152,11 @@ if ( isset($_GET['action']) && "overnight" == $_GET['action'] && $_GET['pwd'] ==
 /////////////////////////////////////////////////////////////////////////////////
 // HIGH SCORE LIST
 
-if ( isset($_GET['action']) && "hiscore" == $_GET['action'] )
-{
+if ( isset($_GET['action']) && "hiscore" == $_GET['action'] ) {
 	echo "<html><head><title>dopewars</title>";
-	print_css( );
+	print_css();
 	echo "</head><body><center><h3>dopewars - high scores</h3>";
-	
+
 	echo "<p><b>Active dealers - Top 200</b></p>";
 	$hq = mysql_query("SELECT name, score FROM dopewars ORDER BY score DESC LIMIT 200;") or die(mysql_error());
 	$n=1;
@@ -167,7 +164,7 @@ if ( isset($_GET['action']) && "hiscore" == $_GET['action'] )
 	{
 			echo ($n++)." - ".htmlspecialchars($val['name']).' ($'.nummertje($val['score']).")<br>\n";
 	}
-	
+
 	echo "<p><b>Legendary (dead) dealers - All-time-hi-scores - Top 100</p>";
 	$hq = mysql_query("SELECT name, score FROM dopescores ORDER BY score DESC LIMIT 100;") or die(mysql_error());
 	$n=1;
@@ -175,7 +172,7 @@ if ( isset($_GET['action']) && "hiscore" == $_GET['action'] )
 	{
 			echo ($n++)." - ".htmlentities($val['name']).' ($'.nummertje($val['score']).")<br>\n";
 	}
-	
+
 	echo '<p><a href="'.BASEPAGE.'">back</a></p>';
 	echo "</body></html>";
 	exit;
@@ -193,41 +190,31 @@ if ( isset($_GET['action']) && "hiscore" == $_GET['action'] )
 /////////////////////////////////////////////////////////////////////////////////
 // PRE-LOGIN
 
-if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET['logout']) )
-{
-	// echo "niet ingelogd...";
-	unset( $_SESSION['uid'], $_SESSION['player'] );
+if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET['logout']) ) {
+	unset($_SESSION['uid'], $_SESSION['player']);
 
-	$action = isset( $_GET['action'] ) ? $_GET['action'] : '';
-	switch ( $action )
-	{
+	$action = @$_GET['action'];
+	switch ( $action ) {
 		case "login":
-			if ( 0 < count($_POST) )
-			{
-				$name = trim(str_replace(",", " ",substr($_POST['name'],0,20)));
-				$password = trim(substr($_POST['password'],0,15));
-				$new = isset($_POST['new']) ? TRUE : FALSE;
-				if ((addslashes($name) != $name || strstr($name,"  ")) && $new )
-				{
-					echo $error = "Invalid characters in username.";
+			if ( 0 < count($_POST) ) {
+				// exit('Invalid login');
+
+				$name = trim(preg_replace('#\s+#', ' ', substr($_POST['name'], 0, 20)));
+				$password = md5($_POST['password']);
+				$new = !empty($_POST['new']);
+
+				if ( $new && !preg_match('#^[a-z][a-z0-9 ]+$#i', $name) ) {
+					echo $error = "Invalid username.";
 				}
-				else if (addslashes($password) != $password)
-				{
-					echo $error = "Invalid characters in password.";
-				}
-				else if ( 1 < strlen($name) && 1 < strlen($password) )
-				{
-					$_SESSION['language'] = $_POST['lang'];
-					$result = mysql_query("SELECT * FROM dopewars WHERE name='".$name."';");
-					if ( $new )
-					{
-						if (mysql_num_rows($result))
-						{
+				else if ( 1 < strlen($name) && 1 < strlen($password) ) {
+					$result = mysql_query("SELECT * FROM dopewars WHERE name='" . addslashes($name) . "';");
+					if ( $new ) {
+						if (mysql_num_rows($result)) {
 							echo $error = "There already exists a user named \"$name\"!";
 						}
-						else
-						{
+						else {
 							check_max();
+
 							$player['name']				= $name;
 							$player['cash']				= 5000;
 							$player['debt']				= 4761;
@@ -237,46 +224,38 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 							$player['space']			= 20 + $player['bitches']*10;
 							$player['held']				= 0;
 							$player['life']				= 100;
-							$player['guns']				= Array( );
-							$player['drugs']			= Array( );
-							$player['drugprices']		= Array( );
-							$player['prices']			= Array( );
+							$player['guns']				= array();
+							$player['drugs']			= array();
+							$player['drugprices']		= array();
+							$player['prices']			= array();
 							$player['destination']		= 1;
 							$player['location']			= 1;
-							$player['snitches']			= Array( );
-							$player['currentsnitches']	= Array( );
-							$player['snitchreport']		= Array( );
-							$player['fighthistory']		= Array( );
+							$player['snitches']			= array();
+							$player['currentsnitches']	= array();
+							$player['snitchreport']		= array();
+							$player['fighthistory']		= array();
 
 							$pl = addslashes(serialize($player));
-							$sql = "INSERT INTO dopewars (name,password,player) VALUES ('$name','$password','$pl')";
+							$sql = "INSERT INTO dopewars (name,password,player) VALUES ('" . addslashes($name) . "', '$password', '$pl')";
 							mysql_query($sql) or die(mysql_error());
-							if ( mysql_affected_rows() )
-							{
-								session_register("uid");
-								session_register("player");
+							if ( mysql_affected_rows() ) {
 								$_SESSION['uid'] = $name;
 								$_SESSION['player'] = $player;
 							}
-							Header( "Location: ".BASEPAGE."?NEW_ACCOUNT_MADE" );
+							header( "Location: " . BASEPAGE . "?NEW_ACCOUNT_MADE" );
 							exit;
-						}											
+						}
 					}
-					else
-					{
-						if ( !mysql_num_rows($result) )
-						{
+					else {
+						if ( !mysql_num_rows($result) ) {
 							echo $error = "No such user";
 						}
-						else if ( md5(mysql_result($result,0,'password')) != md5($password) )
-						{
+						else if ( mysql_result($result, 0, 'password') != $password ) {
 							echo $error = "Invalid password";
 						}
 						else
 						{
-							check_max( );
-							session_register("uid");
-							session_register("player");
+							check_max();
 							$_SESSION['uid']	= mysql_result($result,0,'name');
 							$_SESSION['player']	= unserialize(mysql_result($result,0,'player'));
 							// if ( !isset($_SESSION['player']['life']) ) $_SESSION['player']['life'] = 100;
@@ -285,14 +264,14 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 							// print_r( $_SESSION['player'] );
 							exit;
 						}
-					}					
+					}
 				}
 			}
 
 			if ( !isset($_SESSION['uid']) || !isset($_SESSION['player']) )
 			{
 				echo "<html><head><title>dopewars</title>";
-				print_css( );
+				print_css();
 				echo "</head><h3>dopewars - login</h3>";
 				echo "<div style=\"height:20px;margin-top:30px;\">";
 				if ( isset($error) )
@@ -304,13 +283,10 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 				echo "<p>name: ";
 				echo "<input name=name type=text size=10 maxlength=20></p>";
 				echo "<p>password: ";
-				echo "<input name=password type=password size=10 maxlength=15></p>";
-				echo "<p>language: ";
-				echo "<select name=lang><option value=EN>English<option value=NL>Dutch";
-				echo "</select></p>";
+				echo "<input name=password type=password size=10></p>";
 				echo "<p><label for=new><input type=checkbox name=new id=new> create new account</label></p>";
 				echo "<input type=submit value=\"login\"> ";
-				echo "</form>";	
+				echo "</form>";
 				echo "</body></html>";
 				exit;
 			}
@@ -318,7 +294,7 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 
 		default:
 			echo "<html><head><title>dopewars</title>";
-			print_css( );
+			print_css();
 			echo "</head>".EOL.EOL."<body>";
 			echo "<h2>dopewars</h2>";
 			echo "<p>(deal drugs to make lots and lots of money)</p>";
@@ -333,11 +309,10 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 /////////////////////////////////////////////////////////////////////////////////
 // READ DATABASE
 
-if ( isset($_SESSION['player']['opponent']) && $_SESSION['player']['opponent'] )
-{
+if ( isset($_SESSION['player']['opponent']) && $_SESSION['player']['opponent'] ) {
 	// prevent deadlock by selecting the opponent as well
 
-	$qry = "SELECT * FROM dopewars WHERE name in ('".$uid."','".$player['opponent']."');";
+	$qry = "SELECT * FROM dopewars WHERE name in ('" . addslashes($uid) . "', '" . addslashes($player['opponent']) . "');";
 	$listed = mysql_query($qry);
 	$result[0] = mysql_result($listed,0);
 	$result[1] = mysql_result($listed,1);
@@ -361,17 +336,15 @@ if ( isset($_SESSION['player']['opponent']) && $_SESSION['player']['opponent'] )
 	}
 
 }
-else
-{
-	$qry = "SELECT * FROM dopewars WHERE name='".$_SESSION['uid']."' FOR UPDATE;";
+else {
+	$qry = "SELECT * FROM dopewars WHERE name = '" . addslashes($_SESSION['uid']) . "' FOR UPDATE;";
 	$q = mysql_query($qry) or die(mysql_error());
 	$result = mysql_fetch_assoc($q);
 	$player = unserialize(stripslashes($result['player']));
 	$pass = $result['password'];
 }
 
-if ( !isset($_SESSION['player']) || !is_array($_SESSION['player']) )
-{
+if ( !isset($_SESSION['player']) || !is_array($_SESSION['player']) ) {
 	print_r( $_SESSION );
 	die("fout... <a href='?logout=1'>Index</a>");
 	// header("Location: ".BASEPAGE);
@@ -385,8 +358,7 @@ $onthemove = 0;
 // ****************************************************************************
 // TO ANOTHER LOCATION
 
-if ( isset($_GET['l']) && 0 <= $_GET['l'] && ( !isset($player['prison']) || !$player['prison'] ) && ( !isset($player['fight']) || !$player['fight'] ) )
-{
+if ( isset($_GET['l']) && 0 <= $_GET['l'] && ( !isset($player['prison']) || !$player['prison'] ) && ( !isset($player['fight']) || !$player['fight'] ) ) {
 	// echo "<pre>\n";
 	// print_r( $player );
 
@@ -419,50 +391,39 @@ if ( isset($_GET['l']) && 0 <= $_GET['l'] && ( !isset($player['prison']) || !$pl
 	// $player['location']		= $_GET['l'];
 	echo "<html>".EOL.EOL."<head>".EOL."<title>dopewars</title>".EOL;
 	echo "<META http-equiv=refresh content=\"1; URL=".BASEPAGE."\">";
-	print_css( );
+	print_css();
 	echo "</head>".EOL.EOL."<body>";
 	echo "<font class='onthemove'>".$str['onthemove']." ".$places[$player['destination']]."</font>";
 
-	$player['travel']--;
-	if ( isset($player['noencounter']) )
-	{
+	@$player['travel']--;
+	if ( isset($player['noencounter']) ) {
 		$player['noencounter']++;
 	}
-	else
-	{
+	else {
 		$player['noencounter']=1;
 	}
-	if ($player['noencounter'] > 5)
-	{
+	if ($player['noencounter'] > 5) {
 		$onthemove = 1;
 	}
-	save_exit( );
+
+	save_exit();
 }
 
 
 echo "<html>".EOL.EOL."<head>".EOL."<title>dopewars</title>".EOL;
-print_css( );
+print_css();
 echo "</head>".EOL.EOL."<body>".EOL.EOL;
 // print_r($player);
 
 // ****************************************************************************
 // PRISON
 
-if ( isset($player['prison']) && $player['prison'] )
-{
+if ( isset($player['prison']) && $player['prison'] ) {
 	echo "<h3>".$str['prison']."</h3>";
 //	printmenu(0);
 
 	if ($player['prison'] > time())
 	{
-		if ($_SESSION['language'] == "NL")
-		{
-			setlocale(LC_TIME, "nl_NL");
-		}
-		else
-		{
-			setlocale(LC_TIME, "en_EN");
-		}
 		printf("<p>".$str['inprison']."</p>", strftime($str['dateformat'],$player['prison']));
 		echo "<form><input type=hidden name=logout value=1><input type=submit value=\"".$str['logout']."\"></form>";
 	}
@@ -480,8 +441,7 @@ if ( isset($player['prison']) && $player['prison'] )
 // ****************************************************************************
 // BETWEEN TWO LOCATIONS
 
-if ( isset($player['destination']) && $player['destination'] != "" && $player['location']!=$player['destination'] && isset($player['travel']) && $player['travel'] )
-{
+if ( isset($player['destination']) && $player['destination'] != "" && $player['location']!=$player['destination'] && isset($player['travel']) && $player['travel'] ) {
 	if ( isset($player['fight']) && $player['fight'] )
 	{
 
@@ -496,7 +456,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 			{
 				$qry = "SELECT * FROM dopewars WHERE name='" . $player["opponent"] . "' FOR UPDATE;";
 				$result = $db->qry($qry);
-				if ( $result[0] != Array() )
+				if ( $result[0] != array() )
 				{
 					$opponent = unserialize(stripslashes($result[0]["player"]));
 				}
@@ -511,12 +471,12 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 			else
 			{
 				echo "<h3>" . $str["onthemove"] . " " . $places[$player["destination"]] . "</h3><div style=\"height:100px;margin-top:30px;\">";
-				
+
 				while (list($key, $event) = each ($player["fighthistory"]))
 				{
 					printf ($str[$event] . "<br>", htmlentities($opponent["name"]));
 				}
-	
+
 				check_life( __LINE__ );
 
 				if ( $opponent["opponent"] )
@@ -536,7 +496,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 						}
 						if ($damage >=  5 - $opponent["bitches"]/2)
 						{
-		
+
 							if (mt_rand(0,$opponent["bitches"]))
 							{
 								$opponent = lose_bitch($opponent);
@@ -558,7 +518,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 									$opponent["life"] -= round($damage * .4 + 0.3 * max(0,$opponent["total"])/1000000 );
 								}
 								$opponent["fighthistory"][] = "yourhit";
-		
+
 								if ($opponent["life"] <= 0)
 								{
 									$opponent["life"] = 0;
@@ -761,7 +721,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 								echo "<form><input type=\"submit\" value=\"" . $str["continue"]. "\"></form>";
 								echo "</body></html>";
 								save_exit();
-				
+
 			}
 			else if ( !isset($player['fight']) || !$player['fight'] )
 			{
@@ -855,7 +815,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 		{
 			if ($player['debt'] > MAX_LOAN && $player['threat'] == 0)
 			{
-				$threat = 1;	
+				$threat = 1;
 			}
 			else if ($player['debt'] > MAX_LOAN * 1.2 && $player['threat'] == 1)
 			{
@@ -877,17 +837,17 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 			$player["life"] -= pow($threat, 3) * 4;
 			$player["threat"] = $threat;
 			$player["travel"] = 0;
-		
+
 			check_life(__LINE__);
 
 			echo "</div>";
 		//	printmenu(0);
 			echo "<form><input type=\"submit\" value=\"" . $str["continue"]. "\"></form>";
-			
+
 			echo "</body></html>";
-			save_exit();						
+			save_exit();
 		}
-		else if (mt_rand(0, $foo) == 0 || $player["snitches"] != Array() )
+		else if (mt_rand(0, $foo) == 0 || $player["snitches"] != array() )
 		{
 			// start fight with police
 			if ($player["snitches"] != array()) {
@@ -898,9 +858,9 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 				$player["currentsnitches"] = array();
 				$player["cops"] = mt_rand(2, 12 - min(9, $foo-2));
 			}
-			
+
 			$player["fight"] = time();
-	
+
 			echo "<h3>" . $str["onthemove"] . " " . $places[$player["destination"]] . "</h3>";
 			echo "<div style=\"height:100px;margin-top:30px;\">";
 
@@ -930,7 +890,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 							printf($str["lostdrugs"], $drugs[$key]["name"]);
 							break;
 						}
-					}	
+					}
 				}
 				else if ($player["space"] && $r < 4)
 				{
@@ -1003,17 +963,16 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 		echo "</body></html>";
 		save_exit();
 	}
-	
+
 }
 
 // ****************************************************************************
 // PRINT SNITCH REPORTS
 
-if ( isset($player['destination']) && $player['destination'] != "" && $player['location'] != $player['destination'])
-{
+if ( isset($player['destination']) && $player['destination'] != "" && $player['location'] != $player['destination']) {
 	if ( isset($player['snitchreport']) && $player['snitchreport'] )
 	{
-	
+
 		echo "<h3>" . $str["onthemove"] . " " . $places[$player["destination"]] . "</h3>";
 		echo "<div style=\"height:100px;margin-top:30px;\">";
 
@@ -1054,7 +1013,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 	//	printmenu(0);
 		echo "<form><input type=\"submit\" value=\"" . $str["continue"]. "\"></form>";
 		echo "</body></html>";
-		
+
 		save_exit();
 	}
 }
@@ -1066,8 +1025,7 @@ echo '<table border="0" cellpadding="0" cellspacing="0" width="100%">'.EOL;
 echo '<tr valign="top">'.EOL;
 echo '<td colspan="3" class="location">'.EOL;
 
-if ( $player['destination'] != "" && $player['location'] != $player['destination'] )
-{
+if ( $player['destination'] != "" && $player['location'] != $player['destination'] ) {
 	// moving
 	echo $places[$player['destination']];
 	$nietgotoinmenu = $player['destination'];
@@ -1088,15 +1046,13 @@ echo '<td width="1">'.EOL;
 
 check_life(__LINE__);
 
-if ( !isset($_GET['action']) || $_GET['action'] != "run")
-{
+if ( !isset($_GET['action']) || $_GET['action'] != "run") {
 	printmenu("left");
 }
 
 echo "</td><td><center>";
 
-if ($player['destination']!="" && $player['location']!=$player['destination'])
-{
+if ($player['destination']!="" && $player['location']!=$player['destination']) {
 	// ****************************************************************************
 	// GENERATE NEW PRICES
 
@@ -1118,14 +1074,14 @@ if ($player['destination']!="" && $player['location']!=$player['destination'])
 			$prices[$i] = round($prices[$i]);
 		}
 	}
-	
+
 	$drugcnt = mt_rand(count($drugs)/2, count($drugs));
-	
+
 	while ($drugcnt < count($prices))
 	{
 		unset($prices[mt_rand(0,count($drugs))]);
 	}
-	
+
 	$player['location'] = $player['destination'];
 	$player['destination'] = "";
 	$player['prices'] = $prices;
@@ -1149,8 +1105,7 @@ if ($player['destination']!="" && $player['location']!=$player['destination'])
 // ****************************************************************************
 // OVERDOSE
 
-if ( isset($_GET['action']) && $_GET['action'] == "od" )
-{
+if ( isset($_GET['action']) && $_GET['action'] == "od" ) {
 	if ($_GET['confirm'])
 	{
 		$player['life'] = 0;
@@ -1160,8 +1115,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "od" )
 
 // ****************************************************************************
 // BANK
-if ( isset($_GET['action']) && $_GET['action'] == "bank" && $player["location"] == 4)
-{
+if ( isset($_GET['action']) && $_GET['action'] == "bank" && $player["location"] == 4) {
 	$amount = str_replace(",", "", $_GET['amount']);
 
 	if ( isset($_GET['deposit']) )
@@ -1192,8 +1146,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "bank" && $player["location"] 
 
 // ****************************************************************************
 // DEBT
-if ( isset($_GET['action']) && $_GET['action'] == "debt" && $player['location'] == 0)
-{
+if ( isset($_GET['action']) && $_GET['action'] == "debt" && $player['location'] == 0) {
 	$amount = 0;
 	if ( isset($_GET['amount']) )	$amount = $_GET['amount'];
 	$amount = (FLOAT)trim(str_replace(',', '', $_GET['amount']));
@@ -1238,8 +1191,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "debt" && $player['location'] 
 
 // ****************************************************************************
 // OPERATE
-if ( isset($_GET['action']) && $_GET['action'] == "operate" && $player['location'] == 2)
-{
+if ( isset($_GET['action']) && $_GET['action'] == "operate" && $player['location'] == 2) {
 	$price = (100 - $player['life']) * 1500 + 1500;
 	if ($price <= $player["cash"])
 	{
@@ -1256,8 +1208,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "operate" && $player['location
 // ****************************************************************************
 // BITCHES
 
-if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] == 1)
-{
+if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] == 1) {
 	$price = $bitchactions[$_GET['activity']]['price'];
 	if ( $price )
 	{
@@ -1284,7 +1235,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] 
 							echo $str["ooh"];
 							break;
 					}
-					break;						
+					break;
 				case 1:
 					// SPY
 					if (is_numeric($dealer)) {
@@ -1326,12 +1277,12 @@ if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] 
 					echo "</form></td><td width=1>";
 					printmenu("right");
 					save_exit();
-					
+
 				case 2:
 					// SNITCH
 					if ( isset($_GET['dealer']) && is_numeric($_GET['dealer']) )
 					{
-						$qry = "SELECT * FROM dopewars WHERE id='".$_GET['dealer']."';";
+						$qry = "SELECT * FROM dopewars WHERE id = '" . addslashes($_GET['dealer']) . "';";
 						$q = mysql_query($qry);
 						if (mysql_num_rows($q))
 						{
@@ -1358,7 +1309,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] 
 					echo "</form></td><td width=1>";
 					printmenu("right");
 					save_exit();
-	
+
 				case 3:
 					// DRUGS RUNNER
 
@@ -1383,8 +1334,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] 
 
 }
 
-if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "sell") && isset($_GET['quantity']) && 0 <= $_GET['quantity'] )
-{
+if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "sell") && isset($_GET['quantity']) && 0 <= $_GET['quantity'] ) {
 	// ****************************************************************************
 	// BUY / SELL
 
@@ -1392,7 +1342,7 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 	{
 		$player["prices"][$_GET['drug']] = isset($player["prices"][$_GET['drug']]) ? $player["prices"][$_GET['drug']] : 0;
 		$realprice = $_GET['quantity'] * $player["prices"][$_GET['drug']];
-		
+
 		if ( $player["prices"][$_GET['drug']] || $_GET['action'] != "buy" )
 		{
 			if ($_GET['action'] == "buy")
@@ -1421,7 +1371,7 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 
 					$player['drugs'][$_GET['drug']] += $_GET['quantity'];
 					$player['drugprices'][$_GET['drug']] = round($drugamount / $player['drugs'][$_GET['drug']]);
-	
+
 				}
 			}
 			else
@@ -1438,7 +1388,7 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 					$player['space'] += $_GET['quantity'];
 					$player['drugs'][$_GET['drug']] -= $_GET['quantity'];
 				}
-			}			
+			}
 		}
 		$_GET['drug'] = '';
 
@@ -1485,12 +1435,11 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 				$player["cash"] += $realprice;
 				$player["guns"][$_GET['gun']] -= $_GET['quantity'];
 			}
-		}			
+		}
 	}
 }
 
-if ( isset($_GET['s']) && $_GET['s'] )
-{
+if ( isset($_GET['s']) && $_GET['s'] ) {
 	switch ($player['location'])
 	{
 		case 0:
@@ -1504,10 +1453,10 @@ if ( isset($_GET['s']) && $_GET['s'] )
 			echo "<input type=submit name=withdraw value=\"".$str['loan']."\"> ";
 			echo "<input type=submit name=deposit value=\"".$str['pay']."\">";
 			echo "<input name=s type=hidden value=1>";
-		
-			echo "</form>";	
+
+			echo "</form>";
 			break;
-		
+
 		case 1:
 			// ****************************************************************************
 			// BITCHES
@@ -1521,13 +1470,13 @@ if ( isset($_GET['s']) && $_GET['s'] )
 			{
 				echo "<option value=\"$key\">".$val['name']." - $currency ".$val['price']."</option>";
 			}
-			
+
 			echo "</select><br><br>";
 			echo "<input name=s type=hidden value=1>";
 			echo "<input type=submit value=\"".$str['hire']."\"></form>";
-			
+
 			break;
-			
+
 		case 2:
 			// ****************************************************************************
 			// HOSPITAL
@@ -1541,7 +1490,7 @@ if ( isset($_GET['s']) && $_GET['s'] )
 				echo "<input type=hidden name=action value=\"operate\">";
 				echo "<input type=submit value=\"".$str['operate']."\"> ";
 				echo "<input name=s type=hidden value=1>";
-				echo "</form>";	
+				echo "</form>";
 			} else {
 				echo "<p>".$str['recovered']."</p>";
 
@@ -1559,13 +1508,13 @@ if ( isset($_GET['s']) && $_GET['s'] )
 			echo "<input type=\"submit\" name=\"withdraw\" value=\"" . $str["withdraw"] . "\"> ";
 			echo "<input type=\"submit\" name=\"deposit\"  value=\"" . $str["deposit"]  . "\">";
 			echo "<input name=\"s\" type=\"hidden\" value=\"1\">";
-		
-			echo "</form>";	
+
+			echo "</form>";
 			break;
 		case 5:
 			// ****************************************************************************
 			// GUNSHOP
-			
+
 			echo "<table border=1 cellpadding=2 cellspacing=0><tr>";
 			echo "<td><center><form name=buy><input type=\"hidden\" name=\"action\" value=\"buy\">";
 			echo $str["available"];
@@ -1576,13 +1525,13 @@ if ( isset($_GET['s']) && $_GET['s'] )
 				$selected = (isset($_GET['gun']) && $_GET['gun'] == $gun && isset($_GET['action']) && $_GET['action'] == 'buy' ) ? ' SELECTED' : '';
 				echo '<option value="'.$gun.'"' . $selected . '>' . $val["name"] . ' - '.$currency.' ' . $val["price"] . '</option>';
 			}
-			
+
 			echo "</select><br><br>";
 			echo "<input name=\"quantity\" type=\"hidden\" value=\"1\">";
 			echo "<input name=\"s\" type=\"hidden\" value=\"1\">";
 			echo "<input type=\"submit\" value=\"". $str["buy"] . " &gt;\"></form></td>";
-			
-			
+
+
 			echo "<td><center><form action=\"\" name=\"sell\"><input type=\"hidden\" name=\"action\" value=\"sell\">";
 			echo $str["carried"];
 			echo "<br><br><select name=\"gun\" size=\"5\" style=\"width:160px;\">";
@@ -1596,17 +1545,17 @@ if ( isset($_GET['s']) && $_GET['s'] )
 					echo '<option value="'.$gun.'"'.$selected.'>'.$gunname.' - '.$val.'</option>';
 				}
 			}
-			
+
 			echo "</select><br><br>";
 			echo "<input name=\"quantity\" type=\"hidden\" value=\"1\">";
 			echo "<input name=\"s\" type=\"hidden\" value=\"1\">";
 			echo "<input type=\"submit\" value=\"&lt; ". $str["sell"] . "\"></form></td>";
-			
+
 			echo "</tr></table>";
 			break;
 	}
 
-	
+
 	echo "<p><a href=\"".BASEPAGE."\">".$str['leave']."</a></p>";
 
 }
@@ -1625,7 +1574,7 @@ else
 
 	// ****************************************************************************
 	// DEALING DRUGS
-	
+
 	}
 	else if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "sell") && isset($_GET['drug']) && $_GET['drug'] != '' )
 	{
@@ -1633,7 +1582,7 @@ else
 		echo '<input type=hidden name=action value="'.$_GET['action'].'">';
 		echo '<input type=hidden name=drug value="'.$_GET['drug'].'">';
 		$drugname = $drugs[$_GET['drug']]["name"];
-		
+
 		$price = isset($player["prices"][$_GET['drug']]) ? max(1, $player["prices"][$_GET['drug']]) : -1;
 
 		if ($_GET['action'] == "sell")
@@ -1659,8 +1608,8 @@ else
 		} else {
 			echo "<input type=\"submit\" value=\"" . $str["sell"] . "\">";
 		}
-	
-		echo "</form>";	
+
+		echo "</form>";
 	}
 	else
 	{
@@ -1682,7 +1631,7 @@ else
 			}
 			if ($val > $drugs[$drug]['max'])
 			{
-				if ($drugs[$drug]['maxmsg'])
+				if (!empty($drugs[$drug]['maxmsg']))
 				{
 					echo $drugs[$drug]['maxmsg']."<br>\n";
 				}
@@ -1705,8 +1654,8 @@ else
 		}
 		echo "</select><br><br>";
 		echo "<input type=\"submit\" value=\"". $str["buy"] . " &gt;\"></form></td>";
-		
-		
+
+
 		echo "<td><center><form name=sell><input type=\"hidden\" name=\"action\" value=\"sell\">";
 		echo $str["carried"];
 		echo "<br><br><select name=\"drug\" size=\"11\" style=\"width:200px;\">";
@@ -1731,8 +1680,7 @@ else
 
 echo "</td><td width=1>";
 
-if ( !isset($_GET['action']) || $_GET['action'] != "run")
-{
+if ( !isset($_GET['action']) || $_GET['action'] != "run") {
 	printmenu("right");
 }
 
@@ -1748,7 +1696,7 @@ $player['opponent'] = "";
 echo "<pre>\n";
 print_r( $player );
 
-save_exit( );
+save_exit();
 
 
 
@@ -1766,420 +1714,235 @@ save_exit( );
 ///////////////////////////////////////////////////////////////
 // SET LANGUAGE STUFF
 
-function get_language_stuff( )
-{
+function get_language_stuff() {
 	global $str, $places, $special, $drugs, $bitchactions, $fight;
 	global $language, $currency, $guns, $maxmsgs, $minmsgs;
 
-	if ( isset($_SESSION['language']) && $_SESSION['language'] == "NL")
-	{
-		$language = "NL";
-
-		$places = array(
-			"Spangen",
-			"Tussendijken",
-			"Dijkzigt/Cool",
-			"Oude Westen",
-			"Centraal Station",
-			"Tarwewijk",
-			"Hillesluis",
-			"Zuidplein");
-
-		$special = array(
-			0 => "de woekeraar op de Mathenesserdijk",
-			1 => "de hero&iuml;nehoeren op de Keileweg",
-			2 => "de polikliniek",
-			4 => "het GWK",
-			5 => "de wapenhandelaar in de Millinxbuurt");
-
-		$drugs = array(
-			array("name" => "LSD",			"min" => 1000,	"max"=> 4400,	"minmsg" => "", "maxmsg"=>"LSD is bezig aan een come-back in het party-circuit!"),
-			array("name" => "coca&iuml;ne",	"min" => 13000,	"max"=> 40000,	"minmsg" => "Bolletjesslikkers hebben Rotterdam Airport ontdekt: coca&iuml;ne in overvloed.",	"maxmsg" => "In de haven is een lading Columbiaanse coke onderschept."),
-			array("name" => "hero&iuml;ne",	"min" => 5500,	"max"=> 13000,	"minmsg" => "In de Pauluskerk wordt gratis methadon verstrekt, de hero&iuml;ne markt is ingestort.",	"maxmsg" => "Hero&iuml;ne-junks komen hier massaal naar toe, er is een tekort aan smack."),
-			array("name" => "hash",			"min" => 480,	"max"=> 1280,	"minmsg" => "Een Marokkaans schip heeft grote hoeveelheden hash afgeleverd.",	"maxmsg" => "Een container maroc is door de douane vernietigd."),
-			array("name" => "wiet",			"min" => 315,	"max"=> 890,	"minmsg" => "",	"maxmsg" => "Een hennepkwekerij is opgerold, de wietprijzen zijn omhooggeschoten!"),
-			array("name" => "speed",		"min" => 90,	"max"=> 250,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "XTC",			"min" => 2800,	"max"=> 3700,	"minmsg" => "Een nieuw XTC laboratorium dumpt pillen voor weinig.", "maxmsg" => "De politie heeft een XTC laboratorium ontmanteld."),
-			array("name" => "valium",		"min" => 11,	"max"=> 60,		"minmsg" => "Rivaliserende dealers hebben een apotheek beroofd en verkopen goedkoop valium!",	"maxmsg" => ""),
-			array("name" => "paddo's",		"min" => 630,	"max"=> 1300,	"minmsg" => "",	"maxmsg" => "In een proefproces zijn paddo's verboden, de prijzen schieten omhoog."),
-			array("name" => "peyote",		"min" => 220,	"max"=> 700,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "PCP",			"min" => 1000,	"max"=> 2500,	"minmsg" => "",	"maxmsg" => ""));
-
-		$bitchactions = array (
-			array("name" => "geile neukseks",	"price" => 20),
-			array("name" => "spion",			"price" => 6500),
-			array("name" => "verklikker",		"price" => 10000),
-			array("name" => "drugskoerier",		"price" => 35000));
-
-		$fight		= Array("blijven staan",
-							"over geven",
-							"vluchten",
-							"schieten");	
-
-		$maxmsgs	= Array("%s is in de mode!",
-							"Een lading %s is onderschept, er is schaarste!",
-							"Verslaafden betalen belachelijke prijzen voor %s!"
-							);
-		$minmsgs	= Array("De markt wordt overspoeld met %s!",
-							"%s is gvd niet duur vandaag!!"
-							);
-
-		$str["nospace"]		= "Je hebt geen ruimte voor %s drugs.";
-		$str["nodrug"]		= "Je hebt geen  %s eenheden %s.";
-
-		$str["morespace"]	= "Je kunt nu 10 extra units meenemen.";
-
-		$str["doctor"]		= "Je zelf laten opereren kost &euro; %s.";
-		$str["recovered"]	= "Je bent kerngezond.";
-		$str["disease"]		= "Je hebt een SOA opgelopen.";
-		$str["mugged"]		= "Je zakken zijn gerold: je geld is weg!";
-		$str["ooh"]			= "'Ooh, was het ook goed voor jou?'";
-		$str["operate"]		= "opereren";
-
-		$str["nogunspace"]	= "Je kunt niet meer wapens dragen.";
-		$str["noguncash"]	= "Dit wapen is te duur.";
-		$str["nomoney"]		= "Je hebt daar geen geld voor.";
-		$str["sell"]		= "verkoop";
-		$str["buy"]			= "koop";
-		$str["available"]	= "markt:";
-		$str["carried"]		= "in bezit:";
-		$str["to"]			= "naar";
-		$str["at"]			= "bij";
-		$str["amount"]		= "bedrag";
-		$str["quantity"]	= "hoeveelheid";
-		$str["withdraw"]	= "opnemen";
-		$str["deposit"]		= "storten";
-		$str["invalid"]		= "Ongeldige transactie";
-
-		$str["dump"]		= "<b>Let op:</b> er wordt hier geen %s verhandeld!<br>Je dumpt dus je %s als je verkoopt.";
-
-		$str["loan"]		= "lenen";
-		$str["pay"]			= "betalen";
-		$str["leave"]		= "uitgang";
-
-		$str["hire"]		= "huren";
-		$str["hirebitch"]	= "huur hoer voor/als:";
-		$str["maxbitch"]	= "Je niet meer dan 10 hoeren huren als drugskoerier.";
-		$str["maxloan"]		= "De woekeraar wil nog je maximaal &euro; %s lenen.";	
-
-		$str["cash"]		= "contanten";
-		$str["bank"]		= "bank";
-		$str["debt"]		= "schuld";
-		$str["total"]		= "totale vermogen";
-		$str["name"]		= "naam";
-
-		$str["bitches"]		= "hoeren";
-		$str["life"]		= "gezondheid";
-		$str["space"]		= "ruimte";
-		$str["guns"]		= "wapens";
-
-		$str["status"]		= "toestand";
-		$str["goto"]		= "ga naar";
-		$str["instruct"]	= "instructies";
-		$str["logout"]		= "log uit";
-
-		$str["chase"]		= "%s politie-agenten achtervolgen je! Wat doe je?";
-		$str["surrender"]	= "overgeven";
-		$str["fight"]		= "schieten";
-		$str["run"]			= "vluchten";
-		$str["bribe"]		= "omkopen";
-
-		$str["nobribe"]		= "Je hebt niet genoeg cash om alle agenten om te kopen (&euro;20.000 per agent).";
-		$str["bribed"]		= "Je hebt de agenten voor &euro;%s omgekocht en door ze de helft van je drugs te geven.";
-
-		$str["youkilledcop"]	= "Je hebt een agent doodgeschoten!";
-		$str["allcopskilled"]	= "Alle agenten zijn dood! Je vindt &euro; %s in hun portefeuilles.";
-		$str["youmissed"]	= "Je schoot en miste.";
-		$str["escaped"]		= "Je bent ontsnapt.";
-		$str["cantescape"]	= "Je kunt niet wegkomen.";
-		$str["copsshoot"]	= "De politie schiet met %s agenten...";
-		$str["copshoot"]	= "De laatste agent schiet...";
-		$str["bitchkilled"]	= "E&eacute;n van je hoeren is doodgeschoten.";
-		$str["yourhit"]		= "Je bent geraakt.";	
-		$str["missed"]		= "Niet geraakt!";	
-		$str["forfeit"]		= "Door een plukze-maatregel wordt &euro; %s van je bankrekening gevorderd door het <a href=\"http://www.openbaarministerie.nl/over_om/over_om.php#31\" target=\"_blank\">BOOM</a>.";
-	
-		$str["continue"]	= "verder";	
-
-		$str["onthemove"]	= "Onderweg naar";
-		$str["lostdrugs"]	= "Je werd achtervolgd door een <b>stadsmarinier</b>. Onderweg ben je je %s kwijtgeraakt.";
-		if (mt_rand(0,1))
-			$str["lostdrugs"]	   = "Je werd achtervolgd door de <b>Nachtwacht</b>. Onderweg ben je je %s kwijtgeraakt.";
-		$str["foundbody"]	= "Je vindt het lijk van een dode hero&iuml;nehoer met %s x %s.";
-		$str["dead"]		= "Je bent <b>dood</b>!";
-
-		$str["invalidname"]	= "Ongeldige naam";
-		$str["name"]		= "naam";
-		$str["hiresnitch"]	= "Huur een hero&iuml;nehoer om een andere dealer bij de politie aan te geven.<br>De politie zal deze dealer aanpakken.<br>De resultaten krijg je gemeld zodra de politie actie heeft ondernomen.";
-		$str["snitchhired"]	= "%s wordt verklikt.";
-		$str["snitched"]	= "Je bent verraden door %s.";
-		$str["report"]		= "<b>Rapportage verklikker</b>";
-
-		$str["spyreport"]	= "<p><b>Rapportage spion</b></p>Dealer %s bevindt zich in %s,<br>heeft &euro; %s aan contanten, &euro; %s op de bank en een schuld van &euro; %s bij de woekeraar.<br>%s heeft %s hero&iuml;nehoeren, %s wapens en nog ruimte voor %s drugs.<br>De gezondheid is %s%%.";
-		$str["hirespy"]		= "Huur een hero&iuml;nehoer om de toestand van een andere dealer te achterhalen.<br>Je krijgt meteen antwoord.";
-
-		$str["reloading"]	= "Je wapens worden opnieuw geladen ...";
-		$str["reloaded"]	= "Je wapens zijn opnieuw geladen.";
-
-		$str["loanhit1"]	= "Je komt wat mannetjes van de woekeraar tegen.<br>Ze breken je vingers en maken je duidelijk je schuld af te lossen.";
-		$str["loanhit2"]	= "Het is de woekeraar menes!<br>Je wordt met een loden pijp bewerkt.";
-		$str["loanhit3"]	= "De woekeraar heeft je te pakken!<br>Je voeten worden in beton gestort en je wordt in de Maas gegooid.";
-
-		$str["d_killed"]	= "Dealer %s is gedood.";
-		$str["d_hit"]		= "Dealer %s is beschoten en gewond geraakt.";
-		$str["d_escaped"]	= "%s kon ontkomen.";
-		$str["d_arrested"]	= "%s is gearresteerd.";
-		$str["d_cop"]		= "E&eacute;n agent kwam om.";
-		$str["d_cops"]		= "%s agenten kwamen om.";
-		$str["d_allcops"]	= "Alle agenten zijn doodgeschoten door %s.";
-		$str["d_bitch"]		= "E&eacute;n hoer is doodgeschoten.";
-		$str["d_bitches"]	= "%s hoeren zijn doodgeschoten.";
-
-		$str["dateformat"]	= "%d %B, %H:%M";
-		$str["arrested"]	= "Je bent gearresteerd.";
-		$str["prison"]		= "de gevangenis";
-		$str["inprison"]	= "Je zit in de gevangenis tot %s.";
-		$str["released"]	= "Je bent vrijgelaten.";
-
-		$str["op_cantescape"]	= "%s probeert te vluchten, maar kan niet wegkomen.";
-		$str["op_escaped"]	= "%s is gevlucht.";
-		$str["op_stands"]	= "%s staat als een idioot toe te kijken.";
-		$str["op_shoots"]	= "%s schiet...";
-
-		$str["youkilledbitch"]	= "Je hebt &eacute;&eacute;n van de hoeren van %s doodgeschoten.";
-		$str["youkilledopponent"]	= "Je hebt %s doodgeschoten. Je vindt &euro; %s in de portefeuille.";
-		$str["youshotopponent"]	= "Je hebt %s geraakt.";
-		$str["opponentdead"]	= "%s is dood.";
-	
-		$str["bitchgone"]	= "E&eacute;n van je hoeren is er vandoor gegaan.";
-	
-		$str["encounter"]	= "Je komt %s tegen, wat doe je?";
-	
-		$str["op_status"]	= "Toestand van %s:<br>hoeren: %s<br>wapens: %s<br>gezondheid: %s%%";
-
-		$str["qod"]		= "Wil je echt een overdosis nemen (en wellicht legendarisch worden)?";
-		$str["yes"]		= "ja";
-		$str["od"]		= "overdosis";
-
-		$currency = "&euro;";
-	}
-	else
-	{
-		$language = "EN";
-
-		$places = array(
-			"the Bronx",
-			"the Ghetto",
-			"Central Park",
-			"Coney Island",
-			"Manhattan",
-			"Brooklyn",
-			"Queens",
-			"Staten Island");
-
-		$special = array(
-			0 => "the loanshark",
-			1 => "the pub",
-			2 => "the hospital",
-			4 => "the bank",
-			5 => "Dan's House of Guns");
-
-		$drugs = array(
-			array("name" => "acid",		"min" => 1000,	"max"=> 4400,	"minmsg" => "The market is flooded with cheap home-made acid!"),
-			array("name" => "cocaine",	"min" => 15000,	"max"=> 29000,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "heroin",	"min" => 5500,	"max"=> 13000,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "hashish",	"min" => 480,	"max"=> 1280,	"minmsg" => "The Marrakesh Express has arrived!",	"maxmsg" => ""),
-			array("name" => "weed",		"min" => 315,	"max"=> 890,	"minmsg" => "Columbian freighter dusted the Coast Guard!",	"maxmsg" => "Weed prices have bottomed out!"),
-			array("name" => "speed",	"min" => 90,	"max"=> 250,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "ecstacy",	"min" => 2800,	"max"=> 3700,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "ludes",	"min" => 11,	"max"=> 60,		"minmsg" => "Rival drug dealers raided a pharmacy and are selling cheap ludes!",	"maxmsg" => ""),
-			array("name" => "shrooms",	"min" => 630,	"max"=> 1300,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "peyote",	"min" => 220,	"max"=> 700,	"minmsg" => "",	"maxmsg" => ""),
-			array("name" => "PCP",		"min" => 1000,	"max"=> 2500,	"minmsg" => "",	"maxmsg" => ""));
-
-		   $bitchactions = array (
-				array("name" => "sex",		"price" => 20),
-				array("name" => "spy",		"price" => 6500),
-				array("name" => "snitch",	"price" => 10000),
-				array("name" => "drug runner",	"price" => 35000)
-				);
-
-		$str["sell"]	= "sell";
-		$str["buy"]	= "buy";
-		$str["available"]	= "available:";
-		$str["carried"]		= "carried:";
-		$str["to"]	= "to";
-		$str["at"]	= "at";
-		$str["amount"]	= "amount";
-		$str["quantity"]	= "quantity";
-		$str["withdraw"]	= "withdraw";
-		$str["loan"]	= "loan";
-		$str["pay"]	= "pay";
-		$str["invalid"]	= "Invalid transaction";
-		$str["operate"]	= "operate";
-
-		$str["instruct"] = "instructions";
-		$str["logout"]  = "log out";
-
-		$str["deposit"]	= "deposit";
-		$str["onthemove"]	= "jetting to";
-
-		$fight = array("stand", "surrender", "run", "fire");
-
-		$maxmsgs = array("Cops made a big %s bust! Prices are outrageous!", "Addicts are buying %s at ridiculous prices!", "The addicts are going nuts for %s!");
-		$minmsgs = array("The market is flooded with cheap %s.");
-
-		$str["nospace"]	= "You can't carry %s more drugs.";
-		$str["nodrug"]	= "You're shittin' me right? You don't have %s units of %s.";
-
-		$str["morespace"]	= "Now you can carry 10 more units.";
-
-		$str["doctor"]		= "The doctor can fix you up for \$ %s.";
-		$str["recovered"]	= "You are healthy.";
-
-		$str["disease"]	= "You caught a venereal disease.";
-		$str["mugged"]	= "You got mugged! Your money is gone.";
-		$str["ooh"]	= "'Ooh, was it goof for you too?'";
-		$str["operate"]	= "fix me up";
-
-		$str["nogunspace"]	= "You can't carry more guns.";
-		$str["noguncash"]	= "You can't afford that gun.";
-		$str["nomoney"]	= "You don't have enough money for that.";
-		$str["sell"]	= "sell";
-		$str["buy"]	= "buy";
-		$str["available"]	= "available:";
-		$str["carried"]		= "carried:";
-		$str["to"]	= "to";
-		$str["at"]	= "at";
-		$str["amount"]	= "amount";
-		$str["quantity"]	= "quantity";
-		$str["withdraw"]	= "withdraw";
-		$str["deposit"]	= "deposit";
-		$str["invalid"]	= "Invalid transaction";
-
-		$str["loan"]	= "loan";
-		$str["pay"]	= "pay";
-		$str["leave"]	= "leave";
-
-		$str["dump"]	= "<b>Warning:</b> %s is not sold here!<br>You're dumping your %s if you sell.";
-
-
-		$str["hire"]	= "hire";
-		$str["hirebitch"]	= "hire bitch to / for:";
-		$str["maxbitch"]	= "You can't hire more than 10 bitches to carry drugs.";
-		$str["maxloan"]	= "The loan shark only want to loan you \$; %s more.";	
-
-		$str["cash"]	= "cash";
-		$str["bank"]	= "bank";
-		$str["debt"]	= "debt";
-		$str["total"]	= "score";
-		$str["name"]	= "name";
-
-		$str["bitches"]	= "bitches";
-		$str["life"]	= "health";
-		$str["space"]	= "space";
-		$str["guns"]	= "guns";
-
-		$str["status"]	= "status";
-		$str["goto"]	= "go to";
-		$str["instruct"] = "instructions";
-		$str["logout"]	= "log out";
-
-		$str["chase"]	= "%s cops are chasing you! What do you do?";
-		$str["surrender"] = "surrender";
-		$str["fight"]	= "fire";
-		$str["run"]	 = "run";
-		$str["bribe"]	= "bribe";
-
-		$str["nobribe"]	= "You don't have enough money to bribe all cops (\$ 20,000 a cop).";
-		$str["bribed"]  = "You've bribed the cops (\$ %s and half of your drugs).";
-
-		$str["youkilledcop"]	= "You killed a cop!";
-		$str["allcopskilled"]	= "All cops are dead! You find \$ %s on them.";
-		$str["youmissed"]	= "You failed to hit.";
-		$str["escaped"]		= "You escaped.";
-		$str["cantescape"]	= "You can't escape.";
-		$str["copsshoot"]	= "%s cops are shooting...";
-		$str["copshoot"]	= "The last cop shoots...";
-		$str["bitchkilled"]	= "One of your bitches got killed.";
-		$str["yourhit"]		= "You've been hit.";	
-		$str["missed"]		= "Miss!";	
-		$str["forfeit"]		 = "The <a href=\"http://www.usdoj.gov/dea/programs/af.htm\" target=\"_blank\">DEA</a> forfeits $ %s from your bank account.";
-
-		$str["continue"]	= "continue";	
-
-		$str["lostdrugs"]	= "They chased you! You lost the %s.";
-		$str["foundbody"]	= "You find the dead body of a bitch with %s x %s.";
-		$str["dead"]		= "You're <b>dead</b>!";
-
-		$str["invalidname"]	= "Invalid name";
-		$str["name"]		= "name";
-		$str["hiresnitch"]	= "Hire a bitch to tip off a dealer to the cops.<br>The cops will attack that dealer.<br>Later you will be informed on the encounter.";
-		$str["snitchhired"]	= "%s is being tipped of.";
-		$str["snitched"]	= "You were tipped off by %s.";
-		$str["report"]		= "<b>Snitch report</b>";
-
-		$str["spyreport"]	= "<p><b>Spy report</b></p>Dealer %s is located in %s,<br>has \$ %s in cash, \$ %s in the bank and a debt of \$ %s.<br>%s has %s bitches, %s guns and space left for %s drugs.<br>Health is %s%%.";
-		$str["hirespy"]		= "Hire a bitch to find out the status of another dealer. You receive an answer immediately.";
-
-		$str["reloading"]	= "Your guns are being reloaded ...";
-		$str["reloaded"]	= "Your guns are reloaded.";
-
-		$str["loanhit1"]	= "The loan shark send some of his men.<br>They break your fingers and tell you to pay off the debt.";
-		$str["loanhit2"]	= "The loan shark is serious!<br>You got beaten up by his men.";
-		$str["loanhit3"]	= "The loan shark wasted you!";
-
-		$str["d_killed"]	= "Dealer %s is dead.";
-		$str["d_hit"]		= "Dealer %s was shot at and got hit.";
-		$str["d_escaped"]	= "%s got away.";
-		$str["d_arrested"]	= "%s is arrested.";
-		$str["d_cop"]		= "A cop was wasted.";
-		$str["d_cops"]		= "%s cops were wasted.";
-		$str["d_allcops"]	= "All were wasted by %s.";
-		$str["d_bitch"]		= "One bitch got killed.";
-		$str["d_bitches"]	= "%s bitches got killed.";
-
-		$str["dateformat"]	= "%A, %B %e, %T";
-		$str["arrested"]	= "You are arrested.";
-		$str["prison"]		= "prison";
-		$str["inprison"]	= "You are in prison until %s CET.";
-		$str["released"]	= "You are released.";
-
-		$str["op_cantescape"]	= "%s tries to escape but can't get away.";
-		$str["op_escaped"]	= "%s has escaped.";
-		$str["op_stands"]	= "%s stands there like an idiot.";
-		$str["op_shoots"]	= "%s fires...";
-
-		$str["youkilledbitch"]	= "You wasted one of the bitches of %s.";
-		$str["youkilledopponent"]	= "You killed %s. You find \$ %s on him.";
-		$str["youshotopponent"]	   = "You hit %s.";
-		$str["opponentdead"]	= "%s is dead.";
-
-		$str["bitchgone"]	= "One of your bitches ran away.";
-
-		$str["encounter"]	= "You run into %s, what do you do?";
-
-		$str["op_status"]	= "Status of %s:<br>bitches: %s<br>weapons: %s<br>health: %s%%";
-
-		$str["qod"]		= "Do you really want to overdose (and maybe become legendary)?";
-		$str["yes"]		= "yes";
-		$str["od"]		= "overdose";
-
-		$currency = "\$";
-	}
-
-	$guns = Array(	Array(	"name" => "Ruger MK4",
-							"price" => 2500),
-					Array(	"name" => "Baretta 8357",
-							"price" => 3500),
-					Array(	"name" => "S&amp;W Magnum",
-							"price" => 4500),
-					Array(	"name" => "Glock 21",
-							"price" => 6000),
-					Array(	"name" => "HK MP5",
-							"price" => 15000)
-					);
+	$language = "EN";
+
+	$places = array(
+		"the Bronx",
+		"the Ghetto",
+		"Central Park",
+		"Coney Island",
+		"Manhattan",
+		"Brooklyn",
+		"Queens",
+		"Staten Island",
+	);
+
+	$special = array(
+		0 => "the loanshark",
+		1 => "the pub",
+		2 => "the hospital",
+		4 => "the bank",
+		5 => "Dan's House of Guns",
+	);
+
+	$drugs = array(
+		array("name" => "acid",		"min" => 1000,	"max"=> 4400,	"minmsg" => "The market is flooded with cheap home-made acid!"),
+		array("name" => "cocaine",	"min" => 15000,	"max"=> 29000,	"minmsg" => "",	"maxmsg" => ""),
+		array("name" => "heroin",	"min" => 5500,	"max"=> 13000,	"minmsg" => "",	"maxmsg" => ""),
+		array("name" => "hashish",	"min" => 480,	"max"=> 1280,	"minmsg" => "The Marrakesh Express has arrived!",	"maxmsg" => ""),
+		array("name" => "weed",		"min" => 315,	"max"=> 890,	"minmsg" => "Columbian freighter dusted the Coast Guard!",	"maxmsg" => "Weed prices have bottomed out!"),
+		array("name" => "speed",	"min" => 90,	"max"=> 250,	"minmsg" => "",	"maxmsg" => ""),
+		array("name" => "ecstacy",	"min" => 2800,	"max"=> 3700,	"minmsg" => "",	"maxmsg" => ""),
+		array("name" => "ludes",	"min" => 11,	"max"=> 60,		"minmsg" => "Rival drug dealers raided a pharmacy and are selling cheap ludes!",	"maxmsg" => ""),
+		array("name" => "shrooms",	"min" => 630,	"max"=> 1300,	"minmsg" => "",	"maxmsg" => ""),
+		array("name" => "peyote",	"min" => 220,	"max"=> 700,	"minmsg" => "",	"maxmsg" => ""),
+		array("name" => "PCP",		"min" => 1000,	"max"=> 2500,	"minmsg" => "",	"maxmsg" => ""),
+	);
+
+	$bitchactions = array (
+		array(
+			"name" => "sex",
+			"price" => 20,
+		),
+		array(
+			"name" => "spy",
+			"price" => 6500,
+		),
+		array(
+			"name" => "snitch",
+			"price" => 10000,
+		),
+		array(
+			"name" => "drug runner",
+			"price" => 35000,
+		),
+	);
+
+	$fight = array("stand", "surrender", "run", "fire");
+
+	$maxmsgs = array("Cops made a big %s bust! Prices are outrageous!", "Addicts are buying %s at ridiculous prices!", "The addicts are going nuts for %s!");
+	$minmsgs = array("The market is flooded with cheap %s.");
+
+	$str["sell"]		= "sell";
+	$str["buy"]			= "buy";
+	$str["available"]	= "available:";
+	$str["carried"]		= "carried:";
+	$str["to"]			= "to";
+	$str["at"]			= "at";
+	$str["amount"]		= "amount";
+	$str["quantity"]	= "quantity";
+	$str["withdraw"]	= "withdraw";
+	$str["loan"]		= "loan";
+	$str["pay"]			= "pay";
+	$str["invalid"]		= "Invalid transaction";
+	$str["operate"]		= "operate";
+
+	$str["instruct"]	= "instructions";
+	$str["logout"]		= "log out";
+
+	$str["deposit"]		= "deposit";
+	$str["onthemove"]	= "jetting to";
+
+	$str["nospace"]		= "You can't carry %s more drugs.";
+	$str["nodrug"]		= "You're shittin' me right? You don't have %s units of %s.";
+
+	$str["morespace"]	= "Now you can carry 10 more units.";
+
+	$str["doctor"]		= "The doctor can fix you up for \$ %s.";
+	$str["recovered"]	= "You are healthy.";
+
+	$str["disease"]		= "You caught a venereal disease.";
+	$str["mugged"]		= "You got mugged! Your money is gone.";
+	$str["ooh"]			= "'Ooh, was it goof for you too?'";
+	$str["operate"]		= "fix me up";
+
+	$str["nogunspace"]	= "You can't carry more guns.";
+	$str["noguncash"]	= "You can't afford that gun.";
+	$str["nomoney"]		= "You don't have enough money for that.";
+
+	$str["leave"]		= "leave";
+
+	$str["dump"]		= "<b>Warning:</b> %s is not sold here!<br>You're dumping your %s if you sell.";
+
+	$str["hire"]		= "hire";
+	$str["hirebitch"]	= "hire bitch to / for:";
+	$str["maxbitch"]	= "You can't hire more than 10 bitches to carry drugs.";
+	$str["maxloan"]		= "The loan shark only want to loan you \$; %s more.";
+
+	$str["cash"]		= "cash";
+	$str["bank"]		= "bank";
+	$str["debt"]		= "debt";
+	$str["total"]		= "score";
+	$str["name"]		= "name";
+
+	$str["bitches"]		= "bitches";
+	$str["life"]		= "health";
+	$str["space"]		= "space";
+	$str["guns"]		= "guns";
+
+	$str["status"]		= "status";
+	$str["goto"]		= "go to";
+
+	$str["chase"]		= "%s cops are chasing you! What do you do?";
+	$str["surrender"]	= "surrender";
+	$str["fight"]		= "fire";
+	$str["run"]			= "run";
+	$str["bribe"]		= "bribe";
+
+	$str["nobribe"]		= "You don't have enough money to bribe all cops (\$ 20,000 a cop).";
+	$str["bribed"]		= "You've bribed the cops (\$ %s and half of your drugs).";
+
+	$str["youkilledcop"]	= "You killed a cop!";
+	$str["allcopskilled"]	= "All cops are dead! You find \$ %s on them.";
+	$str["youmissed"]		= "You failed to hit.";
+	$str["escaped"]			= "You escaped.";
+	$str["cantescape"]		= "You can't escape.";
+	$str["copsshoot"]		= "%s cops are shooting...";
+	$str["copshoot"]		= "The last cop shoots...";
+	$str["bitchkilled"]		= "One of your bitches got killed.";
+	$str["yourhit"]			= "You've been hit.";
+	$str["missed"]			= "Miss!";
+	$str["forfeit"]			= "The <a href=\"http://www.usdoj.gov/dea/programs/af.htm\" target=\"_blank\">DEA</a> forfeits $ %s from your bank account.";
+
+	$str["continue"]	= "continue";
+
+	$str["lostdrugs"]	= "They chased you! You lost the %s.";
+	$str["foundbody"]	= "You find the dead body of a bitch with %s x %s.";
+	$str["dead"]		= "You're <b>dead</b>!";
+
+	$str["invalidname"]	= "Invalid name";
+	$str["name"]		= "name";
+	$str["hiresnitch"]	= "Hire a bitch to tip off a dealer to the cops.<br>The cops will attack that dealer.<br>Later you will be informed on the encounter.";
+	$str["snitchhired"]	= "%s is being tipped of.";
+	$str["snitched"]	= "You were tipped off by %s.";
+	$str["report"]		= "<b>Snitch report</b>";
+
+	$str["spyreport"]	= "<p><b>Spy report</b></p>Dealer %s is located in %s,<br>has \$ %s in cash, \$ %s in the bank and a debt of \$ %s.<br>%s has %s bitches, %s guns and space left for %s drugs.<br>Health is %s%%.";
+	$str["hirespy"]		= "Hire a bitch to find out the status of another dealer. You receive an answer immediately.";
+
+	$str["reloading"]	= "Your guns are being reloaded ...";
+	$str["reloaded"]	= "Your guns are reloaded.";
+
+	$str["loanhit1"]	= "The loan shark send some of his men.<br>They break your fingers and tell you to pay off the debt.";
+	$str["loanhit2"]	= "The loan shark is serious!<br>You got beaten up by his men.";
+	$str["loanhit3"]	= "The loan shark wasted you!";
+
+	$str["d_killed"]	= "Dealer %s is dead.";
+	$str["d_hit"]		= "Dealer %s was shot at and got hit.";
+	$str["d_escaped"]	= "%s got away.";
+	$str["d_arrested"]	= "%s is arrested.";
+	$str["d_cop"]		= "A cop was wasted.";
+	$str["d_cops"]		= "%s cops were wasted.";
+	$str["d_allcops"]	= "All were wasted by %s.";
+	$str["d_bitch"]		= "One bitch got killed.";
+	$str["d_bitches"]	= "%s bitches got killed.";
+
+	$str["dateformat"]	= "%A, %B %e, %T";
+	$str["arrested"]	= "You are arrested.";
+	$str["prison"]		= "prison";
+	$str["inprison"]	= "You are in prison until %s CET.";
+	$str["released"]	= "You are released.";
+
+	$str["op_cantescape"]	= "%s tries to escape but can't get away.";
+	$str["op_escaped"]		= "%s has escaped.";
+	$str["op_stands"]		= "%s stands there like an idiot.";
+	$str["op_shoots"]		= "%s fires...";
+
+	$str["youkilledbitch"]		= "You wasted one of the bitches of %s.";
+	$str["youkilledopponent"]	= "You killed %s. You find \$ %s on him.";
+	$str["youshotopponent"]		= "You hit %s.";
+	$str["opponentdead"]		= "%s is dead.";
+
+	$str["bitchgone"]	= "One of your bitches ran away.";
+
+	$str["encounter"]	= "You run into %s, what do you do?";
+
+	$str["op_status"]	= "Status of %s:<br>bitches: %s<br>weapons: %s<br>health: %s%%";
+
+	$str["qod"]			= "Do you really want to overdose (and maybe become legendary)?";
+	$str["yes"]			= "yes";
+	$str["od"]			= "overdose";
+
+	$currency = '$';
+
+	$guns = array(
+		array(
+			"name" => "Ruger MK4",
+			"price" => 2500,
+		),
+		array(
+			"name" => "Baretta 8357",
+			"price" => 3500,
+		),
+		array(
+			"name" => "S&amp;W Magnum",
+			"price" => 4500),
+		array(
+			"name" => "Glock 21",
+			"price" => 6000,
+		),
+		array(
+			"name" => "HK MP5",
+			"price" => 15000,
+		),
+	);
 }
+
+
 
 
 
@@ -2198,8 +1961,7 @@ function get_language_stuff( )
 ///////////////////////////////////////////////////////////////
 // FUNCTIONS
 
-function check_max()
-{
+function check_max() {
 	global $db;
 
 	$count = mysql_num_rows(mysql_query("SELECT id FROM dopewars WHERE (now()-date)<60"));
@@ -2211,8 +1973,7 @@ function check_max()
 	}
 }
 
-function save_exit()
-{
+function save_exit() {
 	global $player, $uid, $onthemove, $updatedate;
 
 	// calculate total
@@ -2231,14 +1992,13 @@ function save_exit()
 	// echo "<pre>\n";
 	// print_r( $player );
 	$pl = addslashes(serialize($player));
-	$qry = "UPDATE dopewars SET player='".$pl."',onthemove='".$onthemove."',score='".$player['total']."',date=NOW() WHERE name='$uid';";
+	$qry = "UPDATE dopewars SET player = '" . $pl . "', onthemove = '" . addslashes($onthemove) . "', score = '" . addslashes($player['total']) . "', date = NOW() WHERE name = '" . addslashes($uid) . "';";
 	mysql_query($qry) or die("Error (0001): ".mysql_error());
 
 	exit;
 }
 
-function save_player( $uid, $player, $stopmoving = 0 )
-{
+function save_player( $uid, $player, $stopmoving = 0 ) {
 	// calculate total
 	$player['total'] = $player['cash'] + $player['bank'] - $player['debt'];
 	reset ($player['drugs']);
@@ -2246,21 +2006,19 @@ function save_player( $uid, $player, $stopmoving = 0 )
 	{
 		$player['total'] += $player['drugprices'][$drug] * $val;
 	}
-	
+
 	// update database
 	$pl = addslashes(serialize($player));
-	$qry = "UPDATE dopewars SET player='$pl'";
-	if ( $stopmoving )
-	{
-		$qry .= ",onthemove=FALSE";
+	$qry = "UPDATE dopewars SET player = '$pl'";
+	if ( $stopmoving ) {
+		$qry .= ", onthemove = '0'";
 	}
-	$qry .= ",score=".$player['total']." where name='$uid'";
+	$qry .= ", score = " . addslashes($player['total']) . " where name = '" . addslashes($uid) . "'";
 	mysql_query($qry) or die("Error (0002): ".mysql_error());
 	echo (!mysql_affected_rows()) ? "NIET UITGEVOERD - Save_Player()" : "";
 }
 
-function check_life( $line = 0 )
-{
+function check_life( $line = 0 ) {
 	global $player, $uid, $str, $pass;
 
 	// echo "Called from line $line!<br>".EOL;
@@ -2273,21 +2031,20 @@ function check_life( $line = 0 )
 	}
 	else
 	{
-		report_snitches( );
-		$qry = "INSERT INTO dopescores (name, password, score) values ('".$player['name']."', '$pass', '".$player['total']."');";
+		report_snitches();
+		$qry = "INSERT INTO dopescores (name, password, score) values ('" . addslashes($player['name']) . "', '" . addslashes($pass) . "', '" . addslashes($player['total']) . "');";
 		mysql_query($qry) or die("Error (0003): ".mysql_error());
 		unset($_SESSION[player]);
-		$qry = "DELETE FROM dopewars WHERE name='$uid';";
+		$qry = "DELETE FROM dopewars WHERE name='" . addslashes($uid) . "';";
 		mysql_query($qry) or die("Error (0004): ".mysql_error());
 		echo "<br>". $str[dead];
 		echo "<p><a href=\"?logout=1\">new game</a>";
 		echo "</body></html>";
-		exit;	
+		exit;
 	}
 }
 
-function dealer_list()
-{
+function dealer_list() {
 	$qry = "SELECT id,name FROM dopewars ORDER BY name ASC;";
 	$r = mysql_query($qry);
 	echo "<select name=dealer>";
@@ -2299,11 +2056,10 @@ function dealer_list()
 	echo "</select>";
 }
 
-function report_snitches( )
-{
+function report_snitches() {
 	global $db, $uid, $player, $str;
 
-	if ( !isset($player['currentsnitches']) || !is_array($player['currentsnitches']) )	$player['currentsnitches'] = Array( );
+	if ( !isset($player['currentsnitches']) || !is_array($player['currentsnitches']) )	$player['currentsnitches'] = array();
 
 	$player['fightreport']['player'] = $uid;
 	$foo = array_unique($player['currentsnitches']);
@@ -2313,11 +2069,10 @@ function report_snitches( )
 		printf("<br>".$str['snitched'], $foo);
 	}
 
-	$qry = implode("','", array_unique($player['currentsnitches']));
-	$qry = "SELECT * FROM dopewars WHERE name in ('$qry')";
+	$qry = implode("','", array_map('addslashes', array_unique($player['currentsnitches'])));
+	$qry = "SELECT * FROM dopewars WHERE name in ('" . $qry . "')";
 	$results = mysql_query($qry);
-	while ($result = mysql_fetch_assoc($results))
-	{	
+	while ($result = mysql_fetch_assoc($results)) {
 		$subject = unserialize(stripslashes($result['player']));
 		$subject['snitchreport'][] = $player['fightreport'];
 		save_player($result['name'], $subject);
@@ -2326,8 +2081,7 @@ function report_snitches( )
 	$player['fightreport'] = array();
 }
 
-function lose_bitch( $player )
-{
+function lose_bitch( $player ) {
 	global $drugs, $guns;
 
 	// subtract proportional amount of drugs
@@ -2355,8 +2109,7 @@ function lose_bitch( $player )
 	return $player;
 }
 
-function printmenu( $side = NULL )
-{
+function printmenu( $side = NULL ) {
 	global $places, $str, $currency, $player, $special, $nietgotoinmenu;
 	$enabled = 1;
 
@@ -2404,18 +2157,16 @@ function printmenu( $side = NULL )
 	}
 }
 
-function nummertje( $nummer )
-{
+function nummertje( $nummer ) {
 	return number_format($nummer, 0, ".", ",");
 }
 
-function print_css( )
-{
+function print_css() {
 	echo '<style>'.EOL;
 	// Make this a stylesheet
 	// You can use an external stylesheet, as follows
 	//   @import url("path/to/stylesheet.css");
-	
+
 	echo 'BODY, TABLE'.EOL;
 	echo '{'.EOL;
 	echo '	font-family:		Verdana, Arial;'.EOL;
@@ -2508,7 +2259,7 @@ function print_css( )
 	echo '{'.EOL;
 	echo '	'.EOL;
 	echo '}'.EOL;
-	
+
 	echo '</style>'.EOL;
 }
 
