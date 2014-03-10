@@ -22,7 +22,7 @@ define('SESSION', $_GET['session']);
 
 session_start();
 
-require_once('connect.php');
+// require_once('connect.php');
 define('S_NAME', 'ms2');
 
 $g_szDefaultField = "b";
@@ -119,10 +119,10 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 		$arrLevel = $_FIELDS[$_SESSION[S_NAME]['sessions'][SESSION]['field']];
 		$_SESSION[S_NAME]['name'] = isset($_SESSION[S_NAME]['name']) ? $_SESSION[S_NAME]['name'] : 'Anonymous';
 		$playtime = time()-$_SESSION[S_NAME]['sessions'][SESSION]['starttime'];
-		mysql_query("INSERT INTO minesweeper (name,size_x,size_y,mines,playtime,utc, ip, user_agent) VALUES ('".addslashes($_SESSION[S_NAME]['name'])."',".$arrLevel['sides'][0].",".$arrLevel['sides'][1].",".$arrLevel['mines'].",".$playtime.",".time().", '".addslashes($_SERVER['REMOTE_ADDR'])."', '".addslashes($_SERVER['HTTP_USER_AGENT'])."');");
+		// mysql_query("INSERT INTO minesweeper (name,size_x,size_y,mines,playtime,utc, ip, user_agent) VALUES ('".addslashes($_SESSION[S_NAME]['name'])."',".$arrLevel['sides'][0].",".$arrLevel['sides'][1].",".$arrLevel['mines'].",".$playtime.",".time().", '".addslashes($_SERVER['REMOTE_ADDR'])."', '".addslashes($_SERVER['HTTP_USER_AGENT'])."');");
 		$m = floor($playtime / 60);
 		$s = $playtime % 60;
-		$szMsg = 'LEVEL "'.$arrLevel['name'].'" ACHIEVEMENT SAVED ('.( 0 < $m ? $m.'m ' : '' ).$s.'s)';
+		$szMsg = 'LEVEL "' . $arrLevel['name'] . '" ACHIEVEMENT SAVED (' . ( $m ? $m . 'm ' : '' ) . $s . "s)\n\nNo more highscore!";
 	}
 
 	header('Content-type: text/json');
@@ -136,6 +136,7 @@ else if ( isset($_POST['new_name']) ) {
 }
 
 // Leaderboard
+/**
 else if ( isset($_GET['leaderboard']) ) {
 	echo '<table width=100% border="1" cellpadding=5 cellspacing=0>';
 	echo '<tr><th>Name</th><th>Board</th><th>Mines</th><th>Time</th><th>Date</th></tr>';
@@ -162,8 +163,9 @@ else if ( isset($_GET['leaderboard']) ) {
 	echo '</table>';
 	exit;
 }
+/**/
 
-if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
+if ( $_SERVER['REQUEST_METHOD'] != 'GET' ) {
 	exit('Invalid request');
 }
 
@@ -174,77 +176,28 @@ if ( 'POST' === $_SERVER['REQUEST_METHOD'] ) {
 <title>MINESWEEPER</title>
 <script src="/js/mootools_1_11.js"></script>
 <script src="/102.js"></script>
+<link rel="stylesheet" href="102.css" />
 <style>
 * {
-	margin			: 0;
-	padding			: 0;
+	margin: 0;
+	padding: 0;
 }
 body,table {
-	font-family		: verdana;
-	font-size		: 11px;
-	color			: black;
-}
-table#field, table#field table {
-	border-collapse		: collapse;
-}
-table#field td {
-	padding				: 0;
+	font-family: Verdana;
+	font-size: 11px;
+	color: black;
 }
 div#loading {
-	position			: absolute;
-	top					: 10px;
-	right				: 10px;
-	padding				: 5px;
-	display				: none;
-	background-color	: #f00;
-	color				: #fff;
-}
-table tbody#ms_tbody td {
-	width				: 16px;
-	height				: 16px;
-	padding				: 0;
-	background-image	: url(images/dicht.gif);
-}
-table tbody#ms_tbody td.o0 {
-	background-image	: url(images/open_0.gif);
-}
-table tbody#ms_tbody td.o1 {
-	background-image	: url(images/open_1.gif);
-}
-table tbody#ms_tbody td.o2 {
-	background-image	: url(images/open_2.gif);
-}
-table tbody#ms_tbody td.o3 {
-	background-image	: url(images/open_3.gif);
-}
-table tbody#ms_tbody td.o4 {
-	background-image	: url(images/open_4.gif);
-}
-table tbody#ms_tbody td.o5 {
-	background-image	: url(images/open_5.gif);
-}
-table tbody#ms_tbody td.o6 {
-	background-image	: url(images/open_6.gif);
-}
-table tbody#ms_tbody td.o7 {
-	background-image	: url(images/open_7.gif);
-}
-table tbody#ms_tbody td.o8 {
-	background-image	: url(images/open_8.gif);
-}
-table tbody#ms_tbody td.om {
-	background-image	: url(images/open_m.gif);
-}
-table tbody#ms_tbody td.ox {
-	background-image	: url(images/open_x.gif);
-}
-table tbody#ms_tbody td.ow {
-	background-image	: url(images/open_w.gif);
-}
-table tbody#ms_tbody td.f {
-	background-image	: url(images/flag.gif);
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	padding: 5px;
+	display: none;
+	background-color: #f00;
+	color: #fff;
 }
 </style>
+<script src="/102c.js"></script>
 </head>
 
 <body>
@@ -256,11 +209,15 @@ table tbody#ms_tbody td.f {
 <table border="0" cellspacing="0" width="100%" height="100%">
 <tr valign="middle">
 	<td align="center"<?php if ( !empty($_GET['frame']) ) { ?> style="display:none;"<?php } ?>>
-		<p><a href="#" onclick="window.open('?leaderboard', '', 'statusbar=0,width=650,height=500');return false;">Leaderboard</a></p>
-		<br />
+		<!--
+			<p><a href="#" onclick="window.open('?leaderboard', '', 'statusbar=0,width=650,height=500');return false;">Leaderboard</a></p>
+			<br />
+		-->
 		<p><a href="#" onclick="return objMinesweeper.changeName();">Change Name</a></p>
 		<br />
 		<p><a href="#" onclick="window.open('?frame=1', '', 'statusbar=0');return false;">In frame</a></p>
+		<br />
+		<p><a href="javascript: getSolver().mf_SaveAndMarkAndClickAll(null, function() { alert('I can only help those who help themselves!'); }); void(0)">Cheat!</a></p>
 	</td>
 	<td align="center">
 		<table id="field" style="border:solid 1px #777;"><tr><td><table style="border:solid 10px #bbb;"><tr><td><table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td><table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;"><tbody id="ms_tbody"><?php /*foreach( create_map(10, 10, 15) AS $row ) { echo '<tr>'; foreach ( $row AS $cell ) { echo '<td class="o'.$cell.'"></td>'; } echo '</tr>'; }*/ ?></tbody></table></td></tr></table></td></tr></table></td></tr></table>
@@ -290,7 +247,13 @@ Ajax.setGlobalHandlers({
 });
 
 var objMinesweeper = new Minesweeper('<?= @$_SESSION[S_NAME]['sessions'][SESSION]['field'] ?: $g_szDefaultField ?>', '<?= $_GET['session'] ?>');
-objMinesweeper.<?php echo empty($_SESSION[S_NAME]['name']) ? 'changeName()' : "setName('".addslashes($_SESSION[S_NAME]['name'])."')"; ?>;
+// objMinesweeper.<?php echo empty($_SESSION[S_NAME]['name']) ? 'changeName()' : "setName('".addslashes($_SESSION[S_NAME]['name'])."')"; ?>;
+
+// SOLVER //
+function getSolver() {
+	return new MinesweeperSolver($('ms_tbody'), objMinesweeper);
+}
+// SOLVER //
 
 $('ms_tbody').addEvents({
 	contextmenu : function(e) {
@@ -358,5 +321,3 @@ function click_on_surrounders($f_x, $f_y) {
 		}
 	}
 }
-
-?>

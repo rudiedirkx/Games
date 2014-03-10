@@ -71,9 +71,9 @@ var Minesweeper = new Class({
 		}
 	},
 
-	openField : function(o) {
+	openField : function(o, done) {
 		if ( this.m_bGameOver ) { return this.restart(); }
-		if ( 'c' != o.className ) { return false; }
+		if ( !o.classList.contains('c') ) { return false; }
 		var self = this;
 		new Ajax('?click&session=' + this.session, {
 			data : 'click=1&x=' + o.cellIndex + '&y=' + o.parentNode.sectionRowIndex,
@@ -96,7 +96,13 @@ var Minesweeper = new Class({
 				self.handleChanges(rv.updates);
 				self.showWrongFlags( self.m_bGameOver && 1 < rv.updates.length && rv.updates.last().last() === 'x' );
 				if ( rv.msg ) {
-					alert(rv.msg);
+					setTimeout(function() {
+						alert(rv.msg);
+					}, 1);
+				}
+
+				if ( done ) {
+					done.call(self);
 				}
 			}
 		}).request();

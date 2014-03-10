@@ -1,0 +1,53 @@
+
+table#field,
+#field table {
+	border-collapse: collapse;
+}
+#field td {
+	padding: 0;
+}
+#ms_tbody td {
+	width: 16px;
+	height: 16px;
+	padding: 0;
+	background-image: url(images/dicht.gif);
+}
+#ms_tbody td.o0 {
+	background-image: url(images/open_0.gif);
+}
+#ms_tbody td.o1 {
+	background-image: url(images/open_1.gif);
+}
+#ms_tbody td.o2 {
+	background-image: url(images/open_2.gif);
+}
+#ms_tbody td.o3 {
+	background-image: url(images/open_3.gif);
+}
+#ms_tbody td.o4 {
+	background-image: url(images/open_4.gif);
+}
+#ms_tbody td.o5 {
+	background-image: url(images/open_5.gif);
+}
+#ms_tbody td.o6 {
+	background-image: url(images/open_6.gif);
+}
+#ms_tbody td.o7 {
+	background-image: url(images/open_7.gif);
+}
+#ms_tbody td.o8 {
+	background-image: url(images/open_8.gif);
+}
+#ms_tbody td.om {
+	background-image: url(images/open_m.gif);
+}
+#ms_tbody td.ox {
+	background-image: url(images/open_x.gif);
+}
+#ms_tbody td.ow {
+	background-image: url(images/open_w.gif);
+}
+#ms_tbody td.f {
+	background-image: url(images/flag.gif);
+}
