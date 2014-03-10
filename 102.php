@@ -6,6 +6,14 @@ if ( isset($_GET['source']) ) {
 	exit;
 }
 
+session_start();
+
+if ( isset($_GET['dump']) ) {
+	header('Content-type: text/plain; charset=utf-8');
+	print_r($_SESSION);
+	exit;
+}
+
 // Must have a MS session!
 if ( !isset($_GET['session']) ) {
 	$session = mt_rand();
@@ -19,8 +27,6 @@ if ( !isset($_GET['session']) ) {
 
 define('SESSION', $_GET['session']);
 
-
-session_start();
 
 // require_once('connect.php');
 define('S_NAME', 'ms2');
@@ -48,20 +54,21 @@ $_FIELDS = array(
 
 // Start new game //
 if ( isset($_POST['fetch_map'], $_POST['field']) ) {
-	if ( !isset($_FIELDS[$_POST['field']]) ) {
+	if ( !isset($_FIELDS[ $_POST['field'] ]) ) {
 		exit(json_encode(array('error' => 'Invalid field!')));
 	}
 
-	$arrLevel = $_FIELDS[$_POST['field']];
-	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = create_map($arrLevel['sides'][0], $arrLevel['sides'][1], $arrLevel['mines']);
-	$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = null;
+	$arrLevel = $_FIELDS[ $_POST['field'] ];
+	// $_SESSION[S_NAME]['sessions'][SESSION]['map'] = create_map($arrLevel['sides'][0], $arrLevel['sides'][1], $arrLevel['mines']);
+	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = array();
+	$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = 0;
 	$_SESSION[S_NAME]['sessions'][SESSION]['field'] = $_POST['field'];
 	$_SESSION[S_NAME]['sessions'][SESSION]['mines'] = (int)$arrLevel['mines'];
 	$arrMap = array(
-		'field'	=> $_POST['field'],
-		'size'	=> array(
-			'x'		=> $arrLevel['sides'][0],
-			'y'		=> $arrLevel['sides'][1],
+		'field' => $_POST['field'],
+		'size' => array(
+			'x' => $arrLevel['sides'][0],
+			'y' => $arrLevel['sides'][1],
 		),
 		'mines'	=> $arrLevel['mines'],
 	);
@@ -77,15 +84,26 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	$f_x = (int)$_POST['x'];
 	$f_y = (int)$_POST['y'];
 
+	// Create map & start timer
+	if ( !$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] ) {
+		$arrLevel = $_FIELDS[ $_SESSION[S_NAME]['sessions'][SESSION]['field'] ];
+		$_SESSION[S_NAME]['sessions'][SESSION]['map'] = create_map(
+			$arrLevel['sides'][0],
+			$arrLevel['sides'][1],
+			$arrLevel['mines'],
+			$f_x,
+			$f_y
+		);
+
+		$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = time();
+	}
+
+	// Check valid coordinate
 	if ( !isset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x]) ) {
 		header('Content-type: text/json');
 		exit(json_encode(array('updates' => array(), 'msg' => '', 'gameover' => false)));
-//		exit(json_encode(array('error' => 'Invalid coordinate!')));
 	}
 
-	if ( null === $_SESSION[S_NAME]['sessions'][SESSION]['starttime'] ) {
-		$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = time();
-	}
 	$bGameOver = false;
 
 	$f = $_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x];
@@ -122,7 +140,7 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 		// mysql_query("INSERT INTO minesweeper (name,size_x,size_y,mines,playtime,utc, ip, user_agent) VALUES ('".addslashes($_SESSION[S_NAME]['name'])."',".$arrLevel['sides'][0].",".$arrLevel['sides'][1].",".$arrLevel['mines'].",".$playtime.",".time().", '".addslashes($_SERVER['REMOTE_ADDR'])."', '".addslashes($_SERVER['HTTP_USER_AGENT'])."');");
 		$m = floor($playtime / 60);
 		$s = $playtime % 60;
-		$szMsg = 'LEVEL "' . $arrLevel['name'] . '" ACHIEVEMENT SAVED (' . ( $m ? $m . 'm ' : '' ) . $s . "s)\n\nNo more highscore!";
+		$szMsg = 'YOU FINISHED LEVEL "' . $arrLevel['name'] . '" IN ' . ( $m ? $m . 'm ' : '' ) . $s . "s.\n\nNo more highscore!";
 	}
 
 	header('Content-type: text/json');
@@ -220,7 +238,15 @@ div#loading {
 		<p><a href="javascript: getSolver().mf_SaveAndMarkAndClickAll(null, function() { alert('I can only help those who help themselves!'); }); void(0)">Cheat!</a></p>
 	</td>
 	<td align="center">
-		<table id="field" style="border:solid 1px #777;"><tr><td><table style="border:solid 10px #bbb;"><tr><td><table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td><table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;"><tbody id="ms_tbody"><?php /*foreach( create_map(10, 10, 15) AS $row ) { echo '<tr>'; foreach ( $row AS $cell ) { echo '<td class="o'.$cell.'"></td>'; } echo '</tr>'; }*/ ?></tbody></table></td></tr></table></td></tr></table></td></tr></table>
+		<table id="field" style="border:solid 1px #777;"><tr><td>
+			<table style="border:solid 10px #bbb;"><tr><td>
+				<table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td>
+					<table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;"><tbody id="ms_tbody">
+						<!-- tiles here -->
+					</tbody></table>
+				</td></tr></table>
+			</td></tr></table>
+		</td></tr></table>
 		<br />
 		<div><?php $arrFields = array(); foreach ( $_FIELDS AS $szField => $arrField ) { $arrFields[] = '<a href="#" onclick="return objMinesweeper.fetchMap(\''.$szField.'\');">'.$arrField['name'].'</a>'; } echo implode(' | ', $arrFields); ?></div>
 	</td>
@@ -270,23 +296,37 @@ $('ms_tbody').addEvents({
 	}
 });
 </script>
+
+<pre><? print_r($_SESSION) ?></pre>
+
 </body>
 
 </html>
 <?php
 
-function create_map($f_x, $f_y, $f_m) {
-	$arrMap = array_fill(0, $f_y, array_fill(0, $f_x, 0));
+function create_map( $f_width, $f_height, $f_m, $f_x = null, $f_y = null ) {
+// echo "TRYING\n";
+	$arrMap = array_fill(0, $f_height, array_fill(0, $f_width, 0));
+
 	$iMines = 0;
 	while ( $iMines < $f_m ) {
-		$x = rand(0, $f_x-1);
-		$y = rand(0, $f_y-1);
+		$x = rand(0, $f_width-1);
+		$y = rand(0, $f_height-1);
 		if ( 'm' !== $arrMap[$y][$x] ) {
 			$arrMap[$y][$x] = 'm';
 			surrounders_plus_one($arrMap, $x, $y);
 			$iMines++;
 		}
 	}
+
+	// I clicked something and that must be a 0
+	if ( $f_x !== null && $f_y !== null && isset($arrMap[$f_y][$f_x]) ) {
+		$tile = $arrMap[$f_y][$f_x];
+		if ( $tile !== 0 ) {
+			return create_map($f_width, $f_height, $f_m, $f_x, $f_y);
+		}
+	}
+
 	return $arrMap;
 }
 
