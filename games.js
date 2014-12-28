@@ -15,7 +15,7 @@ Game = new Class({
 		this.player = new Player
 	},
 	saveScore: function() {
-		
+
 	},
 	startTheTime: function() {
 		this.starttime = new Date
@@ -98,7 +98,7 @@ LevelableGame = Game.extend({
 					td.className = c
 					td[c] = true
 					if ( 'wall' == td.className ) {
-						td.className += 0.5 < Math.random() ? '1' : '2'
+						td.className += ' wall' + (0.5 < Math.random() ? '1' : '2')
 					}
 				}
 				this.postBuildField(td, x, y)
@@ -138,12 +138,13 @@ LevelableGame = Game.extend({
 	}
 })
 
-/*BoardGame = Game.extend({
-	board: [],
-	clickField: function() {
-
-	}
-})*/
+BoardGame = Game.extend({});
+BoardGame.nesw = [
+	[0, -1],
+	[1, 0],
+	[0, 1],
+	[-1, 0]
+];
 
 /*CumulariAbsolutus = BoardGame.extend({
 	clickField: function() {
