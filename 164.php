@@ -157,9 +157,8 @@ for ( $y=0; $y<$g_h; $y++ ) {
 ?>
 </div>
 
-<ul class=maps id=maps></ul>
+<ul class=maps id="maps"></ul>
 
-<!-- script src="http://code.jquery.com/jquery-latest.js"></script -->
 <script src="simpledom.js"></script>
 <script src="classlist.js"></script>
 <script>
@@ -353,19 +352,28 @@ window.onload = function(e) {
 					if ( !lel.showNeighbours() ) {
 						lel.classList.add('end');
 						var win = !grid.all('.cell:not(.had):not(.not)').length;
-						if ( win ) {
-							alert("YOU WIN!");
-						}
-						else {
-							alert("FAIL!");
-							loadMap(lastMap);
-						}
+						setTimeout(function() {
+							if ( win ) {
+								alert("YOU WIN!");
+							}
+							else {
+								alert("FAIL!");
+								loadMap(lastMap);
+							}
+						}, 1);
 					}
 					break;
 				}
 			}
 		}
 	});
+
+	window.onhashchange = function(e) {
+		var map = (location.hash.match(/^\#m(\d+)$/) || '')[1];
+		if ( map != lastMap ) {
+			loadMap(map);
+		}
+	};
 
 	// maps links
 	for ( var m in maps ) {
