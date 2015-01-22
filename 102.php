@@ -153,36 +153,6 @@ else if ( isset($_POST['new_name']) ) {
 	exit(htmlspecialchars($_SESSION[S_NAME]['name']));
 }
 
-// Leaderboard
-/**
-else if ( isset($_GET['leaderboard']) ) {
-	echo '<table width=100% border="1" cellpadding=5 cellspacing=0>';
-	echo '<tr><th>Name</th><th>Board</th><th>Mines</th><th>Time</th><th>Date</th></tr>';
-	$q= mysql_query("SELECT * FROM minesweeper ORDER BY mines DESC, playtime ASC, utc DESC");
-	echo mysql_error();
-	$bgs = array('#eeeeee', '#dddddd', '#eeeeee');
-	$bg = 0;
-	$lb = '';
-	while ( $r = mysql_fetch_object($q) ) {
-		if ( $lb && $lb != $r->mines ) {
-			$bg++;
-		}
-		$lb = $r->mines;
-		echo '<tr bgcolor="'.$bgs[$bg%count($bgs)].'">';
-		echo '<td>'.$r->name.'</td>';
-		echo '<td>'.$r->size_x.' * '.$r->size_y.'</td>';
-		echo '<td>'.$r->mines.'</td>';
-		$m = floor($r->playtime / 60);
-		$s = $r->playtime % 60;
-		echo '<td>'.( 0 < $m ? $m.'m ' : '' ).$s.'s</td>';
-		echo '<td>'.date('Y-m-d H:i:s', $r->utc).'</td>';
-		echo '</tr>';
-	}
-	echo '</table>';
-	exit;
-}
-/**/
-
 if ( $_SERVER['REQUEST_METHOD'] != 'GET' ) {
 	exit('Invalid request');
 }
@@ -296,9 +266,6 @@ $('ms_tbody').addEvents({
 	}
 });
 </script>
-
-<pre><? print_r($_SESSION) ?></pre>
-
 </body>
 
 </html>
