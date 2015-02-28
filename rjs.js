@@ -331,8 +331,8 @@
 	'onmouseleave' in html && delete Event.Custom.mouseleave;
 
 	$each([
-		window, 
-		document, 
+		window,
+		document,
 		Element,
 		Elements
 	], function(Host) {
@@ -495,7 +495,7 @@
 		},
 
 		insertAfter: function(el, ref) {
-			var next = ref.nextSibling; 
+			var next = ref.nextSibling;
 			if ( next ) {
 				return this.insertBefore(el, next);
 			}

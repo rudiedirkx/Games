@@ -5,6 +5,9 @@
 	<title>Slither CANVAS</title>
 	<meta name="viewport" content="width=device-width, initial-scale=0.5" />
 	<style>
+	* {
+		-webkit-user-select: none;
+	}
 	canvas {
 		background: #bde4a3;
 		width: 100%;
@@ -26,14 +29,21 @@
 
 <canvas width="300" height="300">No CANVAS?</canvas>
 
-<p>Switch level: <a class="goto" data-prev href="#">&lt; prev</a> | <span id="lvl">1</span> | <a class="goto" href="#">next &gt;</a></p>
+<p>
+	<a id="restart" href="#">Restart</a>,
+	or switch level:
+	<a class="goto" data-prev href="#">&lt; prev</a> |
+	<span id="lvl">?</span> |
+	<a class="goto" data-next href="#">next &gt;</a>
+</p>
 <p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>
 
 <div id="red"></div>
 
 <script src="rjs.js"></script>
 <script>
-var lvl;
+var _LEVEL = 1;
+var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEVEL;
 
 window.on('error', function(e) {
 	alert(e.originalEvent.message);
@@ -62,12 +72,15 @@ window.on('error', function(e) {
 
 	// State
 	// var lvl;
-	var o,
-		connectors,
-		conditions;
+	var o;
+	// var connectors;
+	// var conditions;
+	var gameover;
+	var slithering;
 
 	// Start
 	$(init);
+
 
 	$extend(Coords2D, {
 		distanceTo: function(C) {
@@ -76,12 +89,66 @@ window.on('error', function(e) {
 	});
 
 
+	$extend(Array, {
+		intersect: function(arr) {
+			var matches = [];
+			this.each(function(v1) {
+				arr.each(function(v2) {
+					if ( v1 == v2 ) {
+						matches.push(v1);
+					}
+				});
+			});
+			return matches;
+		}
+	});
+
+
 	function Connector(x, y, dir) {
+		this.dir = dir;
 		this.x = x;
 		this.y = y;
-		this.dir = dir;
 	}
+	Connector.fromString = function(str) {
+		var pts = str.split('-');
+		return new Connector(~~pts[1], ~~pts[2], pts[0]);
+	};
 	$extend(Connector, {
+		touches: function(con) {
+			var coords1 = this.getEnds().invoke('join');
+			var coords2 = con.getEnds().invoke('join');
+			return coords1.intersect(coords2).length == 1;
+		},
+		toString: function() {
+			return this.dir + '-' + this.x + '-' + this.y;
+		},
+		getNeighborStrings: function() {
+			var ends = this.getEnds();
+			var me = this.toString();
+
+			var cons1 = ends[0].getConnectors();
+			cons1 = cons1.invoke('toString');
+			var meIndex = cons1.indexOf(me);
+			delete cons1[meIndex];
+
+			var cons2 = ends[1].getConnectors();
+			cons2 = cons2.invoke('toString');
+			var meIndex = cons2.indexOf(me);
+			delete cons2[meIndex];
+
+			var cons = cons1.concat(cons2);
+			return cons;
+		},
+		findNextIn: function(cons) {
+			var neighbors = this.getNeighborStrings();
+			var nexts = cons.intersect(neighbors);
+			if ( nexts.length ) {
+				var next = nexts[0];
+				var nextIndex = cons.indexOf(next);
+				delete cons[nextIndex];
+				return Connector.fromString(next);
+			}
+		},
 		getEnds: function() {
 			if ( this.dir == 'hor' ) {
 				return [
@@ -95,7 +162,9 @@ window.on('error', function(e) {
 			];
 		},
 		valid: function() {
-			return this.x >= 0 && this.y >= 0 && this.x < lvl.width && this.y < lvl.height;
+			var xp = this.dir == 'ver' ? 1 : 0;
+			var yp = this.dir == 'hor' ? 1 : 0;
+			return this.x >= 0 && this.y >= 0 && this.x < lvl.width + xp && this.y < lvl.height + yp;
 		},
 		getCenterPosition: function() {
 			var plus = cellSize/2,
@@ -107,6 +176,7 @@ window.on('error', function(e) {
 		}
 	}, Coords2D.prototype);
 
+
 	function End(x, y) {
 		this.x = x;
 		this.y = y;
@@ -114,9 +184,8 @@ window.on('error', function(e) {
 	$extend(End, {
 		getConnectors: function() {
 			var cons = []
-			$each([[0, 1], [0, -1], [1, 0], [-1, 0]], function(vector) {
-				var dir = vextor[0] == 0 ? 'ver' : 'hor',
-					con = new Connector(this.x + vector[0], this.y + vector[1], dir);
+			$each([[0, -1, 'ver'], [-1, 0, 'hor'], [0, 0, 'ver'], [0, 0, 'hor']], function(vector) {
+				var con = new Connector(this.x + vector[0], this.y + vector[1], vector[2]);
 				con.valid(lvl) && cons.push(con);
 			}, this);
 			return cons;
@@ -126,22 +195,24 @@ window.on('error', function(e) {
 		}
 	}, Coords2D.prototype);
 
+
 	function init() {
-		initLevel(0);
+		initLevel(LEVEL);
 
 		elCanvas.on(evType, function(e) {
 			$('red').css(e.pageXY.toCSS());
+
+			if ( gameover ) return;
+
 			var zoom = this.offsetWidth / _w;
 			var c = e.subjectXY.multiply(1/zoom);
 
 			var connector = getClosestConnector(c);
-
-			// var connector = getConnector(c);
 			if (connector) {
 				var hilited = hiliteConnector(connector, true);
-console.log('hilited', hilited);
 				updateConditions(connector, hilited);
 				drawLevel();
+				checkWinStatus();
 			}
 		});
 	}
@@ -151,30 +222,45 @@ console.log('hilited', hilited);
 		var d = this.data('prev') != null ? -1 : 1;
 		if ( getMap(lvl.n + d) ) {
 			initLevel(lvl.n + d);
-			$('lvl').setText(lvl.n+1);
 		}
 	});
 
-	document.on('touchstart', function(e) {
-		if ( !['input', 'a'].contains(e.target.nodeName.toLowerCase()) ) {
-			e.preventDefault();
-		}
+	$('restart').on('click', function(e) {
+		e.preventDefault();
+		initLevel(lvl.n);
 	});
+
+	// No double tap zoom. This is fine because everything is JS triggered
+	document.on('touchstart', function(e) {
+		e.preventDefault();
+	});
+
+	window.on('hashchange', function() {
+		var n = parseInt(location.hash.substr(1));
+		if ( !isNaN(n) ) {
+			initLevel(n);
+		}
+	})
 
 	// Process
 	function initLevel(n) {
+		clearInterval(slithering);
+		location.hash = n;
+		$('lvl').setText(n);
+
 		connectors = [];
 		conditions = {};
 
 		lvl = getLevel(n);
 		lvl.connectors = getAllConnectors();
 		drawLevel(true);
+
+		gameover = false;
 	}
 
 	function getClosestConnector(C) {
-		var minDistance = 999,
-			closestConnector = lvl.connectors[0];
-console.log(lvl.connectors.length);
+		var closestConnector = lvl.connectors[0],
+			minDistance = closestConnector.getCenterPosition().distanceTo(C);
 		for ( var i=1, L=lvl.connectors.length; i<L; i++ ) {
 			var distance = lvl.connectors[i].getCenterPosition().distanceTo(C);
 			if ( distance < minDistance ) {
@@ -222,6 +308,86 @@ console.log(lvl.connectors.length);
 		});
 	}
 
+	function checkWinStatus() {
+		var slither = getWinStatus();
+		if ( slither ) {
+			setTimeout(function() {
+				win(slither);
+			}, 20);
+		}
+	}
+
+	function getWinStatus() {
+		return checkConditions() && checkSlither();
+	}
+
+	function checkConditions() {
+		var	wrong = 0;
+		lvl.map.each(function(cells, y) {
+			cells.each(function(target, x) {
+				if ( target != null ) {
+					var current = conditions[String(x) + '-' + String(y)] || 0;
+					if ( current != target ) {
+						wrong++;
+					}
+				}
+			});
+		});
+		return wrong == 0;
+	}
+
+	function checkSlither() {
+		if ( connectors.length < 4 ) return false;
+
+		var cons = JSON.parse(JSON.stringify(connectors));
+
+		var first = Connector.fromString(cons[0]);
+		delete cons[0];
+
+		var slither = [first];
+
+		var last = first, next;
+		while ( true ) {
+			next = last.findNextIn(cons);
+
+			// No next => end of slither => win or lose
+			if ( !next ) {
+
+				// All connectors have been matched
+				if ( slither.length == connectors.length ) {
+					if ( first.touches(last) ) {
+						return slither;
+					}
+				}
+
+				return false;
+			}
+
+			slither.push(next);
+			last = next;
+		}
+
+		return false;
+	}
+
+	function win(slither) {
+		gameover = true;
+
+		var index = -1;
+		var iterate = function() {
+			var prev = slither[index];
+			if ( !slither[++index] ) index = 0;
+			var current = slither[index];
+
+			if ( prev ) {
+				hiliteConnector(prev, 'pink');
+			}
+			hiliteConnector(current, 'red');
+		};
+		iterate();
+		slithering = setInterval(iterate, 100);
+	}
+
 	function getNeighborCells(connector) {
 		var cells = [],
 			hor = connector.x,
@@ -247,7 +413,7 @@ console.log(lvl.connectors.length);
 		var ckey = dir + '-' + hor + '-' + ver,
 			eIndex = connectors.indexOf(ckey),
 			exists = eIndex != -1,
-			color = withState && exists ? gridColor : gridHiliteColor;
+			color = typeof withState == 'string' ? withState : (withState && exists ? gridColor : gridHiliteColor);
 
 		drawLine(cs[0], cs[1], color, true);
 		if ( withState ) {
@@ -329,7 +495,7 @@ console.log(lvl.connectors.length);
 		for ( var y=0; y<lvl.height; y++ ) {
 			for ( var x=0; x<lvl.width; x++ ) {
 				var number = lvl.map[y][x];
-				if ( number ) {
+				if ( number != null ) {
 					var c = getCellCoords(x, y);
 
 					// Store in conditions cache
@@ -425,7 +591,8 @@ console.log(lvl.connectors.length);
 		map = map.map(function(row) {
 			var cells = [];
 			for ( var i=0, L=row.length; i<L; i++ ) {
-				cells.push(row[i].trim());
+				var n = row[i].trim();
+				cells.push(n == '' ? null : parseFloat(n));
 			}
 			return cells;
 		});
@@ -447,6 +614,13 @@ console.log(lvl.connectors.length);
 	});
 
 }, [
+	[
+		'  3  ',
+		'  3  ',
+		'     ',
+		'     ',
+		'     ',
+	],
 	[
 		'  0  ',
 		'  3  ',
