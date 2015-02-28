@@ -55,7 +55,7 @@ $g_arrGames = array(
 	array(143,		'ABALONE',								'Work your way with the balls'),
 	array(145,		'LINX',									'!!NEW!!'),
 	array(146,		'SLITHER',								'Connect the slither'),
-	array(146,		'CANVAS SLITHER',						'Connect the slither. Mobile optimized'),
+	array('146b',	'CANVAS SLITHER',						'Connect the slither. Mobile optimized'),
 	array(147,		'QUICK CLICKER',						'!!NEW!!'),
 	array(148,		'EINSTEIN\'S RIDDLE',					'Are you in the top 2% smartest people in the world? Can you solve the puzzle?'),
 	array(149,		'SHIFTER',								'Think first, shift later'),
