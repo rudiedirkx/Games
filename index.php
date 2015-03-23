@@ -126,10 +126,6 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 	canvas {
 		display: none;
 	}
-	#contact {
-		padding: 15px 0 0;
-		text-align: center;
-	}
 	#tiles {
 		padding-bottom: 15px;
 	}
@@ -232,33 +228,6 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 	#tiles h2, #tiles p {
 		display: none;
 	}
-
-	#contact {
-		position: fixed;
-		left: 0;
-		top: 0;
-		z-index: 3;
-	}
-	#contact a {
-		display: block;
-		color: white;
-		background: rgba(0, 0, 0, 0.6);
-		font-size: 24px;
-		line-height: 50px;
-		width: 150px;
-		text-align: center;
-		text-decoration: none;
-	}
-	#contact a:not(:hover):not(:focus) {
-		-webkit-transition: all 300ms linear;
-		-moz-transition: all 300ms linear;
-	}
-	#contact a:hover,
-	#contact a:focus {
-		background: rgba(0, 0, 0, 1);
-		line-height: 100px;
-		width: 250px;
-	}
 }
 
 .clearfix:after,
@@ -276,8 +245,6 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 <body>
 
 <canvas width="800" height="600" id="cv"></canvas>
-
-<p id="contact"><a href="mailto:games@webblocks.nl?subject=About your awesome <?=$_SERVER['HTTP_HOST']?>...">Contact me</a></p>
 
 <ul id="tiles" data-width="<?=$g_iWidth?>" data-height="<?=$g_iHeight?>">
 <?php
