@@ -107,7 +107,7 @@ $start = array($directions[rand(0, 3)], rand(0, BOARD_SIZE-1));
 	<button id="start">start ticker</button>
 </p>
 
-<script src="rjs.js"></script>
+<script src="js/rjs-custom.js"></script>
 <script>
 "use strict";
 

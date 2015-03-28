@@ -4,99 +4,7 @@
 header('Content-type: text/html; charset="utf-8"');
 
 //type = singular | symmetric | multiple
-$g_arrBoards = array(1=>
-	array(
-		'',
-		'   3  3 ',
-		'',
-		' 1  1',
-		'',
-	),
-	array(
-		' 5  6',
-		'',
-		'         5',
-		'   6',
-		'2      2',
-		'',
-	),
-	array(
-		'',
-		'      4',
-		'     3 1',
-		'      2',
-		'  2       2   ',
-		'      2',
-		'     1 3',
-		'',
-		'      4',
-		'',
-		'',
-		'',
-	),
-	array(
-		'xx      xx',
-		'xx      xx',
-		'    12',
-		'',
-		'  3    4',
-		'  4    3',
-		'',
-		'    21',
-		'xx      xx',
-		'xx      xx',
-	),
-	array(
-		'type' => 'singular',
-		'map' => array(
-			'',
-			'        x',
-			'        x',
-			'   xxx  x',
-			'   xxx  x',
-			'   xxx  x',
-			' 1 xxx2 x3',
-			'   xxx  x',
-			'   xxx  x',
-			'   xxx  x',
-			'        x',
-			'        x',
-			'',
-		),
-		'max' => 52,
-		'best' => 43,
-	),
-	array(
-		'type' => 'multiple',
-		'map' => array(
-			'        ',
-			' 1    2 ',
-			'        ',
-			'        ',
-			'        ',
-			'  2  1  ',
-			' 1    2 ',
-			'        ',
-		),
-	),
-	array(
-		'map' => array(
-			'xxx1     xxx',
-			'xxx   2  xxx',
-			'xxx      xxx',
-			'          56',
-			'        6   ',
-			'  2        5',
-			'       1    ',
-			'      4   3 ',
-			'      2     ',
-			'xxx   4  xxx',
-			'xxx 3    xxx',
-			'xxx      xxx',
-		),
-		'max' => 43,
-	),
-);
+$g_arrBoards = require '145.boards.php';
 
 $iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] : key($g_arrBoards);
 $arrBoard = $g_arrBoards[$iBoard];
@@ -107,7 +15,7 @@ $board = board($arrBoard, $iBoard);
 <!doctype html>
 <html lang="en">
 
-<head> 
+<head>
 <meta charset="utf-8" />
 <title>Linx</title>
 <link rel="stylesheet" href="/145.css" />
@@ -159,8 +67,11 @@ $board = board($arrBoard, $iBoard);
 
 <img class="preload" src="/images/145-lines.png" alt="preloading lines sprite" />
 
-<script src="//code.jquery.com/jquery-latest.js"></script>
-<script>var LEVEL = <?=(int)$iBoard?>, TYPE = '<?=$board->type?>'</script>
+<script src="js/rjs-custom.js"></script>
+<script>
+	var LEVEL = <?= (int)$iBoard ?>;
+	var TYPE = '<?= $board->type ?>';
+</script>
 <script src="/145.js"></script>
 
 </body>

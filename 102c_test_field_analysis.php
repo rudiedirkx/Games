@@ -179,7 +179,7 @@ $g_arrSides = array(count($arrMap), count($arrMap[0]));
 <!DOCTYPE html>
 <html>
 
-<head> 
+<head>
 <title>MS 2c - Test - Board Analysis</title>
 <style>
 * {
@@ -194,7 +194,7 @@ p {
 }
 </style>
 <link rel="stylesheet" href="102.css" />
-<script src="rjs.js"></script>
+<script src="js/rjs-custom.js"></script>
 <script src="102c.js"></script>
 </head>
 

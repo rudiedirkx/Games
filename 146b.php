@@ -40,7 +40,7 @@
 
 <div id="red"></div>
 
-<script src="rjs.js"></script>
+<script src="js/rjs-custom.js"></script>
 <script>
 var _LEVEL = 1;
 var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEVEL;

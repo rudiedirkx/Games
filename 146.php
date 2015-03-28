@@ -79,7 +79,7 @@ button {
 	padding: 5px 12px;
 }
 </style>
-<script src="rjs.js"></script>
+<script src="js/rjs-custom.js"></script>
 <script>
 var g_c = <?= $c ?>, g_r = <?= $r ?>, g_l = <?= $iGame ?>, g_max = <?= max($ak=array_keys($g_arrBoards[$szDifficulty])) ?>, g_min = <?= min($ak=array_keys($g_arrBoards[$szDifficulty])) ?>;
 

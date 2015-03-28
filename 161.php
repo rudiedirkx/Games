@@ -71,7 +71,7 @@ echo '</table>'."\n\n";
 
 <p><input type="button" onclick="doTick();" value="Tick!" /></p>
 
-<script src="rjs.js"></script>
+<script src="js/rjs-custom.js"></script>
 <script>
 //'use strict';
 

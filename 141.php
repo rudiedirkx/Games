@@ -5,7 +5,7 @@ session_start();
 
 $bShowCoords	= false;
 
-require_once("connect.php");
+// require_once("connect.php");
 define( "S_NAME",	"st_2_user" );
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 
@@ -71,8 +71,7 @@ else if ( $_action == "stop")
 }
 
 /** GAME RULES **/
-else if ( $_page == "gamerules" )
-{
+else if ( $_page == "gamerules" ) {
 	echo '<p><a href="#" onclick="return Blackbox.ShowGameRules();">Less...</a></p>';
 	echo "You must find all Atoms! The Atoms are hidden in the grey field.<br/>";
 	echo "You can fire beams that might tell you the location of the Atoms.<br/>";

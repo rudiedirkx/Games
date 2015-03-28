@@ -8,8 +8,7 @@ if ( isset($_GET['source']) ) {
 
 session_start();
 
-require_once('connect.php');
-require_once('inc.cls.json.php');
+// require_once('connect.php');
 define( 'S_NAME', 'bb2' );
 
 define( 'BASEPAGE',	basename($_SERVER['SCRIPT_NAME']) );
@@ -100,7 +99,7 @@ else if ( isset($_POST['fire'], $_POST['beam'], $_POST['x'], $_POST['y']) ) {
 	// track beam (fill updates)
 	Track_Beam( $dir, array($x, $y) );
 
-	exit(json::encode(array('updates' => $arrUpdates)));
+	exit(json_encode(array('updates' => $arrUpdates)));
 }
 
 // reveal //
@@ -116,7 +115,7 @@ else if ( isset($_POST['reveal']) ) {
 	}
 	$_SESSION[S_NAME]['map'] = array();
 
-	exit(json::encode(array('atoms' => $arrAtoms)));
+	exit(json_encode(array('atoms' => $arrAtoms)));
 }
 
 // check //
