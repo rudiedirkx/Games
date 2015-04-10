@@ -22,7 +22,7 @@ if (top.location!=this.location)
 <OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
  codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0"
  WIDTH="550" HEIGHT="400" id="castle" ALIGN="">
- <PARAM NAME=movie VALUE="castle.swf"> <PARAM NAME=menu VALUE=false>  <PARAM NAME=quality VALUE=high> <PARAM NAME=bgcolor VALUE=#FFFFFF> <EMBED src="castle.swf" quality=high bgcolor=#000000  WIDTH="550" HEIGHT="400" NAME="castle" ALIGN=""
+ <PARAM NAME=movie VALUE="swf/castle.swf"> <PARAM NAME=menu VALUE=false>  <PARAM NAME=quality VALUE=high> <PARAM NAME=bgcolor VALUE=#FFFFFF> <EMBED src="swf/castle.swf" quality=high bgcolor=#000000  WIDTH="550" HEIGHT="400" NAME="castle" ALIGN=""
  TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED>
 </OBJECT>
 

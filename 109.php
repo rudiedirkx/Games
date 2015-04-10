@@ -20,11 +20,11 @@ if (top.location!=this.location)
 <tr valign=middle><td><center>
 
 <OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" WIDTH=600 HEIGHT=600 id="gridlock">
- <PARAM NAME=movie VALUE="gridlock.swf">
+ <PARAM NAME=movie VALUE="swf/gridlock.swf">
  <PARAM NAME=loop VALUE=false>
  <PARAM NAME=quality VALUE=high>
  <PARAM NAME=bgcolor VALUE=#FFFFFF>
- <EMBED src="gridlock.swf" quality=high bgcolor=#FFFFFF WIDTH=600 HEIGHT=600 NAME="gridlock" ALIGN="" TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED>
+ <EMBED src="swf/gridlock.swf" quality=high bgcolor=#FFFFFF WIDTH=600 HEIGHT=600 NAME="gridlock" ALIGN="" TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED>
 </OBJECT>
 
 </td></tr></table>
