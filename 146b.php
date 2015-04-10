@@ -215,12 +215,24 @@ var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEV
 		hiliteConnectors();
 	}
 
-	function hiliteConnectors() {
-		r.each(connectors, function(key) {
-			var c = key.split('-'),
-				con = new Connector(c[1], c[2], c[0]);
-			hiliteConnector(con, false);
-		});
+	function drawNumbers(lvl, initial) {
+		for ( var y=0; y<lvl.height; y++ ) {
+			for ( var x=0; x<lvl.width; x++ ) {
+				var number = lvl.map[y][x];
+				if ( number != null ) {
+					var c = getCellCoords(x, y);
+
+					// Store in conditions cache
+					if ( initial ) {
+						conditions[ x + '-' + y ] = 0;
+					}
+
+					// Draw to canvas
+					var loc = new Coords2D(x, y);
+					drawNumber(c, number, loc);
+				}
+			}
+		}
 	}
 
 	function getLevel(n) {
@@ -301,6 +313,22 @@ var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEV
 		'202 0 ',
 		'212  0',
 	],
+	[
+		' 3 3  ',
+		'    1 ',
+		'  2   ',
+		'0 3   ',
+		'      ',
+		'      ',
+	],
+	[
+		'223   ',
+		'2     ',
+		'123   ',
+		'2     ',
+		'3     ',
+		'      ',
+	]
 ]);
 </script>
 

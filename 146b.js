@@ -127,6 +127,9 @@ document.on('touchstart', function(e) {
 			pos[dir] += plus;
 			pos.source = this;
 			return pos;
+		},
+		hilite: function(color) {
+			return hiliteConnector(this, color || 'red');
 		}
 	}, Coords2D.prototype);
 
@@ -137,7 +140,7 @@ document.on('touchstart', function(e) {
 	}
 	r.extend(End, {
 		getConnectors: function() {
-			var cons = []
+			var cons = [];
 			r.each([[0, -1, 'ver'], [-1, 0, 'hor'], [0, 0, 'ver'], [0, 0, 'hor']], function(vector) {
 				var con = new Connector(this.x + vector[0], this.y + vector[1], vector[2]);
 				con.valid(lvl) && cons.push(con);
@@ -146,6 +149,27 @@ document.on('touchstart', function(e) {
 		},
 		getPosition: function() {
 			return new Coords2D(outsidePadding + this.x * cellSize, outsidePadding + this.y * cellSize);
+		}
+	}, Coords2D.prototype);
+
+
+	function Cell(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+	r.extend(Cell, {
+		getConnectors: function() {
+			var cons = [];
+			r.each([[0, 0, 'ver'], [0, 0, 'hor'], [1, 0, 'ver'], [0, 1, 'hor']], function(vector) {
+				var con = new Connector(this.x + vector[0], this.y + vector[1], vector[2]);
+				con.valid(lvl) && cons.push(con);
+			}, this);
+			return cons;
+		},
+		getHilitedConnecters: function(hilited) {
+			return this.getConnectors().filter(function(con) {
+				return hilited.contains(String(con));
+			});
 		}
 	}, Coords2D.prototype);
 
@@ -216,7 +240,7 @@ document.on('touchstart', function(e) {
 			color = typeof withState == 'string' ? withState : (withState && exists ? gridColor : gridHiliteColor);
 
 		drawLine(cs[0], cs[1], color, true);
-		if ( withState ) {
+		if ( withState == true ) {
 			exists ? connectors.splice(eIndex, 1) : connectors.push(ckey);
 		}
 
@@ -275,26 +299,6 @@ document.on('touchstart', function(e) {
 		];
 	}
 
-	function drawNumbers(lvl, initial) {
-		for ( var y=0; y<lvl.height; y++ ) {
-			for ( var x=0; x<lvl.width; x++ ) {
-				var number = lvl.map[y][x];
-				if ( number != null ) {
-					var c = getCellCoords(x, y);
-
-					// Store in conditions cache
-					if ( initial ) {
-						conditions[ x + '-' + y ] = 0;
-					}
-
-					// Draw to canvas
-					var loc = new Coords2D(x, y);
-					drawNumber(c, number, loc);
-				}
-			}
-		}
-	}
-
 	function drawNumber(c, number, loc) {
 		var ckey = loc.join('-'),
 			correct = conditions[ckey] == null || conditions[ckey] == number;
@@ -309,6 +313,14 @@ document.on('touchstart', function(e) {
 			outsidePadding + x * cellSize + o,
 			outsidePadding + y * cellSize + o
 		);
+	}
+
+	function hiliteConnectors() {
+		r.each(connectors, function(key) {
+			var c = key.split('-'),
+				con = new Connector(c[1], c[2], c[0]);
+			hiliteConnector(con, false);
+		});
 	}
 
 	function drawGrid(lvl) {
