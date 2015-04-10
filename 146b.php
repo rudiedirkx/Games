@@ -82,14 +82,14 @@ window.on('error', function(e) {
 	$(init);
 
 
-	$extend(Coords2D, {
+	r.extend(Coords2D, {
 		distanceTo: function(C) {
 			return Math.sqrt( Math.pow(this.x - C.x, 2) + Math.pow(this.y - C.y, 2) );
 		}
 	});
 
 
-	$extend(Array, {
+	r.extend(Array, {
 		intersect: function(arr) {
 			var matches = [];
 			this.each(function(v1) {
@@ -113,7 +113,7 @@ window.on('error', function(e) {
 		var pts = str.split('-');
 		return new Connector(~~pts[1], ~~pts[2], pts[0]);
 	};
-	$extend(Connector, {
+	r.extend(Connector, {
 		touches: function(con) {
 			var coords1 = this.getEnds().invoke('join');
 			var coords2 = con.getEnds().invoke('join');
@@ -181,10 +181,10 @@ window.on('error', function(e) {
 		this.x = x;
 		this.y = y;
 	}
-	$extend(End, {
+	r.extend(End, {
 		getConnectors: function() {
 			var cons = []
-			$each([[0, -1, 'ver'], [-1, 0, 'hor'], [0, 0, 'ver'], [0, 0, 'hor']], function(vector) {
+			r.each([[0, -1, 'ver'], [-1, 0, 'hor'], [0, 0, 'ver'], [0, 0, 'hor']], function(vector) {
 				var con = new Connector(this.x + vector[0], this.y + vector[1], vector[2]);
 				con.valid(lvl) && cons.push(con);
 			}, this);
@@ -299,7 +299,7 @@ window.on('error', function(e) {
 	function updateConditions(connector, hilited) {
 		var cs = getNeighborCells(connector),
 			change = hilited ? 1 : -1;
-		$each(cs, function(c) {
+		r.each(cs, function(c) {
 			c = c.join('-');
 			if ( conditions[c] == null ) {
 				conditions[c] = 0;
@@ -484,7 +484,7 @@ window.on('error', function(e) {
 	}
 
 	function hiliteConnectors() {
-		$each(connectors, function(key) {
+		r.each(connectors, function(key) {
 			var c = key.split('-'),
 				con = new Connector(c[1], c[2], c[0]);
 			hiliteConnector(con, false);
@@ -601,7 +601,7 @@ window.on('error', function(e) {
 
 })(function() {
 
-	$extend(Coords2D, {
+	r.extend(Coords2D, {
 		multiply: function(f) {
 			return new Coords2D(
 				Math.round(this.x * f),
