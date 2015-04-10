@@ -1,7 +1,7 @@
 
 RewriteEngine on
 
-RewriteRule ^([0-9]{3}[Ba-f]{0,1})$ $1.php
+RewriteRule ^([0-9]{3}[a-fA-F]?)$ $1.php
 
 RewriteRule ^inc.cls.(.+).phps source.php?$1
 
