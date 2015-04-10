@@ -320,6 +320,14 @@ var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEV
 		'0 3   ',
 		'      ',
 		'      ',
+	],
+	[
+		'223   ',
+		'2     ',
+		'123   ',
+		'2     ',
+		'3     ',
+		'      ',
 	]
 ]);
 </script>

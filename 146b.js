@@ -128,8 +128,8 @@ document.on('touchstart', function(e) {
 			pos.source = this;
 			return pos;
 		},
-		hilite: function() {
-			return hiliteConnector(this, 'red');
+		hilite: function(color) {
+			return hiliteConnector(this, color || 'red');
 		}
 	}, Coords2D.prototype);
 
@@ -240,7 +240,7 @@ document.on('touchstart', function(e) {
 			color = typeof withState == 'string' ? withState : (withState && exists ? gridColor : gridHiliteColor);
 
 		drawLine(cs[0], cs[1], color, true);
-		if ( withState ) {
+		if ( withState == true ) {
 			exists ? connectors.splice(eIndex, 1) : connectors.push(ckey);
 		}
 
