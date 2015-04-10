@@ -6,6 +6,8 @@ session_start();
 $bShowCoords	= false;
 
 // require_once("connect.php");
+require 'inc.functions.php';
+
 define( "S_NAME",	"st_2_user" );
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 
@@ -93,48 +95,19 @@ else if ( $_page == "gamerules" ) {
 }
 
 /** IMAGES **/
-else if ( isset($_GET['image']) )
-{
-	header("Content-type: image/gif");
-
-	switch ( $_GET['image'] )
-	{
-		case "right":
-			echo base64_decode('R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACK4yPqcsd4pqAUU1az8V58+h9UtiFomWeSKpqZvXCXvZsdD3duF7zjw/UFQAAOw==');
-		break;
-
-		case "left":
-			echo base64_decode('R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACK4yPqcvN4h6MSViK7MVBb+p9TihKZERqaDqNKfbCIdd5dF2CuX4fbQ9kFAAAOw==');
-		break;
-
-		case "up":
-			echo base64_decode('R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACI4yPqcvtD6OcTQgarJ1ax949IFiNpGKaSZoeLIvF8kzXdlAAADs=');
-		break;
-
-		case "down":
-			echo base64_decode('R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACIoyPqcvtD6OcNImLs8Zne4582yKCpPh80Shl1VXF8kzXUAEAOw==');
-		break;
-
-		case "bb1":
-			echo base64_decode('R0lGODlhXwBrAIAAAAAAAP///yH/C01hZ2ljVmlld2VyAp4Anm12aXCUAAAAHAAAACAAAAABAAAABAAAAAAAAP////////D//f/w//3/8P/t//D/7f/w/+3/8P/t//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8IAAAAD//f/w//3/8P/9//D//f/w//3/8P/9//CAAAAA////8P////D////wACH5BAAAAAAALAAAAABfAGsAAAL/jI+py+0PYwK02ouz3rz7TxmAxIykYp5Iqopue7CtrNKnaZO5uAc99HvgYDFHqBE0El9JpLHXLC19LyIUOo0uhksaqArTosAz1Idcy6Jvwp14oqZ22865/b2iS+3WtU6/FdcnN4jkJhjmJ/FzFMiXSAhpWFcIiVdkePhYFslZ0ji2mdY5+qlZyXmpyEMpaYm4deqaCutoOzuqSsomygvyCxwsfLb712s8qKtc68uMjNt8jLmHmuvMI+v5Kj3STQ1tvOzIBScdQQ5O7nV9vgpkyyIjnlwbr2T+XrwodF8d7Z+nlTZa+LDg46evXb9bA60VXNjwH7hpDEttA0gxFEaF//O+aZzIkV3CjgQ3jhSJkOTHlRZLgjx58N6wmTRrdnCHUGA5kylFGuQp0yfElg5N/nzZ86FOXvSUeiQqMWLAp0wvvjwqdV/CfEszQg0ntKvWpkaHVnWZdZXKqF+9TkUa1GnFs0Wvmn2Gtq1alHHLilVI1u5frlbTwgRaZ+1blnTZNl68E27isFTx5rKJOfNMnHfdeh5bWO9hyXsUf96aM/Tj06ZDymVs2XFsyLRna2092nBSv5VB5129N+bk15F19xXcG7Bq28ERl6Y8l3k+3FhF70Ye3Xddw9WBT4cOW7ts8bU5D77OvbPy39K7S0cv2j352+CLW5epOb/+m1Pm9zH/D+B6AQ5IYHIFHgigLggueB6DDr73YISpSUghhBVeaB6GFSqoYYEcdjjghyCOWGEBADs=');
-		break;
-
-		case "bb2":
-			echo base64_decode('R0lGODlhXwBrAIAAAAAAAP///yH/C01hZ2ljVmlld2VyAp4Anm12aXCUAAAAHAAAACAAAAABAAAABAAAAAAAAP////////D//f/w9/3/8Pf9//D3/f/w9/3/8Pf9//D//f/w//3/8P/9//D//f/w//AAEP/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8IAAAAD//f/w//3/8P/9//D//f/w//3/8P/9//CAAAAA////8P////D////wACH5BAAAAAAALAAAAABfAGsAAAL/jI+py+0PYwK02ouz3rz7TxmAxIykYp5Iqopue7CtrNKnacf5Cwd79IPgHKFG8HEk9l6/YmnpgyaNvIXTKs0uh5NPdabtcVfe6DYMG5d20+f5HbxO0GA4kk2vaeP4t3h/R+WXBkjU9zdYxyeI2Ehotnb46KhoKFlHqQdpJbeSd1NodKmZCbrJyTipWomUirmq2YaVSPoIcoubq1smi/JJ0jt3WvtaHPsrEexpR2taCvxFLO1siwxkLRRNbbzt5jvcHQ59/a0cg92aLKPGPf6cyj7tDpvNhC6ym+9h39xlY64tnRmA4ITNeudtILZO5/olVOgwoERyFBsSjKMk4jJh/xcFHqQ3rmPGh/KSTaznyiBIkwVZpty4kpzIlw0R1tOHM6fOCic9fvxmM91MkjDbsRz6U6VRmQtHxrzZlKbLahqb3BOEFGhScUejEp3HyqZVjUK9bgV7rKrTpVDVSq0Y9unYoBmzKr3Llanbr1Pjsp37tOzes33Til1bUu/htyipLuYL17BcxHnbPiYc2dTOzZxv9aRcFC9azWa1shV82XRiy5MZ+5T8F3Rh0oNVV0bdGnJjv6sBn65bWvTskMFD3wZeW3hm4smNj2aeWvlu2L1lL+/avGZg5NGdD8feXftvrMXFr8Yd27V11ul1v6Yd/rN68tnlu6/bOb/+C1Ce9zH/D+B3AQ5IoHcFHhggQQguOB+DDl73YIQCSkhhgxVeqOCFCGaoYYEcdjjghyCOeGEBADs=');
-		break;
-
-		case "bb3":
-			echo base64_decode('R0lGODlhXwBrAJEAAAAAAIAAAP///wAAACH/C01hZ2ljVmlld2VyAggC/212aXDUAQAAHAAAACAAAAAEAAAADgAAAAAAAIAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIiIiIiIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiAiIiIiIiIiAiIiIiICIiIiIiIiIiICIiIiIgIiIiIiIiIiIgIiIiIiAiIiIiIiIiIiAiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiEiICIiIiIiIiIiIiIiEiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIv8iIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIgAAAAAAAAAAAAAAAAACIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiAAAAAAAAAAAAAAAAAAIiIiIiIiESIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIKIiIiIiIiIiIiIgAh+QQAAAAAACwAAAAAXwBrAAAC/5SPqcvtD2MCtNqLs968+08ZgMSMpGKeSKqKbnuwrazSp2mLeQzz5f7q4RohBxCyKxJ7r+Tx+HBGmYLhb8qUGqnW2McnnHyDsK7OAy6L0eRZW7zNGoHQOJ3OncfDVf1SToQHeLenFljo1nf4x3fFaEj4mOhYkqdIuVAnCbd58+Yl2IiilGnpFGqYSYpiGog6Ofpa8+mFOLtYOeiXKzpq63nJWwrYmZaoKQyrfAvS7PwMPYY83HvLN81KnAppWQ183b29DIw9wRCAnp5sza19gI4An+1NYqasnoBvzH4cLhDgAOAKf8zCyTsnkJaEcgODwUrYACLDfeQMQpBIsKI2iP/nGtJbqDACC44LMLoruPGiR3EoRZFUYPKjyJBI4qmkWK9VygcxWWp0eZMmFnA7A64cl9Mhu5f5jvJruY2pTZwgdRWN6PQbpGgaAnjwyjXsBqGFpL7LmpQoUJ5oq6qNGlSp1n5XO1KdaXWt0bs188Jly3doO71YA/9KOpGMWQM9kVZNHGzxv7Z43z6MCzkz2UeSGz/9+Xfv5nWgLwMeTW1w6MKo56k2LVpu2tdLMWdEbPG0bLe0tXam3Ndybd2a/cJmvbty79m/DRd7nDt28WtiL4DlcL26dnvDpd+GXrckcMF0Cdttbc54d+TTl/Nujn68nejsv+NtDz95cPfK87eeL7/aefqRB9VxAv5X4HoH2tcXfradVJqC4jlHGm7hwSTfc/fRtyCEFpo3YXwUDuMgcQxiUaJ3HoIHIoYjugaggSEOeBiLAc6IYIS+PShTg9tRkF1XP25HhYBGFolkklNNmJBkSj4ZVz7pTAlllT1INSWVVm5JgllZOsllmF5qGWaZsSFkZprIoalmm0u6CWeUcc7pIp12NnVnnnoyUQAAOw==');
-		break;
+else if ( isset($_GET['image']) ) {
+	$bin = get_image($_GET['image'], false);
+	if ( $bin ) {
+		header('Content-type: image/gif');
+		echo $bin;
 	}
+
 	exit;
 }
 
 
-if ( empty($_SESSION[S_NAME]['play']) )
-{
-	if ( isset($_POST['name']) && goede_gebruikersnaam($_POST['name']) )
-	{
+if ( empty($_SESSION[S_NAME]['play']) ) {
+	if ( isset($_POST['name']) && goede_gebruikersnaam($_POST['name']) ) {
 		$_SESSION[S_NAME]['play']			= true;
 		$_SESSION[S_NAME]['starttime']		= time();
 		$_SESSION[S_NAME]['name']			= trim($_POST['name']);
@@ -182,152 +155,8 @@ $OPENSOURCE = ( "stop" == $szActionTrackBeam && $_SESSION[S_NAME]['gameover'] ==
 
 <head>
 <title>BLACKBOX</title>
-<style>
-* {
-	margin				: 0;
-	padding				: 0;
-}
-
-html,
-body {
-	background-color	: #ccc;
-	overflow			: auto;
-}
-
-body,
-table,
-input {
-	font-family			: verdana;
-	font-size			: 11px;
-	color				: #000;
-	line-height			: 170%;
-	cursor				: default;
-}
-
-p {
-	margin				: 10px 0;
-}
-
-a {
-	color				: #fff;
-	text-decoration		: none;
-}
-a:hover {
-	color				: #000;
-	text-decoration		: underline;
-}
-
-div#left_frame,
-div#right_frame {
-	position			: absolute;
-	top					: 0;
-	width				: 200px;
-	text-align			: center;
-
-	min-height			: 100%;
-	height				: auto !important;
-	height				: 100%;
-}
-div#right_frame {
-	right				: 0;
-	border-left			: solid 1px #999;
-	background-color	: #bbb;
-}
-div#left_frame {
-	left				: 0;
-	border-right		: solid 1px #999;
-	background-color	: #bbb;
-}
-div#content_frame {
-	position			: absolute;
-	top					: 0;
-	left				: 0;
-	min-height			: 100%;
-	width				: 100%;
-}
-
-table#blackbox {
-	border-collapse		: collapse;
-	margin				: 20px;
-}
-table#blackbox td {
-	width				: 33px;
-	height				: 33px;
-	text-align			: center;
-	padding				: 0px;
-	border				: solid 1px #fff;
-}
-table#blackbox td.corner {
-	background-color	: #0df;
-}
-td.cfield {
-	background			: #aaa;
-	font-weight			: bold;
-	font-size			: 13px;
-}
-td.cfield_hilite {
-	background			: lime;
-}
-td.sd,
-td.sl,
-td.su,
-td.sr {
-	cursor				: pointer;
-}
-td.sd {
-	border-bottom		: solid 1px #000;
-	background			: #bbb url(<?php echo BASEPAGE; ?>?image=down) no-repeat center bottom;
-}
-td.sl {
-	border-left			: solid 1px #000;
-	background			: #bbb url(<?php echo BASEPAGE; ?>?image=left) no-repeat left center;
-}
-td.su {
-	border-top			: solid 1px #000;
-	background			: #bbb url(<?php echo BASEPAGE; ?>?image=up) no-repeat center top;
-}
-td.sr {
-	border-right		: solid 1px #000;
-	background			: #bbb url(<?php echo BASEPAGE; ?>?image=right) no-repeat right center;
-}
-
-table#top10 {
-	border-collapse		: collapse;
-	margin				: 20px;
-}
-table#top10 td,
-table#top10 th {
-	padding				: 1px 3px;
-	font-weight			: normal;
-	border				: solid 1px #999;
-}
-table#top10 tr.h td,
-table#top10 tr.h th {
-	border-bottom		: solid 1px #000;
-	font-weight			: bold;
-}
-table#top10 td.r,
-table#top10 th.r {
-	text-align			: right;
-}
-table#top10 td.d,
-table#top10 th.d {
-	font-family			: 'courier new';
-	font-size			: 9pt;
-}
-
-div#loading {
-	position			: absolute;
-	top					: 10px;
-	left				: 10px;
-	padding				: 5px;
-	display				: none;
-	background-color	: #f00;
-	color				: #fff;
-	z-index: 54;
-}
-</style>
-<script src="rjs.js"></script>
+<link rel="stylesheet" href="blackbox.css" />
+<script src="js/rjs-custom.js"></script>
 <script>
 var xhrBusy = 0;
 window.on('xhrStart', function() {
@@ -530,7 +359,7 @@ Blackbox.prototype = {
 	/**
 	 * @brief		_ValidCoords
 	 * 				slave of TrackBeam
-	 * 
+	 *
 	 **/
 	_ValidCoords : function( f_x, f_y )
 	{
@@ -548,7 +377,7 @@ Blackbox.prototype = {
 	/**
 	 * @brief		_IsAtom
 	 * 				slave of TrackBeam
-	 * 
+	 *
 	 **/
 	_IsAtom : function( f_x, f_y )
 	{
@@ -581,10 +410,10 @@ Blackbox.prototype = {
 		 * left		: y-1
 		 * down		: x+1
 		 * up		: x-1
-		 * 
+		 *
 		 * Y is horizontal movement
 		 * X is vertical movement
-		 * 
+		 *
 		**/
 
 		dx = 0;
@@ -844,7 +673,16 @@ var objBlackbox;
 function fc(c){return objBlackbox.Fieldcolor(c);}
 function fi(c){return objBlackbox.Fire(c);}
 window.onload = function(){Blackbox.reset(false);}
-//-->
+
+
+function toggleFrame(name) {
+	var el = $(name);
+	el.toggleClass('show');
+	if ( el.hasClass('show') ) {
+		el.getElement('a').focus();
+	}
+	return false;
+}
 </script>
 </head>
 
@@ -855,66 +693,68 @@ window.onload = function(){Blackbox.reset(false);}
 </div>
 
 <div align="center" id="content_frame">
-<table id="blackbox">
-<?php
+	<table id="blackbox">
+	<?php
 
-for ( $i=-1; $i<=$SIDES; $i++ )
-{
-	echo '<tr>';
-	for ( $j=-1; $j<=$SIDES; $j++ )
+	for ( $i=-1; $i<=$SIDES; $i++ )
 	{
-		$c = array($i,$j);
+		echo '<tr>';
+		for ( $j=-1; $j<=$SIDES; $j++ )
+		{
+			$c = array($i,$j);
 
-		if ( array(-1,-1) == $c || array(-1,$SIDES) == $c || array($SIDES,-1) == $c || array($SIDES,$SIDES) == $c )
-		{
-			// corners
-			echo '<td style="border:none;"></td>';
-		}
-		else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j )
-		{
-			// grid cells
-			echo '<td id="fld_'.$i.'_'.$j.'" onclick="fc(['.$i.','.$j.']);" class="cfield"></td>';
-		}
-		else
-		{
-			// sides
-			if ( -1 == $i )			$d = "sd";
-			else if ( $SIDES == $j )	$d = "sl";
-			else if ( $SIDES == $i )	$d = "su";
-			else if ( -1 == $j )	$d = "sr";
+			if ( array(-1,-1) == $c || array(-1,$SIDES) == $c || array($SIDES,-1) == $c || array($SIDES,$SIDES) == $c )
+			{
+				// corners
+				echo '<td style="border:none;"></td>';
+			}
+			else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j )
+			{
+				// grid cells
+				echo '<td id="fld_'.$i.'_'.$j.'" onclick="fc(['.$i.','.$j.']);" class="cfield"></td>';
+			}
+			else
+			{
+				// sides
+				if ( -1 == $i )			$d = "sd";
+				else if ( $SIDES == $j )	$d = "sl";
+				else if ( $SIDES == $i )	$d = "su";
+				else if ( -1 == $j )	$d = "sr";
 
-			echo '<td id="fld_'.$i.'_'.$j.'" onclick="fi(['.$i.','.$j.']);" class="'.$d.'"></td>';
+				echo '<td id="fld_'.$i.'_'.$j.'" onclick="fi(['.$i.','.$j.']);" class="'.$d.'"></td>';
+			}
 		}
+		echo '</tr>';
 	}
-	echo '</tr>';
-}
 
-?>
-</table>
+	?>
+	</table>
 
-	<p><input type="button" value="CHECK" onclick="objBlackbox.CheckIfAllAtomsFound();" /></p>
-	<p><input type="button" value="View Atoms" onclick="objBlackbox.RevealAtoms();" /></p>
-</div>
-
-
-<div id="left_frame">
-	<p><a href="#reset" onclick="return Blackbox.reset(true);">Restart</a></p>
-	<p><a href="#changename" onclick="return Blackbox.ChangeName();">Change Name</a></p>
-</div>
-
-
-<div id="right_frame">
 	<p>
-		<b>GAME RULES</b>
+		<button class="submit" onclick="objBlackbox.CheckIfAllAtomsFound();">CHECK</button>
+		<button onclick="objBlackbox.RevealAtoms();">View Atoms</button>
 	</p>
-	<div id="game_rules">
-		<p><a href="#showgamerules" onclick="return Blackbox.ShowGameRules();">More...</a></p>
-		<p>You must find all atoms. The sooner the better. When you think you got them, hit 'CHECK' to check if you do!</p>
-	</div>
+</div>
+
+<div id="menu" class="frame left show">
+	<p><a href onclick="return Blackbox.reset(true);">Restart</a></p>
+	<!-- p><a href="#changename" onclick="return Blackbox.ChangeName();">Change Name</a></p -->
+</div>
+
+<div id="about" class="frame right show">
+	<p><b>WHAT TO DO</b></p>
+
+	<p>You must find all atoms. The sooner the better. When you think you got them, hit 'CHECK' to check if you do!</p>
+	<p><a href onclick="return toggleFrame('gamerules')">More...</a></p>
+
 	<p><b>Atoms to find: <?php echo $ATOMS; ?></b></p>
 	<p>Playtime: <b id="playtime">-</b></p>
 	<p>Your name: <b id="your_name"><?php echo $_SESSION[S_NAME]['name']; ?></b></p>
-	<p>Selected Atoms: <span id="stats_hilighted">0</span></p>
+	<p>Selected atoms: <span id="stats_hilighted">0</span></p>
+</div>
+
+<div id="gamerules" class="frame right">
+	<?php include 'tpl.blackbox_rules.php' ?>
 </div>
 
 </body>
@@ -964,4 +804,33 @@ function rand_string( $f_iChars = 16 )
 	return $szRandString;
 }
 
-?>
+function get_image( $image, $base64 = true ) {
+	$data = '';
+	switch ( $image ) {
+		case 'right':
+			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACK4yPqcsd4pqAUU1az8V58+h9UtiFomWeSKpqZvXCXvZsdD3duF7zjw/UFQAAOw==';
+			break;
+		case 'left':
+			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACK4yPqcvN4h6MSViK7MVBb+p9TihKZERqaDqNKfbCIdd5dF2CuX4fbQ9kFAAAOw==';
+			break;
+		case 'up':
+			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACI4yPqcvtD6OcTQgarJ1ax949IFiNpGKaSZoeLIvF8kzXdlAAADs=';
+			break;
+		case 'down':
+			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACIoyPqcvtD6OcNImLs8Zne4582yKCpPh80Shl1VXF8kzXUAEAOw==';
+			break;
+		case 'bb1':
+			$data = 'R0lGODlhXwBrAIAAAAAAAP///yH/C01hZ2ljVmlld2VyAp4Anm12aXCUAAAAHAAAACAAAAABAAAABAAAAAAAAP////////D//f/w//3/8P/t//D/7f/w/+3/8P/t//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8IAAAAD//f/w//3/8P/9//D//f/w//3/8P/9//CAAAAA////8P////D////wACH5BAAAAAAALAAAAABfAGsAAAL/jI+py+0PYwK02ouz3rz7TxmAxIykYp5Iqopue7CtrNKnaZO5uAc99HvgYDFHqBE0El9JpLHXLC19LyIUOo0uhksaqArTosAz1Idcy6Jvwp14oqZ22865/b2iS+3WtU6/FdcnN4jkJhjmJ/FzFMiXSAhpWFcIiVdkePhYFslZ0ji2mdY5+qlZyXmpyEMpaYm4deqaCutoOzuqSsomygvyCxwsfLb712s8qKtc68uMjNt8jLmHmuvMI+v5Kj3STQ1tvOzIBScdQQ5O7nV9vgpkyyIjnlwbr2T+XrwodF8d7Z+nlTZa+LDg46evXb9bA60VXNjwH7hpDEttA0gxFEaF//O+aZzIkV3CjgQ3jhSJkOTHlRZLgjx58N6wmTRrdnCHUGA5kylFGuQp0yfElg5N/nzZ86FOXvSUeiQqMWLAp0wvvjwqdV/CfEszQg0ntKvWpkaHVnWZdZXKqF+9TkUa1GnFs0Wvmn2Gtq1alHHLilVI1u5frlbTwgRaZ+1blnTZNl68E27isFTx5rKJOfNMnHfdeh5bWO9hyXsUf96aM/Tj06ZDymVs2XFsyLRna2092nBSv5VB5129N+bk15F19xXcG7Bq28ERl6Y8l3k+3FhF70Ye3Xddw9WBT4cOW7ts8bU5D77OvbPy39K7S0cv2j352+CLW5epOb/+m1Pm9zH/D+B6AQ5IYHIFHgigLggueB6DDr73YISpSUghhBVeaB6GFSqoYYEcdjjghyCOWGEBADs=';
+			break;
+		case 'bb2':
+			$data = 'R0lGODlhXwBrAIAAAAAAAP///yH/C01hZ2ljVmlld2VyAp4Anm12aXCUAAAAHAAAACAAAAABAAAABAAAAAAAAP////////D//f/w9/3/8Pf9//D3/f/w9/3/8Pf9//D//f/w//3/8P/9//D//f/w//AAEP/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8IAAAAD//f/w//3/8P/9//D//f/w//3/8P/9//CAAAAA////8P////D////wACH5BAAAAAAALAAAAABfAGsAAAL/jI+py+0PYwK02ouz3rz7TxmAxIykYp5Iqopue7CtrNKnacf5Cwd79IPgHKFG8HEk9l6/YmnpgyaNvIXTKs0uh5NPdabtcVfe6DYMG5d20+f5HbxO0GA4kk2vaeP4t3h/R+WXBkjU9zdYxyeI2Ehotnb46KhoKFlHqQdpJbeSd1NodKmZCbrJyTipWomUirmq2YaVSPoIcoubq1smi/JJ0jt3WvtaHPsrEexpR2taCvxFLO1siwxkLRRNbbzt5jvcHQ59/a0cg92aLKPGPf6cyj7tDpvNhC6ym+9h39xlY64tnRmA4ITNeudtILZO5/olVOgwoERyFBsSjKMk4jJh/xcFHqQ3rmPGh/KSTaznyiBIkwVZpty4kpzIlw0R1tOHM6fOCic9fvxmM91MkjDbsRz6U6VRmQtHxrzZlKbLahqb3BOEFGhScUejEp3HyqZVjUK9bgV7rKrTpVDVSq0Y9unYoBmzKr3Llanbr1Pjsp37tOzes33Til1bUu/htyipLuYL17BcxHnbPiYc2dTOzZxv9aRcFC9azWa1shV82XRiy5MZ+5T8F3Rh0oNVV0bdGnJjv6sBn65bWvTskMFD3wZeW3hm4smNj2aeWvlu2L1lL+/avGZg5NGdD8feXftvrMXFr8Yd27V11ul1v6Yd/rN68tnlu6/bOb/+C1Ce9zH/D+B3AQ5IoHcFHhggQQguOB+DDl73YIQCSkhhgxVeqOCFCGaoYYEcdjjghyCOeGEBADs=';
+			break;
+		case 'bb3':
+			$data = 'R0lGODlhXwBrAJEAAAAAAIAAAP///wAAACH/C01hZ2ljVmlld2VyAggC/212aXDUAQAAHAAAACAAAAAEAAAADgAAAAAAAIAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIiIiIiIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiAiIiIiIiIiAiIiIiICIiIiIiIiIiICIiIiIgIiIiIiIiIiIgIiIiIiAiIiIiIiIiIiAiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiEiICIiIiIiIiIiIiIiEiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIv8iIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIgAAAAAAAAAAAAAAAAACIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiAAAAAAAAAAAAAAAAAAIiIiIiIiESIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIKIiIiIiIiIiIiIgAh+QQAAAAAACwAAAAAXwBrAAAC/5SPqcvtD2MCtNqLs968+08ZgMSMpGKeSKqKbnuwrazSp2mLeQzz5f7q4RohBxCyKxJ7r+Tx+HBGmYLhb8qUGqnW2McnnHyDsK7OAy6L0eRZW7zNGoHQOJ3OncfDVf1SToQHeLenFljo1nf4x3fFaEj4mOhYkqdIuVAnCbd58+Yl2IiilGnpFGqYSYpiGog6Ofpa8+mFOLtYOeiXKzpq63nJWwrYmZaoKQyrfAvS7PwMPYY83HvLN81KnAppWQ183b29DIw9wRCAnp5sza19gI4An+1NYqasnoBvzH4cLhDgAOAKf8zCyTsnkJaEcgODwUrYACLDfeQMQpBIsKI2iP/nGtJbqDACC44LMLoruPGiR3EoRZFUYPKjyJBI4qmkWK9VygcxWWp0eZMmFnA7A64cl9Mhu5f5jvJruY2pTZwgdRWN6PQbpGgaAnjwyjXsBqGFpL7LmpQoUJ5oq6qNGlSp1n5XO1KdaXWt0bs188Jly3doO71YA/9KOpGMWQM9kVZNHGzxv7Z43z6MCzkz2UeSGz/9+Xfv5nWgLwMeTW1w6MKo56k2LVpu2tdLMWdEbPG0bLe0tXam3Ndybd2a/cJmvbty79m/DRd7nDt28WtiL4DlcL26dnvDpd+GXrckcMF0Cdttbc54d+TTl/Nujn68nejsv+NtDz95cPfK87eeL7/aefqRB9VxAv5X4HoH2tcXfradVJqC4jlHGm7hwSTfc/fRtyCEFpo3YXwUDuMgcQxiUaJ3HoIHIoYjugaggSEOeBiLAc6IYIS+PShTg9tRkF1XP25HhYBGFolkklNNmJBkSj4ZVz7pTAlllT1INSWVVm5JgllZOsllmF5qGWaZsSFkZprIoalmm0u6CWeUcc7pIp12NnVnnnoyUQAAOw==';
+			break;
+	}
+
+	if ( $data ) {
+		return $base64 ? $data : base64_decode($data);
+	}
+}
