@@ -10,8 +10,7 @@ define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
 <head>
 <title>GRIDLOCK</title>
 <script>
-if (top.location!=this.location)
-	top.location='<?=$_SERVER[SCRIPT_NAME]?>';
+if (top.location != this.location) top.location = this.location;
 </script>
 </head>
 

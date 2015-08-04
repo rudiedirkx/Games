@@ -209,7 +209,7 @@ $('f1track').onclick = function(e) {
 	}
 	return false;
 }
-loadMap(<?php echo reset(array_keys($g_arrLevels)); ?>);
+loadMap(<?php echo key($g_arrLevels); ?>);
 //-->
 </script>
 </body>
