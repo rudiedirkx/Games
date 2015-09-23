@@ -163,6 +163,28 @@ $g_arrMaps = array(
 		array(-1,-1,-1,-1, 5,-1, 2, 2, 3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),
 		array(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),
 	),
+	array(
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array( 0, 0, 0, 0,-1,-1,-1,-1,-1),
+		array( 1, 2, 2, 1,-1,-1,-1,-1,-1),
+		array( 1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array( 1, 3,-1,-1,-1,-1,-1,-1,-1),
+		array( 0, 1,-1,-1,-1,-1,-1,-1,-1),
+		array( 0, 1,-1,-1,-1,-1,-1,-1,-1),
+	),
+	array(
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array( 0, 0, 0, 0, 0, 0, 0, 0, 0),
+		array( 1, 1, 2, 1, 1, 1, 1, 1, 1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+		array(-1,-1,-1,-1,-1,-1,-1,-1,-1),
+	),
 );
 
 $arrMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $g_arrMaps[$_GET['map']] : reset($g_arrMaps);
@@ -200,10 +222,10 @@ p {
 
 <body>
 
-<select style="margin:10px;margin-bottom:0;" onchange="if(this.value){document.location='?map='+this.value;}"><?php
+<select style="margin: 10px 10px 0 10px" onchange="this.value&&(document.location='?map='+this.value)"><?php
 
 for ( $i=0; $i<count($g_arrMaps); $i++ ) {
-	echo '<option value="'.$i.'"'.( $arrMap == $g_arrMaps[$i] ? ' selected="selected"' : '' ).'>Map '.(1+$i).' ('.count($g_arrMaps[$i][0]).'*'.count($g_arrMaps[$i]).')</option>';
+	echo '<option value="' . $i . '"' . ( $arrMap == $g_arrMaps[$i] ? ' selected' : '' ) . '>Map ' . (1+$i) . ' (' . count($g_arrMaps[$i][0]) . 'x' . count($g_arrMaps[$i]) . ')</option>';
 }
 
 ?></select>

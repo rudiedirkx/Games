@@ -2,27 +2,23 @@
 
 session_start();
 
-if ( isset($_POST['field']) )
-{
-	exit('<pre>'.print_r($_POST['field'],1).'</pre>');
+if ( isset($_POST['field']) ) {
+	exit('<pre>' . print_r($_POST['field'], 1) . '</pre>');
 }
-else if ( isset($_POST['sides']) )
-{
+else if ( isset($_POST['sides']) ) {
 	$_SESSION['create_ms_field_sides'] = explode(",", $_POST['sides']);
-	header("Location: ".basename($_SERVER['PHP_SELF']));
+	header("Location: " . basename($_SERVER['PHP_SELF']));
 	exit;
 }
 
-$g_arrSides = isset($_SESSION['create_ms_field_sides']) ? $_SESSION['create_ms_field_sides'] : array(16,30);
+$g_arrSides = isset($_SESSION['create_ms_field_sides']) ? $_SESSION['create_ms_field_sides'] : array(16, 30);
 
 ?>
 <html>
 
 <head>
 <title>Create Minesweeper Field</title>
-<script type="text/javascript" src="general_1_2_2.js"></script>
-<script type="text/javascript">
-<!--//
+<script>
 var g_arrImgs = {
 	'-1' : 'images/dicht.gif',
 	 '0' : 'images/open_0.gif',
@@ -35,15 +31,14 @@ var g_arrImgs = {
 	 '7' : 'images/open_7.gif',
 	 '8' : 'images/open_8.gif',
 };
-for ( x in g_arrImgs ) {
+for ( var x in g_arrImgs ) {
 	(new Image).src = g_arrImgs[x];
 }
 
 function reTileP( f_obj ) {
 	iTile = f_obj.getAttribute('tile') * 1;
 	iNext = iTile + 1;
-	if ( 8 < iNext )
-	{
+	if ( 8 < iNext ) {
 		iNext = -1;
 	}
 	f_obj.setAttribute('tile', iNext);
@@ -53,8 +48,7 @@ function reTileP( f_obj ) {
 function reTileM( f_obj ) {
 	iTile = f_obj.getAttribute('tile') * 1;
 	iNext = iTile - 1;
-	if ( -1 > iNext )
-	{
+	if ( -1 > iNext ) {
 		iNext = 8;
 	}
 	f_obj.setAttribute('tile', iNext);
@@ -62,15 +56,15 @@ function reTileM( f_obj ) {
 	return false;
 }
 function createPhpArray() {
-	trs = $('m_tbl').getElementsByTagName('tr');
-	szPhpArray = "array(\n";
-	for ( i=0; i<trs.length; i++ ) {
+	var trs = document.querySelectorAll('#m_tbl tr');
+	var szPhpArray = "array(\n";
+	for ( var i=0; i<trs.length; i++ ) {
 		szPhpArray += "	array(";
-		imgs = trs[i].getElementsByTagName('img');
-		d = "";
+		var imgs = trs[i].querySelectorAll('img');
+		var d = "";
 		for ( j=0; j<imgs.length; j++ ) {
 			t = imgs[j].getAttribute('tile');
-			$('f_'+i+'_'+j).value = t;
+			document.querySelector('#f_' + i + '_' + j).value = t;
 			d += ",";
 			if ( t.length == 1 ) {
 				d += " ";
@@ -80,7 +74,7 @@ function createPhpArray() {
 		szPhpArray += d.substr(1) + "),\n";
 	}
 	szPhpArray += "),\n";
-	$('php_array').innerHTML = szPhpArray;
+	document.querySelector('#php_array').innerHTML = szPhpArray;
 }
 function fakeSubmit() {
 	document.forms[1].action = '?';
@@ -120,22 +114,19 @@ for ( $i=0; $i<$g_arrSides[0]; $i++ )
 <pre id="php_array"></pre>
 
 <form method="post" action="102c_test_field_analysis.php">
-<?php
+	<?php
 
-for ( $i=0; $i<$g_arrSides[0]; $i++ )
-{
-	for ( $j=0; $j<$g_arrSides[1]; $j++ )
-	{
-		echo '<input type="hidden" id="f_'.$i.'_'.$j.'" name="field['.$i.']['.$j.']" value="-1" />'."\n";
+	for ( $i=0; $i<$g_arrSides[0]; $i++ ) {
+		for ( $j=0; $j<$g_arrSides[1]; $j++ ) {
+			echo '<input type="hidden" id="f_'.$i.'_'.$j.'" name="field['.$i.']['.$j.']" value="-1" />'."\n";
+		}
 	}
-}
 
-?>
-<input type="submit" value="real submit" onclick="createPhpArray();" />
-<input type="button" value="fake submit" onclick="createPhpArray();fakeSubmit();" />
+	?>
+	<input type="submit" value="real submit" onclick="createPhpArray();" />
+	<input type="button" value="fake submit" onclick="createPhpArray(); fakeSubmit();" />
 </form>
 
-<p><a href="#" onclick="alert(getFormVars(document.forms[1]));return false;">test form</a></p>
 </body>
 
 </html>
