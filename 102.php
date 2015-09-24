@@ -1,6 +1,9 @@
 <?php
 // MINESWEEPER
 
+// @todo Export map into creator & analyzer
+// @todo Share maps between creator & analyzer
+
 if ( isset($_GET['source']) ) {
 	highlight_file(__FILE__);
 	exit;
