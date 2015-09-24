@@ -1,9 +1,9 @@
 <?php
 // ABALONE
 
-/**
+/*
 exit(json_encode(initialBalls()));
-/**
+/*
 exit(json_encode(call_user_func(function($_balls) {
 	$all = array();
 	foreach ( $_balls as $c => $balls ) {
@@ -36,7 +36,7 @@ if ( isset($_GET['logout']) ) {
 }
 
 // DEBUG Log in
-/**
+/*
 else if ( isset($_GET['login']) ) {
 	$_SESSION[S_NAME]['player_id'] = (int)$_GET['login'];
 
