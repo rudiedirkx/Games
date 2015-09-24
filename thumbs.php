@@ -11,8 +11,8 @@ foreach ( $thumbs as $index => $thumb ) {
 	imagecopy($sprite, $img, 0, $index * THUMB_SIZE, 0, 0, THUMB_SIZE, THUMB_SIZE);
 }
 
-imagegif($sprite, 'cached/thumbs.gif');
+imagegif($sprite, __DIR__ . '/cached/thumbs.gif');
 
-header('Content-type: image/gif');
-imagegif($sprite);
-imagedestroy($sprite);
+// header('Content-type: image/gif');
+// imagegif($sprite);
+// imagedestroy($sprite);
