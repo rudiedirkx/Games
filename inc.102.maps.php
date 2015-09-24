@@ -1,6 +1,163 @@
 <?php
 
-$g_arrMaps = array(
+return array(
+	array(
+		'           ',
+		' 2112      ',
+		' 2001      ',
+		' 41011212  ',
+		'  10000012 ',
+		'  20001111 ',
+		'  21212 21 ',
+		'           ',
+	),
+	array(
+		'    100001    10',
+		'    10000112  20',
+		'    42100001  10',
+		'      1000012210',
+		'  22333210000000',
+		'111001  22210000',
+		'000001233  31000',
+		'11100001    1000',
+		'  201111  4 2000',
+		'2 201       1000',
+		'33201      11000',
+		'  321      10111',
+		'5     2    211  ',
+		'                ',
+		'             1  ',
+		'               1',
+	),
+	array(
+		'                ',
+		'   21111        ',
+		' 211001         ',
+		' 100001         ',
+		' 210011 112     ',
+		'  3212  101 12  ',
+		'   2    101112  ',
+		'        2000022 ',
+		'        100112  ',
+		'        2111 32 ',
+		'                ',
+	),
+	array(
+		'0001   ',
+		'000112 ',
+		'000001 ',
+		'000111 ',
+		'0001   ',
+		'0001   ',
+		'1111   ',
+		'       ',
+		'       ',
+		'  47   ',
+		'       ',
+	),
+	array(
+		' 11 11 11 101110000001 101 ',
+		'1111111122213 211100011101 ',
+		'000011101 11  21 211001122 ',
+		'00112 101111221123 3322 3  ',
+		'001 2111221000001 3   33   ',
+		'00111012  2000123223       ',
+		'0000001 4 20013  223       ',
+		'00000022311001  5          ',
+		'1100112 1000014            ',
+		' 3212 311111114            ',
+		'      3111 11 3            ',
+		'        11 111             ',
+		'                           ',
+	),
+	array(
+		'            ',
+		'    4       ',
+		' 1212 2     ',
+		' 100112     ',
+		' 310002     ',
+		'  10002   2 ',
+		'  100011    ',
+		'  211001    ',
+		'    2111    ',
+		'            ',
+		'      3     ',
+		'      2     ',
+		'            ',
+	),
+	array(
+		'                 ',
+		' 111224 21110001 ',
+		' 200001 10000001 ',
+		' 311001 212222 1 ',
+		'   1001          ',
+		'   20012         ',
+		'   20113         ',
+		'   212 4         ',
+		'                 ',
+	),
+	array(
+		'0000001  22                   ',
+		'000111134 3                   ',
+		'0001 101 3                    ',
+		'00022201122                   ',
+		'1101 111213                   ',
+		' 202332 2 2         3211      ',
+		' 201  21223          101   332',
+		'1112433222 22       3112  3 10',
+		'001 3 5  32123      211 33 210',
+		'00224   5 312 3  322 222 21100',
+		'001 22323 3 33 22 123 11110000',
+		'0011100123322 211122 210011111',
+		'00111012 2 12220001 320001 11 ',
+		'002 433 22111 111112 111122222',
+		'002    210001111 212111 23 32 ',
+		'0013  310000000112 10012 3 3 2',
+	),
+	array(
+		'1 1000112  100001  ',
+		'1110124 3221001123 ',
+		'01122   2000001 12 ',
+		'01 2 3321111123211 ',
+		'0112110001 11  112 ',
+		'12321111022212211  ',
+		'1   32 101 1000013 ',
+		'124 3 210111001112 ',
+		'001232100112111 22 ',
+		'0002 20012 3 112   ',
+		'0002 2012 4 3213   ',
+		'00011102 33 32 3   ',
+		'00122103 3112 3    ',
+		'123  212 31122     ',
+		'    5 223          ',
+		'                   ',
+	),
+	array(
+		'     ',
+		'0000 ',
+		'1221 ',
+		'1    ',
+		'13   ',
+		'01   ',
+		'01   ',
+	),
+	array(
+		'000000000',
+		'112111111',
+		'         ',
+	),
+	array(
+		'    1    ',
+		' 53122   ',
+		'  101 3  ',
+		' 42123 2 ',
+		'  11 2221',
+		'221111000',
+		'000000000',
+	),
+);
+
+return array(
 	array(
 		array(-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1),
 		array(-1, 2, 1, 1, 2,-1,-1,-1,-1,-1,-1),
@@ -156,85 +313,3 @@ $g_arrMaps = array(
 		array( 0, 0, 0, 0, 0, 0, 0, 0, 0),
 	),
 );
-
-$arrMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $g_arrMaps[$_GET['map']] : reset($g_arrMaps);
-if ( isset($_POST['field']) && is_array($_POST['field']) ) {
-	$arrMap = $_POST['field'];
-	foreach ( $arrMap AS $k => $m ) {
-		$arrMap[$k] = array_map('intval', $m);
-	}
-}
-
-$g_arrSides = array(count($arrMap), count($arrMap[0]));
-
-?>
-<!DOCTYPE html>
-<html>
-
-<head>
-<title>MS 2c - Test - Board Analysis</title>
-<style>
-* {
-	margin			: 0;
-	padding			: 0;
-}
-p {
-	margin			: 5px 0;
-}
-#field {
-	margin: 10px;
-}
-</style>
-<link rel="stylesheet" href="102.css" />
-<script src="js/rjs-custom.js"></script>
-<script src="102c.js"></script>
-</head>
-
-<body>
-
-<select style="margin: 10px 10px 0 10px" onchange="this.value&&(document.location='?map='+this.value)"><?php
-
-for ( $i=0; $i<count($g_arrMaps); $i++ ) {
-	echo '<option value="' . $i . '"' . ( $arrMap == $g_arrMaps[$i] ? ' selected' : '' ) . '>Map ' . (1+$i) . ' (' . count($g_arrMaps[$i][0]) . 'x' . count($g_arrMaps[$i]) . ')</option>';
-}
-
-?></select>
-
-<table id="field" style="border:solid 1px #777;"><tr><td>
-	<table style="border:solid 10px #bbb;"><tr><td>
-		<table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td>
-			<table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;">
-				<tbody id="ms_tbody">
-					<?php
-					foreach ( $arrMap as $y => $row ) {
-						echo '<tr>';
-						foreach ( $row as $x => $tile ) {
-							echo '<td class="o' . $tile . '"></td>';
-						}
-						echo '</tr>';
-					}
-					?>
-				</tbody>
-			</table>
-		</td></tr></table>
-	</td></tr></table>
-</td></tr></table>
-
-<div style="margin: 10px; margin-top: 0">
-	<p>
-		<input type="button" value="SaveAllMines()" onclick="solver.mf_SaveAllMines()" />
-		<input type="button" value="MarkSavedMines()" onclick="solver.mf_MarkSavedMines()" />
-		<input type="button" value="MarkNonoMines()" onclick="solver.mf_MarkNonoMines()" />
-	</p>
-	<p>
-		<input type="button" value="SaveAndMarkAll()" onclick="solver.mf_SaveAndMarkAll()" />
-	</p>
-</div>
-
-<script>
-solver = new MinesweeperSolver($('ms_tbody'));
-</script>
-
-</body>
-
-</html>
