@@ -12,6 +12,9 @@ table#field,
 	padding: 0;
 	background-image: url(images/dicht.gif);
 }
+#ms_tbody td img {
+	display: block;
+}
 #ms_tbody td.o0 {
 	background-image: url(images/open_0.gif);
 }

@@ -2,13 +2,8 @@
 
 $g_arrMaps = require 'inc.102.maps.php';
 
-$arrMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $g_arrMaps[$_GET['map']] : reset($g_arrMaps);
-if ( isset($_POST['field']) && is_array($_POST['field']) ) {
-	$arrMap = $_POST['field'];
-	foreach ( $arrMap AS $k => $m ) {
-		$arrMap[$k] = array_map('intval', $m);
-	}
-}
+$iMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $_GET['map'] : 0;
+$arrMap = $g_arrMaps[$iMap];
 
 $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 
@@ -17,33 +12,20 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 <html>
 
 <head>
-<title>MS 2c - Test - Board Analysis</title>
-<style>
-* {
-	margin			: 0;
-	padding			: 0;
-}
-p {
-	margin			: 5px 0;
-}
-#field {
-	margin: 10px;
-}
-</style>
-<link rel="stylesheet" href="102.css" />
-<script src="js/rjs-custom.js"></script>
-<script src="102c.js"></script>
+	<title>MS 2c - Test - Board Analysis</title>
+	<link rel="stylesheet" href="102.css" />
+	<script src="js/rjs-custom.js"></script>
+	<script src="102c.js"></script>
 </head>
 
 <body>
 
-<select style="margin: 10px 10px 0 10px" onchange="this.value&&(document.location='?map='+this.value)"><?php
-
-for ( $i=0; $i<count($g_arrMaps); $i++ ) {
-	echo '<option value="' . $i . '"' . ( $arrMap == $g_arrMaps[$i] ? ' selected' : '' ) . '>Map ' . (1+$i) . ' (' . count($g_arrMaps[$i][0]) . 'x' . count($g_arrMaps[$i]) . ')</option>';
-}
-
-?></select>
+<p>
+	<select onchange="this.value&&(document.location='?map='+this.value)"><?= _mapsOptions($g_arrMaps, $iMap) ?></select>
+	<? if ($iMap): ?>
+		<a href="102d_create.php?map=<?= $iMap ?>">&gt; create</a>
+	<? endif ?>
+</p>
 
 <table id="field" style="border:solid 1px #777;"><tr><td>
 	<table style="border:solid 10px #bbb;"><tr><td>
