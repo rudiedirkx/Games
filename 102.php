@@ -165,7 +165,7 @@ if ( $_SERVER['REQUEST_METHOD'] != 'GET' ) {
 
 <head>
 <title>MINESWEEPER</title>
-<script src="/js/mootools_1_11.js"></script>
+<script src="/js/rjs-custom.js"></script>
 <script src="/102.js"></script>
 <link rel="stylesheet" href="102.css" />
 <style>
@@ -234,14 +234,15 @@ div#loading {
 </table>
 
 <script>
-Ajax.setGlobalHandlers({
-	onStart : function() {
-		$('loading').style.display = "block";
-	},
-	onComplete : function() {
-		if ( 0 == Ajax.busy ) {
-			$('loading').style.display = "none";
-		}
+r.xhr.busy = 0;
+window.on('xhrStart', function() {
+	$('loading').style.display = "block";
+	r.xhr.busy++;
+});
+window.on('xhrDone', function() {
+	r.xhr.busy--;
+	if ( r.xhr.busy == 0 ) {
+		$('loading').style.display = "none";
 	}
 });
 
@@ -254,20 +255,15 @@ function getSolver() {
 }
 // SOLVER //
 
-$('ms_tbody').addEvents({
-	contextmenu : function(e) {
-		e = new Event(e).stop();
-		if ( 'TD' === e.target.nodeName ) {
-			objMinesweeper.toggleFlag(e.target);
-		}
-	},
-	click : function(e) {
-		e = new Event(e).stop();
-		if ( 'TD' === e.target.nodeName ) {
-			objMinesweeper.openField(e.target);
-		}
-	}
-});
+$('ms_tbody')
+	.on('contextmenu', 'td', function(e) {
+		e.preventDefault();
+		objMinesweeper.toggleFlag(this);
+	})
+	.on('click', 'td', function(e) {
+		e.preventDefault();
+		objMinesweeper.openField(this);
+	});
 </script>
 </body>
 

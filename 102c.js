@@ -9,6 +9,9 @@ function MinesweeperSolver(table, sweeper) {
 
 	this.m_objMinesweeper = sweeper;
 	this.m_arrClickableNoNoMines = [];
+
+console.log('solver', this);
+
 }
 
 MinesweeperSolver.autoClickDelay = 50;
@@ -93,20 +96,20 @@ console.log('START auto clicking');
 			var self = this;
 			if ( tile.classList.contains('ow') ) {
 				setTimeout(function() {
-console.debug('OPEN', tile.cellIndex, tile.parentNode.sectionRowIndex);
+// console.debug('OPEN', tile.cellIndex, tile.parentNode.sectionRowIndex);
 					self.m_objMinesweeper.openField(tile, function() {
 						self.mf_ClickNextNoNoMine(false, done);
 					});
 				}, first ? 0 : self.constructor.autoClickDelay);
 			}
 			else {
-console.debug('SKIP "' + tile.className + '"');
+// console.debug('SKIP "' + tile.className + '"');
 				self.mf_ClickNextNoNoMine(false, done);
 			}
 		}
 		else {
 console.log('DONE auto clicking');
-console.debug('----------------');
+// console.debug('----------------');
 			if ( done ) {
 				done.call(this, !first);
 			}

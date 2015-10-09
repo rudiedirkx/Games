@@ -1,64 +1,62 @@
 
-var Minesweeper = new Class({
-	initialize: function(field, session) {
-		this.m_szName = '?';
-		this.session = session;
-		this.fetchMap(field);
-	},
-
-	fetchMap : function(f_field) {
-		new Ajax('?fetch&session=' + this.session, {
-			element : this,
-			data : 'fetch_map=1&field=' + f_field,
-			onComplete : function(t) {
-				try {
-					var rv = eval( "(" + t + ")" );
-				} catch (e) {
-					alert('Response error: '+t);
-					return;
-				}
-				if ( rv.error ) {
-					alert(rv.error);
-					return;
-				}
-				var self = this.element;
-				// Save level
-				self.m_szField = f_field;
-				self.m_bGameOver = false;
-				self.m_iMines = rv.mines;
-				self.m_arrFlags = [];
-				$('mines_to_find').innerHTML = '' + self.m_iMines + '';
-				$('flags_left').innerHTML = '' + self.m_iMines + '';
-				$('mine_percentage').innerHTML = '' + Math.round(100 * rv.mines / (rv.size.y * rv.size.x)) + '';
-				self.m_iFlagsUsed = 0;
-				// empty current map
-				while ( 0 < $('ms_tbody').childNodes.length ) {
-					$('ms_tbody').removeChild($('ms_tbody').firstChild);
-				}
-				// Save new map
-				for ( var y=0; y<rv.size.y; y++ ) {
-					var nr = $('ms_tbody').insertRow($('ms_tbody').rows.length);
-					for ( var x=0; x<rv.size.x; x++ ) {
-						var nc = nr.insertCell(nr.cells.length);
-						nc.className = 'c';
-					}
-				}
+function Minesweeper(field, session) {
+	this.m_szName = '?';
+	this.session = session;
+	this.fetchMap(field);
+};
+Minesweeper.prototype = {
+	fetchMap: function(f_field) {
+		var data = 'fetch_map=1&field=' + f_field;
+		var options = {execScripts: false}
+		var self = this;
+		$.post('?fetch&session=' + this.session, data, options).on('load', function(e) {
+			var rsp = this.responseText;
+			try {
+				rsp = JSON.parse(rsp);
 			}
-		}).request();
+			catch (ex) {
+				alert('Response error: ' + rsp);
+			}
+			if (rsp.error) {
+				alert(rsp.error);
+				return;
+			}
+
+			self.m_szField = f_field;
+			self.m_bGameOver = false;
+			self.m_iMines = rsp.mines;
+			self.m_arrFlags = [];
+
+			$('mines_to_find').textContent = String(self.m_iMines);
+			$('flags_left').textContent = String(self.m_iMines);
+			$('mine_percentage').textContent = String(Math.round(100 * rsp.mines / (rsp.size.y * rsp.size.x)));
+
+			self.m_iFlagsUsed = 0;
+
+			// Save new map
+			var html = '';
+			for ( var y=0; y<rsp.size.y; y++ ) {
+				html += '<tr>';
+				for ( var x=0; x<rsp.size.x; x++ ) {
+					html += '<td></td>';
+				}
+				html += '</tr>';
+			}
+			$('ms_tbody').innerHTML = html;
+		});
 		return false;
 	},
 
-	handleChanges : function(cs) {
+	handleChanges: function(cs) {
 		for ( var i=0; i<cs.length; i++ ) {
-			var c = cs[i], f = $('ms_tbody').rows[c[1]].cells[c[0]];
-//			if ( 'f' != f.className || !$range(0, 8).contains(c[2]) ) {
-				f.className = 'o' + c[2] + '';
-//			}
+			var c = cs[i]
+			var f = $('ms_tbody').rows[ c[1] ].cells[ c[0] ];
+			f.className = 'o' + c[2];
 		}
 		return false;
 	},
 
-	showWrongFlags : function( go ) {
+	showWrongFlags: function( go ) {
 		if ( !go ) { return; }
 		for ( var i=0; i<this.m_arrFlags.length; i++ ) {
 			var f = this.m_arrFlags[i];
@@ -71,77 +69,93 @@ var Minesweeper = new Class({
 		}
 	},
 
-	openField : function(o, done) {
-		if ( this.m_bGameOver ) { return this.restart(); }
-		if ( !o.classList.contains('c') ) { return false; }
-		var self = this;
-		new Ajax('?click&session=' + this.session, {
-			data : 'click=1&x=' + o.cellIndex + '&y=' + o.parentNode.sectionRowIndex,
-			onComplete : function(t) {
-				var rv;
-				try {
-					rv = eval( "(" + t + ")" );
-				} catch (e) {
-					alert('Response error: '+t);
-					return;
-				}
-				if ( rv.error ) {
-					alert(rv.error);
-					return;
-				}
-				if ( rv.gameover ) {
-					self.m_bGameOver = true;
-					self.m_arrFlags = $$('#ms_tbody td.f');
-				}
-				self.handleChanges(rv.updates);
-				self.showWrongFlags( self.m_bGameOver && 1 < rv.updates.length && rv.updates.last().last() === 'x' );
-				if ( rv.msg ) {
-					setTimeout(function() {
-						alert(rv.msg);
-					}, 1);
-				}
+	openField: function(o, done) {
+		if ( this.m_bGameOver ) {
+			return this.restart();
+		}
 
-				if ( done ) {
-					done.call(self);
-				}
+		if ( o.hasClass('f') ) {
+			return false;
+		}
+
+		var data = 'click=1&x=' + o.cellIndex + '&y=' + o.parentNode.sectionRowIndex;
+		var options = {execScripts: false}
+		var self = this;
+		$.post('?click&session=' + this.session, data, options).on('load', function(e) {
+			var rsp = this.responseText;
+			try {
+				rsp = JSON.parse(rsp);
 			}
-		}).request();
+			catch (ex) {
+				alert('Response error: ' + rsp);
+			}
+			if (rsp.error) {
+				alert(rsp.error);
+				return;
+			}
+
+			if ( rsp.gameover ) {
+				self.m_bGameOver = true;
+				self.m_arrFlags = $$('#ms_tbody td.f');
+			}
+
+			self.handleChanges(rsp.updates);
+
+			self.showWrongFlags( self.m_bGameOver && 1 < rsp.updates.length && rsp.updates.last().last() === 'x' );
+
+			if ( rsp.msg ) {
+				setTimeout(function() {
+					alert(rsp.msg);
+				}, 1);
+			}
+
+			if ( done ) {
+				done.call(self);
+			}
+		});
 		return false;
 	},
 
-	toggleFlag : function(o) {
-		if ( this.m_bGameOver ) { return this.restart(); }
-		if ( o.className == 'f' ) {
-			o.className = 'c';
-			o.flag = false;
-			this.m_iFlagsUsed--;
-//			this.m_arrFlags.splice(this.m_arrFlags.indexOf(o), 1);
+	toggleFlag: function(o) {
+		if ( this.m_bGameOver ) {
+			return this.restart();
 		}
-		else if ( o.className == 'c' ) {
-			o.className = 'f';
-			o.flag = true;
+
+		o.toggleClass('f');
+		if ( o.hasClass('f') ) {
 			this.m_iFlagsUsed++;
-//			this.m_arrFlags.push(o);
 		}
-		$('flags_left').innerHTML = '' + ( this.m_iMines-this.m_iFlagsUsed ) + '';
+		else {
+			this.m_iFlagsUsed--;
+		}
+
+		$('flags_left').textContent = String(this.m_iMines-this.m_iFlagsUsed);
 	},
 
-	restart : function() {
+	restart: function() {
 		return this.fetchMap(this.m_szField);
 	},
 
-	changeName : function(name) {
-		name = name || prompt('New name:', this.m_szName);
-		if ( !name ) return false;
-		new Ajax('?session=' + this.session, {
-			data : 'new_name=' + name,
-			onComplete : this.setName.bind(this)
-		}).request();
+	changeName: function(name) {
+		name || (name = prompt('New name:', this.m_szName));
+		if ( !name ) {
+			return false;
+		}
+
+		var data = 'new_name=' + name;
+		var options = {execScripts: false}
+		var self = this;
+		$.post('?session=' + this.session, data, options).on('load', function(e) {
+			self.setName(this.responseText);
+		});
+
 		return false;
 	},
 
 	setName: function(name) {
 		this.m_szName = name;
-		$('your_name').innerHTML = name;
+		$('your_name').textContent = name;
 	}
-});
+};
+
+Minesweeper.prototype.constructor = Minesweeper;
