@@ -74,7 +74,7 @@ Minesweeper.prototype = {
 			return this.restart();
 		}
 
-		if ( o.hasClass('f') ) {
+		if ( o.className ) {
 			return false;
 		}
 
