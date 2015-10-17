@@ -121,6 +121,11 @@ Minesweeper.prototype = {
 			return this.restart();
 		}
 
+		var flaggable = !o.className || o.className == 'f';
+		if ( !flaggable ) {
+			return;
+		}
+
 		o.toggleClass('f');
 		if ( o.hasClass('f') ) {
 			this.m_iFlagsUsed++;

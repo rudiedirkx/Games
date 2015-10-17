@@ -233,6 +233,17 @@ div#loading {
 </tr>
 </table>
 
+<div style="display: none">
+	<img src="images/flag.gif" />
+	<img src="images/open_m.gif" />
+	<img src="images/open_x.gif" />
+	<img src="images/open_0.gif" />
+	<img src="images/open_1.gif" />
+	<img src="images/open_2.gif" />
+	<img src="images/open_3.gif" />
+	<img src="images/open_4.gif" />
+</div>
+
 <script>
 r.xhr.busy = 0;
 window.on('xhrStart', function() {
