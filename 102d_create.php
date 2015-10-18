@@ -53,9 +53,9 @@ function reTileM( f_obj ) {
 
 function createPhpArray() {
 	var trs = document.querySelectorAll('#ms_tbody tr');
-	var szPhpArray = "array(\n";
+	var szPhpArray = "\tarray(\n";
 	for ( var i=0; i<trs.length; i++ ) {
-		szPhpArray += "\t'";
+		szPhpArray += "\t\t'";
 		var imgs = trs[i].querySelectorAll('img');
 		for ( var j=0; j<imgs.length; j++ ) {
 			var tile = Number(imgs[j].dataset.tile);
@@ -63,8 +63,9 @@ function createPhpArray() {
 		}
 		szPhpArray += "',\n";
 	}
-	szPhpArray += "),\n";
-	document.querySelector('#php_array').innerHTML = szPhpArray;
+	szPhpArray += "\t),\n";
+	document.querySelector('#php_array').value = szPhpArray;
+	document.querySelector('#php_array').select();
 }
 </script>
 </head>
@@ -103,7 +104,7 @@ function createPhpArray() {
 
 <p><input type="button" value="create php array" onclick="createPhpArray();" /></p>
 
-<pre id="php_array"></pre>
+<textarea rows="19" cols="50" id="php_array"></textarea>
 
 </body>
 
