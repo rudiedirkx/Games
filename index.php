@@ -14,6 +14,7 @@ $g_szEmptyCell	= '';
 
 $g_arrGames = array(
 	array('101',			'BLACKJACK',									'The Blackjack where 21 pays double pay and the dealer stops at 17 and goes at 16'),
+	array('101b',			'CARD COUNTING',								'Learn yourself to count cards'),
 	array('101c',			'BLACKJACK',									'You know Jack... Rules inside!'),
 	array('102',			'MINESWEEPER',									'Default field of 9*9 containing 10 mines! The faster you play, the better your score'),
 	array('104',			'BLACKBOX -PHP',								'Find the Atoms by sending beams into the field (PHP+Ajax based)'),

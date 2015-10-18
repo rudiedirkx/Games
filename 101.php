@@ -2,8 +2,6 @@
 // BLACKJACK
 
 session_start();
-include("connect.php");
-error_reporting( 2047 );
 
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
@@ -17,8 +15,7 @@ $config['min_balance_for_hof']	= 2*$config['starting_budget'];	// als je minder 
 /* EIND CONFIG */
 
 /* START FUNCTIONS */
-function Nieuwe_Kaart($who)
-{
+function Nieuwe_Kaart($who) {
 	// Met '$who' weet je voor wie de kaart is.
 	// De kaart wordt opgeslagen in ['dealer'] of ['player'].
 	$kaartkleuren = array("harten","ruiten","schoppen","klaveren");
@@ -40,8 +37,7 @@ function Nieuwe_Kaart($who)
 
 	$_SESSION['blackjack'][$who][$next_i] = $cards;
 }
-function Bereken_Score($who)
-{
+function Bereken_Score($who) {
 	$score=0;
 	// Met '$who' weet je wiens score te berekenen.
 	// De waarden worden uit ['dealer'] of ['player'] gehaald.
@@ -65,8 +61,7 @@ function Bereken_Score($who)
 	}
 	return $score;
 }
-function Cards_For_Dealer()
-{
+function Cards_For_Dealer() {
 	global $config;
 	if (Bereken_Score('player') > 21)
 		Score_Opslaan();
@@ -77,8 +72,7 @@ function Cards_For_Dealer()
 	}
 	Score_Opslaan();
 }
-function Laat_Kaarten_Zien($who)
-{
+function Laat_Kaarten_Zien($who) {
 	if ( !in_array($who, Array("player","dealer")) ) return;
 
 	// Met '$who' weet je wiens kaarten af te beelden.
@@ -95,8 +89,7 @@ function Laat_Kaarten_Zien($who)
 		echo "<img src=\"$kaarturl\" title=\"\" alt=\"($kleur ".$kaart.")\"> \n";
 	}
 }
-function Reset_Game()
-{
+function Reset_Game() {
 	// Alle waarden worden gewist.
 	// Heel het spel is leeg.
 	$_SESSION['blackjack'] = FALSE;
@@ -104,16 +97,14 @@ function Reset_Game()
 	$_SESSION['blackjack']['dealer']['i']=0;
 	$_SESSION['blackjack']['player']['i']=0;
 }
-function End_Game()
-{
+function End_Game() {
 	// Alle waarden, behalve ['balance'], worden gewist.
 	// Alle cookies zijn leeg. Een nieuw spel kan worden gestart!
 	$balance = $_SESSION['blackjack']['player']['balance'];
 	$_SESSION['blackjack'] = FALSE;
 	$_SESSION['blackjack']['player']['balance'] = $balance;
 }
-function Score_Opslaan()
-{
+function Score_Opslaan() {
 	// Logboek. Resultaten, winsten, scores worden opgeslagen in logboek.
 	// De nieuwe balance van de player wordt ook opgeslagen.
 	$bet = $_SESSION['blackjack']['player']['bet'];
@@ -171,8 +162,7 @@ function Score_Opslaan()
 
 
 // if (isset($_SESSION['blackjack']['player']))
-if (!isset($_SESSION['blackjack']['player']['balance']) || $_SESSION['blackjack']['player']['balance']<=0)
-{
+if (!isset($_SESSION['blackjack']['player']['balance']) || $_SESSION['blackjack']['player']['balance']<=0) {
 	$_SESSION['blackjack']['player']['balance'] = $config['starting_budget'];
 }
 
@@ -181,11 +171,10 @@ if ( isset($_GET['action']) )	$action = $_GET['action'];
 else							$action = '';
 
 
-if ( $action == "save" && Goede_Gebruikersnaam($_POST['name']) )
-{
+if ( $action == "save" && Goede_Gebruikersnaam($_POST['name']) ) {
 	if ( $config['min_balance_for_hof'] <= (FLOAT)$_SESSION['blackjack']['player']['balance'] )
 	{
-		mysql_query("INSERT INTO blackjack (name,score) VALUES ('".$_POST['name']."','".$_SESSION['blackjack']['player']['balance']."');") or die(mysql_error());
+		// mysql_query("INSERT INTO blackjack (name,score) VALUES ('".$_POST['name']."','".$_SESSION['blackjack']['player']['balance']."');") or die(mysql_error());
 		Reset_Game();
 	}
 	$_SESSION['blackjack']['player']['name'] = $_POST['name'];
@@ -193,8 +182,7 @@ if ( $action == "save" && Goede_Gebruikersnaam($_POST['name']) )
 	exit();
 }
 
-if ( $action == "deal")
-{
+if ( $action == "deal") {
 	if (!Bereken_Score('dealer'))
 	{
 		Nieuwe_Kaart('dealer');
@@ -219,184 +207,155 @@ if ( $action == "deal")
 	exit();
 }
 
-if ( $action == "stand")
-{
+if ( $action == "stand") {
 	Cards_For_Dealer();
 
 	Header("Location: " . BASEPAGE);
 	exit();
 }
 
-if ( $action == "emergencyreset")
-{
+if ( $action == "emergencyreset") {
 	Reset_Game();
 
 	Header("Location: " . BASEPAGE);
 	exit();
 }
 
-if ( $action == "endgame")
-{
+if ( $action == "endgame") {
 	End_Game();
 
 	Header("Location: " . BASEPAGE);
 	exit();
 }
 
-if (Bereken_Score('player') > 21 && !(isset($_SESSION['blackjack']['pauze']) && $_SESSION['blackjack']['pauze']))
-{
+if (Bereken_Score('player') > 21 && empty($_SESSION['blackjack']['pauze'])) {
 	Cards_For_Dealer();
 }
 
-if (isset($_SESSION['blackjack']['winner']))
-{
+if (isset($_SESSION['blackjack']['winner'])) {
 	if ($_SESSION['blackjack']['winner']=="dealer")
 		$whowins = "Y O U &nbsp; L O S E";
 	else if ($_SESSION['blackjack']['winner']=="player")
 		$whowins = "Y O U &nbsp; W I N";
 }
 
-if (!isset($_GET['page']))
-{ // begin page "blackjack"
-	?><html>
-<head>
-<title>BLACKJACK</title>
-<style>
-* {
-	cursor			: default;
-}
-BODY, TABLE, INPUT {
-	font-family		: Verdana, Arial;
-	font-size		: 11px;
-}
-TD {
-	border-right	: solid 2px #000;
-	border-bottom	: solid 2px #000;
-}
-TD.gb {
-	border			: none;
-}
-</style>
-<script>
-function Place_Bet(getal)
-{
-	var max = <?php echo 500 < $_SESSION['blackjack']['player']['balance'] ? 500 : $_SESSION['blackjack']['player']['balance']; ?>
+?>
+<!-- <!doctype html> -->
+<html>
 
-	if (getal == 0)
-	{
-		document.bet.bet.value = 0;
-		document.bet.balance.value = max;
+<head>
+	<title>BLACKJACK</title>
+	<style>
+	* {
+		cursor			: default;
 	}
-	else if (getal == "alles")
-	{
-		document.bet.bet.value = max;
-		document.bet.balance.value = <?php echo $_SESSION['blackjack']['player']['balance']; ?>-max;
+	BODY, TABLE, INPUT {
+		font-family		: Verdana, Arial;
+		font-size		: 11px;
 	}
-	else if ((document.bet.bet.value - getal*(-1)) <= max)
-	{
-		document.bet.bet.value -= getal*(-1);
-		document.bet.balance.value -= getal;
+	TD {
+		border-right	: solid 2px #000;
+		border-bottom	: solid 2px #000;
 	}
-}
-<?php echo (isset($_GET['refresh']))?"<script>\ntop.location='./';\n</script>\n":""; ?>
-</script>
-<script>
-if (top.location!=this.location)
-	top.location='<?php echo $_SERVER['SCRIPT_NAME']; ?>';
-</script>
+	TD.gb {
+		border			: none;
+	}
+	</style>
+	<script>
+	function Place_Bet(getal) {
+		var max = <?php echo 500 < $_SESSION['blackjack']['player']['balance'] ? 500 : $_SESSION['blackjack']['player']['balance']; ?>
+
+		if (getal == 0) {
+			document.bet.bet.value = 0;
+			document.bet.balance.value = max;
+		}
+		else if (getal == "alles") {
+			document.bet.bet.value = max;
+			document.bet.balance.value = <?php echo $_SESSION['blackjack']['player']['balance']; ?>-max;
+		}
+		else if ((document.bet.bet.value - getal*(-1)) <= max) {
+			document.bet.bet.value -= getal*(-1);
+			document.bet.balance.value -= getal;
+		}
+	}
+	<?php echo (isset($_GET['refresh']))?"<script>\ntop.location='./';\n</script>\n":""; ?>
+	</script>
+	<script>
+	if (top.location != this.location) top.location = this.location;
+	</script>
 </head>
 
 <body style='margin:0px;overflow:auto;'>
-<table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><tr valign=middle><td align=center class=gb>
+	<table border="0" cellpadding="0" cellspacing="0" width="100%" height="100%"><tr valign="middle"><td align="center" class="gb">
 
-<form name=bet method=post action="?action=deal">
-<table border=1 cellpadding=3 cellspacing=0 width=700 height=400 style='border-left:solid 2px black;border-top:solid 2px black;'>
-<tr height=50 valign=middle><td colspan=3><center><?php echo (isset($_SESSION['blackjack']['pauze']))?"<font style='font-size:20px;'><b>$whowins":"";?><br></td></tr>
-<tr height=30>
-<td><?php echo ($config['show_recent_score'] && Bereken_Score('player') && Bereken_Score('dealer'))?"<center><b style='border:solid 1px #777;'>&nbsp;".Bereken_Score('player')."&nbsp;</b>":""?><br></td>
-<td colspan=2><center>Your balance: <input type=text name=balance style='border:none;font-weight:bold;' value="<?php echo (!isset($_SESSION['blackjack']['pauze']) && isset($_SESSION['blackjack']['player']['bet']))?$_SESSION['blackjack']['player']['balance']-$_SESSION['blackjack']['player']['bet']:$_SESSION['blackjack']['player']['balance']?>"></font></td>
-</tr>
-<tr height=110>
-<td rowspan=3 width=210><center>
-<table border=0 cellpadding=4 cellspacing=0 width=160 height=100%>
-<tr valign=middle>
-<td rowspan=2 class=gb><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet('alles');\"":""?> style='cursor:pointer;' src="./images/fiche_max.gif"></td>
-<td class=gb><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(5);\"":""?> style='cursor:pointer;' src="./images/fiche_5.gif"></td>
-</tr>
-<tr valign=middle>
-<td class=gb><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(25);\"":""?> style='cursor:pointer;' src="./images/fiche_25.gif"></td>
-</tr>
-<tr valign=middle>
-<td rowspan=2 class=gb><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(0);\"":""?> style='cursor:pointer;' src="./images/fiche_0.gif"></td>
-<td class=gb><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(100);\"":""?> style='cursor:pointer;' src="./images/fiche_100.gif"></td>
-</tr>
-<tr valign=middle>
-<td class=gb><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(500);\"":""?> style='cursor:pointer;' src="./images/fiche_500.gif"></td>
-</tr>
-</table>
-</td>
-<td colspan=2><table border=0 cellpadding=0 cellspacing=0 width=100%><tr valign=middle><td class=gb><?php Laat_Kaarten_Zien('dealer')?><?php echo (isset($_SESSION['blackjack']['dealer']['i']) && $_SESSION['blackjack']['dealer']['i']<2 && $_SESSION['blackjack']['dealer']['i']>0)?"<img src=\"./images/kaart.gif\" border=0 height=96 width=71> ":""?></td><td class=gb align=right style='font-size:30px;;'><b><?php echo ($config['show_recent_score'])?Bereken_Score('dealer'):""?>&nbsp;</td></tr></table></td>
-</tr>
-<tr height=110>
-<td colspan=2><table border=0 cellpadding=0 cellspacing=0 width=100%><tr valign=middle><td class=gb><?php Laat_Kaarten_Zien('player')?><br></td><td align=right style='font-size:30px;' class=gb><b><?php echo ($config['show_recent_score'])?Bereken_Score('player'):""?>&nbsp;</td></tr></table></td>
-</tr>
-<tr height=30><td colspan=2>BET: <input type=text name=bet style='border:none;font-weight:bold;' value="<?php echo (isset($_SESSION['blackjack']['player']['bet']) && $_SESSION['blackjack']['player']['bet'] && !isset($_SESSION['blackjack']['pauze']))?$_SESSION['blackjack']['player']['bet']:0?>"></font><br></td></tr>
-<tr height=35>
-<td width=32%><center><?php echo (!isset($_SESSION['blackjack']['pauze']))?"<input style='width:50%;' type=submit value=\"DEAL\">":""?><br></td></form>
-<td width=34%><center><?php echo (Bereken_Score('player') && !isset($_SESSION['blackjack']['pauze']))?"<input style='width:50%;' type=button value=\"STAND\" OnClick=\"location='?action=stand'\">":""?><br></td>
-<td width=34%><center><?php echo (isset($_SESSION['blackjack']['pauze']))?"<input style='width:50%;' type=button value=\"OK\" OnClick=\"location='?action=endgame';\">":""?><br></td>
-</tr>
-</form>
-<tr height=15><td colspan=3 bgcolor=#000000></td></tr>
-<form name=opslaan method=post>
-<input type=hidden name=action value="save">
-<tr height=35>
-<td><center>Your Name:</td>
-<td><input type=text name=name style='width:100%;' value="<?php echo (isset($_SESSION['blackjack']['player']['name']))?$_SESSION['blackjack']['player']['name']:""?>" maxlenght=22></td>
-<td><input type=submit value="Save This Balance" style='width:100%;'></td>
-</tr>
-</form>
-</table>
-<br>
-<a style='cursor:pointer;' OnClick="open('?page=HallOfFame','hall','width=300,height=500');"> >> HALL OF FAME << </a>
+	<form name="bet" method="post" action="?action=deal">
+		<table border="1" cellpadding="3" cellspacing="0" width="700" height="400" style="border-left: solid 2px black; border-top: solid 2px black">
+			<tr height="50" valign="middle">
+				<td colspan="3"><center><?php echo (!empty($_SESSION['blackjack']['pauze']))?"<font style='font-size:20px;'><b>$whowins":"";?><br></td>
+			</tr>
+			<tr height="30">
+				<td><?php echo ($config['show_recent_score'] && Bereken_Score('player') && Bereken_Score('dealer'))?"<center><b style='border:solid 1px #777;'>&nbsp;".Bereken_Score('player')."&nbsp;</b>":""?><br></td>
+				<td colspan="2"><center>Your balance: <input type="text" name="balance" style="border: none; font-weight: bold" value="<?php echo (empty($_SESSION['blackjack']['pauze']) && isset($_SESSION['blackjack']['player']['bet']))?$_SESSION['blackjack']['player']['balance']-$_SESSION['blackjack']['player']['bet']:$_SESSION['blackjack']['player']['balance']?>"></font></td>
+			</tr>
+			<tr height="110">
+				<td rowspan="3" width="210">
+					<table border="0" cellpadding="4" cellspacing="0" width="160" height="100%">
+						<tr valign="middle">
+							<td rowspan="2" class="gb"><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet('alles');\"":""?> style="cursor: pointer" src="./images/fiche_max.gif"></td>
+							<td class="gb"><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(5);\"":""?> style="cursor: pointer" src="./images/fiche_5.gif"></td>
+						</tr>
+						<tr valign="middle">
+							<td class="gb"><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(25);\"":""?> style="cursor: pointer" src="./images/fiche_25.gif"></td>
+						</tr>
+						<tr valign="middle">
+							<td rowspan="2" class="gb"><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(0);\"":""?> style="cursor: pointer" src="./images/fiche_0.gif"></td>
+							<td class="gb"><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(100);\"":""?> style="cursor: pointer" src="./images/fiche_100.gif"></td>
+						</tr>
+						<tr valign="middle">
+							<td class="gb"><center><img <?php echo (!Bereken_Score('player'))?"OnClick=\"Place_Bet(500);\"":""?> style="cursor: pointer" src="./images/fiche_500.gif"></td>
+						</tr>
+					</table>
+				</td>
+				<td colspan="2">
+					<table border="0" cellpadding="0" cellspacing="0" width="100%">
+						<tr valign="middle">
+							<td class="gb">
+								<?php Laat_Kaarten_Zien('dealer') ?>
+								<?php echo (isset($_SESSION['blackjack']['dealer']['i']) && $_SESSION['blackjack']['dealer']['i']<2 && $_SESSION['blackjack']['dealer']['i']>0) ? '<img src="./images/kaart.gif" border="0" height="96" width="71" />' : '' ?>
+							</td>
+							<td class="gb" align="right" style="font-size: 30px"><b><?php echo ($config['show_recent_score'])?Bereken_Score('dealer'):""?>&nbsp;</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr height="110">
+				<td colspan="2">
+					<table border="0" cellpadding="0" cellspacing="0" width="100%">
+						<tr valign="middle">
+							<td class="gb"><?php Laat_Kaarten_Zien('player')?><br></td>
+							<td align="right" style="font-size: 30px" class="gb"><b><?php echo ($config['show_recent_score'])?Bereken_Score('player'):""?>&nbsp;</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr height="30">
+				<td colspan="2">BET: <input type="text" name="bet" style="border: none; font-weight: bold" value="<?php echo (isset($_SESSION['blackjack']['player']['bet']) && $_SESSION['blackjack']['player']['bet'] && empty($_SESSION['blackjack']['pauze']))?$_SESSION['blackjack']['player']['bet']:0?>"></font><br></td>
+			</tr>
+			<tr height="35">
+				<td width="32%" align="center">
+					<?php echo (empty($_SESSION['blackjack']['pauze']))?"<input style='width:50%;' type=submit value=\"DEAL\">":""?><br>
+				</td>
+				<td width="34%" align="center">
+					<?php echo (Bereken_Score('player') && empty($_SESSION['blackjack']['pauze']))?"<input style='width:50%;' type=button value=\"STAND\" OnClick=\"location='?action=stand'\">":""?><br>
+				</td>
+				<td width="34%" align="center">
+					<?php echo (!empty($_SESSION['blackjack']['pauze']))?"<input style='width:50%;' type=button value=\"OK\" OnClick=\"location='?action=endgame';\">":""?><br>
+				</td>
+			</tr>
+		</table>
+	</form>
 
-</td></tr></table>
+	</td></tr></table>
 </body>
-<?php
-} // einde page "blackjack"
-else if ($_GET['page'] == "HallOfFame")
-{ // begin page "HallOfFame"
-?>
-<head>
-<title>BLACKJACK</title>
-<style>
-BODY,TABLE { overflow:auto;font-family:Verdana;font-size:11px; }
-</style>
-</head>
-<body bgcolor=gold OnUnLoad="window.close(self);" OnBlur="window.close(self);">
-<center>
-<br>
-<b style='font-size:15px;'>HALL OF FAME</b><br>
-<br>
-<br>
 
-<table border=1 cellpadding=4 cellspacing=0 width=90%>
-<?php
-
-$j=0;
-$laatst=0;
-$q = mysql_query("SELECT * FROM blackjack ORDER BY -score,id LIMIT 0,10;") or die(mysql_error());
-while ($i=mysql_fetch_array($q))
-{
-	$j++;
-	$nummer = ($laatst==$i['score']) ? "''" : "<center>&nbsp;$j&nbsp;";
-	echo "<tr><td width=1><center>$nummer</td><td><center>".$i['name']."</td><td width=1>".$i['score']."</td></tr>\n";
-	$laatst = $i['score'];
-}
-echo "</table>\n\n</body>";
-} // eind page "HallOfFame"
-
-echo "<pre>";
-print_r($_SESSION['blackjack']);
-
-?>
+<pre><?php print_r($_SESSION['blackjack']) ?></pre>
