@@ -64,8 +64,8 @@ function createPhpArray() {
 		szPhpArray += "',\n";
 	}
 	szPhpArray += "\t),\n";
-	document.querySelector('#php_array').value = szPhpArray;
-	document.querySelector('#php_array').select();
+	document.querySelector('#export').value = szPhpArray;
+	document.querySelector('#export').select();
 }
 </script>
 </head>
@@ -104,7 +104,7 @@ function createPhpArray() {
 
 <p><input type="button" value="create php array" onclick="createPhpArray();" /></p>
 
-<textarea rows="19" cols="50" id="php_array"></textarea>
+<textarea tabindex="-1" rows="19" cols="50" id="export"></textarea>
 
 </body>
 

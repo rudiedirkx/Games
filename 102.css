@@ -54,3 +54,18 @@ table#field,
 #ms_tbody td.f {
 	background-image: url(images/flag.gif);
 }
+
+#export:focus {
+	position: fixed;
+	width: 80%;
+	height: 80%;
+	top: 10%;
+	left: 10%;
+	outline: solid 9999px rgba(0, 0, 0, 0.4);
+	tab-size: 4;
+}
+#export:not(:focus) {
+	position: absolute;
+	top: -999px;
+	left: 0;
+}

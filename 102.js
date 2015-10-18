@@ -136,6 +136,28 @@ Minesweeper.prototype = {
 		return this.fetchMap(this.m_szField);
 	},
 
+	export: function(success, error) {
+		if ( this.m_bGameOver ) {
+			error && error.call(this);
+			return;
+		}
+
+		var rows = [];
+		$('ms_tbody').getChildren().each(function(tr) {
+			var row = '';
+			tr.getChildren().each(function(cell) {
+				var c = ' ';
+				if ( cell.className.trim() && !cell.hasClass('f') ) {
+					c = cell.className.substr(1);
+				}
+				row += c;
+			});
+			rows.push(row);
+		});
+		success && success.call(this, rows);
+		return rows;
+	},
+
 	changeName: function(name) {
 		name || (name = prompt('New name:', this.m_szName));
 		if ( !name ) {

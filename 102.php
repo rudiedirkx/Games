@@ -1,9 +1,6 @@
 <?php
 // MINESWEEPER
 
-// @todo Export map into creator & analyzer
-// @todo Share maps between creator & analyzer
-
 if ( isset($_GET['source']) ) {
 	highlight_file(__FILE__);
 	exit;
@@ -206,9 +203,11 @@ div#loading {
 		-->
 		<p><a href="#" onclick="return objMinesweeper.changeName();">Change Name</a></p>
 		<br />
-		<p><a href="#" onclick="window.open('?frame=1', '', 'statusbar=0');return false;">In frame</a></p>
+		<p><a href="#" onclick="window.open('?frame=1', '', 'statusbar=0'); return false">In frame</a></p>
 		<br />
-		<p><a href="javascript: getSolver().mf_SaveAndMarkAndClickAll(null, function() { alert('I can only help those who help themselves!'); }); void(0)">Cheat!</a></p>
+		<p><a href="#" onclick="getSolver().mf_SaveAndMarkAndClickAll(null, function() { alert('I can only help those who help themselves!'); }); return false">Cheat!</a></p>
+		<br />
+		<p><a href="#" onclick="objMinesweeper.export(function(rows) { $('export').prop('value', &quot;\tarray(\n\t\t'&quot; + rows.join(&quot;',\n\t\t'&quot;) + &quot;',\n\t),&quot;).select(); }); return false">Export</a></p>
 	</td>
 	<td align="center">
 		<table id="field" style="border:solid 1px #777;"><tr><td>
@@ -232,6 +231,8 @@ div#loading {
 	</td>
 </tr>
 </table>
+
+<textarea tabindex="-1" id="export"></textarea>
 
 <div style="display: none">
 	<img src="images/flag.gif" />

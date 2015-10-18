@@ -215,7 +215,7 @@ console.log('DONE auto clicking');
 			var coord = this.m_arrKnownMines[id],
 				x = coord[0],
 				y = coord[1];
-			this.m_table.rows[y].cells[x].className += ' solver f';
+			this.m_table.rows[y].cells[x].addClass('f').data('ms-solved', '');
 		}
 	},
 
@@ -225,7 +225,7 @@ console.log('DONE auto clicking');
 			var coord = this.m_arrDefiniteNoNoMines[id],
 				x = coord[0],
 				y = coord[1];
-			this.m_table.rows[y].cells[x].className += ' solver ow';
+			this.m_table.rows[y].cells[x].addClass('ow').data('ms-solved', '');
 		}
 	},
 
