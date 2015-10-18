@@ -10,15 +10,9 @@ Minesweeper.prototype = {
 		var options = {execScripts: false}
 		var self = this;
 		$.post('?fetch&session=' + this.session, data, options).on('load', function(e) {
-			var rsp = this.responseText;
-			try {
-				rsp = JSON.parse(rsp);
-			}
-			catch (ex) {
-				alert('Response error: ' + rsp);
-			}
-			if (rsp.error) {
-				alert(rsp.error);
+			var rsp = this.responseJSON;
+			if ( !rsp || rsp.error ) {
+				alert(rsp ? rsp.error : this.responseText);
 				return;
 			}
 
@@ -69,28 +63,26 @@ Minesweeper.prototype = {
 		}
 	},
 
+	isOpenableField: function(o) {
+		return !o.className.trim() || o.hasClass('ow');
+	},
+
 	openField: function(o, done) {
 		if ( this.m_bGameOver ) {
 			return this.restart();
 		}
 
-		if ( o.className ) {
-			return false;
+		if ( !this.isOpenableField(o) ) {
+			return;
 		}
 
 		var data = 'click=1&x=' + o.cellIndex + '&y=' + o.parentNode.sectionRowIndex;
 		var options = {execScripts: false}
 		var self = this;
 		$.post('?click&session=' + this.session, data, options).on('load', function(e) {
-			var rsp = this.responseText;
-			try {
-				rsp = JSON.parse(rsp);
-			}
-			catch (ex) {
-				alert('Response error: ' + rsp);
-			}
-			if (rsp.error) {
-				alert(rsp.error);
+			var rsp = this.responseJSON;
+			if ( !rsp || rsp.error ) {
+				alert(rsp ? rsp.error : this.responseText);
 				return;
 			}
 
@@ -116,13 +108,16 @@ Minesweeper.prototype = {
 		return false;
 	},
 
+	isFlaggableField: function(o) {
+		return this.isOpenableField(o) || o.hasClass('f');
+	},
+
 	toggleFlag: function(o) {
 		if ( this.m_bGameOver ) {
 			return this.restart();
 		}
 
-		var flaggable = !o.className || o.className == 'f';
-		if ( !flaggable ) {
+		if ( !this.isFlaggableField(o) ) {
 			return;
 		}
 

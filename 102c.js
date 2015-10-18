@@ -86,7 +86,7 @@ console.log('DONE 3');
 		var tiles = this.m_table.querySelectorAll('.ow');
 		this.m_arrClickableNoNoMines = [].slice.call(tiles);
 
-console.log('START auto clicking');
+console.log('START auto clicking', this.m_arrClickableNoNoMines);
 		this.mf_ClickNextNoNoMine(true, done);
 	},
 
