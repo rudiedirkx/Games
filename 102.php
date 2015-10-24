@@ -210,9 +210,9 @@ div#loading {
 		<p><a href="#" onclick="objMinesweeper.export(function(rows) { $('export').prop('value', &quot;\tarray(\n\t\t'&quot; + rows.join(&quot;',\n\t\t'&quot;) + &quot;',\n\t),&quot;).select(); }); return false">Export</a></p>
 	</td>
 	<td align="center">
-		<table id="field" style="border:solid 1px #777;"><tr><td>
-			<table style="border:solid 10px #bbb;"><tr><td>
-				<table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td>
+		<table id="field" style="border:solid 1px #777;"><tr><td class="wrap">
+			<table style="border:solid 10px #bbb;"><tr><td class="wrap">
+				<table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td class="wrap">
 					<table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;"><tbody id="ms_tbody">
 						<!-- tiles here -->
 					</tbody></table>
@@ -273,7 +273,7 @@ $('ms_tbody')
 		objMinesweeper.toggleFlag(this);
 		objMinesweeper.updateFlagCounter();
 	})
-	.on('click', 'td', function(e) {
+	.on('click', '#ms_tbody td', function(e) {
 		e.preventDefault();
 		objMinesweeper.openField(this);
 	});

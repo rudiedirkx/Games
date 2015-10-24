@@ -59,7 +59,7 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	</p>
 	<p>
 		<input type="button" value="SaveAllMines()" onclick="solver.mf_SaveAllMines()" />
-		<input type="button" value="SaveAllMines() + mark all" onclick="solver.mf_SaveAllMines(), solver.mf_MarkSavedMines(), solver.mf_MarkNonoMines()" />
+		<input type="button" value="SaveAllMines() + mark all" onclick="solver.mf_SaveAllMines(), solver.mf_MarkSavedMines(), solver.mf_MarkNonoMines()" style="font-weight: bold" />
 	</p>
 	<p>
 		<input type="button" value="MarkSavedMines()" onclick="solver.mf_MarkSavedMines()" />

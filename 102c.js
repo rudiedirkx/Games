@@ -121,9 +121,6 @@ console.log('DONE auto clicking');
 	},
 
 	mf_SaveAndMarkAll: function() {
-		// Remove all flags, because they might not come from MinesweeperSolver
-		this.m_table.getElements('.f, .n').removeClass('f').removeClass('n');
-
 		this.mf_SaveAllMines();
 		this.mf_MarkSavedMines();
 		this.mf_MarkNonoMines();
@@ -245,6 +242,8 @@ console.debug('mf_EliminateFields');
 
 	mf_MarkSavedMines: function() {
 // console.debug('mf_MarkSavedMines');
+		this.m_table.getElements('.f').removeClass('f');
+
 		for ( id in this.m_arrKnownMines ) {
 			var coord = this.m_arrKnownMines[id],
 				x = coord[0],
@@ -255,6 +254,8 @@ console.debug('mf_EliminateFields');
 
 	mf_MarkNonoMines: function() {
 // console.debug('mf_MarkNonoMines');
+		this.m_table.getElements('.n').removeClass('n');
+
 		for ( id in this.m_arrDefiniteNoNoMines ) {
 			var coord = this.m_arrDefiniteNoNoMines[id],
 				x = coord[0],
