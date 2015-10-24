@@ -83,7 +83,7 @@ console.log('DONE 3');
 	},
 
 	mf_ClickAllNoNoMines: function(done) {
-		var tiles = this.m_table.querySelectorAll('.ow');
+		var tiles = this.m_table.querySelectorAll('.n');
 		this.m_arrClickableNoNoMines = [].slice.call(tiles);
 
 console.log('START auto clicking', this.m_arrClickableNoNoMines);
@@ -94,7 +94,7 @@ console.log('START auto clicking', this.m_arrClickableNoNoMines);
 		var tile = this.m_arrClickableNoNoMines.pop();
 		if ( tile ) {
 			var self = this;
-			if ( tile.classList.contains('ow') ) {
+			if ( tile.classList.contains('n') ) {
 				setTimeout(function() {
 // console.debug('OPEN', tile.cellIndex, tile.parentNode.sectionRowIndex);
 					self.m_objMinesweeper.openField(tile, function() {
@@ -119,7 +119,7 @@ console.log('DONE auto clicking');
 
 	mf_SaveAndMarkAll: function() {
 		// Remove all flags, because they might not come from MinesweeperSolver
-		this.m_table.getElements('.f').removeClass('f');
+		this.m_table.getElements('.f, .n').removeClass('f').removeClass('n');
 
 		this.mf_SaveAllMines();
 		this.mf_MarkSavedMines();
@@ -229,7 +229,7 @@ console.log('DONE auto clicking');
 			var coord = this.m_arrDefiniteNoNoMines[id],
 				x = coord[0],
 				y = coord[1];
-			this.m_table.rows[y].cells[x].addClass('ow').data('ms-solved', '');
+			this.m_table.rows[y].cells[x].addClass('n').data('ms-solved', '');
 		}
 	},
 

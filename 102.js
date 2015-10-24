@@ -61,7 +61,7 @@ Minesweeper.prototype = {
 	},
 
 	isOpenableField: function(o) {
-		return !o.className.trim() || o.hasClass('ow');
+		return !o.className.trim() || o.hasClass('ow') || o.hasClass('n');
 	},
 
 	openField: function(o, done) {
@@ -121,6 +121,9 @@ Minesweeper.prototype = {
 		}
 
 		o.toggleClass('f');
+		if ( o.hasClass('f') ) {
+			o.removeClass('ow').removeClass('n');
+		}
 	},
 
 	updateFlagCounter: function() {

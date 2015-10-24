@@ -70,10 +70,19 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 
 solver = new MinesweeperSolver($('ms_tbody'));
 
-$('ms_tbody').on('contextmenu', 'td', function(e) {
-	e.preventDefault();
-	Minesweeper.prototype.toggleFlag.call(Minesweeper.prototype, this);
-});
+$('ms_tbody')
+	.on('click', 'td', function(e) {
+		if (!this.className || this.className == 'n') {
+			this.toggleClass('n');
+		}
+	})
+	.on('contextmenu', 'td', function(e) {
+		e.preventDefault();
+
+		if (!this.className || this.className == 'f') {
+			this.toggleClass('f');
+		}
+	});
 </script>
 
 </body>

@@ -54,6 +54,9 @@ table#field,
 #ms_tbody td.f {
 	background-image: url(images/flag.gif);
 }
+#ms_tbody td.n {
+	background-image: url(images/nono.gif);
+}
 
 #export:focus {
 	position: fixed;
