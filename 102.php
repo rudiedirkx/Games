@@ -107,6 +107,8 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	$bGameOver = false;
 
 	$f = $_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x];
+
+	// Hit MINE
 	if ( 'm' === $f ) {
 		$bGameOver = true;
 		foreach ( $_SESSION[S_NAME]['sessions'][SESSION]['map'] AS $y => $row ) {
@@ -118,33 +120,44 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 		}
 		$arrUpdates[] = array($f_x, $f_y, 'x');
 	}
+
+	// SPREAD OUT area clicking
 	else if ( 0 === $f ) {
 		$arrUpdates[] = array($f_x, $f_y, $f);
-		// Find surrounders, surrounders, surrounders, etc
-		click_on_surrounders($f_x, $f_y);
+		// Find surrounders, surrounders' surrounders, etc
+		click_on_surrounders($arrUpdates, $f_x, $f_y);
 	}
+
+	// OPEN SINGLE cell
 	else {
 		$arrUpdates[] = array($f_x, $f_y, $f);
 	}
+
 	unset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x]);
-	$iClosed = 0;
-	foreach ( $_SESSION[S_NAME]['sessions'][SESSION]['map'] AS $r ) {
-		$iClosed += count($r);
-	}
+	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = array_filter($_SESSION[S_NAME]['sessions'][SESSION]['map']);
+	$iClosed = array_sum(array_map('count', $_SESSION[S_NAME]['sessions'][SESSION]['map']));
+
 	$szMsg = '';
-	if ( $iClosed === $_SESSION[S_NAME]['sessions'][SESSION]['mines'] ) {
+	if ( !$bGameOver && $iClosed === $_SESSION[S_NAME]['sessions'][SESSION]['mines'] ) {
 		$bGameOver = true;
-		$arrLevel = $_FIELDS[$_SESSION[S_NAME]['sessions'][SESSION]['field']];
-		$_SESSION[S_NAME]['name'] = isset($_SESSION[S_NAME]['name']) ? $_SESSION[S_NAME]['name'] : 'Anonymous';
+
+		$arrLevel = $_FIELDS[ $_SESSION[S_NAME]['sessions'][SESSION]['field'] ];
+		isset($_SESSION[S_NAME]['name']) or $_SESSION[S_NAME]['name'] = 'Anonymous';
 		$playtime = time()-$_SESSION[S_NAME]['sessions'][SESSION]['starttime'];
+
 		// mysql_query("INSERT INTO minesweeper (name,size_x,size_y,mines,playtime,utc, ip, user_agent) VALUES ('".addslashes($_SESSION[S_NAME]['name'])."',".$arrLevel['sides'][0].",".$arrLevel['sides'][1].",".$arrLevel['mines'].",".$playtime.",".time().", '".addslashes($_SERVER['REMOTE_ADDR'])."', '".addslashes($_SERVER['HTTP_USER_AGENT'])."');");
+
 		$m = floor($playtime / 60);
 		$s = $playtime % 60;
 		$szMsg = 'YOU FINISHED LEVEL "' . $arrLevel['name'] . '" IN ' . ( $m ? $m . 'm ' : '' ) . $s . "s.\n\nNo more highscore!";
 	}
 
 	header('Content-type: text/json');
-	exit(json_encode(array('updates' => $arrUpdates, 'msg' => $szMsg, 'gameover' => $bGameOver)));
+	exit(json_encode(array(
+		'updates' => $arrUpdates,
+		'msg' => $szMsg,
+		'gameover' => $bGameOver,
+	)));
 }
 
 // Change name //
@@ -284,7 +297,6 @@ $('ms_tbody')
 <?php
 
 function create_map( $f_width, $f_height, $f_m, $f_x = null, $f_y = null ) {
-// echo "TRYING\n";
 	$arrMap = array_fill(0, $f_height, array_fill(0, $f_width, 0));
 
 	$iMines = 0;
@@ -309,8 +321,8 @@ function create_map( $f_width, $f_height, $f_m, $f_x = null, $f_y = null ) {
 	return $arrMap;
 }
 
-function surrounders_plus_one(&$f_map, $f_x, $f_y) {
-	$_d = array(
+function surrounders() {
+	return array(
 		array(0, -1),
 		array(1, -1),
 		array(1, 0),
@@ -320,22 +332,24 @@ function surrounders_plus_one(&$f_map, $f_x, $f_y) {
 		array(-1, 0),
 		array(-1, -1),
 	);
-	foreach ( $_d AS $d ) {
+}
+
+function surrounders_plus_one(&$f_map, $f_x, $f_y) {
+	foreach ( surrounders() AS $d ) {
 		if ( isset($f_map[$f_y+$d[0]][$f_x+$d[1]]) && 'm' !== $f_map[$f_y+$d[0]][$f_x+$d[1]] ) {
 			$f_map[$f_y+$d[0]][$f_x+$d[1]]++;
 		}
 	}
 }
 
-function click_on_surrounders($f_x, $f_y) {
-	global $arrUpdates;
-	foreach ( array(array(0,-1),array(1,-1),array(1,0),array(1,1),array(0,1),array(-1,1),array(-1,0),array(-1,-1)) AS $d ) {
+function click_on_surrounders(&$arrUpdates, $f_x, $f_y) {
+	foreach ( surrounders() AS $d ) {
 		if ( isset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]]) ) {
 			$f = $_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]];
 			$arrUpdates[] = array($f_x+$d[1], $f_y+$d[0], $f);
 			unset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]]);
 			if ( 0 === $f ) {
-				click_on_surrounders($f_x+$d[1], $f_y+$d[0]);
+				click_on_surrounders($arrUpdates, $f_x+$d[1], $f_y+$d[0]);
 			}
 		}
 	}

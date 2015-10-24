@@ -250,6 +250,8 @@ console.debug('mf_EliminateFields');
 				y = coord[1];
 			this.m_table.rows[y].cells[x].addClass('f').data('ms-solved', '');
 		}
+
+		this.m_objMinesweeper.updateFlagCounter();
 	},
 
 	mf_MarkNonoMines: function() {
