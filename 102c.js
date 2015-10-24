@@ -9,9 +9,6 @@ function MinesweeperSolver(table, sweeper) {
 
 	this.m_objMinesweeper = sweeper;
 	this.m_arrClickableNoNoMines = [];
-
-console.log('solver', this);
-
 }
 
 MinesweeperSolver.autoClickDelay = 50;
@@ -35,6 +32,14 @@ MinesweeperSolver.prototype = {
 		// '?' : 'images/qmark.gif'
 	// },
 
+	_count: function(obj) {
+		return Object.keys(obj).length;
+	},
+
+	mf_Reset: function() {
+		this.constructor.call(this, this.m_table, this.m_objMinesweeper);
+	},
+
 	mf_GetBoard: function() {
 		return [].map.call(this.m_table.rows, function(row) {
 			return [].map.call(row.cells, function(cell) {
@@ -53,15 +58,11 @@ MinesweeperSolver.prototype = {
 	mf_SaveAndMarkAndClickAll: function(success, error) {
 		var self = this;
 		this.mf_SaveAndMarkAndClick(function(change) {
-console.log('DONE 2', change);
+console.log('DONE 2, ' + (change ? 'with changes' : 'no change'));
 			if ( change ) {
 				// Reset instance and replay
-				// self.m_arrBoard = self.mf_GetBoard(self.m_table);
-				// self.mf_SaveAndMarkAndClickAll();
-
-				// Create new instance and play
-				var solver = new self.constructor(self.m_table, self.m_objMinesweeper);
-				solver.mf_SaveAndMarkAndClickAll(success);
+				self.mf_Reset();
+				self.mf_SaveAndMarkAndClickAll();
 			}
 			else {
 console.log('DONE 3');
@@ -86,8 +87,13 @@ console.log('DONE 3');
 		var tiles = this.m_table.querySelectorAll('.n');
 		this.m_arrClickableNoNoMines = [].slice.call(tiles);
 
-console.log('START auto clicking', this.m_arrClickableNoNoMines);
-		this.mf_ClickNextNoNoMine(true, done);
+		if (this.m_arrClickableNoNoMines.length) {
+console.log('START auto clicking', this.m_arrClickableNoNoMines.length, this.m_arrClickableNoNoMines);
+			this.mf_ClickNextNoNoMine(true, done);
+		}
+		else {
+			done.call(this, false);
+		}
 	},
 
 	mf_ClickNextNoNoMine: function(first, done) {
@@ -96,23 +102,20 @@ console.log('START auto clicking', this.m_arrClickableNoNoMines);
 			var self = this;
 			if ( tile.classList.contains('n') ) {
 				setTimeout(function() {
-// console.debug('OPEN', tile.cellIndex, tile.parentNode.sectionRowIndex);
 					self.m_objMinesweeper.openField(tile, function() {
 						self.mf_ClickNextNoNoMine(false, done);
 					});
 				}, first ? 0 : self.constructor.autoClickDelay);
 			}
 			else {
-// console.debug('SKIP "' + tile.className + '"');
 				self.mf_ClickNextNoNoMine(false, done);
 			}
 		}
 		else {
 			this.m_objMinesweeper.updateFlagCounter();
 console.log('DONE auto clicking');
-// console.debug('----------------');
 			if ( done ) {
-				done.call(this, !first);
+				done.call(this, true);
 			}
 		}
 	},
@@ -127,17 +130,24 @@ console.log('DONE auto clicking');
 	},
 
 	mf_SaveAllMines: function() {
-// console.log('mf_SaveAllMines');
-		iKnownMines = sizeof(this.m_arrKnownMines);
-		this.mf_SaveAllMinesThisRound();
-		if ( sizeof(this.m_arrKnownMines) > iKnownMines ) {
-			this.mf_EliminateFields();
-			return this.mf_SaveAllMines();
+console.debug('mf_SaveAllMines');
+		// Find all known mines and see if we found any new
+		if (this.mf_SaveMinesThisRound()) {
+			// Yes, new mines, so so another round
+			this.mf_SaveAllMines();
 		}
 	},
 
-	mf_SaveAllMinesThisRound: function() {
-// console.log('mf_SaveAllMinesThisRound');
+	/**
+	 * Cycle through open fields to save known mines
+	 */
+	mf_SaveMinesThisRound: function() {
+console.debug('mf_SaveMinesThisRound');
+		// Known mines before analyzing
+		var iKnownMines = this._count(this.m_arrKnownMines);
+		var iKnownNonos = this._count(this.m_arrDefiniteNoNoMines);
+
+		// Analyze all open fields
 		for ( var y=0; y<this.m_arrBoard.length; y++ ) {
 			for ( var x=0; x<this.m_arrBoard[y].length; x++ ) {
 				if ( typeof this.m_arrBoard[y][x] == 'number' && this.m_arrBoard[y][x] > 0 ) {
@@ -145,10 +155,25 @@ console.log('DONE auto clicking');
 				}
 			}
 		}
+
+		// Found some mines!
+		var iNewKnownMines = this._count(this.m_arrKnownMines) - iKnownMines;
+		if ( iNewKnownMines ) {
+			this.mf_EliminateFields();
+			var iNewKnownNonos = this._count(this.m_arrDefiniteNoNoMines) - iKnownNonos;
+
+			console.log('Found', iNewKnownMines, 'new mines, and', iNewKnownNonos, 'new nonos');
+			return true;
+		}
+
+		console.log('Found nothing new');
 	},
 
+	/**
+	 * Save known mines
+	 */
 	mf_AnalyseOneField: function(x, y) {
-// console.log('mf_AnalyseOneField');
+// console.debug('mf_AnalyseOneField');
 		szTile = this.mf_GetTile(x, y);
 		arrSurrounders = this.mf_GetSurroundingTiles(x, y, false);
 		iClosedTiles = this.mf_CountClosedTiles(arrSurrounders);
@@ -169,8 +194,11 @@ console.log('DONE auto clicking');
 		return true;
 	},
 
+	/**
+	 * Cycle through open fields to save nono's
+	 */
 	mf_EliminateFields: function() {
-// console.log('mf_EliminateFields');
+console.debug('mf_EliminateFields');
 		for ( var y=0; y<this.m_arrBoard.length; y++ ) {
 			for ( var x=0; x<this.m_arrBoard[y].length; x++ ) {
 				id = 'tile_' + x + '_' + y;
@@ -179,11 +207,13 @@ console.log('DONE auto clicking');
 				}
 			}
 		}
-		return true;
 	},
 
+	/**
+	 * Save nono's around an open field
+	 */
 	mf_EliminateFieldsAround: function(x, y) {
-// console.log('mf_EliminateFieldsAround');
+// console.debug('mf_EliminateFieldsAround');
 		szTile = this.mf_GetTile(x, y);
 		arrSurrounders = this.mf_GetSurroundingTiles(x, y, false);
 
@@ -197,7 +227,7 @@ console.log('DONE auto clicking');
 				iMinesInSurrounders++;
 			}
 		}, this);
-// console.log(iMinesInSurrounders, iMinesInSurrounders == szTile);
+// console.debug(iMinesInSurrounders, iMinesInSurrounders == szTile);
 
 		if ( szTile == iMinesInSurrounders ) {
 			arrSurrounders.each(function(coord) {
@@ -214,7 +244,7 @@ console.log('DONE auto clicking');
 	},
 
 	mf_MarkSavedMines: function() {
-// console.log('mf_MarkSavedMines');
+// console.debug('mf_MarkSavedMines');
 		for ( id in this.m_arrKnownMines ) {
 			var coord = this.m_arrKnownMines[id],
 				x = coord[0],
@@ -224,7 +254,7 @@ console.log('DONE auto clicking');
 	},
 
 	mf_MarkNonoMines: function() {
-// console.log('mf_MarkNonoMines');
+// console.debug('mf_MarkNonoMines');
 		for ( id in this.m_arrDefiniteNoNoMines ) {
 			var coord = this.m_arrDefiniteNoNoMines[id],
 				x = coord[0],
@@ -234,7 +264,7 @@ console.log('DONE auto clicking');
 	},
 
 	mf_CountClosedTiles: function( f_arrCoords ) {
-// console.log('mf_CountClosedTiles');
+// console.debug('mf_CountClosedTiles');
 		iClosedTiles = 0;
 		f_arrCoords.each(function(coord) {
 			var x = coord[0],
@@ -249,13 +279,13 @@ console.log('DONE auto clicking');
 	},
 
 	mf_GetCoords: function( f_objTile ) {
-// console.log('mf_GetCoords');
+// console.debug('mf_GetCoords');
 		c = f_objTile.id.split("_");
 		return [ c[1], c[2] ];
 	},
 
 	mf_GetSurroundingTiles: function(x, y, returnTiles) {
-// console.log('mf_GetSurroundingTiles');
+// console.debug('mf_GetSurroundingTiles');
 		var arrSurrounders = [];
 		for ( var dy=-1; dy<=1; dy++ ) {
 			for ( var dx=-1; dx<=1; dx++ ) {
@@ -274,7 +304,7 @@ console.log('DONE auto clicking');
 	},
 
 	mf_GetTile: function(x, y) {
-// console.log('mf_GetTile');
+// console.debug('mf_GetTile');
 		if ( this.m_arrBoard[y] && x in this.m_arrBoard[y] ) {
 			return this.m_arrBoard[y][x];
 		}
@@ -284,7 +314,3 @@ console.log('DONE auto clicking');
 
 };
 MinesweeperSolver.prototype.constructor = MinesweeperSolver;
-
-function sizeof(source) {
-	return source instanceof Array ? source.length : Object.keys(source).length;
-}
