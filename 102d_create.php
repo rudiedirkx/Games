@@ -16,8 +16,8 @@ if ( isset($g_arrMaps[$iMap]) ) {
 	// 	return ' ' . $line . ' ';
 	// }, array_merge(array($empty), $g_arrMaps[$iMap], array($empty)));
 
-	$g_arrSides[0] = max(6, count($arrMap));
-	$g_arrSides[1] = max(6, strlen($arrMap[0]));
+	$g_arrSides[0] = max(4, count($arrMap));
+	$g_arrSides[1] = max(4, strlen($arrMap[0]));
 }
 
 ?>

@@ -108,6 +108,7 @@ console.log('START auto clicking', this.m_arrClickableNoNoMines);
 			}
 		}
 		else {
+			this.m_objMinesweeper.updateFlagCounter();
 console.log('DONE auto clicking');
 // console.debug('----------------');
 			if ( done ) {
@@ -117,6 +118,9 @@ console.log('DONE auto clicking');
 	},
 
 	mf_SaveAndMarkAll: function() {
+		// Remove all flags, because they might not come from MinesweeperSolver
+		this.m_table.getElements('.f').removeClass('f');
+
 		this.mf_SaveAllMines();
 		this.mf_MarkSavedMines();
 		this.mf_MarkNonoMines();

@@ -15,6 +15,7 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	<title>MS 2c - Test - Board Analysis</title>
 	<link rel="stylesheet" href="102.css" />
 	<script src="js/rjs-custom.js"></script>
+	<script src="102.js"></script>
 	<script src="102c.js"></script>
 </head>
 
@@ -36,7 +37,11 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 					foreach ( $arrMap as $y => $row ) {
 						echo '<tr>';
 						foreach ( str_split($row) as $x => $tile ) {
-							echo '<td class="o' . trim($tile) . '"></td>';
+							$class = '';
+							if (strlen(trim($tile))) {
+								$class = is_numeric($tile) ? 'o' . $tile : $tile;
+							}
+							echo '<td class="' . $class . '"></td>';
 						}
 						echo '</tr>';
 					}
@@ -64,6 +69,11 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 });
 
 solver = new MinesweeperSolver($('ms_tbody'));
+
+$('ms_tbody').on('contextmenu', 'td', function(e) {
+	e.preventDefault();
+	Minesweeper.prototype.toggleFlag.call(Minesweeper.prototype, this);
+});
 </script>
 
 </body>

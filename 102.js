@@ -25,8 +25,6 @@ Minesweeper.prototype = {
 			$('flags_left').textContent = String(self.m_iMines);
 			$('mine_percentage').textContent = String(Math.round(100 * rsp.mines / (rsp.size.y * rsp.size.x)));
 
-			self.m_iFlagsUsed = 0;
-
 			// Save new map
 			var html = '';
 			for ( var y=0; y<rsp.size.y; y++ ) {
@@ -50,8 +48,7 @@ Minesweeper.prototype = {
 		return false;
 	},
 
-	showWrongFlags: function( go ) {
-		if ( !go ) { return; }
+	showWrongFlags: function() {
 		for ( var i=0; i<this.m_arrFlags.length; i++ ) {
 			var f = this.m_arrFlags[i];
 			if ( f.className == 'f' ) {
@@ -93,7 +90,9 @@ Minesweeper.prototype = {
 
 			self.handleChanges(rsp.updates);
 
-			self.showWrongFlags( self.m_bGameOver && 1 < rsp.updates.length && rsp.updates.last().last() === 'x' );
+			if ( self.m_bGameOver && rsp.updates.length > 1 && rsp.updates.last().last() === 'x' ) {
+				self.showWrongFlags();
+			}
 
 			if ( rsp.msg ) {
 				setTimeout(function() {
@@ -122,14 +121,11 @@ Minesweeper.prototype = {
 		}
 
 		o.toggleClass('f');
-		if ( o.hasClass('f') ) {
-			this.m_iFlagsUsed++;
-		}
-		else {
-			this.m_iFlagsUsed--;
-		}
+	},
 
-		$('flags_left').textContent = String(this.m_iMines-this.m_iFlagsUsed);
+	updateFlagCounter: function() {
+		var used = $('ms_tbody').getElements('td.f').length;
+		$('flags_left').textContent = String(this.m_iMines - used);
 	},
 
 	restart: function() {

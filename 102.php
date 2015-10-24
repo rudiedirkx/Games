@@ -271,6 +271,7 @@ $('ms_tbody')
 	.on('contextmenu', 'td', function(e) {
 		e.preventDefault();
 		objMinesweeper.toggleFlag(this);
+		objMinesweeper.updateFlagCounter();
 	})
 	.on('click', 'td', function(e) {
 		e.preventDefault();
