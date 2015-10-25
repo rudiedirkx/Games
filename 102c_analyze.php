@@ -60,11 +60,11 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 <div style="margin: 10px; margin-top: 0">
 	<p>
 		<input type="button" value="SaveMinesThisRound()" onclick="solver.mf_SaveMinesThisRound()" />
-		<input type="button" value="SaveMinesThisRound() + mark all" onclick="solver.mf_SaveMinesThisRound(), solver.mf_MarkSavedMines(), solver.mf_MarkNonoMines()" />
+		<input type="button" value="SaveMinesThisRound() + mark all" onclick="solver.mf_SaveThisRoundAndMarkAll(), solver.mf_ResetTrace()" />
 	</p>
 	<p>
 		<input type="button" value="SaveAllMines()" onclick="solver.mf_SaveAllMines()" />
-		<input type="button" value="SaveAllMines() + mark all" onclick="solver.mf_SaveAllMines(), solver.mf_MarkSavedMines(), solver.mf_MarkNonoMines()" style="font-weight: bold" />
+		<input type="button" value="SaveAllMines() + mark all" onclick="solver.mf_SaveAndMarkAll()" style="font-weight: bold" />
 	</p>
 	<p>
 		<input type="button" value="MarkSavedMines()" onclick="solver.mf_MarkSavedMines()" />
