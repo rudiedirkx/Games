@@ -214,13 +214,13 @@ div#loading {
 			<p><a href="#" onclick="window.open('?leaderboard', '', 'statusbar=0,width=650,height=500');return false;">Leaderboard</a></p>
 			<br />
 		-->
-		<p><a href="#" onclick="return objMinesweeper.changeName();">Change Name</a></p>
+		<p><a class="change-name" href="#" onclick="return objMinesweeper.changeName();">Change Name</a></p>
 		<br />
-		<p><a href="#" onclick="window.open('?frame=1', '', 'statusbar=0'); return false">In frame</a></p>
+		<p><a class="open-in-frame" href="#" onclick="window.open('?frame=1', '', 'statusbar=0'); return false">In frame</a></p>
 		<br />
-		<p><a href="#" onclick="getSolver().mf_SaveAndMarkAndClickAll(null, function() { alert('I can only help those who help themselves!'); }); return false">Cheat!</a></p>
+		<p><a class="cheat" href="#" onclick="getSolver().mf_SaveAndMarkAndClickAll(function(change) { console.warn('change', change); change || alert('I can only help those who help themselves!'); }); return false">Cheat!</a></p>
 		<br />
-		<p><a href="#" onclick="
+		<p><a class="export" href="#" onclick="
 			objMinesweeper.export(function(rows) {
 				$('form-export').setHTML(rows.map(function(row) {
 					return '<input name=&quot;map[]&quot; type=&quot;hidden&quot; value=&quot;' + row + '&quot; />';
@@ -283,6 +283,7 @@ var objMinesweeper = new Minesweeper('<?= @$_SESSION[S_NAME]['sessions'][SESSION
 
 // SOLVER //
 function getSolver() {
+	MinesweeperSolver.DEBUG = 0;
 	return new MinesweeperSolver($('ms_tbody'), objMinesweeper);
 }
 // SOLVER //

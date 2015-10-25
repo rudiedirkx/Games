@@ -1,9 +1,5 @@
 
 function MinesweeperSolver(table, sweeper) {
-	// DEBUG //
-	// this.DEBUG = 2;
-	// DEBUG //
-
 	this.m_table = table;
 	this.m_arrBoard = this.mf_GetBoard(table);
 	this.m_arrSides = [ this.m_arrBoard.length, this.m_arrBoard[0].length ];
@@ -17,6 +13,10 @@ function MinesweeperSolver(table, sweeper) {
 }
 
 MinesweeperSolver.autoClickDelay = 50;
+
+// DEBUG //
+MinesweeperSolver.DEBUG = 2;
+// DEBUG //
 
 MinesweeperSolver.prototype = {
 	_count: function(obj) {
@@ -50,9 +50,9 @@ MinesweeperSolver.prototype = {
 	},
 
 	mf_ResetTrace: function() {
-		this.m_bTrace = this.DEBUG > 0;
-		this.m_bLogTrace = this.DEBUG > 1;
-		this.m_bLog = this.DEBUG > 1;
+		this.m_bTrace = this.constructor.DEBUG > 0;
+		this.m_bLogTrace = this.constructor.DEBUG > 1;
+		this.m_bLog = this.constructor.DEBUG > 1;
 		this.m_arrTrace = {};
 	},
 
@@ -83,7 +83,7 @@ MinesweeperSolver.prototype = {
 		});
 	},
 
-	mf_SaveAndMarkAndClickAll: function(success, error) {
+	mf_SaveAndMarkAndClickAll: function(done) {
 this.mf_Trace('mf_SaveAndMarkAndClickAll');
 		var self = this;
 		this.mf_SaveAndMarkAndClick(function(change) {
@@ -91,18 +91,11 @@ console.log('DONE 2, ' + (change ? 'with changes' : 'no change'));
 			if ( change ) {
 				// Reset instance and replay
 				self.mf_Reset();
-				self.mf_SaveAndMarkAndClickAll();
+				self.mf_SaveAndMarkAndClickAll(done.bind(this, true));
 			}
 			else {
 console.log('DONE 3');
-				if ( error ) {
-					error.call(self);
-				}
-				else {
-					if ( success ) {
-						success.call(self);
-					}
-				}
+				done && done.call(this, change);
 			}
 		});
 	},
@@ -123,7 +116,7 @@ console.log('START auto clicking', this.m_arrClickableNoNoMines.length, this.m_a
 			this.mf_ClickNextNoNoMine(true, done);
 		}
 		else {
-			done.call(this, false);
+			done && done.call(this, false);
 		}
 	},
 
@@ -146,15 +139,13 @@ this.mf_Trace('mf_ClickNextNoNoMine');
 		else {
 			this.m_objMinesweeper.updateFlagCounter();
 console.log('DONE auto clicking');
-			if ( done ) {
-				done.call(this, true);
-			}
+			done && done.call(this, true);
 		}
 	},
 
-	mf_SaveThisRoundAndMarkAll: function() {
+	mf_SaveThisRoundAndMarkAll: function(done) {
 this.mf_Trace('mf_SaveThisRoundAndMarkAll');
-		this.mf_SaveMinesThisRound();
+		this.mf_SaveMinesThisRound(done);
 
 		this.mf_MarkSavedMines();
 		this.mf_MarkNonoMines();
@@ -194,7 +185,7 @@ this.mf_Trace('mf_SaveAllMines');
 	/**
 	 * Cycle through open fields to save known mines
 	 */
-	mf_SaveMinesThisRound: function() {
+	mf_SaveMinesThisRound: function(done) {
 this.mf_Trace('mf_SaveMinesThisRound');
 		// Known mines before analyzing
 		var knowns = this._group(this.m_arrKnowns);
@@ -217,10 +208,12 @@ this.mf_Trace('mf_SaveMinesThisRound');
 			var iFoundNonos = this.mf_FilterKnowns(0).length - iOldNonos;
 
 			console.log('Found', iFoundMines, 'new mines, and', iFoundNonos, 'new nonos');
+			done && done.call(this, true);
 			return true;
 		}
 
 		console.log('Found nothing new');
+		done && done.call(this, false);
 	},
 
 	/**

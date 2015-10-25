@@ -35,6 +35,8 @@ Minesweeper.prototype = {
 				html += '</tr>';
 			}
 			$('ms_tbody').innerHTML = html;
+
+			$('ms_tbody').fire('ms:fetch');
 		});
 		return false;
 	},
@@ -103,6 +105,8 @@ Minesweeper.prototype = {
 			if ( done ) {
 				done.call(self);
 			}
+
+			$('ms_tbody').fire('ms:open');
 		});
 		return false;
 	},
