@@ -1,7 +1,8 @@
 <?php
 
-function _mapsOptions($_maps, $_selected) {
+function _mapsOptions($_maps, $_selected, $_empty = '') {
 	$html = '';
+	$_empty and $html = '<option value="">' . htmlspecialchars($_empty) . '</option>';
 	foreach ( $_maps as $i => $map ) {
 		$selected = $i == (int)$_selected ? ' selected' : '';
 		$html .= '<option value="' . $i . '"' . $selected . '>Map ' . ($i+1) . ' (' . strlen($map[0]) . 'x' . count($map) . ')</option>';
@@ -290,5 +291,15 @@ return array(
 		'001n  ',
 		'001n  ',
 		'001f  ',
+	),
+	array(
+		'0000000',
+		'0112110',
+		'01 3 20',
+		'1224 20',
+		'fnnf210',
+		'   n210',
+		'   n 20',
+		'     20',
 	),
 );

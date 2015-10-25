@@ -5,6 +5,11 @@ $g_arrMaps = require 'inc.102.maps.php';
 $iMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $_GET['map'] : 0;
 $arrMap = $g_arrMaps[$iMap];
 
+if ( isset($_POST['map']) ) {
+	$iMap = -1;
+	$arrMap = $_POST['map'];
+}
+
 $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 
 ?>
@@ -22,7 +27,7 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 <body>
 
 <p>
-	<select onchange="this.value&&(document.location='?map='+this.value)"><?= _mapsOptions($g_arrMaps, $iMap) ?></select>
+	<select onchange="this.value&&(document.location='?map='+this.value)"><?= _mapsOptions($g_arrMaps, $iMap, '-- CUSTOM --') ?></select>
 	<? if ($iMap): ?>
 		<a href="102d_create.php?map=<?= $iMap ?>">&gt; create</a>
 	<? endif ?>

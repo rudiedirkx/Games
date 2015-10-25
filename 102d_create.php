@@ -6,6 +6,15 @@ $g_arrSides = array(16, 30);
 
 $iMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $_GET['map'] : -1;
 $arrMap = null;
+
+if ( isset($_POST['map']) ) {
+	$iMap = -1;
+	$arrMap = $_POST['map'];
+
+	$g_arrSides[0] = max(4, count($arrMap));
+	$g_arrSides[1] = max(4, strlen($arrMap[0]));
+}
+
 if ( isset($g_arrMaps[$iMap]) ) {
 	// As-is
 	$arrMap = $g_arrMaps[$iMap];
@@ -93,7 +102,7 @@ String.repeat = function(str, num) {
 <body>
 
 <p>
-	<select onchange="this.value&&(document.location='?map='+this.value)"><?= _mapsOptions($g_arrMaps, $iMap) ?></select>
+	<select onchange="document.location='?map='+this.value"><?= _mapsOptions($g_arrMaps, $iMap, '-- NEW -- ') ?></select>
 	<? if ($iMap): ?>
 		<a href="102c_analyze.php?map=<?= $iMap ?>">&gt; analyze</a>
 	<? endif ?>
@@ -135,13 +144,22 @@ String.repeat = function(str, num) {
 	<? endforeach ?>
 </div>
 
-<p><button id="cpa">create php array</button></p>
+<form id="form-analyze" method="post" action="102c_analyze.php">
+	<div id="form-analyze-input"></div>
+	<p>
+		<button id="cpa">create php array</button>
+		<button data-form-action="102d_create.php" id="cache">cache</button>
+		<button data-form-action="102c_analyze.php" id="analyze">analyze</button>
+	</p>
+</form>
 
 <textarea tabindex="-1" rows="19" cols="50" id="export"></textarea>
 
+<script src="102.js"></script>
 <script>
 var $tbody = $('ms_tbody');
 
+// CLICK AND RIGHT CLICK
 function reTile(td, delta) {
 	var tile = Number(td.data('tile')) + delta;
 	tile = ((tile + 11) % 10) - 1;
@@ -161,6 +179,18 @@ $tbody.on('click', 'td', function(e) {
 $tbody.on('contextmenu', 'td', function(e) {
 	e.preventDefault();
 	reTile(this, -1);
+});
+
+// EXPORT TO ANALYZE
+$$('#analyze, #cache').on('click', function(e) {
+	$form = $('form-analyze');
+	Minesweeper.prototype.export.call(Minesweeper.prototype, function(rows) {
+		$('form-analyze-input').setHTML(rows.map(function(row) {
+			return '<input name="map[]" type="hidden" value="' + row + '" />';
+		}).join(''));
+	});
+	$form.action = this.data('form-action');
+	$form.submit();
 });
 
 // MORE & LESS BUTTONS
@@ -183,7 +213,9 @@ $$('.more-less button').on('click', function(e) {
 });
 
 // CREATE PHP ARRAY
-$('cpa').on('click', function() {
+$('cpa').on('click', function(e) {
+	e.preventDefault();
+
 	var trs = $tbody.children;
 	var szPhpArray = "\tarray(\n";
 	for ( var i=0; i<trs.length; i++ ) {
@@ -196,8 +228,8 @@ $('cpa').on('click', function() {
 		szPhpArray += "',\n";
 	}
 	szPhpArray += "\t),\n";
-	document.querySelector('#export').value = szPhpArray;
-	document.querySelector('#export').select();
+	$('export').value = szPhpArray;
+	$('export').select();
 });
 </script>
 

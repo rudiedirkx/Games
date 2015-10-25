@@ -220,7 +220,16 @@ div#loading {
 		<br />
 		<p><a href="#" onclick="getSolver().mf_SaveAndMarkAndClickAll(null, function() { alert('I can only help those who help themselves!'); }); return false">Cheat!</a></p>
 		<br />
-		<p><a href="#" onclick="objMinesweeper.export(function(rows) { $('export').prop('value', &quot;\tarray(\n\t\t'&quot; + rows.join(&quot;',\n\t\t'&quot;) + &quot;',\n\t),&quot;).select(); }); return false">Export</a></p>
+		<p><a href="#" onclick="
+			objMinesweeper.export(function(rows) {
+				$('form-export').setHTML(rows.map(function(row) {
+					return '<input name=&quot;map[]&quot; type=&quot;hidden&quot; value=&quot;' + row + '&quot; />';
+				}).join(''));
+				$('form-export').submit();
+			});
+			return false
+		">Export</a></p>
+		<form id="form-export" method="post" action="102d_create.php" target="_blank"></form>
 	</td>
 	<td align="center">
 		<table id="field" style="border:solid 1px #777;"><tr><td class="wrap">
@@ -244,8 +253,6 @@ div#loading {
 	</td>
 </tr>
 </table>
-
-<textarea tabindex="-1" id="export"></textarea>
 
 <div style="display: none">
 	<img src="images/flag.gif" />
