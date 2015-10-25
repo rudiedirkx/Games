@@ -123,7 +123,7 @@ String.repeat = function(str, num) {
 							for ( $j=0; $j<$g_arrSides[1]; $j++ ) {
 								$tileIndex = $arrMap && isset($arrMap[$i][$j]) && $arrMap[$i][$j] != ' ' ? $arrMap[$i][$j] : -1;
 								$tileClass = $tileIndex > -1 ? 'o' . $tileIndex : '';
-								echo '<td data-tile="' . $tileIndex . '" class="' . $tileClass . '" title="[' . (1 + $j) . ', ' . (1 + $i) . ']"></td>';
+								echo '<td data-tile="' . $tileIndex . '" class="' . $tileClass . '" title="[' . $x . ', ' . $y . ']"></td>';
 							}
 							echo '<!-- ADD: right -->' . "\n";
 							echo '</tr>' . "\n";

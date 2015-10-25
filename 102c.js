@@ -1,15 +1,14 @@
 
 function MinesweeperSolver(table, sweeper) {
 	// DEBUG //
-	// this.DEBUG = true;
+	// this.DEBUG = 2;
 	// DEBUG //
 
 	this.m_table = table;
 	this.m_arrBoard = this.mf_GetBoard(table);
 	this.m_arrSides = [ this.m_arrBoard.length, this.m_arrBoard[0].length ];
 
-	this.m_arrKnownMines = {};
-	this.m_arrDefiniteNoNoMines = {};
+	this.m_arrKnowns = {};
 
 	this.m_objMinesweeper = sweeper;
 	this.m_arrClickableNoNoMines = [];
@@ -22,6 +21,16 @@ MinesweeperSolver.autoClickDelay = 50;
 MinesweeperSolver.prototype = {
 	_count: function(obj) {
 		return Object.keys(obj).length;
+	},
+
+	_group: function(obj) {
+		var groups = [0, 0];
+		for ( var k in obj ) {
+			var v = obj[k];
+			groups[v]++;
+		}
+
+		return groups;
 	},
 
 	mf_Trace: function(name, log) {
@@ -41,9 +50,14 @@ MinesweeperSolver.prototype = {
 	},
 
 	mf_ResetTrace: function() {
-		this.m_bTrace = this.DEBUG;
-		this.m_bLogTrace = this.DEBUG;
+		this.m_bTrace = this.DEBUG > 0;
+		this.m_bLogTrace = this.DEBUG > 1;
+		this.m_bLog = this.DEBUG > 1;
 		this.m_arrTrace = {};
+	},
+
+	mf_Log: function() {
+		this.m_bLog && console.debug.apply(console, arguments);
 	},
 
 	mf_Reset: function() {
@@ -145,7 +159,7 @@ this.mf_Trace('mf_SaveThisRoundAndMarkAll');
 		this.mf_MarkSavedMines();
 		this.mf_MarkNonoMines();
 
-		this.m_bTrace && console.log(this.m_arrTrace);
+		// this.m_bTrace && console.log(this.m_arrTrace);
 	},
 
 	mf_SaveAndMarkAll: function() {
@@ -155,7 +169,7 @@ this.mf_Trace('mf_SaveAndMarkAll');
 		this.mf_MarkSavedMines();
 		this.mf_MarkNonoMines();
 
-		this.m_bTrace && console.log(this.m_arrTrace);
+		// this.m_bTrace && console.log(this.m_arrTrace);
 	},
 
 	mf_SaveAllMines: function() {
@@ -167,14 +181,25 @@ this.mf_Trace('mf_SaveAllMines');
 		}
 	},
 
+	mf_FilterKnowns: function(mine) {
+		var ids = [];
+		for ( var id in this.m_arrKnowns ) {
+			if ( this.m_arrKnowns[id] == mine ) {
+				ids.push(id);
+			}
+		}
+		return ids;
+	},
+
 	/**
 	 * Cycle through open fields to save known mines
 	 */
 	mf_SaveMinesThisRound: function() {
 this.mf_Trace('mf_SaveMinesThisRound');
 		// Known mines before analyzing
-		var iKnownMines = this._count(this.m_arrKnownMines);
-		var iKnownNonos = this._count(this.m_arrDefiniteNoNoMines);
+		var knowns = this._group(this.m_arrKnowns);
+		var iOldMines = knowns[1];
+		var iOldNonos = knowns[0];
 
 		// Analyze all open fields
 		for ( var y=0; y<this.m_arrBoard.length; y++ ) {
@@ -186,12 +211,12 @@ this.mf_Trace('mf_SaveMinesThisRound');
 		}
 
 		// Found some mines!
-		var iNewKnownMines = this._count(this.m_arrKnownMines) - iKnownMines;
-		if ( iNewKnownMines ) {
+		var iFoundMines = this.mf_FilterKnowns(1).length - iOldMines;
+		if ( iFoundMines ) {
 			this.mf_EliminateFields();
-			var iNewKnownNonos = this._count(this.m_arrDefiniteNoNoMines) - iKnownNonos;
+			var iFoundNonos = this.mf_FilterKnowns(0).length - iOldNonos;
 
-			console.log('Found', iNewKnownMines, 'new mines, and', iNewKnownNonos, 'new nonos');
+			console.log('Found', iFoundMines, 'new mines, and', iFoundNonos, 'new nonos');
 			return true;
 		}
 
@@ -205,22 +230,16 @@ this.mf_Trace('mf_SaveMinesThisRound');
 this.mf_Trace('mf_AnalyseOneField(' + x + ', ' + y + ')');
 		var iTile = this.mf_GetTile(x, y);
 		var arrSurrounders = this.mf_GetSurroundingTiles(x, y, false);
-		var iClosedTiles = this.mf_CountClosedTiles(arrSurrounders);
+		var arrClosedTiles = this.mf_GetPotentialMines(arrSurrounders);
 
-		if ( iTile == iClosedTiles ) {
-			arrSurrounders.each(function(coord) {
-				var sx = coord[0],
-					sy = coord[1],
-					id = sx + '_' + sy,
-					iSTile = this.mf_GetTile(sx, sy);
-
-				if ( iSTile == -1 && this.m_arrDefiniteNoNoMines[id] == null ) {
-					this.m_arrKnownMines[id] = coord;
-				}
+		if ( iTile == arrClosedTiles.length ) {
+this.mf_Log('(' + x + ', ' + y + ') is solved');
+			arrClosedTiles.each(function(coord) {
+				var id = coord.join('_');
+				this.m_arrKnowns[id] = 1;
 			}, this);
+			return true;
 		}
-
-		return true;
 	},
 
 	/**
@@ -245,28 +264,15 @@ this.mf_Trace('mf_EliminateFields');
 this.mf_Trace('mf_EliminateFieldsAround(' + x + ', ' + y + ')');
 		var iTile = this.mf_GetTile(x, y);
 		var arrSurrounders = this.mf_GetSurroundingTiles(x, y, false);
+		var arrMines = this.mf_GetKnownMines(arrSurrounders);
 
-		var iMinesInSurrounders = 0;
-		arrSurrounders.each(function(coord) {
-			var sx = coord[0];
-			var sy = coord[1];
-			var id = sx + '_' + sy;
-
-			if ( this.m_arrKnownMines[id] ) {
-				iMinesInSurrounders++;
-			}
-		}, this);
-// console.debug(iMinesInSurrounders, iMinesInSurrounders == iTile);
-
-		if ( iTile == iMinesInSurrounders ) {
+		if ( iTile == arrMines.length ) {
 			arrSurrounders.each(function(coord) {
-				var sx = coord[0];
-				var sy = coord[1];
-				var id = sx + '_' + sy;
-				var iSTile = this.mf_GetTile(sx, sy);
+				var id = coord.join('_');
+				var iSTile = this.mf_GetTile(id);
 
-				if ( iSTile == -1 && !this.m_arrKnownMines[id] ) {
-					this.m_arrDefiniteNoNoMines[id] = coord;
+				if ( iSTile == -1 && this.m_arrKnowns[id] == null ) {
+					this.m_arrKnowns[id] = 0;
 				}
 			}, this);
 		}
@@ -276,12 +282,12 @@ this.mf_Trace('mf_EliminateFieldsAround(' + x + ', ' + y + ')');
 this.mf_Trace('mf_MarkSavedMines');
 		this.m_table.getElements('.f').removeClass('f');
 
-		for ( var id in this.m_arrKnownMines ) {
-			var coord = this.m_arrKnownMines[id];
+		this.mf_FilterKnowns(1).each(function(id) {
+			var coord = id.split('_');
 			var x = coord[0];
 			var y = coord[1];
 			this.m_table.rows[y].cells[x].addClass('f').data('ms-solved', '');
-		}
+		}, this);
 
 		if ( this.m_objMinesweeper ) {
 			this.m_objMinesweeper.updateFlagCounter();
@@ -292,27 +298,42 @@ this.mf_Trace('mf_MarkSavedMines');
 this.mf_Trace('mf_MarkNonoMines');
 		this.m_table.getElements('.n').removeClass('n');
 
-		for ( var id in this.m_arrDefiniteNoNoMines ) {
-			var coord = this.m_arrDefiniteNoNoMines[id];
+		this.mf_FilterKnowns(0).each(function(id) {
+			var coord = id.split('_');
 			var x = coord[0];
 			var y = coord[1];
 			this.m_table.rows[y].cells[x].addClass('n').data('ms-solved', '');
-		}
+		}, this);
 	},
 
-	mf_CountClosedTiles: function( f_arrCoords ) {
-this.mf_Trace('mf_CountClosedTiles(~' + f_arrCoords.length + ')');
-		var iClosedTiles = 0;
+	mf_GetPotentialMines: function( f_arrCoords ) {
+this.mf_Trace('mf_GetPotentialMines(~' + f_arrCoords.length + ')');
+		var arrTiles = [];
 		f_arrCoords.each(function(coord) {
-			var x = coord[0];
-			var y = coord[1];
-			var id = x + '_' + y;
-			if ( this.mf_GetTile(x, y) == -1 && this.m_arrDefiniteNoNoMines[id] == null ) {
-				iClosedTiles++;
+			var id = coord.join('_');
+			var iTile = this.mf_GetTile(id);
+
+			if ( iTile == -1 && this.m_arrKnowns[id] != 0 ) {
+				arrTiles.push(coord);
 			}
 		}, this);
 
-		return iClosedTiles;
+		return arrTiles;
+	},
+
+	mf_GetKnownMines: function( f_arrCoords ) {
+this.mf_Trace('mf_GetKnownMines(~' + f_arrCoords.length + ')');
+		var arrTiles = [];
+		f_arrCoords.each(function(coord) {
+			var id = coord.join('_');
+			var iTile = this.mf_GetTile(id);
+
+			if ( iTile == -1 && this.m_arrKnowns[id] == 1 ) {
+				arrTiles.push(coord);
+			}
+		}, this);
+
+		return arrTiles;
 	},
 
 	mf_GetSurroundingTiles: function(x, y, returnTiles) {
@@ -336,6 +357,12 @@ this.mf_Trace('mf_GetSurroundingTiles(' + x + ', ' + y + ')');
 
 	mf_GetTile: function(x, y) {
 this.mf_Trace('mf_GetTile(' + x + ', ' + y + ')', false);
+		if ( typeof x == 'string' && y == null ) {
+			var coord = x.split('_');
+			x = Number(coord[0]);
+			y = Number(coord[1]);
+		}
+
 		if ( this.m_arrBoard[y] && this.m_arrBoard[y][x] != null ) {
 			return this.m_arrBoard[y][x];
 		}

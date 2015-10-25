@@ -46,7 +46,7 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 							if (strlen(trim($tile))) {
 								$class = is_numeric($tile) ? 'o' . $tile : $tile;
 							}
-							echo '<td class="' . $class . '"></td>';
+							echo '<td title="[' . $x . ', ' . $y . ']" class="' . $class . '"></td>';
 						}
 						echo '</tr>';
 					}
