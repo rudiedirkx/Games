@@ -251,7 +251,9 @@ console.debug('mf_EliminateFields');
 			this.m_table.rows[y].cells[x].addClass('f').data('ms-solved', '');
 		}
 
-		this.m_objMinesweeper.updateFlagCounter();
+		if ( this.m_objMinesweeper ) {
+			this.m_objMinesweeper.updateFlagCounter();
+		}
 	},
 
 	mf_MarkNonoMines: function() {
