@@ -117,11 +117,11 @@ String.repeat = function(str, num) {
 						<!-- ADD: top -->
 						<?php
 						$tiles = array_merge(array('dicht'), range(0, 8));
-						for ( $i=0; $i<$g_arrSides[0]; $i++ ) {
+						for ( $y=0; $y<$g_arrSides[0]; $y++ ) {
 							echo '<tr>' . "\n";
 							echo '<!-- ADD: left -->' . "\n";
-							for ( $j=0; $j<$g_arrSides[1]; $j++ ) {
-								$tileIndex = $arrMap && isset($arrMap[$i][$j]) && $arrMap[$i][$j] != ' ' ? $arrMap[$i][$j] : -1;
+							for ( $x=0; $x<$g_arrSides[1]; $x++ ) {
+								$tileIndex = $arrMap && isset($arrMap[$y][$x]) && $arrMap[$y][$x] != ' ' ? $arrMap[$y][$x] : -1;
 								$tileClass = $tileIndex > -1 ? 'o' . $tileIndex : '';
 								echo '<td data-tile="' . $tileIndex . '" class="' . $tileClass . '" title="[' . $x . ', ' . $y . ']"></td>';
 							}
@@ -138,8 +138,8 @@ String.repeat = function(str, num) {
 
 	<? foreach (array('top', 'right', 'bottom', 'left') as $loc): ?>
 		<div class="more-less <?= $loc ?>">
-			<button data-loc="<?= $loc ?>" data-op="add">+</button>
-			<!-- <button data-loc="<?= $loc ?>" data-op="remove">-</button> -->
+			<button data-loc="<?= $loc ?>" class="add" data-op="add">+</button>
+			<button data-loc="<?= $loc ?>" class="remove" data-op="remove">-</button>
 		</div>
 	<? endforeach ?>
 </div>
@@ -194,7 +194,7 @@ $$('#analyze, #cache').on('click', function(e) {
 });
 
 // MORE & LESS BUTTONS
-$$('.more-less button').on('click', function(e) {
+$$('.more-less button.add').on('click', function(e) {
 	var td = '<td data-tile="-1"></td>';
 
 	var loc = this.data('loc');
@@ -210,6 +210,18 @@ $$('.more-less button').on('click', function(e) {
 	var replacement = ['top', 'left'].contains(loc) ? token + more : more + token;
 	html = html.replace(new RegExp(token, 'g'), replacement);
 	$tbody.setHTML(html);
+});
+$$('.more-less button.remove').on('click', function(e) {
+	var loc = this.data('loc');
+
+	var sel = {
+		top: 'tr:first-child',
+		bottom: 'tr:last-child',
+		left: 'td:first-child',
+		right: 'td:last-child',
+	};
+	var remove = $tbody.getElements(sel[loc]);
+	remove.invoke('remove');
 });
 
 // CREATE PHP ARRAY
