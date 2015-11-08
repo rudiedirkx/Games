@@ -4,9 +4,9 @@
 // Todo //
 // 1. Insurance					v done 2007-02-05 09:15
 // 2. Double down				v done 2007-02-07 05:00
-// 3. Reshuffle and cut card	
-// 4. Split						
-// 5. Multiple seats?			
+// 3. Reshuffle and cut card
+// 4. Split
+// 5. Multiple seats?
 // Todo //
 
 $g_fStartUtc = microtime(true);
@@ -27,7 +27,9 @@ session_start();
 
 $bDebug = !empty($_SESSION[S_NAME]['debug']);
 
-card::$__tostring = create_function('$c', 'return \'<img src="/images/\'.$c->suit.\'_\'.$c->short.\'.gif" />\';');
+card::$__tostring = function($c) {
+	return '<img src="/images/' . $c->suit . '_' . $c->short . '.gif" />';
+};
 
 
 if ( !empty($_GET['reset']) || empty($_SESSION[S_NAME]['game']) ) {
