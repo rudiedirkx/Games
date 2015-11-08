@@ -36,37 +36,22 @@ $_page		= isset($_POST['page'])		? strtolower(trim($_POST['page']))		: ( isset($
 $_action	= isset($_POST['action'])	? strtolower(trim($_POST['action']))	: ( isset($_GET['action'])	? strtolower(trim($_GET['action']))	: '' );
 
 
-/** NEW NAME **/
-if ( isset($_POST['new_name']) )
-{
-	if ( goede_gebruikersnaam($_POST['new_name']) )
-	{
-		$_SESSION[S_NAME]['name'] = $_POST['new_name'];
-	}
-	exit($_SESSION[S_NAME]['name']);
-}
-
 /** GET SECRET **/
-else if ( $_action == "get_secret" )
-{
+if ( $_action == "get_secret" ) {
 	exit( empty($_SESSION[S_NAME]['_secret']) ? '' : $_SESSION[S_NAME]['_secret'] );
 }
 
 /** GET MAP **/
-else if ( $_action == "get_map" )
-{
+else if ( $_action == "get_map" ) {
 	$_SESSION[S_NAME]['_secret'] = rand_string(24);
 	$arrOutput = array($_SESSION[S_NAME]['_secret'], Create_Field($SIDES, $ATOMS));
 	exit(json_encode( $arrOutput ));
 }
 
 /** STOP **/
-else if ( $_action == "stop")
-{
-	$name = isset($_SESSION[S_NAME]['name']) ? $_SESSION[S_NAME]['name'] : null;
+else if ( $_action == "stop") {
 	$_SESSION[S_NAME]	= array(
-		'map'				=> array(),
-		'name'				=> $name,
+		'map' => array(),
 	);
 
 	go();
@@ -105,55 +90,17 @@ else if ( isset($_GET['image']) ) {
 	exit;
 }
 
-
-if ( empty($_SESSION[S_NAME]['play']) ) {
-	if ( isset($_POST['name']) && goede_gebruikersnaam($_POST['name']) ) {
-		$_SESSION[S_NAME]['play']			= true;
-		$_SESSION[S_NAME]['starttime']		= time();
-		$_SESSION[S_NAME]['name']			= trim($_POST['name']);
-
-		go();
-	}
-
-	?>
-<!DOCTYPE html>
-<html>
-
-<head>
-<title>BLACKBOX</title>
-<script>
-if (top.location!=this.location) top.location='<?php echo $_SERVER['SCRIPT_NAME']; ?>';
-</script>
-</head>
-
-<body>
-<form method="post" action="">
-	<table border="1">
-		<tr>
-			<td align="center">
-				Name <input autofocus name="name" value="<?php echo !empty($_SESSION[S_NAME]['name']) ? $_SESSION[S_NAME]['name'] : "Anonymous"; ?>" maxlength="12" /><br/>
-				<br/>
-				<input type=submit value="PLAY" />
-			</td>
-		</tr>
-	</table>
-</form>
-</body>
-
-</html>
-<?php
-	exit;
-}
-
 $szActionTrackBeam	= ( isset($_SESSION[S_NAME]['gameover']) && $_SESSION[S_NAME]['gameover'] > 1 ) ? "stop" : "trackbeam";
 $szActionFieldColor	= ( "stop" == $szActionTrackBeam ) ? "stop" : "fieldcolor";
 $OPENSOURCE = ( "stop" == $szActionTrackBeam && $_SESSION[S_NAME]['gameover'] == 3 ) ? 1 : $OPENSOURCE;
 
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BLACKBOX</title>
 <link rel="stylesheet" href="blackbox.css" />
 <script src="js/rjs-custom.js"></script>
@@ -182,20 +129,20 @@ function move( url, target ) {
 
 
 function Blackbox() {
-	this.m_opensource = <?php echo $arrBoolean[(int)(bool)$OPENSOURCE]; ?>;
+	this.m_opensource = <?= $arrBoolean[(int)(bool)$OPENSOURCE] ?>;
 
 	this.m_mapAtoms = {};
 	this.m_mapUser = {};
 
 	this.m_iHighlights = 0;
-	this.m_iMaxHilights = <?php echo (int)$ATOMS; ?>;
+	this.m_iMaxHilights = <?= (int)$ATOMS ?>;
 	this.m_iAtomsFound = 0;
 
 	this.m_secret = "";
 
 	this.m_iColor = 0;
-	this.m_arrColors = <?php echo json_encode($RECHTDOORKLEUREN); ?>;
-	this.m_sides = <?php echo (int)$SIDES; ?>;
+	this.m_arrColors = <?= json_encode($RECHTDOORKLEUREN) ?>;
+	this.m_sides = <?= (int)$SIDES ?>;
 
 	this.m_GameOver = false;
 	Blackbox.m_iStartTime = 0;
@@ -692,78 +639,79 @@ function toggleFrame(name) {
 	<b>AJAX BUSY</b>
 </div>
 
-<div align="center" id="content_frame">
-	<table id="blackbox">
-	<?php
+<div id="container">
 
-	for ( $i=-1; $i<=$SIDES; $i++ )
-	{
-		echo '<tr>';
-		for ( $j=-1; $j<=$SIDES; $j++ )
+	<div id="content">
+		<table id="blackbox">
+		<?php
+
+		for ( $i=-1; $i<=$SIDES; $i++ )
 		{
-			$c = array($i,$j);
+			echo '<tr>';
+			for ( $j=-1; $j<=$SIDES; $j++ )
+			{
+				$c = array($i,$j);
 
-			if ( array(-1,-1) == $c || array(-1,$SIDES) == $c || array($SIDES,-1) == $c || array($SIDES,$SIDES) == $c )
-			{
-				// corners
-				echo '<td style="border:none;"></td>';
-			}
-			else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j )
-			{
-				// grid cells
-				echo '<td id="fld_'.$i.'_'.$j.'" onclick="fc(['.$i.','.$j.']);" class="grid"></td>';
-			}
-			else
-			{
-				// sides
-				if ( -1 == $i )			$d = "sd";
-				else if ( $SIDES == $j )	$d = "sl";
-				else if ( $SIDES == $i )	$d = "su";
-				else if ( -1 == $j )	$d = "sr";
+				if ( array(-1,-1) == $c || array(-1,$SIDES) == $c || array($SIDES,-1) == $c || array($SIDES,$SIDES) == $c )
+				{
+					// corners
+					echo '<td style="border:none;"></td>';
+				}
+				else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j )
+				{
+					// grid cells
+					echo '<td id="fld_'.$i.'_'.$j.'" onclick="fc(['.$i.','.$j.']);" class="grid"></td>';
+				}
+				else
+				{
+					// sides
+					if ( -1 == $i )			$d = "sd";
+					else if ( $SIDES == $j )	$d = "sl";
+					else if ( $SIDES == $i )	$d = "su";
+					else if ( -1 == $j )	$d = "sr";
 
-				echo '<td id="fld_'.$i.'_'.$j.'" onclick="fi(['.$i.','.$j.']);" class="'.$d.'"></td>';
+					echo '<td id="fld_'.$i.'_'.$j.'" onclick="fi(['.$i.','.$j.']);" class="'.$d.'"></td>';
+				}
 			}
+			echo '</tr>';
 		}
-		echo '</tr>';
-	}
 
-	?>
-	</table>
+		?>
+		</table>
 
-	<p>
-		<button class="submit" onclick="objBlackbox.CheckIfAllAtomsFound();">CHECK</button>
-		<button onclick="objBlackbox.RevealAtoms();">View Atoms</button>
-	</p>
+		<p>
+			<button class="submit" onclick="objBlackbox.CheckIfAllAtomsFound();">CHECK</button>
+			<button onclick="objBlackbox.RevealAtoms();">View Atoms</button>
+		</p>
+	</div>
+
+	<div id="menu">
+		<p><a href onclick="return Blackbox.reset(true);">Restart</a></p>
+		<!-- p><a href="#changename" onclick="return Blackbox.ChangeName();">Change Name</a></p -->
+	</div>
+
+	<div id="about">
+		<p><b>WHAT TO DO</b></p>
+
+		<p>You must find all atoms. The sooner the better. When you think you got them, hit 'CHECK' to check if you do!</p>
+		<p><a href onclick="return toggleFrame('gamerules')">More...</a></p>
+
+		<p><b>Atoms to find: <?= $ATOMS ?></b></p>
+		<p>Playtime: <b id="playtime">-</b></p>
+		<p>Selected atoms: <span id="stats_hilighted">0</span></p>
+	</div>
 </div>
 
-<div id="menu" class="frame left show">
-	<p><a href onclick="return Blackbox.reset(true);">Restart</a></p>
-	<!-- p><a href="#changename" onclick="return Blackbox.ChangeName();">Change Name</a></p -->
-</div>
-
-<div id="about" class="frame right show">
-	<p><b>WHAT TO DO</b></p>
-
-	<p>You must find all atoms. The sooner the better. When you think you got them, hit 'CHECK' to check if you do!</p>
-	<p><a href onclick="return toggleFrame('gamerules')">More...</a></p>
-
-	<p><b>Atoms to find: <?php echo $ATOMS; ?></b></p>
-	<p>Playtime: <b id="playtime">-</b></p>
-	<p>Your name: <b id="your_name"><?php echo $_SESSION[S_NAME]['name']; ?></b></p>
-	<p>Selected atoms: <span id="stats_hilighted">0</span></p>
-</div>
-
-<div id="gamerules" class="frame right">
+<!-- <div id="gamerules" class="frame right">
 	<?php include 'tpl.blackbox_rules.php' ?>
-</div>
+</div> -->
 
 </body>
 
 </html>
 <?php
 
-function save_atom( $sides, &$parrMap )
-{
+function save_atom( $sides, &$parrMap ) {
 	$x = rand(0, $sides);
 	$y = rand(0, $sides);
 	if ( empty($parrMap[$x][$y]) )
@@ -775,8 +723,7 @@ function save_atom( $sides, &$parrMap )
 	return save_atom($sides, $parrMap);
 }
 
-function create_field( $f_iSides, $f_iAtoms )
-{
+function create_field( $f_iSides, $f_iAtoms ) {
 	$parrMap = array();
 
 	for ( $i=0; $i<$f_iAtoms; $i++ )
@@ -787,14 +734,12 @@ function create_field( $f_iSides, $f_iAtoms )
 	return $parrMap;
 }
 
-function go()
-{
+function go() {
 	header("Location: ".basename($_SERVER['SCRIPT_NAME'])."");
 	exit;
 }
 
-function rand_string( $f_iChars = 16 )
-{
+function rand_string( $f_iChars = 16 ) {
 	$arrChars = array_merge(range('a', 'z'), range('A', 'Z'), range('0', '9'));
 	$szRandString = "";
 	for ( $i=0; $i<$f_iChars; $i++ )

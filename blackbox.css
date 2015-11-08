@@ -1,26 +1,28 @@
 * {
 	margin: 0;
 	padding: 0;
+	box-sizing: border-box;
+}
+html, body {
+	overflow-x: hidden;
 }
 html {
-	background-color: #ccc;
 	font-size: 14px;
 	font-family: Verdana;
 	color: #000;
 	line-height: 1.4;
 	cursor: default;
 }
-html, body {
-	overflow-x: hidden;
+body {
+	background-color: #ccc;
 }
 
 button {
-	padding: 1px 10px;
+	padding: 6px 14px;
 }
 button.submit {
 	font-weight: bold;
 }
-
 p {
 	margin: 10px 0;
 }
@@ -33,43 +35,24 @@ a:hover {
 	text-decoration: underline;
 }
 
-.frame {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 12em;
-	padding: 0 20px;
-	z-index: 2;
-	overflow-y: auto;
+/* layout */
+#content {
+	text-align: center;
+}
+#menu,
+#about {
 	background-color: #bbb;
-	display: none;
-}
-.frame.left {
-	left: 0;
-	border-right: solid 1px #999;
-}
-.frame.right {
-	right: 0;
-	border-left: solid 1px #999;
-}
-.frame.show {
-	display: block;
-}
-#top10, #gamerules {
-	width: 350px;
+	padding: 20px;
+	margin: 20px 0;
 }
 
-div#content_frame {
-	position: absolute;
-	top: 0;
-	left: 0;
-	min-height: 100%;
-	width: 100%;
-}
-
+/* grid */
 table#blackbox {
 	border-collapse: collapse;
-	margin: 20px;
+	display: block;
+	width: 334px;
+	height: 334px;
+	margin: 20px auto;
 }
 table#blackbox td {
 	width: 33px;
@@ -114,30 +97,31 @@ td.sr {
 	background: #bbb url(data:image/gif;base64,R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACK4yPqcsd4pqAUU1az8V58+h9UtiFomWeSKpqZvXCXvZsdD3duF7zjw/UFQAAOw==) no-repeat right center;
 }
 
-table#top10 {
-	border-collapse: collapse;
-	margin: 20px;
+/* layout */
+@media (min-width: 740px) {
+	#menu,
+	#about {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		margin: 0;
+		width: 190px;
+		padding: 0 20px;
+		z-index: 2;
+		overflow-y: auto;
+		background-color: #bbb;
+	}
+	#menu {
+		left: 0;
+		border-right: solid 1px #999;
+	}
+	#about {
+		right: 0;
+		border-left: solid 1px #999;
+	}
 }
-table#top10 td,
-table#top10 th {
-	padding: 1px 3px;
-	font-weight: normal;
-	border: solid 1px #999;
-}
-table#top10 tr.h td,
-table#top10 tr.h th {
-	border-bottom: solid 1px #000;
-	font-weight: bold;
-}
-table#top10 td.r,
-table#top10 th.r {
-	text-align: right;
-}
-table#top10 td.d,
-table#top10 th.d {
-	font-family: Courier new;
-	font-size: 9pt;
-}
+
+/* util */
 div#loading {
 	position: absolute;
 	top: 10px;

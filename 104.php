@@ -129,23 +129,18 @@ else if ( isset($_POST['check']) ) {
 		exit('You found '.$iFound.' / '.$ATOMS.': not enough!');
 	}
 
-	$name = !isset($_SESSION[S_NAME]['name']) ? 'Anonymous' : $_SESSION[S_NAME]['name'];
 	$playtime = time() - $_SESSION[S_NAME]['starttime'];
 	$beams = (int)$_SESSION[S_NAME]['beams'];
 	exit('You found the ' . $ATOMS . ' atoms with ' . $beams . ' beams in ' . $playtime . ' seconds!');
 }
 
-// change name //
-else if ( isset($_POST['new_name']) ) {
-	$_SESSION[S_NAME]['name'] = $_POST['new_name'];
-	exit(htmlspecialchars($_POST['new_name']));
-}
-
 ?>
-<!DOCTYPE html>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BLACKBOX</title>
 <link rel="stylesheet" href="blackbox.css" />
 <style>
@@ -154,7 +149,7 @@ else if ( isset($_POST['new_name']) ) {
 <script>
 function Blackbox() {
 	this.reset();
-	this.m_szName = '<?= addslashes(@$_SESSION[S_NAME]['name'] ?: '?') ?>';
+	this.m_szName = '?';
 }
 Blackbox.prototype = {
 	gameover: function( set ) {
@@ -269,65 +264,64 @@ function toggleFrame(name) {
 <body>
 <div id="loading"><b>AJAX BUSY</b></div>
 
-<div align="center" id="content_frame">
-	<table id="blackbox"><tbody id="tbody_blackbox"><?php
+<div id="container">
 
-	for ( $i=-1; $i<=$SIDES; $i++ ) {
-		echo '<tr>';
-		for ( $j=-1; $j<=$SIDES; $j++ ) {
-			$c = array($i,$j);
-			if ( array(-1,-1) == $c || array(-1,$SIDES) == $c || array($SIDES,-1) == $c || array($SIDES,$SIDES) == $c ) {
-				// corners
-				echo '<td style="border:none;"></td>';
+	<div id="content">
+		<table id="blackbox"><tbody id="tbody_blackbox"><?php
+
+		for ( $i=-1; $i<=$SIDES; $i++ ) {
+			echo '<tr>';
+			for ( $j=-1; $j<=$SIDES; $j++ ) {
+				$c = array($i,$j);
+				if ( array(-1,-1) == $c || array(-1,$SIDES) == $c || array($SIDES,-1) == $c || array($SIDES,$SIDES) == $c ) {
+					// corners
+					echo '<td style="border:none;"></td>';
+				}
+				else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j ) {
+					// grid cells
+					echo '<td id="fld_' . $i . '_' . $j . '" class="grid"></td>';
+				}
+				else {
+					// sides
+					if ( -1 == $i )				{ $d = "sd"; }
+					else if ( $SIDES == $j )	{ $d = "sl"; }
+					else if ( $SIDES == $i )	{ $d = "su"; }
+					else if ( -1 == $j )		{ $d = "sr"; }
+					echo '<td id="fld_' . $i . '_' . $j . '" class="side ' . $d . '"></td>';
+				}
 			}
-			else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j ) {
-				// grid cells
-				echo '<td id="fld_' . $i . '_' . $j . '" class="grid"></td>';
-			}
-			else {
-				// sides
-				if ( -1 == $i )				{ $d = "sd"; }
-				else if ( $SIDES == $j )	{ $d = "sl"; }
-				else if ( $SIDES == $i )	{ $d = "su"; }
-				else if ( -1 == $j )		{ $d = "sr"; }
-				echo '<td id="fld_' . $i . '_' . $j . '" class="side ' . $d . '"></td>';
-			}
+			echo '</tr>';
 		}
-		echo '</tr>';
-	}
 
-	?></tbody></table>
+		?></tbody></table>
 
-	<p>
-		<button class="submit" onclick="objBlackbox.check();">CHECK</button>
-		<button onclick="objBlackbox.revealAtoms();">View Atoms</button>
-	</p>
+		<p>
+			<button class="submit" onclick="objBlackbox.check();">CHECK</button>
+			<button onclick="objBlackbox.revealAtoms();">View Atoms</button>
+		</p>
+	</div>
+
+
+	<div id="menu">
+		<p><a href onclick="return objBlackbox.reset(true);">Restart</a></p>
+	</div>
+
+	<div id="about">
+		<p><b>WHAT TO DO</b></p>
+
+		<p>You must find all atoms. The sooner the better. When you think you got them, hit 'CHECK' to check if you do!</p>
+		<p><a href onclick="return toggleFrame('gamerules')">More...</a></p>
+		<p><b>Atoms to find: <?= $ATOMS ?></b></p>
+
+		<p>Playtime: <b id="playtime">-</b></p>
+		<p>Selected atoms: <span id="stats_hilighted">0</span> / <?= $ATOMS ?></p>
+	</div>
+
 </div>
 
-
-<div id="menu" class="frame left show">
-	<p><a href onclick="return objBlackbox.reset(true);">Restart</a></p>
-	<!-- p><a href onclick="return toggleFrame('top10')">Top 10</a></p -->
-	<!-- p><a href onclick="return objBlackbox.changeName();">Change Name</a></p -->
-</div>
-
-<div id="top10" class="frame left"></div>
-
-<div id="about" class="frame right show">
-	<p><b>WHAT TO DO</b></p>
-
-	<p>You must find all atoms. The sooner the better. When you think you got them, hit 'CHECK' to check if you do!</p>
-	<p><a href onclick="return toggleFrame('gamerules')">More...</a></p>
-	<p><b>Atoms to find: <?= $ATOMS ?></b></p>
-
-	<p>Playtime: <b id="playtime">-</b></p>
-	<p>Your name: <b id="your_name"><?= @$_SESSION[S_NAME]['name'] ?: '?' ?></b></p>
-	<p>Selected atoms: <span id="stats_hilighted">0</span> / <?= $ATOMS ?></p>
-</div>
-
-<div id="gamerules" class="frame right">
+<!-- <div id="gamerules" class="frame right">
 	<?php include 'tpl.blackbox_rules.php' ?>
-</div>
+</div> -->
 
 <script>
 var xhrBusy = 0;
@@ -340,7 +334,6 @@ window.on('xhrStart', function() {
 });
 
 var objBlackbox = new Blackbox;
-<?php // if ( !isset($_SESSION[S_NAME]['name']) ) { echo 'objBlackbox.changeName(prompt(\'New name:\', objBlackbox.m_szName));'; } ?>
 
 $('blackbox')
 	// Check for game over
