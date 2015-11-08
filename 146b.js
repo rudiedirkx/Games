@@ -3,11 +3,6 @@ window.on('error', function(e) {
 	alert(e.originalEvent.message);
 });
 
-// No double tap zoom. This cancels all links etc but that's fine because everything is JS triggered.
-document.on('touchstart', function(e) {
-	e.preventDefault();
-});
-
 	// Config
 	var cellSize = 50,
 		outsidePadding = 25,
@@ -68,6 +63,15 @@ document.on('touchstart', function(e) {
 		return new Connector(~~pts[1], ~~pts[2], pts[0]);
 	};
 	r.extend(Connector, {
+		bit: function(lvl) {
+			return this.bitX() + this.bitY() * (lvl.width + 1);
+		},
+		bitX: function() {
+			return this.x;
+		},
+		bitY: function() {
+			return this.y * 2 + Number(this.dir == 'ver');
+		},
 		touches: function(con) {
 			var coords1 = this.getEnds().invoke('join');
 			var coords2 = con.getEnds().invoke('join');
@@ -301,7 +305,7 @@ document.on('touchstart', function(e) {
 
 	function drawNumber(c, number, loc) {
 		var ckey = loc.join('-'),
-			correct = conditions[ckey] == null || conditions[ckey] == number;
+			correct = (conditions[ckey] == null && number == 0) || conditions[ckey] == number;
 		ctx.font = '30px sans-serif';
 		ctx.fillStyle = correct ? textCorrectColor : textColor;
 		ctx.fillText(number, c.x + 11, c.y + 32);

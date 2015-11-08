@@ -3,7 +3,7 @@
 
 <head>
 	<title>Slither CANVAS</title>
-	<meta name="viewport" content="width=device-width, initial-scale=0.5" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
 	* {
 		-webkit-user-select: none;
@@ -31,6 +31,7 @@
 
 <p>
 	<a id="restart" href="#">Restart</a>,
+	<a id="share" href="#">share</a>,
 	or switch level:
 	<a class="goto" data-prev href="#">&lt; prev</a> |
 	<span id="lvl">?</span> |
@@ -43,8 +44,15 @@
 <script src="js/rjs-custom.js"></script>
 <script src="146b.js"></script>
 <script>
+Array.repeat = function(length, value) {
+	var arr = [length];
+	for (var i=0; i<length; i++) {
+		arr[i] = value;
+	}
+	return arr;
+};
+
 var _LEVEL = 1;
-var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEVEL;
 
 (function(levels) {
 	// State
@@ -59,7 +67,9 @@ var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEV
 	$(init);
 
 	function init() {
-		initLevel(LEVEL);
+		var level = stringToLevel(location.hash);
+		level || (level = {n: _LEVEL, prep: ''});
+		initLevel(level.n, level.prep);
 
 		elCanvas.on(evType, function(e) {
 			$('red').css(e.pageXY.toCSS());
@@ -79,6 +89,20 @@ var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEV
 		});
 	}
 
+	function stringToLevel(hash) {
+		var match = hash.replace(/^#+/g, '').match(/^(\d+)(?:\.(\d+))?$/);
+		if ( match ) {
+			return {
+				n: parseInt(match[1]),
+				prep: match[2] || '',
+			};
+		}
+	}
+
+	function levelToString(n, prep) {
+		return String(n) + (prep ? '.' + prep : '');
+	}
+
 	$$('.goto').on('click', function(e) {
 		e.preventDefault();
 		var d = this.data('prev') != null ? -1 : 1;
@@ -92,25 +116,63 @@ var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEV
 		initLevel(lvl.n);
 	});
 
+	$('share').on('click', function(e) {
+		e.preventDefault();
+
+		var bytes = Array.repeat((lvl.width+1) * (lvl.height+1), 0);
+		for (var i=0; i<connectors.length; i++) {
+			var con = Connector.fromString(connectors[i]);
+			var index = con.y * (lvl.width+1) + con.x;
+			bytes[index] += con.dir == 'hor' ? 1 : 2;
+		}
+		bytes = bytes.join('').replace(/0+$/g, '');
+		location.hash = String(lvl.n) + '.' + bytes;
+	});
+
 	window.on('hashchange', function() {
-		var n = parseInt(location.hash.substr(1));
-		if ( !isNaN(n) ) {
-			initLevel(n);
+		var level = stringToLevel(location.hash);
+		if ( level ) {
+			initLevel(level.n, level.prep);
 		}
 	});
 
 	// Process
-	function initLevel(n) {
+	function initLevel(n, prep) {
 		clearInterval(slithering);
-		location.hash = n;
+		location.hash = levelToString(n, prep);
 		$('lvl').setText(n);
+
+		lvl = getLevel(n);
+		lvl.connectors = getAllConnectors();
 
 		connectors = [];
 		conditions = {};
 
-		lvl = getLevel(n);
-		lvl.connectors = getAllConnectors();
-		drawLevel(true);
+		// Fill connectors from URL
+		if ( prep ) {
+			// drawLevel();
+			for (var i=0; i<prep.length; i++) {
+				var byte = parseInt(prep[i]);
+				if ( byte ) {
+					var x = i % (lvl.width+1);
+					var y = Math.floor(i / (lvl.width+1));
+					var hor = byte & 1;
+					var ver = byte & 2;
+					if ( hor ) {
+						var con = new Connector(x, y, 'hor');
+						connectors.push(con.toString());
+						updateConditions(con, true);
+					}
+					if ( ver ) {
+						var con = new Connector(x, y, 'ver');
+						connectors.push(con.toString());
+						updateConditions(con, true);
+					}
+				}
+			}
+		}
+
+		drawLevel();
 
 		gameover = false;
 	}
@@ -207,25 +269,20 @@ var LEVEL = location.hash ? (parseInt(location.hash.substr(1)) || _LEVEL) : _LEV
 		slithering = setInterval(iterate, 100);
 	}
 
-	function drawLevel(initial) {
+	function drawLevel() {
 		ctx.clearRect(0, 0, _w, _h);
 		initGrid(lvl);
 		drawGrid(lvl);
-		drawNumbers(lvl, initial);
+		drawNumbers(lvl);
 		hiliteConnectors();
 	}
 
-	function drawNumbers(lvl, initial) {
+	function drawNumbers(lvl) {
 		for ( var y=0; y<lvl.height; y++ ) {
 			for ( var x=0; x<lvl.width; x++ ) {
 				var number = lvl.map[y][x];
 				if ( number != null ) {
 					var c = getCellCoords(x, y);
-
-					// Store in conditions cache
-					if ( initial ) {
-						conditions[ x + '-' + y ] = 0;
-					}
 
 					// Draw to canvas
 					var loc = new Coords2D(x, y);
