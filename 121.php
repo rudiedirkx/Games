@@ -164,7 +164,7 @@ if (isset($_GET['deal']) && $_GET['deal']==1 && isset($BET))
 		$card0 = $cards[$n];
 		$card = explode(".",$card0);
 		if ($DEBUG_MODE==1)
-		{	
+		{
 			echo "&card = $card0<br>";
 			print_r($card);
 			echo "\n";
@@ -398,9 +398,12 @@ if (basename($_SERVER['REQUEST_URI']) != basename($_SERVER['SCRIPT_NAME']) || is
 }	*/
 
 ?>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>POKER</title>
 <style type="text/css">
 BODY,TABLE,A { font-family:Verdana;font-size:11px;cursor:default;color:white;background:#444444; }
@@ -456,7 +459,7 @@ else
 	// er moet nog ingezet worden. poker[step]==0 en !isset(poker[bet])
 	echo "<form name=poker method=post action=\"\" autocomplete=\"off\"><input type=hidden name=action value=bet>\n";
 	echo "<tr><td style='border-bottom:solid 2px black;background:#666666;'><center><b>PLACE YOUR BET</td></tr>\n";
-	echo "<tr><td><center><input type=text class=a name=bet style='width:200;font-weight:none;' OnClick=\"this.select();\" value='".( isset($BET) ? $BET : 0 )."'></td></tr>\n";
+	echo "<tr><td><center><input type=number class=a name=bet style='width:200px;font-weight:none;' OnClick=\"this.select();\" value='".( isset($BET) ? $BET : 0 )."'></td></tr>\n";
 	echo "<tr><td><center><input type=submit class=a name=bt value='OK'></td></tr>\n";
 	echo "</form></table>\n";
 }
