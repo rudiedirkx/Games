@@ -1,12 +1,17 @@
 <pre><?php
 
-require_once('inc.cls.cardgame.php');
-require_once('inc.cls.pokertexasholdem.php');
-Card::$__tostring = create_function('$c', 'return strtoupper($c->short)." of ".$c->suit;');
+require 'inc.cls.cardgame.php';
+require 'inc.cls.pokertexasholdem.php';
+
+Card::$__tostring = function ($c) {
+	return '<img suit="' . $c->suit . '" src="images/' . $c->suit . '_' . $c->short . '.gif" />';
+};
 
 $fStart = microtime(true);
 
 $iRounds = isset($_GET['rounds']) ? max(10, (int)$_GET['rounds']) : 1500;
+
+echo $iRounds . " rounds\n\n";
 
 $objDeck = new Deck;
 
@@ -21,8 +26,6 @@ for ( $i=0; $i<$iRounds; $i++ ) {
 	$objDeck->replenish();
 	$arrPublic = array_slice($objDeck->cards, 0, 5);
 
-//echo "[".implode(' + ', $arrPublic)."]\n\n";
-
 	$arrPublic[5] = $arrPlayers[0][0];
 	$arrPublic[6] = $arrPlayers[0][1];
 	$a = pokertexasholdem::score($arrPublic);
@@ -35,12 +38,8 @@ for ( $i=0; $i<$iRounds; $i++ ) {
 
 }
 
-print_r($arrWinner);
-
-echo "\n".implode(' + ', $arrPlayers[0]).' vs '.implode(' + ', $arrPlayers[1])."\n";
-echo "\n".( round($arrWinner[0]/$iRounds*100, 3) ).' % vs '.( round($arrWinner[1]/$iRounds*100, 3) ).' %';
+echo implode(' ', $arrPlayers[0]) . ' vs ' . implode(' ', $arrPlayers[1]) . "\n\n";
+echo $arrWinner[0] . ' (' . round($arrWinner[0]/$iRounds*100, 2) . ' %) vs ' . $arrWinner[1] . ' (' . round($arrWinner[1]/$iRounds*100, 2) . " %)\n\n";
 
 $fParseTime = microtime(true) - $fStart;
-echo "\n\n".$iRounds." rounds\n\n[".number_format($fParseTime, 4).' s]';
-
-
+echo number_format($fParseTime, 4) . ' s';

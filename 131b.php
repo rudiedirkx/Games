@@ -2,7 +2,9 @@
 
 require_once('inc.cls.cardgame.php');
 
-card::$__tostring = create_function('$c', 'return \'<img src="images/\'.$c->suit.\'.gif" /> \'.strtoupper($c->short);');
+card::$__tostring = function ($c) {
+	return '<img src="images/' . $c->suit . '.gif" /> ' . strtoupper($c->short);
+};
 
 $objDeck = new Deck();
 $objDeck->shuffle();
