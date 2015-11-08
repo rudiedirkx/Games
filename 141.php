@@ -1,5 +1,5 @@
 <?php
-// BLACKBOX (Javascript)
+// BLACKBOX (JS)
 
 session_start();
 
@@ -284,7 +284,7 @@ Blackbox.reset = function( f_bResetAll ) {
 					$(fld_id).innerHTML = "";
 					$(fld_id).style.backgroundColor = "";
 					if ( objBlackbox._ValidCoords(x,y) ) {
-						$(fld_id).className = "cfield";
+						$(fld_id).className = "grid";
 					}
 				}
 			}
@@ -551,7 +551,7 @@ Blackbox.prototype = {
 			return Blackbox.reset(true);
 		}
 
-		szHilightClass = 'cfield_hilite';
+		szHilightClass = 'hilite';
 
 		fld = $('fld_'+f_coords[0]+'_'+f_coords[1]);
 		if ( this.m_mapUser[f_coords[0]] && this.m_mapUser[f_coords[0]][f_coords[1]] )
@@ -711,7 +711,7 @@ function toggleFrame(name) {
 			else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j )
 			{
 				// grid cells
-				echo '<td id="fld_'.$i.'_'.$j.'" onclick="fc(['.$i.','.$j.']);" class="cfield"></td>';
+				echo '<td id="fld_'.$i.'_'.$j.'" onclick="fc(['.$i.','.$j.']);" class="grid"></td>';
 			}
 			else
 			{

@@ -81,12 +81,14 @@ table#blackbox td {
 table#blackbox td.corner {
 	background-color: #0df;
 }
-td.cfield {
+td.cfield,
+td.grid {
 	background: #aaa;
 	font-weight: bold;
 	font-size: 13px;
 }
-td.cfield_hilite {
+td.cfield_hilite,
+td.hilite {
 	background: lime;
 }
 td.sd,

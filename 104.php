@@ -1,5 +1,5 @@
 <?php
-// BLACKBOX (Ajax)
+// BLACKBOX (PHP)
 
 if ( isset($_GET['source']) ) {
 	highlight_file(__FILE__);
@@ -45,13 +45,6 @@ if ( !empty($_GET['fullreset']) ) {
 	header('Location: 104.php');
 	exit;
 }
-
-// show top 10 //
-else if ( !empty($_GET['top10']) ) {
-	printTop10();
-	exit;
-}
-
 
 // reset //
 if ( isset($_POST['reset']) ) {
@@ -139,8 +132,7 @@ else if ( isset($_POST['check']) ) {
 	$name = !isset($_SESSION[S_NAME]['name']) ? 'Anonymous' : $_SESSION[S_NAME]['name'];
 	$playtime = time() - $_SESSION[S_NAME]['starttime'];
 	$beams = (int)$_SESSION[S_NAME]['beams'];
-	mysql_query("INSERT INTO blackbox (name, sides, atoms, beams, playtime, utc) VALUES ('".addslashes($_SESSION[S_NAME]['name'])."', ".(int)$SIDES.", ".(int)$ATOMS.", ".$beams.", ".$playtime.", ".time().");");
-	exit('You found the '.$ATOMS.' atoms with '.$beams.' beams in '.$playtime.' seconds!');
+	exit('You found the ' . $ATOMS . ' atoms with ' . $beams . ' beams in ' . $playtime . ' seconds!');
 }
 
 // change name //
@@ -158,35 +150,11 @@ else if ( isset($_POST['new_name']) ) {
 <link rel="stylesheet" href="blackbox.css" />
 <style>
 </style>
-<!-- style>
-* { margin:0; padding:0; }
-body { background-color:#ccc; overflow:auto; overflow-x:hidden; overflow-y:auto; }
-body, table, input { font-family:verdana; font-size:11px; color:#000; line-height:170%; cursor:default; }
-input[type=button] { padding:3px 15px; }
-p { margin:10px 0; }
-a { color:#fff; text-decoration:none; }
-a:hover { color:#000; text-decoration:underline; }
-#top10, #left_frame { left:0; border-right:solid 1px #999; background-color:#bbb; }
-#top10 { z-index:4; width:360px; left:-361px; }
-#top10 table { width:100%; }
-#content_frame { position:absolute; top:0; left:0; min-height:100%; width:100%; }
-table#blackbox { border-collapse:collapse; margin:20px; }
-table#blackbox tbody#tbody_blackbox td { width:33px; height:33px; text-align:center; padding:0px; border:solid 1px #fff; }
-table#blackbox tbody#tbody_blackbox td.corner { background-color:#0df; }
-table#blackbox tbody#tbody_blackbox td.cfield { background:#aaa; font-weight:bold; font-size:13px; }
-table#blackbox tbody#tbody_blackbox td.cfield_hilite { background:lime; }
-table#blackbox tbody#tbody_blackbox td.sd, table#blackbox tbody#tbody_blackbox td.sl, table#blackbox tbody#tbody_blackbox td.su, table#blackbox tbody#tbody_blackbox td.sr { cursor:pointer; }
-table#blackbox tbody#tbody_blackbox td.sd { background:#bbb url(images/down.gif) no-repeat center bottom; }
-table#blackbox tbody#tbody_blackbox td.sl { background:#bbb url(images/left.gif) no-repeat left center; }
-table#blackbox tbody#tbody_blackbox td.su { background:#bbb url(images/up.gif) no-repeat center top; }
-table#blackbox tbody#tbody_blackbox td.sr { background:#bbb url(images/right.gif) no-repeat right center; }
-div#loading { position:absolute; top:10px; right:10px; padding:5px; display:none; background-color:#f00; color:#fff; z-index:4; }
-</style -->
 <script src="js/rjs-custom.js"></script>
 <script>
 function Blackbox() {
 	this.reset();
-	this.m_szName = '<?php echo isset($_SESSION[S_NAME]['name']) ? addslashes($_SESSION[S_NAME]['name']) : '?'; ?>';
+	this.m_szName = '<?= addslashes(@$_SESSION[S_NAME]['name'] ?: '?') ?>';
 }
 Blackbox.prototype = {
 	gameover: function( set ) {
@@ -204,9 +172,7 @@ Blackbox.prototype = {
 	},
 
 	fire : function( f_coords ) {
-console.log(f_coords);
 		if ( this.gameover() ) {
-console.log('game over?');
 			return this.reset();
 		}
 
@@ -254,38 +220,35 @@ console.log('game over?');
 			return this.reset();
 		}
 		this.gameover(1);
+
 		// Collect selected atoms
-		var a = [];
-		$('blackbox').getElements('td[data-grid=1]').each(function(el) {
-			if ( el.green ) {
-				a.push('&atoms[]='+(el.parentNode.sectionRowIndex-1)+':'+(el.cellIndex-1)+'');
-			}
+		var a = $$('#blackbox td.grid.hilite').map(function(el) {
+			return '&atoms[]=' + (el.parentNode.sectionRowIndex-1) + ':' + (el.cellIndex-1);
 		});
-		var self = this;
-		new Ajax('?', {
-			data : 'check=1' + a.join(''),
-			onComplete : function(t) {
-				alert(t);
-			}
-		}).request();
+
+		$.post('?', 'check=1' + a.join('')).on('done', function(e, t) {
+			alert(t);
+		});
 		return false;
 	},
 
 	reset : function() {
 		var self = this;
+
+		$$('#tbody_blackbox td')
+			.setHTML('')
+			.removeClass('hilite')
+			.css('background-color', '')
+
 		var data = 'reset=1';
-		$.post('', data).on('done', function(e, rsp) {
-			$$('#tbody_blackbox td').each(function(el) {
-				el.css('background-color', '').setHTML('');
-				el.green = false;
-				el.red = false;
-			});
+		$.post('?', data).on('done', function(e, rsp) {
 			self.m_iBeams = 0;
 			self.m_bGameOver = false;
 			self.m_iPlaytime = -1;
 			this.m_iTimer = 0;
 			$('playtime').setHTML('-');
 		});
+
 		return false;
 	}
 
@@ -319,7 +282,7 @@ function toggleFrame(name) {
 			}
 			else if ( -1 < $i && $SIDES > $i && -1 < $j && $SIDES > $j ) {
 				// grid cells
-				echo '<td id="fld_'.$i.'_'.$j.'" data-grid="1" class="cfield"></td>';
+				echo '<td id="fld_' . $i . '_' . $j . '" class="grid"></td>';
 			}
 			else {
 				// sides
@@ -327,7 +290,7 @@ function toggleFrame(name) {
 				else if ( $SIDES == $j )	{ $d = "sl"; }
 				else if ( $SIDES == $i )	{ $d = "su"; }
 				else if ( -1 == $j )		{ $d = "sr"; }
-				echo '<td id="fld_'.$i.'_'.$j.'" side="1" class="'.$d.'"></td>';
+				echo '<td id="fld_' . $i . '_' . $j . '" class="side ' . $d . '"></td>';
 			}
 		}
 		echo '</tr>';
@@ -348,7 +311,7 @@ function toggleFrame(name) {
 	<!-- p><a href onclick="return objBlackbox.changeName();">Change Name</a></p -->
 </div>
 
-<div id="top10" class="frame left"><?php // printTop10(); ?></div>
+<div id="top10" class="frame left"></div>
 
 <div id="about" class="frame right show">
 	<p><b>WHAT TO DO</b></p>
@@ -383,28 +346,20 @@ $('blackbox')
 	// Check for game over
 	.on('click', function(e) {
 		if ( objBlackbox.m_bGameOver ) {
-console.log('GAME OVER');
 			e.originalEvent.stopImmediatePropagation();
 			objBlackbox.reset();
 		}
 	})
 
 	// Fire beam
-	.on('click', '[side]', function(e) {
+	.on('click', '.side', function(e) {
 		objBlackbox.fire([ this.parentNode.sectionRowIndex-1, this.cellIndex-1 ]);
 	})
 
 	// Mark atom
-	.on('click', '[data-grid]', function(e) {
-		this.toggleClass('cfield_hilite');
+	.on('click', 'td.grid', function(e) {
+		this.toggleClass('hilite');
 	})
-	// .on('click', '[data-grid]', function(e) {
-		// e.target.red = !e.target.red;
-		// e.target.style.backgroundColor = e.target.red ? 'red' : '';
-		// if ( e.target.red ) {
-			// e.target.green = false;
-		// }
-	// })
 ;
 </script>
 </body>
@@ -446,18 +401,6 @@ console.log('GAME OVER');
 
 
 
-
-function printTop10() {
-	$qTop10 = mysql_query('SELECT * FROM blackbox ORDER BY (playtime*beams) ASC, utc DESC LIMIT 10;');
-	echo '<table class="top10">';
-	echo '<tr><th></th><th>Name</th><th>Playtime</th><th>Beams fired</th><th>Time</th></tr>';
-	$n=1;
-	while ( $r = mysql_fetch_assoc($qTop10) ) {
-		echo '<tr bgcolor="'.( $n%2 == 1 ? '#cccccc' : '#aaaaaa' ).'"><td>'.$n++.'</td><td>'.$r['name'].'</td><td>'.$r['playtime'].'</td><td>'.$r['beams'].'</td><td>'.date('Y-m-d H:i:s', $r['utc']).'</td></tr>';
-	}
-	echo '</table>';
-	echo '<p><a href onclick="return objBlackbox.hideTop10()">&lt; back</a></p>';
-}
 
 function valid_coords( $x, $y ) {
 	return isset($_SESSION[S_NAME]['map'][$x][$y]);
