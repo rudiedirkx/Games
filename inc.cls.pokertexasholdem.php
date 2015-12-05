@@ -1,36 +1,56 @@
 <?php
 
-class pokertexasholdem {
-	public $cards = array();
+class PokerTexasHoldem {
+
+	// public $cards = array();
+
 	public $values = array();
 	public $num_values = array();
+
 	public $suits = array();
-	public $num_suits = array();
-	public function __construct($f_arrCards) {
-		$this->cards = $f_arrCards;
-		$tmp = array();
+	public $suit = '';
+
+	/**
+	 *
+	 */
+	public function __construct( $f_arrCards ) {
+		// $this->cards = $f_arrCards;
+
+		$num_suits = array();
 		foreach ( $f_arrCards AS $objCard ) {
-			$tmp[] = array(
-				'value'	=> (int)$objCard->pth,
-				'suit'	=> (string)$objCard->suit,
-			);
+			// Create List<Int value>
+			$this->values[] = $objCard->pth;
+
+			// Create Hash{Int value: Int count}
+			@$this->num_values[$objCard->pth]++;
+
+			// Create List<String suit>
+			$this->suits[] = $objCard->suit;
+
+			// Create Hash{String suit: Int count}
+			@$num_suits[$objCard->suit]++;
 		}
-		$rev2d = self::flip_2d_array($tmp);
 
-		$this->values = $rev2d['value'];
+		// Make sure higher come first
 		arsort($this->values);
-		$this->num_values = array_count_values($this->values);
 
-		$this->suits = $rev2d['suit'];
-		asort($this->suits);
-		$this->num_suits = array_count_values($this->suits);
-		arsort($this->num_suits);
+		// Find the suit with 5 cards
+		foreach ($num_suits as $suit => $num) {
+			if ($num >= 5) {
+				$this->suit = $suit;
+				break;
+			}
+		}
 	}
 
-	public static function winnerCardsAndSuit( $f_fHand ) {
+	/**
+	 *
+	 */
+	static public function winnerCardsAndSuit( $f_fHand ) {
 		$szDetails = substr((string)$f_fHand, 2);
 		$arrFiveCards = array();
 		$szSuit = null;
+
 		switch ( (int)$f_fHand ) {
 			case 0: // hi card
 			case 5: // flush
@@ -61,28 +81,33 @@ class pokertexasholdem {
 				$arrFiveCards = array((int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 2, 2));
 			break;
 			case 8:
-				
+
 			break;
 			case 9:
-				
+
 			break;
 		}
+
 		$arrFiveCards = array_count_values($arrFiveCards);
 		if ( isset($arrFiveCards[1]) ) {
 			$arrFiveCards[14] = $arrFiveCards[1];
 			unset($arrFiveCards[1]);
 		}
+
 		return array($arrFiveCards, $szSuit);
 	}
 
-	public static function readable_hand( $f_fHand ) {
+	/**
+	 *
+	 */
+	static public function readable_hand( $f_fHand ) {
 		$arrCardsText = array(2 => 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes', 'Sevens', 'Eights', 'Nines', 'Tens', 'Jacks', 'Queens', 'Kings', 'Aces');
 		$arrCardsShort = array(2 => '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A');
 		$x = explode('.', (string)$f_fHand, 2);
 		$szExtra = isset($x[1]) ? $x[1] : '';
 		$szHand = '';
-		switch ( (int)$x[0] )
-		{
+
+		switch ( (int)$x[0] ) {
 			case 9:
 				$szHand = 'Royal Flush of '.ucfirst(strtolower($szExtra)).'';
 			break;
@@ -137,49 +162,61 @@ class pokertexasholdem {
 				$szHand = 'High Cards '.implode(', ', $arrKickers).'';
 			break;
 		}
+
 		return $szHand;
 	}
 
-	# 9
+	/**
+	 * 9
+	 */
 	public function royal_flush() {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		$szStraigtFlush = $this->straight_flush();
 		if ( null !== $szStraigtFlush && '14' === substr($szStraigtFlush, 0, 2) ) {
 			$this->$fn = substr($szStraigtFlush, 2);
 			return $this->$fn;
 		}
-		return null;
 	}
-	# 8
+
+	/**
+	 * 8
+	 */
 	public function straight_flush() {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		if ( null === ($szSuit=$this->flush(true)) ) {
-			return null;
+			return;
 		}
+
 		$arrCards = array();
 		foreach ( $this->values AS $iCard => $iValue ) {
 			if ( $szSuit == $this->suits[$iCard] ) {
 				$arrCards[] = $iValue;
 			}
 		}
+
 		if ( null !== ($szHiCard=$this->straight($arrCards)) ) {
 			$this->$fn = $szHiCard.$szSuit;
 			return $this->$fn;
 		}
-		return null;
 	}
-	# 7
+
+	/**
+	 * 7
+	 */
 	public function four_of_a_kind() {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		foreach ( $this->num_values AS $iValue => $iAmount ) {
 			if ( 4 <= $iAmount ) {
 				$szExtra = self::padleft($iValue);
@@ -192,14 +229,17 @@ class pokertexasholdem {
 				}
 			}
 		}
-		return null;
 	}
-	# 6
+
+	/**
+	 * 6
+	 */
 	public function full_house() {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		if ( null !== ($szThreeOfAKind=$this->three_of_a_kind($v)) ) {
 			$bck = $this->num_values;
 			unset($this->num_values[$v]);
@@ -210,19 +250,23 @@ class pokertexasholdem {
 			}
 			$this->num_values = $bck;
 		}
-		return null;
 	}
-	# 5
+
+	/**
+	 * 5
+	 */
 	public function flush($f_bSimple = false) {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
-		if ( 5 <= reset($this->num_suits) ) {
-			$szSuit = key($this->num_suits);
+
+		if ( $this->suit ) {
+			$szSuit = $this->suit;
 			if ( $f_bSimple ) {
 				return $szSuit;
 			}
+
 			$szExtra = '';
 			foreach ( $this->values AS $iCard => $iValue ) {
 				if ( $szSuit == $this->suits[$iCard] && 10 > strlen($szExtra) ) {
@@ -235,19 +279,23 @@ class pokertexasholdem {
 			$this->$fn = $szExtra.$szSuit;
 			return $this->$fn;
 		}
-		return null;
 	}
-	# 4
+
+	/**
+	 * 4
+	 */
 	public function straight($f_arrValues = null) {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		$arrValues = is_array($f_arrValues) ? $f_arrValues : array_keys($this->num_values);
 		if ( 5 > count($arrValues) ) {
 			// Not even 5 different cards
-			return null;
+			return;
 		}
+
 		for ( $i=0; $i<=count($arrValues)-5; $i++ ) {
 			// loop next 5 cards
 			$iHiCard = $iPrevValue = $arrValues[$i];
@@ -264,19 +312,23 @@ class pokertexasholdem {
 				return $this->$fn;
 			}
 		}
+
 		# ace to 5
 		if ( in_array(14, $arrValues) && in_array(2, $arrValues) && in_array(3, $arrValues) && in_array(4, $arrValues) && in_array(5, $arrValues) ) {
 			$this->$fn = '05';
 			return $this->$fn;
 		}
-		return null;
 	}
-	# 3
+
+	/**
+	 * 3
+	 */
 	public function three_of_a_kind(&$f_pv = null) {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		foreach ( $this->num_values AS $iValue => $iAmount ) {
 			if ( 3 <= $iAmount ) {
 				$f_pv = $iValue;
@@ -293,14 +345,17 @@ class pokertexasholdem {
 				return $szExtras;
 			}
 		}
-		return null;
 	}
-	# 2
+
+	/**
+	 * 2
+	 */
 	public function two_pair(&$v1 = null, &$v2 = null) {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		$szExtras = '';
 		$iVal1 = $iVal2 = 0;
 		foreach ( $this->num_values AS $iValue => $iAmount ) {
@@ -310,6 +365,7 @@ class pokertexasholdem {
 				else { $iVal2 = $iValue; }
 			}
 		}
+
 		if ( 4 == strlen($szExtras) ) {
 			foreach ( $this->values AS $v ) {
 				if ( $iVal1 != $v && $iVal2 != $v ) {
@@ -320,14 +376,17 @@ class pokertexasholdem {
 			$this->$fn = $szExtras;
 			return $szExtras;
 		}
-		return null;
 	}
-	# 1
+
+	/**
+	 * 1
+	 */
 	public function one_pair(&$f_pv = null) {
 		$fn = __FUNCTION__;
 		if ( isset($this->$fn) ) {
 			return $this->$fn;
 		}
+
 		foreach ( $this->num_values AS $iValue => $iAmount ) {
 			if ( 2 <= $iAmount ) {
 				$f_pv = $iValue;
@@ -344,9 +403,11 @@ class pokertexasholdem {
 				return $szExtras;
 			}
 		}
-		return null;
 	}
 
+	/**
+	 *
+	 */
 	public function _score() {
 		$arrCheckingOrder = array(
 			9 => 'royal_flush',
@@ -359,13 +420,15 @@ class pokertexasholdem {
 			2 => 'two_pair',
 			1 => 'one_pair',
 		);
+
 		$iScore = 0;
 		foreach ( $arrCheckingOrder AS $iHandValue => $szCall ) {
-			if ( null !== ($szExtra=$this->$szCall=call_user_func(array($this, $szCall))) ) {
+			if ( null !== ($szExtra = $this->$szCall = call_user_func(array($this, $szCall))) ) {
 				$iScore = $iHandValue;
 				break;
 			}
 		}
+
 		if ( 1 > $iScore ) {
 			// high card
 			$iScore = 0;
@@ -379,24 +442,23 @@ class pokertexasholdem {
 				}
 			}
 		}
-		return ($iScore.'.'.(string)$szExtra);
+
+		return $iScore . '.' . $szExtra;
 	}
-	public static function padleft($s) {
+
+	/**
+	 *
+	 */
+	static public function padleft($s) {
 		return str_pad((string)$s, 2, '0', STR_PAD_LEFT);
 	}
-	public static function score($c, &$o = null) {
-		$o = new self($c);
-		return $o->_score();
-	}
-	public static function flip_2d_array($a) {
-		$r = array();
-		foreach ( $a AS $k1 => $v1 ) {
-			foreach ( $v1 AS $k2 => $v2 ) {
-				$r[$k2][$k1] = $v2;
-			}
-		}
-		return $r;
-	}
-}
 
-?>
+	/**
+	 *
+	 */
+	static public function score($cards, &$object = null) {
+		$object = new self($cards);
+		return $object->_score();
+	}
+
+}

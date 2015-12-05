@@ -1,5 +1,5 @@
 // http://home.hotblocks.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// 39755d4cbe6b8060d16dc892752fe0e5657c4ac6
+// f75d6602bd506f7f4a933e1402f9bdb3d9374191
 
 (function(W, D) {
 
@@ -821,6 +821,8 @@
 		options.method = options.method.toUpperCase();
 
 		var xhr = new XMLHttpRequest;
+		xhr._busy = 1;
+		xhr._automatic = options.send ? 1 : 0;
 		xhr.open(options.method, options.url, options.async, options.username, options.password);
 		xhr.options = options;
 		xhr.on('load', function(e) {
@@ -850,6 +852,11 @@
 				}
 			}
 
+			if ( this._automatic ) {
+				XHR.busy -= this._busy;
+				this._busy = 0;
+			}
+
 			this.fire(eventType, e, response);
 			this.fire('done', e, response);
 
@@ -863,6 +870,11 @@
 			this.globalFire('xhr', 'done', e, response);
 		});
 		xhr.on('error', function(e) {
+			if ( this._automatic ) {
+				XHR.busy -= this._busy;
+				this._busy = 0;
+			}
+
 			this.fire('done', e);
 
 			this.globalFire('xhr', 'error', e);
@@ -874,10 +886,12 @@
 				xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded' + encoding);
 			}
 		}
-		if ( options.send ) {
+		if ( xhr._automatic ) {
 			if ( options.requester ) {
 				xhr.setRequestHeader('X-Requested-With', options.requester);
 			}
+
+			XHR.busy++;
 
 			xhr.globalFire('xhr', 'start');
 			xhr.fire('start');
@@ -893,6 +907,8 @@
 		}
 		return xhr;
 	}
+
+	XHR.busy = 0;
 
 	Event.Custom.progress = {
 		before: function(options) {
@@ -926,4 +942,3 @@
 	W.Eventable = Eventable;
 	W.Coords2D = Coords2D;
 })(this, this.document);
-

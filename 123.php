@@ -283,13 +283,11 @@ r.extend(SteppingStones, {
 </table>
 
 <script>
-r.xhr.busy = 0;
 window.on('xhrStart', function(e) {
-	r.xhr.busy++;
 	$('#loading').css('visibility', 'visible');
 });
 window.on('xhrDone', function(e) {
-	if (--r.xhr.busy == 0) {
+	if (r.xhr.busy == 0) {
 		$('#loading').css('visibility', 'hidden');
 	}
 });

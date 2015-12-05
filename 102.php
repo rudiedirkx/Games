@@ -266,13 +266,10 @@ div#loading {
 </div>
 
 <script>
-r.xhr.busy = 0;
 window.on('xhrStart', function() {
 	$('#loading').style.display = "block";
-	r.xhr.busy++;
 });
 window.on('xhrDone', function() {
-	r.xhr.busy--;
 	if ( r.xhr.busy == 0 ) {
 		$('#loading').style.display = "none";
 	}
