@@ -280,7 +280,7 @@ foreach ( $arrUseGames AS $i => $game ) {
 ?>
 </ul>
 
-<script src="/js/mootools_1_11.js"></script>
+<script src="/js/rjs-custom.js"></script>
 <script>
 var MOVING_TILES = true;
 var DRAWING_BACKGROUND = true;
@@ -364,7 +364,7 @@ function clone(obj) {
 		}
 	}
 
-	Window.addEvent('load', function(e) {
+	window.on('load', function(e) {
 		log('window.onload')
 
 		if ( MOVING_TILES && Math.random() > 0.5 ) {
@@ -381,7 +381,7 @@ function clone(obj) {
 	})
 
 	var lc = '', c
-	Document.addEvent('mousemove', function(e) {
+	document.on('mousemove', function(e) {
 		log('window.onmousemove')
 		if ( DRAWING_BACKGROUND ) {
 			c = e.clientX + ':' + e.clientY // stupid Chrome bug fires mousemove events when the mouse doesn't move
@@ -390,7 +390,7 @@ function clone(obj) {
 		}
 	})
 
-	Window.addEvent('resize', function(e) {
+	window.on('resize', function(e) {
 		log('window.onresize')
 		if ( DRAWING_BACKGROUND ) {
 			draw(1)
@@ -402,8 +402,9 @@ function clone(obj) {
 	}
 
 	// Moving game icons
-	$$$('#tiles > li').each(function( li ) {
-		var empty = li.classList.contains('empty')
+	$$('#tiles > li').each(function( li ) {
+		var empty = li.hasClass('empty')
+console.log(empty);
 		if ( empty ) {
 			li.remove()
 			g_empties.push([parseInt(li.dataset.x), parseInt(li.dataset.y)])
@@ -412,7 +413,7 @@ function clone(obj) {
 			position(li)
 		}
 	})
-	setTimeout("$('tiles').addClass('positioned')", 300)
+	setTimeout("$('#tiles').addClass('positioned')", 300)
 	//log(g_empties)
 
 	function neighbour( f_coords ) {
@@ -423,8 +424,9 @@ function clone(obj) {
 			var coords = clone(f_coords)
 			coords[0] += options[i][0]
 			coords[1] += options[i][1]
-			var id = 'li[data-x="' + coords[0] + '"][data-y="' + coords[1] + '"]', el = $$$(id)[0]
-			//log(id)
+			var sel = 'li[data-x="' + coords[0] + '"][data-y="' + coords[1] + '"]';
+			var el = $(sel);
+			//log(sel)
 			if ( el ) {
 				return el
 			}
@@ -433,8 +435,8 @@ function clone(obj) {
 
 	function position(li) {
 		return li.css({
-			left: li.dataset.x * <?=$g_iTileWidth?>,
-			top: li.dataset.y * <?=$g_iTileHeight?>
+			left: (li.dataset.x * <?= $g_iTileWidth ?>) + 'px',
+			top: (li.dataset.y * <?= $g_iTileHeight ?>) + 'px'
 		})
 	}
 
@@ -463,7 +465,7 @@ function clone(obj) {
 
 })()
 
-Window.addEvent('load', function(e) {
+window.on('load', function(e) {
 	try {
 		console.log((Date.now() - performance.timing.requestStart)/1000);
 	} catch (ex) {}
