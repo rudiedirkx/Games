@@ -122,10 +122,10 @@ var directionDeltas = {top: new Coords2D(0, -1), right: new Coords2D(1, 0), bott
 
 $(function() {
 
-	var game = new BioShockHacker($('board'), rawMap, start);
+	var game = new BioShockHacker($('#board'), rawMap, start);
 	window.game = game;
 
-	$('tick').on('click', function(e) {
+	$('#tick').on('click', function(e) {
 		var result = game.tick();
 		if ( false === result ) {
 			alert('Fail =(');
@@ -136,7 +136,7 @@ $(function() {
 	});
 
 	var autoTicker = 0;
-	$('start').on('click', function(e) {
+	$('#start').on('click', function(e) {
 		if ( autoTicker ) {
 			clearInterval(autoTicker);
 			autoTicker = 0;

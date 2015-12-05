@@ -21,9 +21,9 @@ Minesweeper.prototype = {
 			self.m_iMines = rsp.mines;
 			self.m_arrFlags = [];
 
-			$('mines_to_find').textContent = String(self.m_iMines);
-			$('flags_left').textContent = String(self.m_iMines);
-			$('mine_percentage').textContent = String(Math.round(100 * rsp.mines / (rsp.size.y * rsp.size.x)));
+			$('#mines_to_find').textContent = String(self.m_iMines);
+			$('#flags_left').textContent = String(self.m_iMines);
+			$('#mine_percentage').textContent = String(Math.round(100 * rsp.mines / (rsp.size.y * rsp.size.x)));
 
 			// Save new map
 			var html = '';
@@ -34,9 +34,9 @@ Minesweeper.prototype = {
 				}
 				html += '</tr>';
 			}
-			$('ms_tbody').innerHTML = html;
+			$('#ms_tbody').innerHTML = html;
 
-			$('ms_tbody').fire('ms:fetch');
+			$('#ms_tbody').fire('ms:fetch');
 		});
 		return false;
 	},
@@ -44,7 +44,7 @@ Minesweeper.prototype = {
 	handleChanges: function(cs) {
 		for ( var i=0; i<cs.length; i++ ) {
 			var c = cs[i]
-			var f = $('ms_tbody').rows[ c[1] ].cells[ c[0] ];
+			var f = $('#ms_tbody').rows[ c[1] ].cells[ c[0] ];
 			f.className = 'o' + c[2];
 		}
 		return false;
@@ -106,7 +106,7 @@ Minesweeper.prototype = {
 				done.call(self);
 			}
 
-			$('ms_tbody').fire('ms:open');
+			$('#ms_tbody').fire('ms:open');
 		});
 		return false;
 	},
@@ -131,8 +131,8 @@ Minesweeper.prototype = {
 	},
 
 	updateFlagCounter: function() {
-		var used = $('ms_tbody').getElements('td.f').length;
-		$('flags_left').textContent = String(this.m_iMines - used);
+		var used = $('#ms_tbody').getElements('td.f').length;
+		$('#flags_left').textContent = String(this.m_iMines - used);
 	},
 
 	restart: function() {
@@ -146,7 +146,7 @@ Minesweeper.prototype = {
 		}
 
 		var rows = [];
-		$('ms_tbody').getChildren().each(function(tr) {
+		$('#ms_tbody').getChildren().each(function(tr) {
 			var row = '';
 			tr.getChildren().each(function(cell) {
 				var c = ' ';
@@ -179,7 +179,7 @@ Minesweeper.prototype = {
 
 	setName: function(name) {
 		this.m_szName = name;
-		$('your_name').textContent = name;
+		$('#your_name').textContent = name;
 	}
 };
 

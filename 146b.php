@@ -72,7 +72,7 @@ var _LEVEL = 1;
 		initLevel(level.n, level.prep);
 
 		elCanvas.on(evType, function(e) {
-			$('red').css(e.pageXY.toCSS());
+			$('#red').css(e.pageXY.toCSS());
 
 			if ( gameover ) return;
 
@@ -103,7 +103,7 @@ var _LEVEL = 1;
 		return String(n) + (prep ? '.' + prep : '');
 	}
 
-	$$('.goto').on('click', function(e) {
+	$$('#.goto').on('click', function(e) {
 		e.preventDefault();
 		var d = this.data('prev') != null ? -1 : 1;
 		if ( getMap(lvl.n + d) ) {
@@ -111,12 +111,12 @@ var _LEVEL = 1;
 		}
 	});
 
-	$('restart').on('click', function(e) {
+	$('#restart').on('click', function(e) {
 		e.preventDefault();
 		initLevel(lvl.n);
 	});
 
-	$('share').on('click', function(e) {
+	$('#share').on('click', function(e) {
 		e.preventDefault();
 
 		var bytes = Array.repeat((lvl.width+1) * (lvl.height+1), 0);
@@ -140,7 +140,7 @@ var _LEVEL = 1;
 	function initLevel(n, prep) {
 		clearInterval(slithering);
 		location.hash = levelToString(n, prep);
-		$('lvl').setText(n);
+		$('#lvl').setText(n);
 
 		lvl = getLevel(n);
 		lvl.connectors = getAllConnectors();

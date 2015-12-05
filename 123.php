@@ -95,7 +95,7 @@ r.extend(SteppingStones, {
 	selectStone : function( f_objTD ) {
 		if ( f_objTD.available && f_objTD.stone ) {
 			// Unselect current stone
-			$('stones_tbody').rows[this.m_arrJumper[1]].cells[this.m_arrJumper[0]].className = 'stone';
+			$('#stones_tbody').rows[this.m_arrJumper[1]].cells[this.m_arrJumper[0]].className = 'stone';
 
 			// Select new stone
 			f_objTD.className = 'jumper';
@@ -106,11 +106,11 @@ r.extend(SteppingStones, {
 
 	jump : function( f_szDir ) {
 		var overFieldC = this.coordsByDir( this.m_arrJumper, f_szDir );
-		var overField = $('stones_tbody').rows[overFieldC[1]].cells[overFieldC[0]];
+		var overField = $('#stones_tbody').rows[overFieldC[1]].cells[overFieldC[0]];
 		var toFieldC = this.coordsByDir( overFieldC, f_szDir );
-		var toField = $('stones_tbody').rows[toFieldC[1]].cells[toFieldC[0]];
+		var toField = $('#stones_tbody').rows[toFieldC[1]].cells[toFieldC[0]];
 		if ( overField.stone && !toField.stone && toField.available ) {
-			var nowField = $('stones_tbody').rows[this.m_arrJumper[1]].cells[this.m_arrJumper[0]];
+			var nowField = $('#stones_tbody').rows[this.m_arrJumper[1]].cells[this.m_arrJumper[0]];
 			var nowFieldC = r.copy(this.m_arrJumper);
 
 			// nowField is stoneless
@@ -127,7 +127,7 @@ r.extend(SteppingStones, {
 			toField.className = 'jumper';
 
 			this.m_iStones--;
-			$('stats_stonesleft').innerHTML = this.m_iStones;
+			$('#stats_stonesleft').innerHTML = this.m_iStones;
 
 			// Save order
 			this.addToStack(nowFieldC, f_szDir);
@@ -148,7 +148,7 @@ r.extend(SteppingStones, {
 		}
 
 		this.m_szName = szName;
-		$('your_name').setText(szName);
+		$('#your_name').setText(szName);
 
 		var self = this;
 		var data = {
@@ -190,19 +190,19 @@ r.extend(SteppingStones, {
 			// Save level
 			self.m_bGameOver = false;
 			self.m_iLevel = rv.level;
-			$('stats_level').innerHTML = rv.level;
+			$('#stats_level').innerHTML = rv.level;
 			self.m_arrJumper = rv.jumper;
 			self.m_arrStack = [];
 
 			// empty current map
-			while ( 0 < $('stones_tbody').childNodes.length ) {
-				$('stones_tbody').removeChild($('stones_tbody').firstChild);
+			while ( 0 < $('#stones_tbody').childNodes.length ) {
+				$('#stones_tbody').removeChild($('#stones_tbody').firstChild);
 			}
 
 			// save map
 			self.m_iStones = 0;
 			r.each(rv.map, function(row, y) {
-				var nr = $('stones_tbody').insertRow($('stones_tbody').rows.length);
+				var nr = $('#stones_tbody').insertRow($('#stones_tbody').rows.length);
 				for ( var x=0; x<row.length; x++ ) {
 					var nc = nr.insertCell(nr.cells.length);
 					nc.innerHTML = '';
@@ -221,9 +221,9 @@ r.extend(SteppingStones, {
 					}
 				}
 			});
-			$('stats_stonesleft').innerHTML = self.m_iStones;
+			$('#stats_stonesleft').innerHTML = self.m_iStones;
 			// show jumper
-			$('stones_tbody').rows[rv.jumper[1]].cells[rv.jumper[0]].className = 'jumper';
+			$('#stones_tbody').rows[rv.jumper[1]].cells[rv.jumper[0]].className = 'jumper';
 		});
 		return false;
 	},
@@ -231,14 +231,14 @@ r.extend(SteppingStones, {
 	changeName : function( f_szNewName ) {
 		if ( f_szNewName ) {
 			this.m_szName = f_szNewName;
-			$('your_name').setText(f_szNewName);
+			$('#your_name').setText(f_szNewName);
 		}
 	},
 
 	SaveMessage : function( f_msg ) {
-		$('stack_message').innerHTML = f_msg;
-		$('stack_message').style.backgroundColor = 'red';
-		setTimeout("$('stack_message').style.backgroundColor = '';", 500);
+		$('#stack_message').innerHTML = f_msg;
+		$('#stack_message').style.backgroundColor = 'red';
+		setTimeout("$('#stack_message').style.backgroundColor = '';", 500);
 	}
 });
 </script>
@@ -286,17 +286,17 @@ r.extend(SteppingStones, {
 r.xhr.busy = 0;
 window.on('xhrStart', function(e) {
 	r.xhr.busy++;
-	$('loading').css('visibility', 'visible');
+	$('#loading').css('visibility', 'visible');
 });
 window.on('xhrDone', function(e) {
 	if (--r.xhr.busy == 0) {
-		$('loading').css('visibility', 'hidden');
+		$('#loading').css('visibility', 'hidden');
 	}
 });
 
 var objStones = new SteppingStones('<?php echo $g_iFirstLevel; ?>');
 
-$('stones_tbody').on('click', function(e) {
+$('#stones_tbody').on('click', function(e) {
 	e.preventDefault();
 
 	if ( e.target.nodeName != 'TD' ) return;

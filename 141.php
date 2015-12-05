@@ -108,10 +108,10 @@ $OPENSOURCE = ( "stop" == $szActionTrackBeam && $_SESSION[S_NAME]['gameover'] ==
 var xhrBusy = 0;
 window.on('xhrStart', function() {
 	xhrBusy++;
-	$('loading').show();
+	$('#loading').show();
 }).on('xhrDone', function() {
 	xhrBusy--;
-	xhrBusy == 0 && $('loading').hide();
+	xhrBusy == 0 && $('#loading').hide();
 });
 
 function time() {
@@ -146,7 +146,7 @@ function Blackbox() {
 
 	this.m_GameOver = false;
 	Blackbox.m_iStartTime = 0;
-	$('playtime').setHTML("-");
+	$('#playtime').setHTML("-");
 
 	this.m_szAbsorbed = '#555';
 	this.m_szWhite = '#fff';
@@ -160,18 +160,18 @@ Blackbox.UpdateTimer = function() {
 		var iPlaytime = time() - this.m_iStartTime,
 			output = iPlaytime + " sec";
 
-		$('playtime').setHTML(output);
+		$('#playtime').setHTML(output);
 
 		setTimeout('Blackbox.UpdateTimer()', 100);
 	}
 };
 
 Blackbox.ChangeName = function() {
-	var new_name = prompt('New name?', $('your_name').getHTML());
+	var new_name = prompt('New name?', $('#your_name').getText());
 	if ( new_name ) {
 		var data = 'new_name=' + encodeURIComponent(new_name);
 		$.post(location.pathname, data).on('done', function(e) {
-			$('your_name').setHTML(this.responseText);
+			$('#your_name').setHTML(this.responseText);
 		});
 	}
 	return false;
@@ -179,26 +179,26 @@ Blackbox.ChangeName = function() {
 
 Blackbox.ShowGameRules = function() {
 	if ( oldgamerulesinnerhtml ) {
-		$('game_rules').innerHTML = oldgamerulesinnerhtml;
+		$('#game_rules').innerHTML = oldgamerulesinnerhtml;
 		oldgamerulesinnerhtml = false;
-		$('right_frame').style.width = '200px';
+		$('#right_frame').style.width = '200px';
 
 		return false;
 	}
 
 	if ( gamerulesinnerhtml )
 	{
-		oldgamerulesinnerhtml = $('game_rules').innerHTML;
-		$('game_rules').innerHTML = gamerulesinnerhtml;
-		$('right_frame').style.width = '400px';
+		oldgamerulesinnerhtml = $('#game_rules').innerHTML;
+		$('#game_rules').innerHTML = gamerulesinnerhtml;
+		$('#right_frame').style.width = '400px';
 	}
 	else
 	{
 		$.get(location.pathname + '?page=gamerules').on('done', function(e) {
-			oldgamerulesinnerhtml = $('game_rules').innerHTML;
+			oldgamerulesinnerhtml = $('#game_rules').innerHTML;
 			gamerulesinnerhtml = this.responseText;
-			$('game_rules').innerHTML = gamerulesinnerhtml;
-			$('right_frame').style.width = '400px';
+			$('#game_rules').innerHTML = gamerulesinnerhtml;
+			$('#right_frame').style.width = '400px';
 		});
 	}
 	return false;
@@ -221,7 +221,7 @@ Blackbox.reset = function( f_bResetAll ) {
 	});
 
 	if ( f_bResetAll ) {
-		$('stats_hilighted').setHTML(objBlackbox.m_iHighlights);
+		$('#stats_hilighted').setHTML(objBlackbox.m_iHighlights);
 
 		// Recreate field
 		for ( x=-1; x<=objBlackbox.m_sides; x++ ) {
@@ -500,7 +500,7 @@ Blackbox.prototype = {
 
 		szHilightClass = 'hilite';
 
-		fld = $('fld_'+f_coords[0]+'_'+f_coords[1]);
+		fld = $('#fld_'+f_coords[0]+'_'+f_coords[1]);
 		if ( this.m_mapUser[f_coords[0]] && this.m_mapUser[f_coords[0]][f_coords[1]] )
 		{
 			this.m_iHighlights = this.m_iHighlights-1;
@@ -533,7 +533,7 @@ Blackbox.prototype = {
 				this.m_mapUser[f_coords[0]][f_coords[1]] = true;
 			}
 		}
-		$('stats_hilighted').innerHTML = this.m_iHighlights;
+		$('#stats_hilighted').innerHTML = this.m_iHighlights;
 
 	}, // END Fieldcolor() */
 
@@ -597,20 +597,20 @@ Blackbox.prototype = {
 
 	_fldcolor : function( f_coords, f_color )
 	{
-		$('fld_'+f_coords[0]+'_'+f_coords[1]).style.backgroundColor = f_color;
+		$('#fld_'+f_coords[0]+'_'+f_coords[1]).style.backgroundColor = f_color;
 
 	}, // END _fldcolor() */
 
 
 	_FldClass : function( f_coords, f_class )
 	{
-		$('fld_'+f_coords[0]+'_'+f_coords[1]).className += " " + f_class;
+		$('#fld_'+f_coords[0]+'_'+f_coords[1]).className += " " + f_class;
 
 	}, // END _FldClass() */
 
 	_UnFldClass : function( f_coords, f_class )
 	{
-		obj = $('fld_'+f_coords[0]+'_'+f_coords[1]);
+		obj = $('#fld_'+f_coords[0]+'_'+f_coords[1]);
 		obj.className = obj.className.replace(f_class, '');
 
 	} // END _UnFldClass() */

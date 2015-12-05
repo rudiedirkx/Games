@@ -37,7 +37,7 @@ $(function() {
 // log('map cfg:', singular, multiple, symmetric)
 
 	// env vars
-	var c = $('map-container');
+	var c = $('#map-container');
 	var cells = c.getElements('a');
 
 	// process vars
@@ -179,7 +179,7 @@ log('off: drag');
 				if ( !c.getElements('.pad:not(.done)').length ) {
 					// game over!
 					var energy = c.getElements('.line').length;
-					$('message')
+					$('#message')
 						.setHTML('You\'re done! You spent ' + energy + ' energy. <a href="?board=' + (LEVEL+1) + '">Next board?</a>')
 						.addClass('news');
 				}

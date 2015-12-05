@@ -65,7 +65,7 @@ function init() {
 
 	elCanvas.on('contextmenu', function(e) {
 		e.preventDefault();
-		$('red').css(e.pageXY.toCSS());
+		$('#red').css(e.pageXY.toCSS());
 
 		var zoom = this.offsetWidth / _w;
 		var c = e.subjectXY.multiply(1/zoom);
@@ -78,7 +78,7 @@ function init() {
 	});
 
 	elCanvas.on('click', function(e) {
-		$('red').css(e.pageXY.toCSS());
+		$('#red').css(e.pageXY.toCSS());
 
 		var zoom = this.offsetWidth / _w;
 		var c = e.subjectXY.multiply(1/zoom);
@@ -90,7 +90,7 @@ function init() {
 		}
 	});
 
-	$('export').on('click', function(e) {
+	$('#export').on('click', function(e) {
 		var map = [];
 		for (var y=0; y<lvl.height; y++) {
 			var row = "'";
@@ -109,7 +109,7 @@ function init() {
 			row += "',";
 			map.push(row);
 		}
-		$('exported').value = map.join("\n");
+		$('#exported').value = map.join("\n");
 	});
 }
 

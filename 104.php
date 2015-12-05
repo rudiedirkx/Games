@@ -163,7 +163,7 @@ Blackbox.prototype = {
 
 	second: function() {
 		this.m_iPlaytime++;
-		$('playtime').setHTML(String(this.m_iPlaytime));
+		$('#playtime').setHTML(String(this.m_iPlaytime));
 	},
 
 	fire : function( f_coords ) {
@@ -184,7 +184,7 @@ Blackbox.prototype = {
 			}
 
 			for ( var i=0; i<rv.updates.length; i++ ) {
-				$('fld_' + rv.updates[i][0] + '_' + rv.updates[i][1]).style.backgroundColor = rv.updates[i][2];
+				$('#fld_' + rv.updates[i][0] + '_' + rv.updates[i][1]).style.backgroundColor = rv.updates[i][2];
 			}
 		});
 		return false;
@@ -204,7 +204,7 @@ Blackbox.prototype = {
 
 			self.gameover(1);
 			for ( var i=0; i<rv.atoms.length; i++ ) {
-				$('fld_' + rv.atoms[i][0] + '_' + rv.atoms[i][1]).innerHTML = '&dagger;';
+				$('#fld_' + rv.atoms[i][0] + '_' + rv.atoms[i][1]).innerHTML = '&dagger;';
 			}
 		});
 		return false;
@@ -241,7 +241,7 @@ Blackbox.prototype = {
 			self.m_bGameOver = false;
 			self.m_iPlaytime = -1;
 			this.m_iTimer = 0;
-			$('playtime').setHTML('-');
+			$('#playtime').setHTML('-');
 		});
 
 		return false;
@@ -327,15 +327,15 @@ function toggleFrame(name) {
 var xhrBusy = 0;
 window.on('xhrStart', function() {
 	xhrBusy++;
-	$('loading').show();
+	$('#loading').show();
 }).on('xhrDone', function() {
 	xhrBusy--;
-	xhrBusy == 0 && $('loading').hide();
+	xhrBusy == 0 && $('#loading').hide();
 });
 
 var objBlackbox = new Blackbox;
 
-$('blackbox')
+$('#blackbox')
 	// Check for game over
 	.on('click', function(e) {
 		if ( objBlackbox.m_bGameOver ) {

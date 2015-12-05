@@ -189,14 +189,14 @@ function unselect() {
 	});
 
 	// Start
-	flowtbl = $('flow');
+	flowtbl = $('#flow');
 	var start = { x : <?php echo $start[0][0]+1 + ( $start[1] == 'l' ? -1 : ( $start[1] == 'r' ? 1 : 0 ) ); ?> , y : <?php echo $start[0][1]+1 + ( $start[1] == 't' ? -1 : ( $start[1] == 'b' ? 1 : 0 ) ); ?> }, target = { x : <?php echo $target[0][0]+1 + ( $target[1] == 'l' ? -1 : ( $target[1] == 'r' ? 1 : 0 ) ); ?> , y : <?php echo $target[0][1]+1 + ( $target[1] == 't' ? -1 : ( $target[1] == 'b' ? 1 : 0 ) ); ?> };
 	with ( flowtbl.rows[start.y].cells[start.x] ) {
 		innerHTML = '<img src="images/161_t<?php echo $start[1]; ?>.png" />';
 		className = 'start';
 		title = 'START';
 	}
-	stile = $('#flow th.start', 1);
+	stile = $('#flow th.start');
 	stile.start = true;
 	stile.exit = oppositeSide('<?php echo $start[1]; ?>');
 	stile.stage = 2;
@@ -208,7 +208,7 @@ function unselect() {
 		className = 'target';
 		title = 'TARGET';
 	}
-	ttile = $('#flow th.target', 1);
+	ttile = $('#flow th.target');
 	ttile.target = true;
 	ttile.entry = oppositeSide('<?php echo $target[1]; ?>');
 

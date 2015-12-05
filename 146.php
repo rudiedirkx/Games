@@ -118,7 +118,8 @@ function clickBorder(o) {
 			updateClue('c_'+(a-1)+'_'+b);
 		}
 		// Update dots
-		var td = $('slither').rows[o.parentNode.sectionRowIndex-1].cells[o.cellIndex], bd = $('slither').rows[o.parentNode.sectionRowIndex+1].cells[o.cellIndex];
+		var td = $('#slither').rows[o.parentNode.sectionRowIndex-1].cells[o.cellIndex];
+		var bd = $('#slither').rows[o.parentNode.sectionRowIndex+1].cells[o.cellIndex];
 		if ( '1' == o.getAttribute('on') ) {
 			td.setAttribute( 'on', parseInt(td.getAttribute('on'))+1 );
 			bd.setAttribute( 'on', parseInt(bd.getAttribute('on'))+1 );
@@ -144,7 +145,8 @@ function clickBorder(o) {
 			updateClue('c_'+a+'_'+(b-1));
 		}
 		// Update dots
-		var ld = $('slither').rows[o.parentNode.sectionRowIndex].cells[o.cellIndex-1], rd = $('slither').rows[o.parentNode.sectionRowIndex].cells[o.cellIndex+1];
+		var ld = $('#slither').rows[o.parentNode.sectionRowIndex].cells[o.cellIndex-1];
+		var rd = $('#slither').rows[o.parentNode.sectionRowIndex].cells[o.cellIndex+1];
 		if ( '1' == o.getAttribute('on') ) {
 			ld.setAttribute( 'on', parseInt(ld.getAttribute('on'))+1 );
 			rd.setAttribute( 'on', parseInt(rd.getAttribute('on'))+1 );
@@ -173,7 +175,9 @@ function updateClue(o) {
 	if ( o.innerHTML ) {
 		var iClue = parseInt(o.innerHTML), iBorders = 0;
 		// Find the 4 adjacent borders
-		var t = $('slither').rows, r = o.parentNode.sectionRowIndex, c = o.cellIndex;
+		var t = $('#slither').rows;
+		var r = o.parentNode.sectionRowIndex;
+		var c = o.cellIndex;
 		var top = t[r-1].cells[c], bottom = t[r+1].cells[c], left = t[r].cells[c-1], right = t[r].cells[c+1];
 		iBorders += '1' == top.getAttribute('on') ? 1 : 0;
 		iBorders += '1' == right.getAttribute('on') ? 1 : 0;
@@ -186,7 +190,10 @@ function updateClue(o) {
 }
 
 function checkClues() {
-	var t = $('slither').getElementsByTagName('th'), i = t.length, iHave = 0, iMustHave = 0;
+	var t = $('#slither').getElementsByTagName('th');
+	var i = t.length;
+	var iHave = 0;
+	var iMustHave = 0;
 	while (i--) {
 		if ( 'clue' == t[i].className && '' != t[i].innerHTML ) {
 			iMustHave++;
@@ -204,7 +211,8 @@ function checkClues() {
 }
 
 function checkBorders() {
-	var t = $('slither').getElementsByTagName('td'), i = t.length;
+	var t = $('#slither').getElementsByTagName('td');
+	var i = t.length;
 	while (i--) {
 		if ( 'dot' == t[i].className ) {
 			if ( '2' != t[i].getAttribute('on') && '0' != t[i].getAttribute('on') ) {
@@ -217,7 +225,7 @@ function checkBorders() {
 
 var g_bHB = false, g_objBHThis, g_objBHLast;
 function hiliteBorders() {
-	var t = $('slither').getElementsByTagName('td'), i = t.length;
+	var t = $('#slither').getElementsByTagName('td'), i = t.length;
 	while (i--) {
 		if ( ( 'horbor' == t[i].className || 'verbor' == t[i].className ) && '1' == t[i].getAttribute('on') ) {
 			g_objBHThis = t[i];
@@ -239,7 +247,7 @@ function hiliteNextBorder() {
 		g_objBHLast.style.backgroundImage = g_objBHLast.getAttribute('old_bg_img');
 	}
 	// Current border's details
-	var t = $('slither').rows, r = g_objBHThis.parentNode.sectionRowIndex, c = g_objBHThis.cellIndex, m_r = g_r*2, m_c = g_c*2, nxt = null;
+	var t = $('#slither').rows, r = g_objBHThis.parentNode.sectionRowIndex, c = g_objBHThis.cellIndex, m_r = g_r*2, m_c = g_c*2, nxt = null;
 	// Find next border
 	s = 100;
 	if ( 'horbor' == g_objBHThis.className ) {
@@ -309,7 +317,7 @@ function levelDone() {
 		done.push(g_l);
 		document.cookie = 'g146=' + done.join(',') + ';expires=' + new Date('2020-01-01');
 	}
-	$('notices').setHTML('<a href="?lvl=' + (g_l+1) + '">Go to lvl ' + (g_l+1) + '...</a>');
+	$('#notices').setHTML('<a href="?lvl=' + (g_l+1) + '">Go to lvl ' + (g_l+1) + '...</a>');
 }
 function checkDone(btn) {
 	g_bHB = false;
@@ -368,8 +376,8 @@ for ( $i=0; $i<$r; $i++ )
 <div id="red" style="position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; background: red;"></div>
 
 <script>
-var evType = 'ontouchstart' in document.documentElement ? 'touchstart' : 'mousedown',
-	$slither = $('slither');
+var evType = 'ontouchstart' in document.documentElement ? 'touchstart' : 'mousedown';
+var $slither = $('#slither');
 
 function init() {
 	$slither.on(evType, function(e) {
@@ -383,7 +391,7 @@ function init() {
 			row = Math.floor(e.subjectXY.y / (tw / (g_c*3+1)));
 
 		if ( xor(col % 3 == 0, row % 3 == 0) ) {
-			$('red').css(e.pageXY.toCSS());
+			$('#red').css(e.pageXY.toCSS());
 
 			if ( col%3 == 0 ) {
 				col /= 3;
@@ -399,7 +407,7 @@ function init() {
 	});
 }
 
-$('levelselect0r').on('change', function(e) {
+$('#levelselect0r').on('change', function(e) {
 	if ( this.value && <?= $iGame ?> != this.value ) {
 		location = '?lvl=' + this.value;
 	}

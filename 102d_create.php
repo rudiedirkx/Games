@@ -157,7 +157,7 @@ String.repeat = function(str, num) {
 
 <script src="102.js"></script>
 <script>
-var $tbody = $('ms_tbody');
+var $tbody = $('#ms_tbody');
 
 // CLICK AND RIGHT CLICK
 function reTile(td, delta) {
@@ -183,9 +183,9 @@ $tbody.on('contextmenu', 'td', function(e) {
 
 // EXPORT TO ANALYZE
 $$('#analyze, #cache').on('click', function(e) {
-	$form = $('form-analyze');
+	$form = $('#form-analyze');
 	Minesweeper.prototype.export.call(Minesweeper.prototype, function(rows) {
-		$('form-analyze-input').setHTML(rows.map(function(row) {
+		$('#form-analyze-input').setHTML(rows.map(function(row) {
 			return '<input name="map[]" type="hidden" value="' + row + '" />';
 		}).join(''));
 	});
@@ -225,7 +225,7 @@ $$('.more-less button.remove').on('click', function(e) {
 });
 
 // CREATE PHP ARRAY
-$('cpa').on('click', function(e) {
+$('#cpa').on('click', function(e) {
 	e.preventDefault();
 
 	var trs = $tbody.children;
@@ -240,8 +240,8 @@ $('cpa').on('click', function(e) {
 		szPhpArray += "',\n";
 	}
 	szPhpArray += "\t),\n";
-	$('export').value = szPhpArray;
-	$('export').select();
+	$('#export').value = szPhpArray;
+	$('#export').select();
 });
 </script>
 

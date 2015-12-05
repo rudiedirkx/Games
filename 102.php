@@ -222,10 +222,10 @@ div#loading {
 		<br />
 		<p><a class="export" href="#" onclick="
 			objMinesweeper.export(function(rows) {
-				$('form-export').setHTML(rows.map(function(row) {
+				$('#form-export').setHTML(rows.map(function(row) {
 					return '<input name=&quot;map[]&quot; type=&quot;hidden&quot; value=&quot;' + row + '&quot; />';
 				}).join(''));
-				$('form-export').submit();
+				$('#form-export').submit();
 			});
 			return false
 		">Export</a></p>
@@ -268,13 +268,13 @@ div#loading {
 <script>
 r.xhr.busy = 0;
 window.on('xhrStart', function() {
-	$('loading').style.display = "block";
+	$('#loading').style.display = "block";
 	r.xhr.busy++;
 });
 window.on('xhrDone', function() {
 	r.xhr.busy--;
 	if ( r.xhr.busy == 0 ) {
-		$('loading').style.display = "none";
+		$('#loading').style.display = "none";
 	}
 });
 
@@ -284,11 +284,11 @@ var objMinesweeper = new Minesweeper('<?= @$_SESSION[S_NAME]['sessions'][SESSION
 // SOLVER //
 function getSolver() {
 	MinesweeperSolver.DEBUG = 0;
-	return new MinesweeperSolver($('ms_tbody'), objMinesweeper);
+	return new MinesweeperSolver($('#ms_tbody'), objMinesweeper);
 }
 // SOLVER //
 
-$('ms_tbody')
+$('#ms_tbody')
 	.on('contextmenu', 'td', function(e) {
 		e.preventDefault();
 		objMinesweeper.toggleFlag(this);

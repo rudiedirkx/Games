@@ -15,7 +15,7 @@ window.on('error', function(e) {
 
 	// Context
 	var html = document.documentElement,
-		elCanvas = $('canvas', true),
+		elCanvas = $('canvas'),
 		ctx = elCanvas.getContext('2d'),
 		_w = elCanvas.width,
 		_h = elCanvas.height,
