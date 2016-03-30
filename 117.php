@@ -1,12 +1,6 @@
 <?php
 // QUIZ
 
-session_start();
-
-include('connect.php');
-
-define( 'SESSION_NAME',	'qz_user' );
-
 $g_arrQuizes = array(
 	array(
 		'name' => 'Quiz 1',
@@ -38,17 +32,20 @@ if ( isset($_POST['answers'], $_POST['quiz']) && is_array($_POST['answers']) )
 {
 	$arrQuiz = $g_arrQuizes[$_POST['quiz']];
 	unset($arrQuiz['name']);
+
 	$iWrong = 0;
 	$i = 0;
 	foreach ( $arrQuiz AS $arrQuestion ) {
 		$szAnswer = array_pop($arrQuestion);
 		$szUserAnswer = isset($_POST['answers'][$i]) ? $_POST['answers'][$i] : '';
 		if ( $szUserAnswer != $szAnswer ) {
+			exit("Wrong. Try again.");
 			$iWrong++;
 		}
 		$i++;
 	}
-	exit( (string)(int)(0 < $iWrong) );;
+
+	exit("Yes! That's the one.");
 }
 
 $iQuiz = isset($_GET['quiz'], $g_arrQuizes[$_GET['quiz']]) ? $_GET['quiz'] : 0;
@@ -61,9 +58,7 @@ $perregel = 6;
 
 <head>
 <title><?php echo $arrQuiz['name']; ?></title>
-<script type="text/javascript" src="general_1_2_4.js"></script>
-<script type="text/javascript" src="ajax_1_2_1.js"></script>
-<style type="text/css">
+<style>
 label {
 	display		: block;
 	width		: 100%;
@@ -86,25 +81,21 @@ label {
 	<tr valign="top">
 <?php
 
-$arrAnswers = /*isset($_SESSION[SESSION_NAME]['answers']) ? $_SESSION[SESSION_NAME]['answers'] :*/ array();
-
 $i = 0;
-foreach ( $arrQuiz AS $bs => $arrQuestion )
-{
+foreach ( $arrQuiz AS $bs => $arrQuestion ) {
 	echo "\t\t".'<td width="'.(int)(100/$perregel).'%"><b>'.$arrQuestion[0].'</b><br /><br />';
 	unset($arrQuestion[0]);
-//	array_pop($arrQuestion);
+
 	$j = 0;
-	echo '<label><input type="radio" name="answers['.$i.']" value="-"'.( !isset($arrAnswers[$i]) || '-' == $arrAnswers[$i] ? ' checked="checked"' : '' ).' />&nbsp;&nbsp;&nbsp;</label>';
-	foreach ( $arrQuestion AS $szAnswer )
-	{
+	echo '<label><input type="radio" name="answers['.$i.']" value="" checked />&nbsp;&nbsp;&nbsp;</label>';
+	foreach ( $arrQuestion AS $szAnswer ) {
 		$szKey = $abcd[$j];
-		echo '<label><input type="radio" name="answers['.$i.']" value="'.$szKey.'"'.( isset($arrAnswers[$i]) && $szKey == $arrAnswers[$i] ? ' checked="checked"' : '' ).' />'.$szKey.'. '.$szAnswer.'</label>';
+		echo '<label><input type="radio" name="answers['.$i.']" value="'.$szKey.'" />'.$szKey.'. '.$szAnswer.'</label>';
 		$j++;
 	}
 	echo '</td>'."\n";
-	if ( ++$i%$perregel == 0 )
-	{
+
+	if ( ++$i%$perregel == 0 ) {
 		echo "\t".'</tr>'."\n\t".'<tr valign="top">'."\n";
 	}
 }
@@ -114,11 +105,6 @@ foreach ( $arrQuiz AS $bs => $arrQuestion )
 	<tr>
 		<td colspan="<?php echo $perregel; ?>" align="center" style="padding:5px;"><input type="submit" value="Check" /></td>
 	</tr>
-<?php /*if ( isset($_SESSION[SESSION_NAME]['fouten']) ) { $szWrong = $_SESSION[SESSION_NAME]['fouten'].' of your answers '.( 1 == $_SESSION[SESSION_NAME]['fouten'] ? 'is' : 'are' ).' wrong!!'; ?>
-	<tr>
-		<td colspan="<?php echo $perregel; ?>" style="padding:5px;font-weight:bold;"><?php echo 0 < $_SESSION[SESSION_NAME]['fouten'] ? '<font color="red">Not all your answers are correct!' : '<font color="green">All your answers were correct!!!'; ?></font></td>
-	</tr>
-<?php }*/ ?>
 </table>
 </form>
 </body>
