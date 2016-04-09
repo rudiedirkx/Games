@@ -1,13 +1,11 @@
 <?php
 // THE BOX
-// drunkmenworkhere: Q3, 8iR, rZ9a2, Dxg20aj, Hdf7, K4sU, 
+// drunkmenworkhere: Q3, 8iR, rZ9a2, Dxg20aj, Hdf7, K4sU,
 
 define( 'BASEPAGE',	basename($_SERVER['SCRIPT_NAME']) );
 if ( 5 > (int)PHP_VERSION ) {
 	exit('Sorry, not supported in PHP '.PHP_VERSION.'! Check out <a href="http://games.home.hotblocks.nl/'.BASEPAGE.'">http://games.home.hotblocks.nl</a>');
 }
-
-session_start();
 
 $bShowCoords	= false;
 $bDebug			= true;
@@ -15,9 +13,8 @@ $bDebug			= true;
 $iFuelPerWalk		= 1;
 $iExtraFuelPerPush	= 2;
 
-require_once('connect.php');
-require_once('inc.cls.json.php');
 define( 'S_NAME', 'bxb_user' );
+session_start();
 
 
 $_page		= isset($_POST['page'])		? strtolower(trim($_POST['page']))		: ( isset($_GET['page'])	? strtolower(trim($_GET['page']))	: '' );
@@ -27,10 +24,10 @@ $_action	= isset($_POST['action'])	? strtolower(trim($_POST['action']))	: ( isse
 require_once('140_levels.php');
 $eerste_level = key($g_arrLevels);
 
-$qCustomLevels = mysql_query("SELECT * FROM the_box_multiple_custom_levels ORDER BY id ASC;");
-while ( $arrCLevel = mysql_fetch_assoc($qCustomLevels) ) {
-	$g_arrLevels['C'.$arrCLevel['id']] = unserialize($arrCLevel['level']);
-}
+// $qCustomLevels = mysql_query("SELECT * FROM the_box_multiple_custom_levels ORDER BY id ASC;");
+// while ( $arrCLevel = mysql_fetch_assoc($qCustomLevels) ) {
+// 	$g_arrLevels['C'.$arrCLevel['id']] = unserialize($arrCLevel['level']);
+// }
 
 
 if ( empty($_SESSION[S_NAME]) ) {
@@ -58,7 +55,7 @@ else if ( isset($_POST['new_name']) ) {
 else if ( 'get_maps' == $_action ) {
 	if ( !isset($_POST['level'], $g_arrLevels[$_POST['level']]) ) {
 		$iLevel = 0;
-//		exit(json::encode(array('error' => 'Invalid level: '.(int)$_POST['level'])));
+//		exit(json_encode(array('error' => 'Invalid level: '.(int)$_POST['level'])));
 	}
 	else {
 		$iLevel = $_POST['level'];
@@ -67,7 +64,7 @@ else if ( 'get_maps' == $_action ) {
 
 	reset_game($iLevel);
 
-	exit(json::encode(array(
+	exit(json_encode(array(
 		'level'		=> $iLevel,
 		'map'		=> $arrLevel['map'],
 		'pusher'	=> $arrLevel['pusher'],

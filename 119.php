@@ -1,11 +1,6 @@
 <?php
 // PICROSS
 
-session_start();
-
-include_once('connect.php');
-require_once('json_php'.(int)PHP_VERSION.'.php');
-
 $g_arrMaps = array(
 	1 => array(
 		'xxxx',
@@ -89,108 +84,171 @@ if ( isset($_GET['fetch_map'], $_GET['level']) ) {
 		'size' => array(strlen($arrMap[0]), count($arrMap)),
 		'borders' => $b,
 	);
-	exit(json::encode($arrMap));
+	exit(json_encode($arrMap));
 }
 
+$level = getLevel();
+$map = prepareLevel($level);
+
 ?>
+<!doctype html>
 <html>
 
 <head>
 <title>PICROSS</title>
-<style type="text/css">
-body, table, input {
-	font-family			: verdana;
-	font-size			: 12px;
-	color				: #000;
-	line-height			: 150%;
-	cursor				: default;
+<style>
+body {
+	font-family: sans-serif;
+	background-color: yellow;
 }
-table#picross {
-	border-collapse		: collapse;
+table {
+	border-collapse: collapse;
 }
-tbody#picross_tb td {
-	border				: solid 1px #bbb;
-	cursor				: pointer;
-	width				: 28px;
-	height				: 28px;
-	padding				: 2px;
+td,
+th {
+	border: solid 1px #999;
+	cursor: pointer;
+	padding: 4px;
+	line-height: 1.4;
 }
-tbody#picross_tb td.hborder,
-tbody#picross_tb td.vborder {
-	background-color	: #eee;
-	text-align			: center;
-	vertical-align		: top;
+thead a.disabled {
+	visibility: hidden;
 }
-tbody#picross_tb td.vborder {
-	text-align			: left;
-	vertical-align		: middle;
-	padding				: 2px 4px;
+tbody td {
+	background: #bbb;
+	padding: 0;
+	width: calc(1.4em + 8px);
+}
+tbody td[data-state="active"] {
+	background-color: black;
+}
+tbody td[data-state="inactive"] {
+	background-color: white;
+}
+tbody a {
+	display: block;
+	padding: 4px 0;
+	text-decoration: none;
+}
+th.hor {
+	text-align: left;
+}
+th.hor span + span {
+	margin-left: .25em;
+}
+th.ver {
+	text-align: center;
+	vertical-align: top;
+}
+th.ver span {
+	display: block;
 }
 </style>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<script type="text/javascript">
-<!--//
-var _bg = [ 'white', 'black', 'pink url(images/dot.gif) 50% 50% no-repeat' ];
-var _lvl = 0;
-function fetchMap(l) {
-	new Ajax('?fetch_map=1&level=' + l, {
-		onComplete : function(t) {
-			try { var r = eval('('+t+')') }
-			catch (ex) { alert(t); return; }
-			console.debug(r);
-			_lvl = l;
-			$('stats_level').innerHTML = _lvl;
-			// clear tbody
-			while ( 0 < $('picross_tb').childNodes.length ) {
-				$('picross_tb').removeChild($('picross_tb').firstChild);
-			}
-			// fill tbody
-			for ( var y=0; y<r.size[1]; y++ ) {
-				var tr = $('picross_tb').insertRow($('picross_tb').rows.length);
-				for ( var x=0; x<r.size[0]; x++ ) {
-					tr.insertCell(0);
-				}
-				var b = tr.insertCell(r.size[0]);
-				b.className = 'vborder';
-				b.innerHTML = r.borders.v[y].replace(/,/g, '&nbsp;');
-			}
-			var tr = $('picross_tb').insertRow(r.size[1]);
-			for ( var x=0; x<r.size[0]; x++ ) {
-				var b = tr.insertCell(tr.cells.length);
-				b.className = 'hborder';
-				b.innerHTML = r.borders.h[x].replace(/,/g, '<br \/>');
-			}
-			var b = tr.insertCell(tr.cells.length);
-			b.className = 'hborder';
-			b.style.backgroundColor = 'white';
-		}
-	}).request();
-	return false;
-}
-//-->
-</script>
 </head>
 
 <body>
-<table id="picross"><thead><tr><th colspan="40">Level [<span id="stats_level">0</span>] | <a href="#" onclick="return fetchMap(_lvl-1);">prev</a> | <a href="#" onclick="return fetchMap(_lvl+1);">next</a></th></tr></thead><tbody id="picross_tb"><tr><td></td></tr></tbody></table>
-<script type="text/javascript">
-<!--//
-$('picross_tb').onclick = function(e) {
-	e = new Event(e);
-	if ( 'TD' == e.target.nodeName && !e.target.className ) {
-		e.target.style.background = '' == e.target.style.background ? 'black' : '';
-	}
-}
-$('picross_tb').oncontextmenu = function(e) {
-	e = new Event(e).stop();
-	if ( 'TD' == e.target.nodeName && !e.target.className ) {
-		e.target.style.background = '' != e.target.style.background ? '' : 'white url(images/dot.gif) center center no-repeat';
-	}
-	return false;
-}
-fetchMap(1);
-//-->
-</script>
+	<table id="picross">
+		<thead>
+			<tr>
+				<th colspan="40">
+					<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a> &nbsp;
+					Level <?= $level ?> &nbsp;
+					<a class="<?= !isset($g_arrMaps[$level+1]) ? 'disabled' : '' ?>" href="?level=<?= $level+1 ?>">&gt;&gt;</a>
+				</th>
+			</tr>
+		</thead>
+		<tbody id="picross_tb">
+			<? foreach ($map['map'] as $y => $line): ?>
+				<tr>
+					<? for ($x=0; $x < strlen($line); $x++): ?>
+						<td><a href="#">&nbsp;</a></td>
+					<? endfor ?>
+					<th class="hor"><span><?= implode('</span> <span>', $map['hor'][$y]) ?></span></th>
+				</tr>
+			<? endforeach ?>
+			<tr>
+				<? for ($x=0; $x < strlen($map['map'][0]); $x++): ?>
+					<th class="ver"><span><?= implode('</span> <span>', $map['ver'][$x]) ?></span></th>
+				<? endfor ?>
+				<th></th>
+			</tr>
+		</tbody>
+	</table>
+
+	<script>
+	var states = ['', 'active', 'inactive'];
+	document.querySelector('tbody').addEventListener('click', function(e) {
+		if (e.target.nodeName == 'A') {
+			e.preventDefault();
+
+			var cell = e.target.parentNode;
+			var state = cell.dataset.stateIndex || 0;
+			state = (state + 1) % 3;
+			cell.dataset.stateIndex = state;
+			cell.dataset.state = states[state];
+		}
+	});
+	</script>
+
 </body>
 
 </html>
+<?php
+
+function getLevel() {
+	global $g_arrMaps;
+	return isset($_GET['level'], $g_arrMaps[ (int) $_GET['level'] ]) ? (int) $_GET['level'] : 1;
+}
+
+function prepareLevel($level) {
+	global $g_arrMaps;
+
+	$map = $g_arrMaps[$level];
+
+	$hor = prepareAxis($map, true);
+	$ver = prepareAxis($map, false);
+
+	return compact('map', 'hor', 'ver');
+}
+
+function prepareAxis($map, $hor) {
+	$d1max = $hor ? count($map) : strlen($map[0]);
+	$d2max = $hor ? strlen($map[0]) : count($map);
+
+	$streak = false;
+	$numbers = [];
+	for ( $d1=0; $d1 < $d1max; $d1++ ) {
+		if ($d1 > 0) {
+			$streak = false;
+			$numbers[] = '';
+		}
+
+		for ( $d2=0; $d2 < $d2max; $d2++ ) {
+			$y = $hor ? $d1 : $d2;
+			$x = $hor ? $d2 : $d1;
+
+			if ( $map[$y][$x] == 'x' ) {
+				if ( !$streak ) {
+					$streak = true;
+					$numbers[] = 0;
+				}
+				$numbers[ count($numbers)-1 ]++;
+			}
+			else {
+				$streak = false;
+			}
+		}
+	}
+
+	$lines = [[]];
+	foreach ( $numbers as $number ) {
+		if ( !$number ) {
+			$lines[] = [];
+		}
+		else {
+			$lines[ count($lines)-1 ][] = $number;
+		}
+	}
+
+	return $lines;
+}
