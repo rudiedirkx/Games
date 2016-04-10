@@ -2,6 +2,15 @@
 
 define('THUMB_SIZE', 91);
 
+function shash($str) {
+	$hash = 0;
+	for ($i=0; $i < strlen($str); $i++) {
+		$chr = ord($str[$i]);
+		$hash = (($hash << 5) - $hash) + $chr;
+	}
+	return sprintf('%u', $hash);
+}
+
 function get_thumbs_positions( &$thumbs = array() ) {
 	$thumbs = get_thumbs();
 	$positions = array();

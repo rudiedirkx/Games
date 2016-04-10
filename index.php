@@ -35,6 +35,7 @@ $g_arrGames = array(
 	array('139',			'THE BOX -OneTarget',							'As old as the world, but not as easy. Get all boxes in that one corner'),
 	array('140',			'THE BOX -MoreTargets',							'As old as the world, but not as easy. Every box has one place to go to. Its not that easy'),
 	array('119',			'PICROSS',										'Tricky puzzle. You can make it as big as you want though'),
+	array('119B',			'PICROSS BUILDER',								'Level builder for PICROSS'),
 	array('120',			'WORDMIX',										'Just a few mixed words and a sentence. Get it right and you wiiiiiin'),
 	array('121',			'POKER',										'Play poker on your own'),
 	array('136',			'SUDOKU -DoItYourself',							'Make your own sudoku or try one of the earlier'),

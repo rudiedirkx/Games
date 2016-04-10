@@ -1,149 +1,21 @@
 <?php
 // PICROSS
 
-$g_arrMaps = array(
-	1 => array(
-		'xxxx',
-		'x__x',
-		'__xx',
-		'_x__',
-	),
-	2 => array(
-		'xx_x',
-		'_xxx',
-		'xxx_',
-		'x_xx',
-	),
-	3 => array(
-		'_xxxxx_',
-		'_x_x_x_',
-		'_xxxxx_',
-		'___x___',
-		'_xxxxx_',
-		'_x_x_xx',
-		'___x___',
-		'_xxxxx_',
-		'_x___x_',
-		'xx___xx',
-	),
-	4 => array(
-		'xxxxxxxxxxxxxx_',
-		'x__xxxxxxxxx__x',
-		'x__xxxxx__xx__x',
-		'x__xxxxx__xx__x',
-		'x__xxxxx__xx__x',
-		'x__xxxxxxxxx__x',
-		'x_____________x',
-		'x_xxxxxxxxxxx_x',
-		'x_x_________x_x',
-		'x_x_xxxxxxx_x_x',
-		'x_x_________x_x',
-		'x_x_xxxxxxx_x_x',
-		'x_x_________x_x',
-		'x_x_________x_x',
-		'xxxxxxxxxxxxxxx',
-	),
-	5 => array(
-		'xxx_xxxxxxxxxxx',
-		'xx___xxxxxxxxxx',
-		'x___xxxxxxxxxxx',
-		'___xxxxxxxxxxxx',
-		'__xxxxxx___xxxx',
-		'___xxxx_____xxx',
-		'x___xx__xx__xxx',
-		'xx_xx__xxx__xxx',
-		'xxxx__xxx__xx_x',
-		'xxxx__xx__xx___',
-		'xxxxx____xx___x',
-		'xxxxxx__xx___xx',
-		'xxxxxxxxx___xxx',
-		'xxxxxxxxxx___xx',
-		'xxxxxxxxxxx___x',
-	),
-);
+require __DIR__ . '/inc.functions.php';
 
-//$_GET['fetch_map'] = $_GET['level'] = 4;
-if ( isset($_GET['fetch_map'], $_GET['level']) ) {
-	if ( !isset($g_arrMaps[$_GET['level']]) ) {
-		exit('Invalid level ['.$_GET['level'].']');
-	}
-	$arrMap = $g_arrMaps[$_GET['level']];
-	$b = array('h' => array(), 'v' => array());
-	foreach ( $arrMap AS $l => $szLine ) {
-		$b['v'][$l] = implode(',', array_map('strlen', preg_split('/(_+)/', trim($szLine, '_'))));
-	}
-	for ( $x=0; $x<strlen($arrMap[0]); $x++ ) {
-		$szRow = '';
-		foreach ( $arrMap AS $l => $szLine ) {
-			$szRow .= substr($szLine, $x, 1);
-		}
-		$b['h'][$x] = implode(',', array_map('strlen', preg_split('/(_+)/', trim($szRow, '_'))));
-	}
-//exit('<pre>'.print_r($b, true));
-	$arrMap = array(
-		'size' => array(strlen($arrMap[0]), count($arrMap)),
-		'borders' => $b,
-	);
-	exit(json_encode($arrMap));
+$g_arrMaps = getMaps();
+if (!($level = getLevelFromInput($map))) {
+	$level = getLevel();
+	$map = prepareMap($g_arrMaps[$level]);
 }
-
-$level = getLevel();
-$map = prepareLevel($level);
 
 ?>
 <!doctype html>
 <html>
 
 <head>
-<title>PICROSS</title>
-<style>
-body {
-	font-family: sans-serif;
-	background-color: yellow;
-}
-table {
-	border-collapse: collapse;
-}
-td,
-th {
-	border: solid 1px #999;
-	cursor: pointer;
-	padding: 4px;
-	line-height: 1.4;
-}
-thead a.disabled {
-	visibility: hidden;
-}
-tbody td {
-	background: #bbb;
-	padding: 0;
-	width: calc(1.4em + 8px);
-}
-tbody td[data-state="active"] {
-	background-color: black;
-}
-tbody td[data-state="inactive"] {
-	background-color: white;
-}
-tbody a {
-	display: block;
-	padding: 4px 0;
-	text-decoration: none;
-}
-th.hor {
-	text-align: left;
-}
-th.hor span + span {
-	margin-left: .25em;
-}
-th.ver {
-	text-align: center;
-	vertical-align: top;
-}
-th.ver span {
-	display: block;
-}
-</style>
+	<title>PICROSS</title>
+	<link rel="stylesheet" href="119.css" />
 </head>
 
 <body>
@@ -157,7 +29,7 @@ th.ver span {
 				</th>
 			</tr>
 		</thead>
-		<tbody id="picross_tb">
+		<tbody>
 			<? foreach ($map['map'] as $y => $line): ?>
 				<tr>
 					<? for ($x=0; $x < strlen($line); $x++): ?>
@@ -175,17 +47,35 @@ th.ver span {
 		</tbody>
 	</table>
 
+	<p><a href="119B.php">Build your own</a></p>
+
+	<script src="119.js"></script>
 	<script>
+	var solution = '<?= hashMap($map) ?>';
+
 	var states = ['', 'active', 'inactive'];
-	document.querySelector('tbody').addEventListener('click', function(e) {
+	var tbody = document.querySelector('tbody');
+	var winner;
+	tbody.addEventListener('click', function(e) {
 		if (e.target.nodeName == 'A') {
 			e.preventDefault();
 
 			var cell = e.target.parentNode;
-			var state = cell.dataset.stateIndex || 0;
-			state = (state + 1) % 3;
-			cell.dataset.stateIndex = state;
-			cell.dataset.state = states[state];
+			g119.click(cell, states);
+
+			clearTimeout(winner);
+			var hash = g119.shash(g119.map(tbody));
+			if (hash == solution) {
+				winner = setTimeout(function() {
+					[].forEach.call(tbody.querySelectorAll('td:not([data-state="active"]):not([data-state="inactive"])'), function(cell) {
+						cell.dataset.state = 'inactive';
+					});
+
+					setTimeout(function() {
+						alert('YOU WIN!');
+					});
+				}, 500);
+			}
 		}
 	});
 	</script>
@@ -200,15 +90,17 @@ function getLevel() {
 	return isset($_GET['level'], $g_arrMaps[ (int) $_GET['level'] ]) ? (int) $_GET['level'] : 1;
 }
 
-function prepareLevel($level) {
-	global $g_arrMaps;
-
-	$map = $g_arrMaps[$level];
-
+function prepareMap($map) {
 	$hor = prepareAxis($map, true);
 	$ver = prepareAxis($map, false);
 
 	return compact('map', 'hor', 'ver');
+}
+
+function hashMap($map) {
+	$width = strlen($map['map'][0]);
+	$cells = rtrim(strtr(implode($map['map']), ['_' => 0, 'x' => 1]), '0');
+	return shash($width . '.' . $cells);
 }
 
 function prepareAxis($map, $hor) {
@@ -251,4 +143,84 @@ function prepareAxis($map, $hor) {
 	}
 
 	return $lines;
+}
+
+function getLevelFromInput(&$map) {
+	if (isset($_GET['play']) && is_string($_GET['play'])) {
+		if (preg_match('#^(\d+)\.([01]+)$#', $_GET['play'], $match)) {
+			$lines = str_split(strtr($match[2], ['_', 'x']), $match[1]);
+			$max = array_reduce($lines, function($max, $line) {
+				return max($max, strlen(rtrim($line, '_')));
+			});
+			$lines = array_map(function($line) use ($max) {
+				return substr($line . str_repeat('_', $max), 0, $max);
+			}, $lines);
+
+			$map = prepareMap($lines);
+			return 999;
+		}
+	}
+}
+
+function getMaps() {
+	return array(
+		1 => array(
+			'xxxx',
+			'x__x',
+			'__xx',
+			'_x__',
+		),
+		2 => array(
+			'xx_x',
+			'_xxx',
+			'xxx_',
+			'x_xx',
+		),
+		3 => array(
+			'_xxxxx_',
+			'_x_x_x_',
+			'_xxxxx_',
+			'___x___',
+			'_xxxxx_',
+			'_x_x_xx',
+			'___x___',
+			'_xxxxx_',
+			'_x___x_',
+			'xx___xx',
+		),
+		4 => array(
+			'xxxxxxxxxxxxxx_',
+			'x__xxxxxxxxx__x',
+			'x__xxxxx__xx__x',
+			'x__xxxxx__xx__x',
+			'x__xxxxx__xx__x',
+			'x__xxxxxxxxx__x',
+			'x_____________x',
+			'x_xxxxxxxxxxx_x',
+			'x_x_________x_x',
+			'x_x_xxxxxxx_x_x',
+			'x_x_________x_x',
+			'x_x_xxxxxxx_x_x',
+			'x_x_________x_x',
+			'x_x_________x_x',
+			'xxxxxxxxxxxxxxx',
+		),
+		5 => array(
+			'xxx_xxxxxxxxxxx',
+			'xx___xxxxxxxxxx',
+			'x___xxxxxxxxxxx',
+			'___xxxxxxxxxxxx',
+			'__xxxxxx___xxxx',
+			'___xxxx_____xxx',
+			'x___xx__xx__xxx',
+			'xx_xx__xxx__xxx',
+			'xxxx__xxx__xx_x',
+			'xxxx__xx__xx___',
+			'xxxxx____xx___x',
+			'xxxxxx__xx___xx',
+			'xxxxxxxxx___xxx',
+			'xxxxxxxxxx___xx',
+			'xxxxxxxxxxx___x',
+		),
+	);
 }

@@ -1,0 +1,45 @@
+body {
+	font-family: sans-serif;
+	background-color: yellow;
+}
+table {
+	border-collapse: collapse;
+}
+td,
+th {
+	border: solid 1px #999;
+	padding: 4px;
+	line-height: 1.4;
+}
+thead a.disabled {
+	visibility: hidden;
+}
+tbody td {
+	background: #bbb;
+	padding: 0;
+	width: calc(1.4em + 8px);
+}
+tbody td[data-state="active"] {
+	background-color: black;
+}
+tbody td[data-state="inactive"] {
+	background-color: white;
+}
+tbody a {
+	display: block;
+	padding: 4px 0;
+	text-decoration: none;
+}
+th.hor {
+	text-align: left;
+}
+th.hor span + span {
+	margin-left: .25em;
+}
+th.ver {
+	text-align: center;
+	vertical-align: top;
+}
+th.ver span {
+	display: block;
+}
