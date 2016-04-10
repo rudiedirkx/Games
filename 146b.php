@@ -103,7 +103,7 @@ var _LEVEL = 1;
 		return String(n) + (prep ? '.' + prep : '');
 	}
 
-	$$('#.goto').on('click', function(e) {
+	$$('.goto').on('click', function(e) {
 		e.preventDefault();
 		var d = this.data('prev') != null ? -1 : 1;
 		if ( getMap(lvl.n + d) ) {
