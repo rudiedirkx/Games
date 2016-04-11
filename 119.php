@@ -148,6 +148,16 @@ if (isset($_POST['cheat'])) {
 			});
 		}
 	}
+
+	setTimeout(function() {
+		var w = tbody.rows[0].querySelectorAll('td').length;
+		var h = tbody.rows.length - 1;
+		[].forEach.call(tbody.querySelectorAll('th[data-hints]'), function(cell) {
+			var length = cell.classList.contains('hor') ? w : h;
+			var options = g119.options(length, g119.getHintsForCell(cell)).length;
+			cell.title = options + ' possible lines';
+		});
+	});
 	</script>
 
 </body>
