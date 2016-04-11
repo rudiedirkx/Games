@@ -67,7 +67,7 @@ if (isset($_POST['cheat'])) {
 
 	var states = ['', 'active', 'inactive'];
 	var tbody = document.querySelector('tbody');
-	var winner;
+	var winner, validator;
 	tbody.addEventListener('click', function(e) {
 		if (e.target.nodeName == 'A') {
 			e.preventDefault();
@@ -98,16 +98,19 @@ if (isset($_POST['cheat'])) {
 				// Check X axis for cell.cellIndex
 				// Check Y axis for cell.parentNode.sectionRowIndex
 
-				var line, hints, valid;
-				line = g119.getLineForRow(tbody, cell.parentNode.sectionRowIndex);
-				hints = g119.getHintsForRow(tbody, cell.parentNode.sectionRowIndex);
-				valid = g119.validLine(line, hints);
-				g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList.toggle('invalid', !valid);
+				clearTimeout(validator);
+				validator = setTimeout(function() {
+					var line, hints, valid;
+					line = g119.getLineForRow(tbody, cell.parentNode.sectionRowIndex);
+					hints = g119.getHintsForRow(tbody, cell.parentNode.sectionRowIndex);
+					valid = g119.validLine(line, hints);
+					g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList.toggle('invalid', !valid);
 
-				line = g119.getLineForColumn(tbody, cell.cellIndex);
-				hints = g119.getHintsForColumn(tbody, cell.cellIndex);
-				valid = g119.validLine(line, hints);
-				g119.getMetaCellForColumn(tbody, cell.cellIndex).classList.toggle('invalid', !valid);
+					line = g119.getLineForColumn(tbody, cell.cellIndex);
+					hints = g119.getHintsForColumn(tbody, cell.cellIndex);
+					valid = g119.validLine(line, hints);
+					g119.getMetaCellForColumn(tbody, cell.cellIndex).classList.toggle('invalid', !valid);
+				}, 500);
 			}
 		}
 	});

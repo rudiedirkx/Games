@@ -8,46 +8,58 @@ g119.options = function(length, hints) {
 	}, 0);
 	var spacers = groups-1;
 	var room = length - taken - spacers;
+
+	var options;
 	if (room == 0) {
-		return false;
-	}
-
-	var flexibles = groups+1;
-	var code = 'var spread = [];';
-	for (var f=0; f<flexibles; f++) {
-		code += 'for (var g' + f + '=0; g' + f + '<=' + room + '; g' + f + '++) ';
-	}
-	var vars = [];
-	for (var f=0; f<flexibles; f++) {
-		vars.push('g' + f);
-	}
-	code += 'if (' + vars.join(' + ') + ' == ' + room + ') ';
-	code += 'spread.push([' + vars.join(', 1+') + '-1]); ';
-	code += 'return spread;';
-
-	var fn = new Function(code);
-	var spread = fn();
-
-	var options = [];
-	for (var i=0; i<spread.length; i++) {
 		var option = '';
-		for (var j=0; j<hints.length; j++) {
-			// Add inactives before
-			for (var x=0; x<spread[i][j]; x++) {
+		for (var i=0; i<hints.length; i++) {
+			if (i > 0) {
 				option += '0';
 			}
-
-			// Add actives
-			for (var x=0; x<hints[j]; x++) {
+			for (var j=0; j<hints[i]; j++) {
 				option += '1';
 			}
 		}
-
-		// Add last inactives after
-		for (var x=0; x<spread[i][j]; x++) {
-			option += '0';
+		options = [option];
+	}
+	else {
+		var flexibles = groups+1;
+		var code = 'var spread = [];';
+		for (var f=0; f<flexibles; f++) {
+			code += 'for (var g' + f + '=0; g' + f + '<=' + room + '; g' + f + '++) ';
 		}
-		options.push(option);
+		var vars = [];
+		for (var f=0; f<flexibles; f++) {
+			vars.push('g' + f);
+		}
+		code += 'if (' + vars.join(' + ') + ' == ' + room + ') ';
+		code += 'spread.push([' + vars.join(', 1+') + '-1]); ';
+		code += 'return spread;';
+
+		var fn = new Function(code);
+		var spread = fn();
+
+		options = [];
+		for (var i=0; i<spread.length; i++) {
+			var option = '';
+			for (var j=0; j<hints.length; j++) {
+				// Add inactives before
+				for (var x=0; x<spread[i][j]; x++) {
+					option += '0';
+				}
+
+				// Add actives
+				for (var x=0; x<hints[j]; x++) {
+					option += '1';
+				}
+			}
+
+			// Add last inactives after
+			for (var x=0; x<spread[i][j]; x++) {
+				option += '0';
+			}
+			options.push(option);
+		}
 	}
 
 	return options;
@@ -56,8 +68,6 @@ g119.options = function(length, hints) {
 // See if an user generated line is (still) valid for the given hints
 g119.validLine = function(line, hints) {
 	var options = g119.options(line.length, hints);
-	if (options === false) return true;
-
 	var regex = new RegExp('^' + line.replace(/_/g, '.') + '$');
 	for (var i=0; i<options.length; i++) {
 		if (regex.test(options[i])) {
