@@ -9,11 +9,17 @@ if (!($level = getLevelFromInput($map))) {
 	$map = prepareMap($g_arrMaps[$level]);
 }
 
+if (isset($_POST['cheat'])) {
+	header('Content-type: text/json');
+	exit(strtr(json_encode(array('map' => $map['map'])), ['x' => 1, '_' => 0]));
+}
+
 ?>
 <!doctype html>
 <html>
 
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>PICROSS</title>
 	<link rel="stylesheet" href="119.css" />
 </head>
@@ -23,6 +29,8 @@ if (!($level = getLevelFromInput($map))) {
 		<thead>
 			<tr>
 				<th colspan="40">
+					<button id="reset">reset</button>
+					<button id="cheat">cheat</button>
 					<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a> &nbsp;
 					Level <?= $level ?> &nbsp;
 					<a class="<?= !isset($g_arrMaps[$level+1]) ? 'disabled' : '' ?>" href="?level=<?= $level+1 ?>">&gt;&gt;</a>
@@ -33,14 +41,18 @@ if (!($level = getLevelFromInput($map))) {
 			<? foreach ($map['map'] as $y => $line): ?>
 				<tr>
 					<? for ($x=0; $x < strlen($line); $x++): ?>
-						<td><a href="#">&nbsp;</a></td>
+						<td><a href="#">x</a></td>
 					<? endfor ?>
-					<th class="hor"><span><?= implode('</span> <span>', $map['hor'][$y]) ?></span></th>
+					<th class="hor" data-hints="<?= implode(',', $map['hor'][$y]) ?>">
+						<span><?= implode('</span> <span>', $map['hor'][$y]) ?></span>
+					</th>
 				</tr>
 			<? endforeach ?>
 			<tr>
 				<? for ($x=0; $x < strlen($map['map'][0]); $x++): ?>
-					<th class="ver"><span><?= implode('</span> <span>', $map['ver'][$x]) ?></span></th>
+					<th class="ver" data-hints="<?= implode(',', $map['ver'][$x]) ?>">
+						<span><?= implode('</span> <span>', $map['ver'][$x]) ?></span>
+					</th>
 				<? endfor ?>
 				<th></th>
 			</tr>
@@ -71,13 +83,68 @@ if (!($level = getLevelFromInput($map))) {
 						cell.dataset.state = 'inactive';
 					});
 
+					sessionStorage.removeItem('g119_' + solution);
+
 					setTimeout(function() {
 						alert('YOU WIN!');
 					});
 				}, 500);
 			}
+			else {
+				var map = g119.map(tbody, true);
+				sessionStorage.setItem('g119_' + solution, map);
+
+				// Check validity for made move:
+				// Check X axis for cell.cellIndex
+				// Check Y axis for cell.parentNode.sectionRowIndex
+
+				var line, hints, valid;
+				line = g119.getLineForRow(tbody, cell.parentNode.sectionRowIndex);
+				hints = g119.getHintsForRow(tbody, cell.parentNode.sectionRowIndex);
+				valid = g119.validLine(line, hints);
+				g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList.toggle('invalid', !valid);
+
+				line = g119.getLineForColumn(tbody, cell.cellIndex);
+				hints = g119.getHintsForColumn(tbody, cell.cellIndex);
+				valid = g119.validLine(line, hints);
+				g119.getMetaCellForColumn(tbody, cell.cellIndex).classList.toggle('invalid', !valid);
+			}
 		}
 	});
+
+	document.querySelector('#reset').addEventListener('click', function(e) {
+		sessionStorage.removeItem('g119_' + solution);
+		location.reload();
+	});
+
+	document.querySelector('#cheat').addEventListener('click', function(e) {
+		var xhr = new XMLHttpRequest;
+		xhr.open('post', location.href, true);
+		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+		xhr.onload = function(e) {
+			var rsp = JSON.parse(this.responseText);
+			[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
+				var x = cell.cellIndex;
+				var y = cell.parentNode.sectionRowIndex;
+				var state = g119.getShortState(cell.dataset.state, true);
+				cell.classList.toggle('invalid', state != '_' && state != rsp.map[y][x]);
+			});
+		};
+		xhr.send('cheat=1');
+	});
+
+	var saved = sessionStorage.getItem('g119_' + solution);
+	if (saved) {
+		var map = saved.split('.');
+		if (map[0] == tbody.rows[0].querySelectorAll('td').length) {
+			var _states = ['inactive', 'active'];
+			[].forEach.call(tbody.querySelectorAll('td'), function(cell, i) {
+				if (_states[ map[1][i] ]) {
+					cell.dataset.state = _states[ map[1][i] ];
+				}
+			});
+		}
+	}
 	</script>
 
 </body>

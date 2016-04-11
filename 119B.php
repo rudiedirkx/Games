@@ -17,7 +17,8 @@ require __DIR__ . '/inc.functions.php';
 		<thead>
 			<tr>
 				<th colspan="40">
-					Build-a-level |
+					<button id="random">RANDOM</button>
+					| Build-a-level |
 					<button id="play">PLAY</button>
 				</th>
 			</tr>
@@ -26,7 +27,7 @@ require __DIR__ . '/inc.functions.php';
 			<? for ($y=0; $y < 15; $y++): ?>
 				<tr>
 					<? for ($x=0; $x < 15; $x++): ?>
-						<td data-state="inactive" data-state-index="1"><a href="#">&nbsp;</a></td>
+						<td data-state="inactive"><a href="#">&nbsp;</a></td>
 					<? endfor ?>
 				</tr>
 			<? endfor ?>
@@ -36,7 +37,9 @@ require __DIR__ . '/inc.functions.php';
 	<script src="119.js"></script>
 	<script>
 	var states = ['active', 'inactive'];
-	document.querySelector('tbody').addEventListener('click', function(e) {
+
+	var tbody = document.querySelector('tbody');
+	tbody.addEventListener('click', function(e) {
 		if (e.target.nodeName == 'A') {
 			e.preventDefault();
 
@@ -46,9 +49,16 @@ require __DIR__ . '/inc.functions.php';
 	});
 
 	document.querySelector('#play').addEventListener('click', function(e) {
-		var grid = document.querySelector('tbody');
-		var map = g119.map(grid);
+		var map = g119.map(tbody);
 		location = '119.php?play=' + encodeURIComponent(map);
+	});
+
+	document.querySelector('#random').addEventListener('click', function(e) {
+		[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
+			cell.dataset.state = Math.random() > 0.5 ? 'active' : 'inactive';
+		});
+
+		document.querySelector('#play').click();
 	});
 	</script>
 

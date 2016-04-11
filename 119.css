@@ -10,6 +10,12 @@ th {
 	border: solid 1px #999;
 	padding: 4px;
 	line-height: 1.4;
+	white-space: nowrap;
+}
+thead #reset,
+thead #cheat {
+	float: right;
+	margin-left: .25em;
 }
 thead a.disabled {
 	visibility: hidden;
@@ -18,6 +24,7 @@ tbody td {
 	background: #bbb;
 	padding: 0;
 	width: calc(1.4em + 8px);
+	text-align: center;
 }
 tbody td[data-state="active"] {
 	background-color: black;
@@ -29,6 +36,13 @@ tbody a {
 	display: block;
 	padding: 4px 0;
 	text-decoration: none;
+	min-width: 25px;
+	min-height: 25px;
+	opacity: 0;
+}
+tbody td.invalid a {
+	color: red;
+	opacity: 1;
 }
 th.hor {
 	text-align: left;
@@ -42,4 +56,9 @@ th.ver {
 }
 th.ver span {
 	display: block;
+}
+
+th.invalid {
+	background-color: red;
+	color: white;
 }
