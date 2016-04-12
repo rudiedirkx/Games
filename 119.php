@@ -98,7 +98,7 @@ if (isset($_POST['cheat'])) {
 				// Check X axis for cell.cellIndex
 				// Check Y axis for cell.parentNode.sectionRowIndex
 
-				clearTimeout(validator);
+				// clearTimeout(validator);
 				validator = setTimeout(function() {
 					var line, hints, valid;
 					line = g119.getLineForRow(tbody, cell.parentNode.sectionRowIndex);
@@ -110,7 +110,7 @@ if (isset($_POST['cheat'])) {
 					hints = g119.getHintsForColumn(tbody, cell.cellIndex);
 					valid = g119.validLine(line, hints);
 					g119.getMetaCellForColumn(tbody, cell.cellIndex).classList.toggle('invalid', !valid);
-				}, 500);
+				});
 			}
 		}
 	});

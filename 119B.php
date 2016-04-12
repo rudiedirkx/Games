@@ -36,6 +36,8 @@ require __DIR__ . '/inc.functions.php';
 
 	<script src="119.js"></script>
 	<script>
+	var ACTIVES = 0.6;
+
 	var states = ['active', 'inactive'];
 
 	var tbody = document.querySelector('tbody');
@@ -55,7 +57,7 @@ require __DIR__ . '/inc.functions.php';
 
 	document.querySelector('#random').addEventListener('click', function(e) {
 		[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
-			cell.dataset.state = Math.random() > 0.5 ? 'active' : 'inactive';
+			cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
 		});
 
 		document.querySelector('#play').click();
