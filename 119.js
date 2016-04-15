@@ -86,12 +86,12 @@ g119.getLineForCells = function(cells) {
 
 // Get user generated line for a row
 g119.getLineForRow = function(grid, index) {
-	return g119.getLineForCells(grid.querySelectorAll('tr:nth-child(' + (index + 1) + ') > td'));
+	return g119.getLineForCells(grid.rows[index].querySelectorAll('td'));
 };
 
 // Get user generated line for a column
 g119.getLineForColumn = function(grid, index) {
-	return g119.getLineForCells(grid.querySelectorAll('tr > td:nth-child(' + (index + 1) + ')'));
+	return g119.getLineForCells(grid.querySelectorAll('td:nth-child(' + (index + 1) + ')'));
 };
 
 // Get hints for a meta cell

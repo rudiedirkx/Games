@@ -108,12 +108,12 @@ if (isset($_POST['cheat'])) {
 					line = g119.getLineForRow(tbody, cell.parentNode.sectionRowIndex);
 					hints = g119.getHintsForRow(tbody, cell.parentNode.sectionRowIndex);
 					valid = g119.validLine(line, hints);
-					g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList.toggle('invalid', !valid);
+					g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList[valid ? 'remove' : 'add']('invalid');
 
 					line = g119.getLineForColumn(tbody, cell.cellIndex);
 					hints = g119.getHintsForColumn(tbody, cell.cellIndex);
 					valid = g119.validLine(line, hints);
-					g119.getMetaCellForColumn(tbody, cell.cellIndex).classList.toggle('invalid', !valid);
+					g119.getMetaCellForColumn(tbody, cell.cellIndex).classList[valid ? 'remove' : 'add']('invalid');
 				});
 			}
 		}
