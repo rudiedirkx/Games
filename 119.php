@@ -63,6 +63,8 @@ if (isset($_POST['cheat'])) {
 
 	<p><a href="119B.php">Build your own</a></p>
 
+	<p>Solution: <a id="export" href="#">export</a> | <a id="import" href="#">import</a></p>
+
 	<script src="119.js"></script>
 	<script>
 	var solution = '<?= hashMap($map) ?>';
@@ -136,6 +138,30 @@ if (isset($_POST['cheat'])) {
 			});
 		};
 		xhr.send('cheat=1');
+	});
+
+	document.querySelector('#export').addEventListener('click', function(e) {
+		e.preventDefault();
+
+		var map = g119.map(tbody, 1);
+		prompt('Copy this:', map);
+	});
+
+	document.querySelector('#import').addEventListener('click', function(e) {
+		e.preventDefault();
+
+		var map = prompt('Paste an export:', '');
+		if (map) {
+			var bw = map.match(/^(\d+)\.([\d_]+)$/);
+			if (bw) {
+				var cells = tbody.querySelectorAll('td');
+				for (var i=0; i<bw[2].length; i++) {
+					if (cells[i]) {
+						cells[i].dataset.state = g119.charToState(bw[2][i]);
+					}
+				}
+			}
+		}
 	});
 
 	var saved = sessionStorage.getItem('g119_' + solution);

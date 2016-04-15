@@ -80,7 +80,7 @@ g119.validLine = function(line, hints) {
 // Get user generated line for cells
 g119.getLineForCells = function(cells) {
 	return [].map.call(cells, function(cell) {
-		return g119.getShortState(cell.dataset.state, true);
+		return g119.stateToChar(cell.dataset.state, true);
 	}).join('');
 };
 
@@ -120,15 +120,19 @@ g119.getMetaCellForColumn = function(grid, index) {
 };
 
 // Get state short (0, 1, _) for a cell
-g119.getShortState = function(state, withUnknowns) {
+g119.stateToChar = function(state, withUnknowns) {
 	return state == 'active' ? 1 : state == 'inactive' || !withUnknowns ? 0 : '_';
+};
+
+g119.charToState = function(char) {
+	return char == '1' ? 'active' : char == '0' ? 'inactive' : '';
 };
 
 // Create string map from cells
 g119.map = function(grid, withUnknowns) {
 	var width = grid.rows[0].querySelectorAll('td').length;
 	var cells = [].map.call(grid.querySelectorAll('td'), function(cell) {
-		return g119.getShortState(cell.dataset.state, withUnknowns);
+		return g119.stateToChar(cell.dataset.state, withUnknowns);
 	});
 
 	return String(width) + '.' + cells.join('').replace(/0*$/, '');
