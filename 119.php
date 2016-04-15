@@ -32,7 +32,7 @@ if (isset($_POST['cheat'])) {
 					<button id="reset">reset</button>
 					<button id="cheat">cheat</button>
 					<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a> &nbsp;
-					Level <?= $level ?> &nbsp;
+					Level <?= $level == 999 ? hashMap($map) : $level ?> &nbsp;
 					<a class="<?= !isset($g_arrMaps[$level+1]) ? 'disabled' : '' ?>" href="?level=<?= $level+1 ?>">&gt;&gt;</a>
 				</th>
 			</tr>

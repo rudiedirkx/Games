@@ -6,7 +6,7 @@ function shash($str) {
 	$hash = 0;
 	for ($i=0; $i < strlen($str); $i++) {
 		$chr = ord($str[$i]);
-		$hash = (($hash << 5) - $hash) + $chr;
+		$hash = ((($hash << 5) - $hash) + $chr) & 0xFFFFFFFF; // Force to 32b int, bc JS doesn't do 64b
 	}
 	return sprintf('%u', $hash);
 }
