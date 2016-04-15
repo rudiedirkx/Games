@@ -133,7 +133,7 @@ if (isset($_POST['cheat'])) {
 			[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
 				var x = cell.cellIndex;
 				var y = cell.parentNode.sectionRowIndex;
-				var state = g119.getShortState(cell.dataset.state, true);
+				var state = g119.stateToChar(cell.dataset.state, true);
 				cell.classList.toggle('invalid', state != '_' && state != rsp.map[y][x]);
 			});
 		};
