@@ -132,11 +132,11 @@ if (isset($_POST['cheat'])) {
 		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 		xhr.onload = function(e) {
 			var rsp = JSON.parse(this.responseText);
-			[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
+			[].forEach.call(tbody.querySelectorAll('td'), function(cell, i) {
 				var x = cell.cellIndex;
 				var y = cell.parentNode.sectionRowIndex;
 				var state = g119.stateToChar(cell.dataset.state, true);
-				cell.classList.toggle('invalid', state != '_' && state != rsp.map[y][x]);
+				cell.classList[state != '_' && state != rsp.map[y][x] ? 'add' : 'remove']('invalid');
 			});
 		};
 		xhr.send('cheat=1');

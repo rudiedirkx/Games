@@ -11,6 +11,7 @@ th {
 	padding: 4px;
 	line-height: 1;
 	white-space: nowrap;
+	vertical-align: middle;
 }
 thead #reset,
 thead #cheat {
@@ -35,9 +36,9 @@ tbody a {
 	padding: 0;
 	text-decoration: none;
 	font-size: 16px;
-	line-height: 1;
 	width: 36px;
 	height: 36px;
+	line-height: 36px;
 	opacity: 0;
 	text-align: center;
 }
