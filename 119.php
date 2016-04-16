@@ -119,6 +119,8 @@ if (isset($_POST['cheat'])) {
 		}
 	});
 
+	g119.noZoom(tbody);
+
 	document.querySelector('#reset').addEventListener('click', function(e) {
 		sessionStorage.removeItem('g119_' + solution);
 		location.reload();
@@ -176,6 +178,9 @@ if (isset($_POST['cheat'])) {
 			});
 		}
 	}
+
+	// var cell = tbody.querySelectorAll('td')[10];
+	// alert(cell.offsetWidth + 'x' + cell.offsetHeight);
 
 	setTimeout(function() {
 		var w = tbody.rows[0].querySelectorAll('td').length;

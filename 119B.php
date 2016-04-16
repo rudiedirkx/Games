@@ -8,6 +8,7 @@ require __DIR__ . '/inc.functions.php';
 <html>
 
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>PICROSS BUILDER</title>
 	<link rel="stylesheet" href="119.css" />
 </head>
@@ -49,6 +50,8 @@ require __DIR__ . '/inc.functions.php';
 			g119.click(cell, states);
 		}
 	});
+
+	g119.noZoom(tbody);
 
 	document.querySelector('#play').addEventListener('click', function(e) {
 		var map = g119.map(tbody);

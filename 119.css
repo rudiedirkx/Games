@@ -9,7 +9,7 @@ td,
 th {
 	border: solid 1px #999;
 	padding: 4px;
-	line-height: 1.4;
+	line-height: 1;
 	white-space: nowrap;
 }
 thead #reset,
@@ -23,8 +23,6 @@ thead a.disabled {
 tbody td {
 	background: #bbb;
 	padding: 0;
-	width: calc(1.4em + 8px);
-	text-align: center;
 }
 tbody td[data-state="active"] {
 	background-color: black;
@@ -34,11 +32,14 @@ tbody td[data-state="inactive"] {
 }
 tbody a {
 	display: block;
-	padding: 4px 0;
+	padding: 0;
 	text-decoration: none;
-	min-width: 25px;
-	min-height: 25px;
+	font-size: 16px;
+	line-height: 1;
+	width: 36px;
+	height: 36px;
 	opacity: 0;
+	text-align: center;
 }
 tbody td.invalid a {
 	color: red;

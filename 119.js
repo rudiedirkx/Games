@@ -146,6 +146,13 @@ g119.click = function(cell, states) {
 	cell.dataset.state = states[stateIndex];
 };
 
+// Disable tap zoom
+g119.noZoom = function(grid) {
+	grid.addEventListener('touchend', function(e) {
+		e.preventDefault();
+	});
+};
+
 // Hash map for solution
 g119.shash = function(str) {
 	var hash = 0, chr, len;
