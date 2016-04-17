@@ -76,6 +76,8 @@ $g_arrGames = array(
 	array('162',			'Marbles',										'My very own marbles2.com ripoff'),
 	array('163',			'Entangled',									'Entangled ripoff: less HTML5, more CSS3 and JS'),
 	array('164',			'Machinarium I',								'Stole a fun game from Machinarium'),
+	array('167',			'Filling *WIP*',								'Trying to make separate areas by size...'),
+	array('168',			'Flood',										'Flood the board by propagating a color. You start at the top left'),
 	// array('mpoker/poker',	'JANUS POKER',									"Multiplayer Texas Hold'em BY Janus"),
 	array('102c_analyze',	'Minesweeper analyzer',							'A minesweeper test in JS'),
 	array('102d_create',	'Create Minesweeper maps',						'A minesweeper test in JS'),
