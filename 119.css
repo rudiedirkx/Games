@@ -58,6 +58,7 @@ th.ver {
 }
 th.ver span {
 	display: block;
+	margin-bottom: .25em;
 }
 
 th.invalid {

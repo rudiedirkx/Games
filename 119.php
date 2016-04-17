@@ -102,6 +102,9 @@ if (isset($_POST['cheat'])) {
 				// Check X axis for cell.cellIndex
 				// Check Y axis for cell.parentNode.sectionRowIndex
 
+				// @todo Don't validate against `solution`, because there might be more than 1. Validate
+				// against the hints: line.match(hints)
+
 				// clearTimeout(validator);
 				validator = setTimeout(function() {
 					var line, hints, valid;
