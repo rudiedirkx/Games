@@ -41,14 +41,14 @@ echo '<table>';
 foreach ($map as $y => $row) {
 	echo '<tr>';
 	foreach ($row as $x => $color) {
-		echo '<td bgcolor="' . $colors[$color] . '"><a href="#"></a></td>';
+		echo '<td data-color="' . $colors[$color] . '" bgcolor="' . $colors[$color] . '"><a href="#"></a></td>';
 	}
 	echo '</tr>';
 }
 echo '</table>';
 
 ?>
-<pre id="turns"></pre>
+<p>Turns: <code id="turns">0</code> | <a id="restart" href="#">restart</a></p>
 
 <script>
 var cell1 = document.querySelector('td');
@@ -83,6 +83,16 @@ document.querySelector('table').addEventListener('click', function(e) {
 			});
 		}
 	}
+});
+
+document.querySelector('#restart').addEventListener('click', function(e) {
+	e.preventDefault();
+
+	[].forEach.call(document.querySelectorAll('td'), function(cell) {
+		cell.bgColor = cell.dataset.color;
+	});
+
+	document.querySelector('#turns').textContent = String(turns = 0);
 });
 
 function addAdjacents(collection, cell, color) {
