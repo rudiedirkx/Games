@@ -77,6 +77,67 @@ g119.validLine = function(line, hints) {
 	return false;
 };
 
+// Find still valid solutions from hints + user input
+g119.validLines = function(line, hints) {
+	var options = g119.options(line.length, hints);
+	var regex = new RegExp('^' + line.replace(/_/g, '.') + '$');
+	return options.filter(function(option) {
+		return regex.test(option);
+	});
+};
+
+// Find common cells in all the given options
+g119.commonCells = function(options) {
+	var counts = [];
+	for (var i=0; i<options.length; i++) {
+		var option = options[i];
+		for (var j=0; j<option.length; j++) {
+			var cell = option[j];
+			if (counts[j] == null) {
+				counts[j] = 0;
+			}
+			if (cell == '1') {
+				counts[j]++;
+			}
+		}
+	}
+
+	var commons = '';
+	for (var i=0; i<counts.length; i++) {
+		var count = counts[i];
+		if (count == options.length) {
+			commons += '1';
+		}
+		else if (count == 0) {
+			commons += '0';
+		}
+		else {
+			commons += '_';
+		}
+	}
+
+	return commons;
+};
+
+// Save a line to the board
+g119.fillCellsWithLine = function(cells, line) {
+	if (cells.length == line.length) {
+		for (var i=0; i<cells.length; i++) {
+			cells[i].dataset.state = g119.charToState(line[i]);
+		}
+	}
+};
+
+// Save a row line to the board
+g119.fillRowWithLine = function(grid, index, line) {
+	return g119.fillCellsWithLine(grid.rows[index].querySelectorAll('td'), line);
+};
+
+// Save a column line to the board
+g119.fillColumnWithLine = function(grid, index, line) {
+	return g119.fillCellsWithLine(grid.querySelectorAll('td:nth-child(' + (index + 1) + ')'), line);
+};
+
 // Get user generated line for cells
 g119.getLineForCells = function(cells) {
 	return [].map.call(cells, function(cell) {
@@ -124,6 +185,7 @@ g119.stateToChar = function(state, withUnknowns) {
 	return state == 'active' ? 1 : state == 'inactive' || !withUnknowns ? 0 : '_';
 };
 
+// Get state name (active, inactive) for a cell
 g119.charToState = function(char) {
 	return char == '1' ? 'active' : char == '0' ? 'inactive' : '';
 };

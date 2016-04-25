@@ -14,7 +14,8 @@ th {
 	vertical-align: middle;
 }
 thead #reset,
-thead #cheat {
+thead #cheat1,
+thead #cheat2 {
 	float: right;
 	margin-left: .25em;
 }

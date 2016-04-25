@@ -32,7 +32,8 @@ if (isset($_POST['cheat'])) {
 			<tr>
 				<th colspan="40">
 					<button id="reset">reset</button>
-					<button id="cheat">cheat</button>
+					<button id="cheat1">cheat 1</button>
+					<button id="cheat2">cheat 2</button>
 					<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a> &nbsp;
 					Level <?= $levelName ?> &nbsp;
 					<a class="<?= !isset($g_arrMaps[$level+1]) ? 'disabled' : '' ?>" href="?level=<?= $level+1 ?>">&gt;&gt;</a>
@@ -129,7 +130,7 @@ if (isset($_POST['cheat'])) {
 		location.reload();
 	});
 
-	document.querySelector('#cheat').addEventListener('click', function(e) {
+	document.querySelector('#cheat1').addEventListener('click', function(e) {
 		var xhr = new XMLHttpRequest;
 		xhr.open('post', location.href, true);
 		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
@@ -143,6 +144,18 @@ if (isset($_POST['cheat'])) {
 			});
 		};
 		xhr.send('cheat=1');
+	});
+
+	document.querySelector('#cheat2').addEventListener('click', function(e) {
+		var rows = tbody.rows.length - 1;
+		for (var i=0; i<rows; i++) {
+			g119.fillRowWithLine(tbody, i, g119.commonCells(g119.validLines(g119.getLineForRow(tbody, i), g119.getHintsForRow(tbody, i))));
+		}
+
+		var cols = tbody.rows[0].cells.length - 1;
+		for (var i=0; i<cols; i++) {
+			g119.fillColumnWithLine(tbody, i, g119.commonCells(g119.validLines(g119.getLineForColumn(tbody, i), g119.getHintsForColumn(tbody, i))));
+		}
 	});
 
 	document.querySelector('#export').addEventListener('click', function(e) {
