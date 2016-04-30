@@ -37,7 +37,7 @@ require __DIR__ . '/inc.functions.php';
 
 	<script src="119.js"></script>
 	<script>
-	var ACTIVES = 0.6;
+	var ACTIVES = 0.55;
 
 	var states = ['active', 'inactive'];
 

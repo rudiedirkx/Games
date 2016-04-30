@@ -1,47 +1,36 @@
 
- N  left, in  0  locations =   0
+ 1  oranges, in  1  baskets =   1
+ 2  oranges, in  1  baskets =   1  + 0
+ 3  oranges, in  1  baskets =   1  + 0
+ 4  oranges, in  1  baskets =   1  + 0
+ 5  oranges, in  1  baskets =   1  + 0
 
- 1  left, in  1  locations =   1
- 2  left, in  1  locations =   1  + 0
- 3  left, in  1  locations =   1  + 0
- 4  left, in  1  locations =   1  + 0
- 5  left, in  1  locations =   1  + 0
+ 1  oranges, in  2  baskets =   2       (-1)
+ 2  oranges, in  2  baskets =   3  + 1  ( 1)
+ 3  oranges, in  2  baskets =   4  + 1  ( 5)
+ 4  oranges, in  2  baskets =   5  + 1  (11)
+ 5  oranges, in  2  baskets =   6  + 1  (19)
 
- 1  left, in  2  locations =   2
- 2  left, in  2  locations =   3  + 1
- 3  left, in  2  locations =   4  + 1
- 4  left, in  2  locations =   5  + 1
- 5  left, in  2  locations =   6  + 1
+ 1  oranges, in  3  baskets =   3       (-2)
+ 2  oranges, in  3  baskets =   6  + 3  ( 2)
+ 3  oranges, in  3  baskets =  10  + 4  (17)
+ 4  oranges, in  3  baskets =  15  + 5  (49)
+ 5  oranges, in  3  baskets =  21  + 6  (104)
 
- 1  left, in  3  locations =   3
- 2  left, in  3  locations =   6  + 3
- 3  left, in  3  locations =  10  + 4
- 4  left, in  3  locations =  15  + 5
- 5  left, in  3  locations =  21  + 6
+ 1  oranges, in  4  baskets =   4       (-3)
+ 2  oranges, in  4  baskets =  10  + 6  ( 6)
+ 3  oranges, in  4  baskets =  20  +10  (61)
+ 4  oranges, in  4  baskets =  35  +15  (221)
+ 5  oranges, in  4  baskets =  46  +21  (579)
 
- 1  left, in  4  locations =   4
- 2  left, in  4  locations =  10  + 6
- 3  left, in  4  locations =  20  +10
- 4  left, in  4  locations =  35  +15
- 5  left, in  4  locations =  46  +21
+ 1  oranges, in  5  baskets =   5       (-4)
+ 2  oranges, in  5  baskets =  15  +10  (17)
+ 3  oranges, in  5  baskets =  35  +20  (208)
+ 4  oranges, in  5  baskets =  70  +35  (954)
+ 5  oranges, in  5  baskets = 116  +46  (3009)
 
- 1  left, in  5  locations =   5
- 2  left, in  5  locations =  15  +10
- 3  left, in  5  locations =  35  +20
- 4  left, in  5  locations =  70  +35
- 5  left, in  5  locations = 116  +46
+In how many configurations can 3 oranges be thrown into 3 baskets?
 
+Many ways of throwing: 3^3, but many double results. (17)
 
-
- 3 left, in 3 locations:
- A  A  A
- B  B  B
- C  C  C
-
-In how many ways can you throw 3 oranges in 3 baskets?
-
-3^3, INCL DOUBLE RESULTS, because `1 2 3` is the same as `3 2 1` and `2 1 3` etc
-
-How many different results?
-
-6, why?
+How many unique results? (10)
