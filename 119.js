@@ -65,7 +65,37 @@ g119.options = function(length, hints) {
 	return options;
 };
 
-// See if an user generated line is (still) valid for the given hints
+// See if the entire grid is fully solved according to all hints
+g119.solvedGrid = function(grid) {
+	// Rows
+	for (var i=0; i<grid.rows.length-1; i++) {
+		if (!g119.validRow(grid, i, true)) {
+			console.log('Row ' + i + ' is unsolved');
+			return false;
+		}
+	}
+
+	// Rows
+	for (var i=0; i<grid.rows[0].cells.length-1; i++) {
+		if (!g119.validColumn(grid, i, true)) {
+			console.log('Column ' + i + ' is unsolved');
+			return false;
+		}
+	}
+
+	return true;
+};
+
+// Create solved-regex from hints
+g119.hintsToRegex = function(hints) {
+	var groups = hints.map(function(length) {
+		return '1{' + length + '}';
+	});
+	var regex = '^0*' + groups.join('0+') + '0*$';
+	return new RegExp(regex);
+};
+
+// See if a user generated line is (still) valid for the given hints
 g119.validLine = function(line, hints) {
 	var options = g119.options(line.length, hints);
 	var regex = new RegExp('^' + line.replace(/_/g, '.') + '$');
@@ -75,6 +105,26 @@ g119.validLine = function(line, hints) {
 		}
 	}
 	return false;
+};
+
+// See if a line is fully solved according to its hints
+g119.solvedLine = function(line, hints) {
+	var regex = g119.hintsToRegex(hints);
+	return regex.test(line);
+};
+
+// See if a user filled row is (still) valid.
+g119.validRow = function(grid, index, solved) {
+	var line = g119.getLineForRow(grid, index, !solved);
+	var hints = g119.getHintsForRow(grid, index);
+	return solved ? g119.solvedLine(line, hints) : g119.validLine(line, hints);
+};
+
+// See if a user filled column is (still) valid.
+g119.validColumn = function(grid, index, solved) {
+	var line = g119.getLineForColumn(grid, index, !solved);
+	var hints = g119.getHintsForColumn(grid, index);
+	return solved ? g119.solvedLine(line, hints) : g119.validLine(line, hints);
 };
 
 // Find still valid solutions from hints + user input
@@ -139,20 +189,20 @@ g119.fillColumnWithLine = function(grid, index, line) {
 };
 
 // Get user generated line for cells
-g119.getLineForCells = function(cells) {
+g119.getLineForCells = function(cells, withUnknowns) {
 	return [].map.call(cells, function(cell) {
-		return g119.stateToChar(cell.dataset.state, true);
+		return g119.stateToChar(cell.dataset.state, withUnknowns !== false);
 	}).join('');
 };
 
 // Get user generated line for a row
-g119.getLineForRow = function(grid, index) {
-	return g119.getLineForCells(grid.rows[index].querySelectorAll('td'));
+g119.getLineForRow = function(grid, index, withUnknowns) {
+	return g119.getLineForCells(grid.rows[index].querySelectorAll('td'), withUnknowns !== false);
 };
 
 // Get user generated line for a column
-g119.getLineForColumn = function(grid, index) {
-	return g119.getLineForCells(grid.querySelectorAll('td:nth-child(' + (index + 1) + ')'));
+g119.getLineForColumn = function(grid, index, withUnknowns) {
+	return g119.getLineForCells(grid.querySelectorAll('td:nth-child(' + (index + 1) + ')'), withUnknowns !== false);
 };
 
 // Get hints for a meta cell

@@ -81,8 +81,9 @@ if (isset($_POST['cheat'])) {
 			g119.click(cell, states);
 
 			clearTimeout(winner);
-			var hash = g119.shash(g119.map(tbody));
-			if (hash == solution) {
+
+			var solved = g119.solvedGrid(tbody);
+			if (solved) {
 				winner = setTimeout(function() {
 					[].forEach.call(tbody.querySelectorAll('td:not([data-state="active"]):not([data-state="inactive"])'), function(cell) {
 						cell.dataset.state = 'inactive';
@@ -99,24 +100,12 @@ if (isset($_POST['cheat'])) {
 				var map = g119.map(tbody, true);
 				sessionStorage.setItem('g119_' + solution, map);
 
-				// Check validity for made move:
-				// Check X axis for cell.cellIndex
-				// Check Y axis for cell.parentNode.sectionRowIndex
-
-				// @todo Don't validate against `solution`, because there might be more than 1. Validate
-				// against the hints: line.match(hints)
-
 				// clearTimeout(validator);
 				validator = setTimeout(function() {
-					var line, hints, valid;
-					line = g119.getLineForRow(tbody, cell.parentNode.sectionRowIndex);
-					hints = g119.getHintsForRow(tbody, cell.parentNode.sectionRowIndex);
-					valid = g119.validLine(line, hints);
+					var valid = g119.validRow(tbody, cell.parentNode.sectionRowIndex, false);
 					g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList[valid ? 'remove' : 'add']('invalid');
 
-					line = g119.getLineForColumn(tbody, cell.cellIndex);
-					hints = g119.getHintsForColumn(tbody, cell.cellIndex);
-					valid = g119.validLine(line, hints);
+					var valid = g119.validColumn(tbody, cell.cellIndex, false);
 					g119.getMetaCellForColumn(tbody, cell.cellIndex).classList[valid ? 'remove' : 'add']('invalid');
 				});
 			}
