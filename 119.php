@@ -112,6 +112,21 @@ if (isset($_POST['cheat'])) {
 		}
 	});
 
+	tbody.addEventListener('mouseover', function(e) {
+		if (e.target.nodeName == 'A') {
+			[].forEach.call(tbody.querySelectorAll('.hilite'), function(cell) {
+				cell.classList.remove('hilite');
+			});
+
+			var cell = e.target.parentNode;
+
+			var col = cell.cellIndex;
+			g119.getMetaCellForColumn(tbody, col).classList.add('hilite');
+			var row = cell.parentNode.sectionRowIndex;
+			g119.getMetaCellForRow(tbody, row).classList.add('hilite');
+		}
+	});
+
 	g119.noZoom(tbody);
 
 	document.querySelector('#reset').addEventListener('click', function(e) {
