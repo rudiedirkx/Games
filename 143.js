@@ -37,6 +37,9 @@ function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
 	this.index = {};
 	this.createIndex();
 
+	// Hilite difference
+	this.hiliteDifference();
+
 	// Attach DOM handlers
 	var self = this,
 		match = '.ball.' + this.m_szPlayerColor;
@@ -82,6 +85,46 @@ Abalone.prototype = {
 		return this.index;
 
 	}, // createIndex
+
+
+	/**
+	 *
+	 */
+	hiliteDifference: function() {
+		var old = JSON.parse(sessionStorage.abaloneState || '{}');
+console.debug('old', old);
+		var current = this.getCurrentState();
+console.debug('current', current);
+
+		for ( var coord in old ) {
+			if ( old[coord] != current[coord] ) {
+				this.index[coord].classList.add('changed');
+			}
+		}
+
+		this.saveCurrentState(current);
+	},
+
+
+	/**
+	 *
+	 */
+	getCurrentState: function() {
+		var state = {};
+		for ( var coord in this.index ) {
+			state[coord] = this.owner(this.index[coord]) || '';
+		}
+
+		return state;
+	},
+
+
+	/**
+	 *
+	 */
+	saveCurrentState: function( state ) {
+		sessionStorage.abaloneState = JSON.stringify(state || this.getCurrentState());
+	},
 
 
 	/**
@@ -355,6 +398,8 @@ console.warn("Can't push own balls.");
 			}
 		}
 console.debug('changes:', changes);
+
+		this.saveCurrentState();
 
 		// Prep & send data
 		var data = {changes: changes};

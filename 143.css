@@ -66,12 +66,19 @@ h1,
 .ball.black {
 	background: #666;
 	box-shadow: 0 0 10px #666, 0 0 5px #000 inset;
-	-webkit-box-shadow: 0 0 10px #666, 0 0 10px #000 inset;
 }
 .ball.white {
 	background: white;
 	box-shadow: 0 0 10px #666, 0 0 5px #666 inset;
-	-webkit-box-shadow: 0 0 10px #666, 0 0 10px #666 inset;
+}
+.ball.changed {
+	box-shadow: 0 0 10px red;
+}
+.ball.changed.black {
+	box-shadow: 0 0 10px red, 0 0 5px #000 inset;
+}
+.ball.changed.white {
+	box-shadow: 0 0 10px red, 0 0 5px #666 inset;
 }
 .ball.selected {
 	background: lime;
