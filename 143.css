@@ -18,18 +18,19 @@ body.loading {
 	background: url(/images/loading.gif) no-repeat center center;
 	background-size: 100px 100px;
 }
-body.status-change {
-	border-color: red;
+
+body.ready.my-turn {
+	border-color: green;
 }
-body:not(.status-change) {
-	-webkit-transition: border-color 2s ease-out;
-	-moz-transition: border-color 2s ease-out;
+body.ready.their-turn {
+	border-color: red;
 }
 
 
 h1,
 #board,
 #players,
+.friend-url,
 #help {
 	margin: 20px 0 0 20px;
 }
@@ -85,7 +86,7 @@ h1,
 
 table.players {
 	border: solid 1px #000;
-	width: 230px;
+	x-width: 230px;
 }
 table.players th {
 	text-decoration: underline;

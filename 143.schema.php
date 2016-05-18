@@ -9,7 +9,6 @@ return array(
 	'abalone_players' => array(
 		'id' => array('pk' => true),
 		'game_id' => array('unsigned' => true),
-		'username' => array('null' => false),
 		'password' => array('null' => false),
 		'color' => array('null' => false, 'default' => 'white'),
 	),

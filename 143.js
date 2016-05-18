@@ -1,5 +1,7 @@
 
-Coord = THREE.Vector3;
+"use strict";
+
+var Coord = THREE.Vector3;
 
 Coord.prototype.each = function(cb) {
 	this.x && cb('x', this.x);
@@ -30,19 +32,10 @@ function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
 	this.m_szPlayerColor = f_szYouColor;
 	this.m_szOpponentColor = Abalone.oppositeColor(this.m_szPlayerColor);
 	this.m_szTurnColor = f_szTurnColor;
-	this.m_arrSelectedBalls = [];
 
 	// Create [id => DOM element] index
 	this.index = {};
 	this.createIndex();
-
-	// Fetch balls
-	fetch && this.fetchMap().success(function() {
-		// STAAAART THE ... waiting...
-		if ( self.m_szTurnColor != self.m_szPlayerColor ) {
-			self.wait();
-		}
-	});
 
 	// Attach DOM handlers
 	var self = this,
@@ -56,10 +49,16 @@ function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
 	this.$container.on('click', 'a.direction', function(e) {
 		e.preventDefault();
 
-		C = this.dataset.dir.split(',');
+		var C = this.dataset.dir.split(',');
 		C = new Coord(~~C[0], ~~C[1], ~~C[2]);
-		self.debug('move:', self.move(C));
+		self.move(C);
 	});
+
+	// Start polling
+	self.tickStatus();
+
+	document.body.classList.add(self.m_szPlayerColor == self.m_szTurnColor ? 'my-turn' : 'their-turn');
+	document.body.classList.add('ready');
 }
 
 Abalone.selectMaxBalls = 4;
@@ -69,19 +68,28 @@ Abalone.oppositeColor = function( color ) {
 
 Abalone.prototype = {
 
+
 	/**
 	 * Clicked on an Abalone IMG (why and the consequences are yet unknown)
 	 */
 	createIndex: function() {
 		var self = this;
 
-		$balls = this.$container.find('.ball').each(function(i, el) {
+		var $balls = this.$container.find('.ball').each(function(i, el) {
 			self.index[ el.id.substr(5) ] = el;
 		});
 
 		return this.index;
 
 	}, // createIndex
+
+
+	/**
+	 *
+	 */
+	owner: function( ball ) {
+		return ball.classList.contains('black') ? 'black' : ball.classList.contains('white') ? 'white' : null;
+	},
 
 
 	/**
@@ -92,13 +100,17 @@ Abalone.prototype = {
 
 		// Is my turn?
 		if ( this.m_szPlayerColor == this.m_szTurnColor ) {
+console.debug('click: my turn');
 			// Is my ball?
-			if ( ball.owner == this.m_szPlayerColor ) {
-				return this.toggleSelectBall(id);
+			if ( this.owner(ball) == this.m_szPlayerColor ) {
+console.debug('click: my ball');
+				return this.toggleSelectBall(ball);
 			}
 
 			// Move selected balls
-			if ( 0 < this.m_arrSelectedBalls.length ) {
+			var selecteds = this.selecteds();
+			if ( selecteds.length ) {
+console.debug('click: move');
 				return this.moveSelectedTo(id);
 			}
 		}
@@ -107,192 +119,199 @@ Abalone.prototype = {
 
 
 	/**
-	 * Pull the current map state and present it
+	 *
 	 */
-	fetchMap: function(succeed, fail) {
-		var self = this;
-
-		return $.get('?fetch_map=1', succeed || function(rv) {
-			// Clear map
-			self.$container.find('.ball')
-				.removeClass('black')
-				.removeClass('white');
-
-			// Populate map
-			$.each(rv.balls, function(i, b) {
-				var $ball = $('#ball_' + b[0] + '_' + b[1] + '_' + b[2]);
-				$ball
-					.removeClass(Abalone.oppositeColor(b[3]))
-					.addClass(b[3]);
-				$ball[0].owner = b[3];
-			});
-		}).error(fail || function(xhr, error) {
-			alert('Pull failed. Response:' + "\n\n" + xhr.responseText);
-		});
-
-	}, // fetchMap
+	selecteds: function() {
+		return this.$container.find('.ball.selected').get();
+	},
 
 
 	/**
-	 * Flash body
+	 *
 	 */
-	flash: function( type ) {
+	tickStatus: function() {
 		var self = this;
 
-		type || (type = 'status-change');
-
-		document.body.classList.add(type);
-		setTimeout("document.body.classList.remove('" + type + "');", 3000);
-
-	}, // flash
+		var xhr = this.updateStatus();
+		xhr.done(function() {
+			setTimeout(function() {
+				self.tickStatus();
+			}, 500);
+		});
+	},
 
 
 	/**
 	 * Waiting for turn or other player
 	 */
-	wait: function() {
+	updateStatus: function() {
 		var self = this;
 
 		return $.get('?status', function(rv) {
-			if ( rv.error || !rv.status ) {
-				console.log(this, arguments);
+			if ( rv.status.turn != self.m_szTurnColor ) {
+				location.reload();
 			}
-			else if ( rv.status.reload ) {
-				self.fetchMap();
-				return self.flash();
-			}
-			else if ( rv.status.turn == self.m_szPlayerColor ) {
-				self.m_szTurnColor = rv.status.turn;
-				self.fetchMap();
-				return self.flash();
-			}
-
-			setTimeout(function() {
-				self.wait();
-			}, 1000);
-		}).error(function(xhr, error) {
-			alert('Waiting failed. Response:' + "\n\n" + xhr.responseText);
 		});
 
-	}, // fetchMap
+	}, // updateStatus
+
+
+	/**
+	 *
+	 */
+	nextInDirection: function( balls, direction ) {
+		var coords = balls.map(function(ball) {
+			return ball.underscore();
+		});
+
+		for (var i=0; i<balls.length; i++) {
+			var ball = balls[i];
+			var next = ball.clone().addSelf(direction);
+			if (coords.indexOf(next.underscore()) == -1) {
+				return next;
+			}
+		}
+	},
+
+
+	/**
+	 *
+	 */
+	offsets: function( balls, direction ) {
+		return balls.map(function(ball) {
+			return ball.clone().addSelf(direction);
+		});
+	},
 
 
 	/**
 	 * Move selected balls into a direction (Coord)
 	 */
 	move: function( direction ) {
-		var self = this, info, u, u1, u2, balls, Cnexts, i, M, C, pushables, P, Clast, B, Blast;
+		var self = this;
 
-		balls = this.selectedBalls();
+console.debug('direction', direction);
+
+		var balls = this.selectedCoords();
 		if ( !balls.length ) {
-this.debug('No balls selected');
+console.warn('No balls selected');
 			return false;
 		}
-this.debug('balls:', balls);
+console.debug('balls:', balls);
 
-		info = this.coordsAreAligned();
+		// @todo Do all validation only server side
+
+		var info = this.coordsAreAligned();
 		if ( !info ) {
-this.debug('Invalid balls selection');
+console.warn('Invalid balls selection');
 			return false;
 		}
-this.debug('info:', info);
+console.debug('info:', info);
 
-		// Verify direction/axis
-		if ( 1 < balls.length ) {
-			u = direction.underscore();
-			u1 = info.direction.underscore();
-			u2 = info.direction.reverse().underscore();
-			if ( u != u1 && u != u2 ) {
-this.debug("You can't go there... Correct direction: " + u1 + ' or ' + u2);
-				return false;
+		// Find direction type
+		var inline = balls.length == 1 || direction.underscore() == info.direction.underscore() || direction.clone().negate().underscore() == info.direction.underscore();
+console.debug('inline', inline);
+
+		// Find target location(s)
+		var targets;
+		if ( inline ) {
+			// Find 1 extension following axis
+			targets = [this.nextInDirection(balls, direction)];
+		}
+		else {
+			// Find all adjacents following axis
+			targets = balls.map(function(ball) {
+				return ball.clone().addSelf(direction);
+			});
+		}
+console.debug('targets', targets);
+
+		// All targets must exist
+		var wrong = targets.some(function(coord) {
+			if ( !self.index[coord.underscore()] ) {
+				return true;
 			}
-		}
-
-		Cnexts = this.nexts(balls, direction, true);
-this.debug('next coords:', Cnexts);
-
-		// RULES
-		// 1. Can't push off-board
-		// 2. Can push only [balls.length-1] other balls
-		// 3. Can't push self (directly or indirectly)
-
-		// 1. Can't push off-board
-		// => Next coords must exist
-		if ( !Cnexts.length ) {
-this.debug('move/fail: no target');
-			return false;
-		}
-
-		// 2. Can push only [balls.length-1] other balls
-		// => One of the next X slots must be empty (off-board or unowned)
-		for ( i=0, M=balls.length; i<M; i++ ) {
-			C = Cnexts[i];
-			if ( !C || !this.index[C.underscore()].owner ) {
-this.debug('empty slot found:', C || 'off-board', 'pushables:', i);
-				// That's a wrap!
-				pushables = i;
-				break;
-			}
-		}
-
-		// No empty slot found?
-		if ( undefined === pushables ) {
-this.debug('move/fail: invalid target? not enough momentum? need somewhere to push to...');
-			return false;
-		}
-
-		// 3. Can't push self (directly or indirectly)
-		// All pushables must be others
-		for ( i=0; i<pushables; i++ ) {
-			C = Cnexts[i];
-			P = this.index[C.underscore()];
-			if ( !P || this.m_szPlayerColor == P.owner ) {
-this.debug("move/fail: can't push self");
-				return false;
-			}
-		}
-
-		// Woohoo!
-		// Now let's push...
-
-		// Refetch balls in the right order
-		balls = this.nexts([Cnexts[0]], direction.reverse()).slice(0, M);
-
-		// Prepare movables + target slot (empty or off-board)
-		movables = Cnexts.slice(0, pushables);
-		$.each(balls, function(i, C) {
-			movables.unshift(C);
 		});
-		movables.push(Cnexts[pushables]);
-this.debug('movables:', movables);
-
-		// Cycle through backwards and replace owners
-		for ( i=movables.length; i>=0; i-- ) {
-			C = movables[i];
-			if ( Clast ) {
-				B = this.index[C.underscore()];
-				Blast = this.index[Clast.underscore()];
-this.debug('move', B, B.owner, 'to', Blast, Blast.owner);
-				$(Blast).removeClass('' + Blast.owner).addClass('' + B.owner);
-				Blast.owner = B.owner;
-			}
-			Clast = C;
+		if ( wrong ) {
+console.warn('Not all targets exist.');
+			return;
 		}
 
-		// Update straggler
-		B = this.index[C.underscore()];
-this.debug('left over:', B);
-		$(B).removeClass('' + B.owner);
-		delete B.owner;
+		// Target can't be our own
+		if ( inline ) {
+			var ball = this.index[ targets[0].underscore() ];
+			if ( this.owner(ball) == this.m_szPlayerColor ) {
+console.warn("Can't push own ball.");
+				return;
+			}
+		}
 
-		// Remove selectedness
-		this.m_arrSelectedBalls = [];
-		this.$container.find('.selected').removeClass('selected');
+		// All targets must be empty
+		if ( !inline ) {
+			var wrong = targets.some(function(coord) {
+				var ball = self.index[ coord.underscore() ];
+				if ( self.owner(ball) ) {
+					return true;
+				}
+			});
+			if ( wrong ) {
+console.warn("Can't push sideways onto other balls.");
+				return;
+			}
+		}
 
-		// Send to server
-		this.sendChange(movables);
+		// Can only push fewer other balls
+		var pushing = [];
+		if ( inline ) {
+			var nexts = this.nexts(balls, direction);
+console.debug('nexts', nexts);
 
-		return true;
+			var owners = nexts.map(function(coord) {
+				return self.owner(self.index[ coord.underscore() ]);
+			});
+console.debug('owners', owners);
+
+			owners.some(function(owner, i) {
+				if (!owner) {
+					return true;
+				}
+
+				pushing.push(nexts[i]);
+			});
+console.debug('pushing', pushing);
+			if ( pushing.length > balls.length-1 ) {
+console.warn("Can only push " + (balls.length-1) + " balls, not " + pushing.length + ".");
+				return;
+			}
+
+			var pushingOwners = pushing.map(function(coord) {
+				return self.owner(self.index[ coord.underscore() ]);
+			});
+console.debug('pushingOwners', pushingOwners);
+			if ( pushingOwners.indexOf(this.m_szPlayerColor) != -1 ) {
+console.warn("Can't push own balls.");
+				return;
+			}
+		}
+
+		// Find pusher/pushee target location(s)
+		var pusherTargets = this.offsets(balls, direction);
+// console.debug('pusheeTargets', pusheeTargets);
+		var pusheeTargets = this.offsets(pushing, direction);
+// console.debug('pusheeTargets', pusheeTargets);
+
+		// Replace pushees
+		this.clearBalls(pushing);
+		this.placeBalls(pusheeTargets, this.m_szOpponentColor);
+
+		// Replace pushers
+		this.clearBalls(balls);
+		this.placeBalls(pusherTargets, this.m_szPlayerColor);
+
+		// Collect all changed locations and send it to the server
+		// @todo Send the actual move to the server and let IT decide what to change
+		var changed = pushing.concat(pusheeTargets).concat(balls).concat(pusherTargets);
+		this.sendChange(changed);
 
 	}, // move
 
@@ -300,37 +319,47 @@ this.debug('left over:', B);
 	/**
 	 *
 	 */
-	sendChange: function( coords ) {
-		var self = this, changes, B, data;
-console.log('sendChange', coords);
+	clearBalls: function( coords ) {
+		for (var i=0; i<coords.length; i++) {
+			var ball = this.index[ coords[i].underscore() ];
+			ball.className = 'ball';
+		}
+	},
 
-		$body.addClass('loading');
 
-		// Collect changes
-		changes = [];
-		$.each(coords, function(i, C) {
-			if ( C ) {
-				B = self.index[ C.underscore() ];
-				changes.push(C.x + ',' + C.y + ',' + C.z + ',' + (B.owner || ''));
+	/**
+	 *
+	 */
+	placeBalls: function( coords, color ) {
+		for (var i=0; i<coords.length; i++) {
+			var ball = this.index[ coords[i].underscore() ];
+			if ( ball ) {
+				ball.className = 'ball ' + color;
 			}
-		});
-this.debug('changes:', changes);
+		}
+	},
 
-		// Update state
-		this.m_szTurnColor = this.m_szOpponentColor;
+
+	/**
+	 *
+	 */
+	sendChange: function( coords ) {
+		var self = this;
+
+		var changes = {};
+		for (var i=0; i<coords.length; i++) {
+			var coord = coords[i];
+			var ball = this.index[ coord.underscore() ];
+			if ( ball ) {
+				changes[ coord.underscore() ] = this.owner(ball);
+			}
+		}
+console.debug('changes:', changes);
 
 		// Prep & send data
-		data = {changes: changes};
+		var data = {changes: changes};
 		$.post('?send_changes=1', data, function(rv) {
-			// Ok, whatever?
-		}).error(function(xhr, error) {
-			alert('Push failed. Response:' + "\n\n" + xhr.responseText + "\n\n" + 'Reload page?');
-		}).always(function() {
-			$body.removeClass('loading');
-
-			setTimeout(function() {
-				self.wait();
-			}, 1000);
+			location.reload();
 		});
 
 	}, // sendChange
@@ -339,13 +368,24 @@ this.debug('changes:', changes);
 	/**
 	 * Selected balls in Coord format
 	 */
-	selectedBalls: function() {
-		return this.m_arrSelectedBalls.map(function(id) {
-			C = id.split('_');
-			return new Coord(~~C[0], ~~C[1], ~~C[2]);
+	selectedCoords: function() {
+		var self = this;
+
+		var balls = this.selecteds();
+		return balls.map(function(ball) {
+			return self.ballToCoord(ball);
 		});
 
-	}, // balls
+	}, // selectedCoords
+
+
+	/**
+	 *
+	 */
+	ballToCoord: function( ball ) {
+		var C = ball.id.substr(5).split('_');
+		return new Coord(parseInt(C[0]), parseInt(C[1]), parseInt(C[2]))
+	},
 
 
 	/**
@@ -354,8 +394,8 @@ this.debug('changes:', changes);
 	coordsAreAligned: function() {
 		var self = this, balls, C, axis, values, i, diffs, direction, M;
 
-		balls = this.selectedBalls();
-this.debug('balls:', balls);
+		balls = this.selectedCoords();
+// console.debug('balls:', balls);
 
 		// First ball is always fine
 		if ( 1 >= balls.length ) {
@@ -370,12 +410,12 @@ this.debug('balls:', balls);
 			if ( balls[0][ax] == balls[1][ax] ) {
 				axis = ax;
 				delete values[ax];
-self.debug('found common axis: ' + ax);
+console.debug('found common axis: ' + ax);
 			}
 		});
 
 		if ( !axis ) {
-this.debug('found no common axis');
+console.debug('found no common axis');
 			return false;
 		}
 
@@ -384,12 +424,12 @@ this.debug('found no common axis');
 		$.each(values, function(ax, values) {
 			direction[ax] = balls[0][ax] > balls[1][ax] ? 1 : -1;
 		});
-this.debug('reversable direction:', direction);
+// console.debug('reversable direction:', direction);
 
 		// The rest must have that axis as well
-		for ( i=2, L=balls.length; i<L; i++ ) {
+		for ( var i=2, L=balls.length; i<L; i++ ) {
 			if ( balls[i][axis] != balls[0][axis] ) {
-this.debug('ball # ' + i + ' has different axis ' + axis + ' value: ' + balls[i][axis]);
+// console.debug('ball # ' + i + ' has different axis ' + axis + ' value: ' + balls[i][axis]);
 				return false;
 			}
 
@@ -397,14 +437,14 @@ this.debug('ball # ' + i + ' has different axis ' + axis + ' value: ' + balls[i]
 			values.y && values.y.push(balls[i].y);
 			values.z && values.z.push(balls[i].z);
 		}
-this.debug('ball coord values:', values);
+// console.debug('ball coord values:', values);
 
 		// Find distance between ends
 		diffs = [];
 		$.each(values, function(ax, values) {
 			diffs.push(Math.max.apply(Math, values) - Math.min.apply(Math, values));
 		});
-this.debug('diffs:', diffs);
+// console.debug('diffs:', diffs);
 
 		// Shortest distance
 		M = balls.length-1;
@@ -415,7 +455,7 @@ this.debug('diffs:', diffs);
 		// Aaaaight!
 
 		var potentials = this.potentialNexts(balls, direction);
-this.debug('potentials:', potentials);
+// console.debug('potentials:', potentials);
 
 		return {
 			axis: axis,
@@ -441,7 +481,7 @@ this.debug('potentials:', potentials);
 				nexts.push(next[0]);
 			}
 			else {
-this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
+console.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 				break;
 			}
 		}
@@ -497,14 +537,12 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 	/**
 	 * A player selects a ball with this function (his own color ofcourse), by clicking on the board
 	 */
-	toggleSelectBall: function( id ) {
-		var i = $.inArray(id, this.m_arrSelectedBalls);
-
-		if ( i < 0 ) {
-			return this.selectBall(id);
+	toggleSelectBall: function( ball ) {
+		if ( !ball.classList.contains('selected') ) {
+			return this.selectBall(ball);
 		}
 
-		return this.unselectBall(i);
+		return this.unselectBall(ball);
 
 	}, // toggleSelectBall
 
@@ -512,26 +550,20 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 	/**
 	 * Add coords to list and color ball on board to hilite
 	 */
-	selectBall: function( id ) {
-		if ( Abalone.selectMaxBalls <= this.m_arrSelectedBalls.length ) {
-			return false;
+	selectBall: function( ball ) {
+		var selecteds = this.selecteds();
+		if ( Abalone.selectMaxBalls <= selecteds.length ) {
+			return;
 		}
 
-		this.m_arrSelectedBalls.push(id);
+		ball.classList.add('selected');
 
 		var caa = this.coordsAreAligned();
 		if ( !caa ) {
-			this.m_arrSelectedBalls.pop();
-
-			this.debug('Won\'t select because already out of line!');
-
-			return false;
+			ball.classList.remove('selected');
+console.debug("Won't select because out of line.");
+			return;
 		}
-
-		var $ball = $(this.index[id]);
-		$ball.addClass('selected');
-
-		return false;
 
 	}, // selectBall
 
@@ -539,14 +571,8 @@ this.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
 	/**
 	 * Remove coords from list and color ball on board to normal
 	 */
-	unselectBall: function( i ) {
-		var id = this.m_arrSelectedBalls[i],
-			$ball = $(this.index[id]);
-
-		this.m_arrSelectedBalls.splice(i, 1);
-		$ball.removeClass('selected');
-
-		return false;
+	unselectBall: function( ball ) {
+		ball.classList.remove('selected');
 
 	}, // unselectBall
 
