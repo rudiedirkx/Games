@@ -147,6 +147,12 @@ else if ( isset($_GET['status']) ) {
 	return json_respond(array('error' => 0, 'status' => $status));
 }
 
+// Always be on the 'login' page, to save the URL
+if ( empty($_GET['login']) ) {
+	header('Location: ?login=' . $objPlayer->password);
+	exit;
+}
+
 $friendURL = 'http://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOpponent->password;
 
 ?>
