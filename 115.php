@@ -3,8 +3,6 @@
 
 session_start();
 
-include("connect.php");
-
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
 
@@ -102,7 +100,6 @@ if (isset($_POST['action']) && $_POST['action']=="kieskleuren")
 		$_SESSION['mm_user']['gameover'] = 1;
 		$_SESSION['mm_user']['playtime'] = time()-$_SESSION['mm_user']['starttime'];
 		$_SESSION['mm_user']['score'] = $score;
-		mysql_query("INSERT INTO mastermind (name,score,attempts,playtime,time) VALUES ('".$_SESSION['mm_user']['name']."','$score','".(1+$hoeveelste)."','".$_SESSION['mm_user']['playtime']."','".time()."')");
 	}
 	if ($hoeveelste == 8)
 		$_SESSION['mm_user']['gameover'] = 2;
@@ -177,21 +174,7 @@ if (isset($_GET['page']) && $_GET['page']=="gamerules")
 	echo "<table border=0 cellpadding=0 cellspacing=0 width=50% height=100% align=center><tr valign=middle><td><center><b>GUIDE</b><br><br>Your target is a score as <b>low as possible</b>.<br>Your score is the sum of all absolute values of all fields.<br>Fields are named from 1 to 25, 1 being the upper left field and 25 being the lower right.<br>Every field has a value, by default from -12 to 12.<br>You can change the value of one field by clicking another.<br>For example: you click on field 1 (value = -12) -> you substract 12 from field 1-12=-11=14.<br>Another example: you click on field 6 (value = 4) -> you add 4 to field 6+4=10.<br>You can see how your clicking affects other fields by hoovering over the fields (Do x to y).</td></tr></table>";
 	die;
 }
-if (isset($_GET['page']) && $_GET['page']=="top10")
-{
-	echo "<table border=0 cellpadding=0 cellspacing=0 width=50% height=100% align=center><tr valign=middle><td>";
-	echo "<table border=0 cellpadding=4 cellspacing=0 align=center width=100%><tr><td style='border-bottom:solid 1px black;' width=1><b>Rank&nbsp;</td><td style='border-bottom:solid 1px black;'><b>Name</td><td style='border-bottom:solid 1px black;'><center><b>Score</td><td style='border-bottom:solid 1px black;'><b><center>Moves</td><td style='border-bottom:solid 1px black;'><b>PlayTime</td><td style='border-bottom:solid 1px black;'><b>Date&Time</td></tr>";
-	$q = mysql_query("SELECT * FROM mastermind ORDER BY score,playtime LIMIT 10");
-	$r=0;
-	while ($l = mysql_fetch_assoc($q))
-	{
-		$r++;
-		echo "<tr><td align=right>$r.&nbsp;</td><td>".$l['name']."</td><td><b><center>".$l['score']."</td><td><center>".$l['attempts']."</td><td>".$l['playtime']." seconds</td><td>".date("Y-m-d H:i:s",$l['time'])."</td></tr>";
-	}
-	echo "</table>";
-	echo "</td></tr></table>";
-	die;
-}
+
 if (isset($_GET['page']) && $_GET['page']=="changename")
 {
 	echo "<table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><form name=changename method=post action=\"?action=changename\"><tr valign=middle><td><center>Name <input type=text name=name value=\"".(($_SESSION['mm_user']['name'])?$_SESSION['mm_user']['name']:"Anonymous")."\" maxlenght=22><br><br><input type=submit value=\"CHANGE\"></td></tr></table>";
@@ -203,7 +186,6 @@ if (isset($_GET['page']) && $_GET['page']=="changename")
 <tr valign=middle>
 <td width=20%><center>
 <a href="?action=stop"><?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==2)?"New Game":"Stop"?></a><br><br>
-<a href="?page=top10">Top 10</a><br><br>
 <a href="?page=changename">Change Name</a>
 <br>
 </td>
@@ -271,10 +253,10 @@ if (isset($_SESSION['mm_user']['done'][$i]['white']) && $_SESSION['mm_user']['do
 </form>
 </table>
 <br>
-<?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?"<br><b>GameOver!</b> You finished this level! It took you <b>".$_SESSION['mm_user']['playtime']." seconds</b>...<br>You're now in the Hall of Fame with the name <b>\"".$_SESSION['mm_user']['name']."\"</b>, with a score of <b>".$_SESSION['mm_user']['score']."</b>.":""?>
+<?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?"<br><b>GameOver!</b> You finished this level! It took you <b>".$_SESSION['mm_user']['playtime']." seconds</b>...<br>Your score is <b>".$_SESSION['mm_user']['score']."</b>.":""?>
 
 </td>
-<td width=20%><center><b>GAME RULES</b><br><br></center>You must find the right order of right colors. There are too many colors for the slots. Find the right colors and than the right order.<br>Black star (<font color=black>*</font>) - right color, right place<br>White star (<font color=white>*</font>) - right color<br><a href="?page=gamerules">More...</a><br><br><b>6 colors</b><br>Time: <?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?$_SESSION['mm_user']['playtime']:(time()-$_SESSION['mm_user']['starttime'])?> sec<br><br>Your name: <?=$_SESSION['mm_user']['name']?></td>
+<td width=20%><center><b>GAME RULES</b><br><br></center>You must find the right order of right colors. There are too many colors for the slots. Find the right colors and then the right order.<br>Black star (<font color=black>*</font>) - right color, right place<br>White star (<font color=white>*</font>) - right color<br><a href="?page=gamerules">More...</a><br><br><b>6 colors</b><br>Time: <?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?$_SESSION['mm_user']['playtime']:(time()-$_SESSION['mm_user']['starttime'])?> sec<br><br>Your name: <?=$_SESSION['mm_user']['name']?></td>
 </tr></table>
 
 </body>
