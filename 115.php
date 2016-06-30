@@ -1,5 +1,7 @@
-<?
+<?php
 // MASTERMIND
+
+require 'inc.functions.php';
 
 session_start();
 
@@ -134,19 +136,18 @@ if (!isset($_SESSION['mm_user']['play']) || $_SESSION['mm_user']['play']!=1)
 	?>
 	<html>
 	<head><title>MASTERMIND</title></head>
-<script>
-if (top.location!=this.location)
-	top.location='<?=$_SERVER['SCRIPT_NAME']?>';
-</script>
+	<script>
+	if (top.location != this.location) top.location = this.location;
+	</script>
 	<body style='margin:0px;'>
 	<table border=0 cellpadding=0 cellspacing=0 width=100% height=100%>
 	<tr>
 	<td><center>
-	<form method=post action="<?=$_SERVER['SCRIPT_NAME']?>"><input type=hidden name=check value=1>
-	Name <input type=text name=name value="<?=(isset($_SESSION['mm_user']['name']))?$_SESSION['mm_user']['name']:"Anonymous"?>" maxlenght=22><br>
+	<form method=post action="<?= $_SERVER['SCRIPT_NAME'] ?>"><input type=hidden name=check value=1>
+	Name <input type=text name=name value="<?= (isset($_SESSION['mm_user']['name']))?$_SESSION['mm_user']['name']:"Anonymous" ?>" maxlenght=22><br>
 	<br>
 	<input type=submit value="PLAY"></form>
-	<?
+	<?php
 	die("</td></tr></table></body>");
 }
 
@@ -161,13 +162,12 @@ $OPENSOURCE = (isset($_SESSION['mm_user']['gameover'])) ? 1 : $OPENSOURCE;
 BODY,TABLE,INPUT { font-family:Verdana;font-size:11px;color:black;line-height:150%;cursor:default; }
 </style>
 <script>
-if (top.location!=this.location)
-	top.location='<?=$_SERVER['SCRIPT_NAME']?>';
+if (top.location != this.location) top.location = this.location;
 </script>
 </head>
 
 <body style='margin:0px;overflow:auto;' bgcolor=#00ddff>
-<?
+<?php
 
 if (isset($_GET['page']) && $_GET['page']=="gamerules")
 {
@@ -182,10 +182,11 @@ if (isset($_GET['page']) && $_GET['page']=="changename")
 }
 
 ?>
+
 <table border=0 cellpadding=0 cellspacing=0 width=100% height=100%>
 <tr valign=middle>
 <td width=20%><center>
-<a href="?action=stop"><?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==2)?"New Game":"Stop"?></a><br><br>
+<a href="?action=stop"><?= !empty($_SESSION['mm_user']['gameover']) ? "New Game" : "Stop" ?></a><br><br>
 <a href="?page=changename">Change Name</a>
 <br>
 </td>
@@ -195,28 +196,28 @@ if (isset($_GET['page']) && $_GET['page']=="changename")
 <table border=0 cellpadding=0 cellspacing=20 bgcolor=#772200>
 <tr height=30>
 <td></td>
-<td width=30 bgcolor=<?=($OPENSOURCE)?$_SESSION['mm_veld'][0]:"#774400"?>>&nbsp;</td>
-<td width=30 bgcolor=<?=($OPENSOURCE)?$_SESSION['mm_veld'][1]:"#774400"?>>&nbsp;</td>
-<td width=30 bgcolor=<?=($OPENSOURCE)?$_SESSION['mm_veld'][2]:"#774400"?>>&nbsp;</td>
-<td width=30 bgcolor=<?=($OPENSOURCE)?$_SESSION['mm_veld'][3]:"#774400"?>>&nbsp;</td>
+<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][0]:"#774400" ?>>&nbsp;</td>
+<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][1]:"#774400" ?>>&nbsp;</td>
+<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][2]:"#774400" ?>>&nbsp;</td>
+<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][3]:"#774400" ?>>&nbsp;</td>
 <td></td>
 </tr>
 <tr height=0>
 <td colspan=6></td>
 </tr>
-<?
+<?php
 
 for ($i=0;$i<9;$i++)
 {
 	?>
 <tr height=30>
-<td width=30 align=right><b><?=($i+1)?></td>
-<td bgcolor=<?=(isset($_SESSION['mm_user']['done'][$i][1]))?$_SESSION['mm_user']['done'][$i][1]:""?>></td>
-<td bgcolor=<?=(isset($_SESSION['mm_user']['done'][$i][2]))?$_SESSION['mm_user']['done'][$i][2]:""?>></td>
-<td bgcolor=<?=(isset($_SESSION['mm_user']['done'][$i][3]))?$_SESSION['mm_user']['done'][$i][3]:""?>></td>
-<td bgcolor=<?=(isset($_SESSION['mm_user']['done'][$i][4]))?$_SESSION['mm_user']['done'][$i][4]:""?>></td>
-<td width=20>
-<?
+<td width=30 align=right><b><?= ($i+1) ?></td>
+<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][1]))?$_SESSION['mm_user']['done'][$i][1]:"" ?>></td>
+<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][2]))?$_SESSION['mm_user']['done'][$i][2]:"" ?>></td>
+<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][3]))?$_SESSION['mm_user']['done'][$i][3]:"" ?>></td>
+<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][4]))?$_SESSION['mm_user']['done'][$i][4]:"" ?>></td>
+<td width=40>
+<?php
 
 if (isset($_SESSION['mm_user']['done'][$i]['black']) && $_SESSION['mm_user']['done'][$i]['black']>0)
 	for ($j=0;$j<$_SESSION['mm_user']['done'][$i]['black'];$j++)
@@ -228,7 +229,7 @@ if (isset($_SESSION['mm_user']['done'][$i]['white']) && $_SESSION['mm_user']['do
 ?>
 </td>
 </tr>
-	<?
+	<?php
 }
 
 ?>
@@ -243,20 +244,20 @@ if (isset($_SESSION['mm_user']['done'][$i]['white']) && $_SESSION['mm_user']['do
 <tr>
 <form name=kieskleuren method=post><input type=hidden name=check value=1><input type=hidden name=action value=kieskleuren>
 <td></td>
-<td><select name=veld1 style='width:30px;height:30px;' OnChange="document.getElementById('kleurveld1').bgColor=this.value"><option style='background-color:#774400;' value=black>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
-<td><select name=veld2 style='width:30px;height:30px;' OnChange="document.getElementById('kleurveld2').bgColor=this.value"><option style='background-color:#774400;' value=black>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
-<td><select name=veld3 style='width:30px;height:30px;' OnChange="document.getElementById('kleurveld3').bgColor=this.value"><option style='background-color:#774400;' value=black>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
-<td><select name=veld4 style='width:30px;height:30px;' OnChange="document.getElementById('kleurveld4').bgColor=this.value"><option style='background-color:#774400;' value=black>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
+<td><select name=veld1 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld1').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
+<td><select name=veld2 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld2').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
+<td><select name=veld3 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld3').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
+<td><select name=veld4 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld4').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
 <td></td>
 </tr>
-<tr><td colspan=6><input type=<?=(isset($_SESSION['mm_user']['gameover']))?"button":"submit"?> value="<?=(isset($_SESSION['mm_user']['gameover']))?"New Game":"Check"?>" style='width:100%;'<?=(isset($_SESSION['mm_user']['gameover']))?" OnClick=\"document.location='?action=stop';\"":""?>></td></tr>
+<tr><td colspan=6><input type=<?= (isset($_SESSION['mm_user']['gameover']))?"button":"submit"?> value="<?=(isset($_SESSION['mm_user']['gameover']))?"New Game":"Check"?>" style='width:100%;'<?=(isset($_SESSION['mm_user']['gameover']))?" OnClick=\"document.location='?action=stop';\"":"" ?> /></td></tr>
 </form>
 </table>
 <br>
-<?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?"<br><b>GameOver!</b> You finished this level! It took you <b>".$_SESSION['mm_user']['playtime']." seconds</b>...<br>Your score is <b>".$_SESSION['mm_user']['score']."</b>.":""?>
+<?= (isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?"<br><b>GameOver!</b> You finished this level! It took you <b>".$_SESSION['mm_user']['playtime']." seconds</b>...<br>Your score is <b>".$_SESSION['mm_user']['score']."</b>.":"" ?>
 
 </td>
-<td width=20%><center><b>GAME RULES</b><br><br></center>You must find the right order of right colors. There are too many colors for the slots. Find the right colors and then the right order.<br>Black star (<font color=black>*</font>) - right color, right place<br>White star (<font color=white>*</font>) - right color<br><a href="?page=gamerules">More...</a><br><br><b>6 colors</b><br>Time: <?=(isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?$_SESSION['mm_user']['playtime']:(time()-$_SESSION['mm_user']['starttime'])?> sec<br><br>Your name: <?=$_SESSION['mm_user']['name']?></td>
+<td width=20%><center><b>GAME RULES</b><br><br></center>You must find the right order of right colors. There are too many colors for the slots. Find the right colors and then the right order.<br>Black star (<font color=black>*</font>) - right color, right place<br>White star (<font color=white>*</font>) - right color<br><a href="?page=gamerules">More...</a><br><br><b>6 colors</b><br>Time: <?= (isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?$_SESSION['mm_user']['playtime']:(time()-$_SESSION['mm_user']['starttime']) ?> sec<br><br>Your name: <?= $_SESSION['mm_user']['name'] ?></td>
 </tr></table>
 
 </body>
