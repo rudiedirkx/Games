@@ -1,4 +1,5 @@
 g119 = {};
+g119.history = [];
 
 // All possible active-inactive results for any line
 g119.options = function(length, hints) {
@@ -70,7 +71,6 @@ g119.solvedGrid = function(grid) {
 	// Rows
 	for (var i=0; i<grid.rows.length-1; i++) {
 		if (!g119.validRow(grid, i, true)) {
-			console.log('Row ' + i + ' is unsolved');
 			return false;
 		}
 	}
@@ -78,7 +78,6 @@ g119.solvedGrid = function(grid) {
 	// Rows
 	for (var i=0; i<grid.rows[0].cells.length-1; i++) {
 		if (!g119.validColumn(grid, i, true)) {
-			console.log('Column ' + i + ' is unsolved');
 			return false;
 		}
 	}
@@ -251,11 +250,17 @@ g119.map = function(grid, withUnknowns) {
 };
 
 // Click handler for grid
-g119.click = function(cell, states) {
+g119.click = function(cell, states, undo) {
+	var delta = undo ? -1 : +1;
+
 	var state = cell.dataset.state || states[0];
 	var stateIndex = states.indexOf(state);
-	stateIndex = (stateIndex + 1) % states.length;
-	cell.dataset.state = states[stateIndex];
+	stateIndex = (stateIndex + delta) % states.length;
+	cell.dataset.state = states[(stateIndex + states.length) % states.length];
+
+	if (!undo) {
+		g119.history.push(cell);
+	}
 };
 
 // Disable tap zoom

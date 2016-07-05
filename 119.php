@@ -57,7 +57,9 @@ if (isset($_POST['cheat'])) {
 						<span><?= implode('</span> <span>', $map['ver'][$x]) ?></span>
 					</th>
 				<? endfor ?>
-				<th></th>
+				<th>
+					<button id="undo">undo 1</button>
+				</th>
 			</tr>
 		</tbody>
 	</table>
@@ -124,6 +126,13 @@ if (isset($_POST['cheat'])) {
 			g119.getMetaCellForColumn(tbody, col).classList.add('hilite');
 			var row = cell.parentNode.sectionRowIndex;
 			g119.getMetaCellForRow(tbody, row).classList.add('hilite');
+		}
+	});
+
+	document.querySelector('#undo').addEventListener('click', function(e) {
+		var cell = g119.history.pop();
+		if (cell) {
+			g119.click(cell, states, true);
 		}
 	});
 
