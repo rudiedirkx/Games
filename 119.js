@@ -258,6 +258,9 @@ g119.click = function(cell, states, undo) {
 	stateIndex = (stateIndex + delta) % states.length;
 	cell.dataset.state = states[(stateIndex + states.length) % states.length];
 
+	var map = g119.map(tbody, true);
+	sessionStorage.setItem('g119_' + g119.solution, map);
+
 	if (!undo) {
 		g119.history.push(cell);
 	}

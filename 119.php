@@ -70,7 +70,7 @@ if (isset($_POST['cheat'])) {
 
 	<script src="119.js"></script>
 	<script>
-	var solution = '<?= hashMap($map) ?>';
+	g119.solution = '<?= hashMap($map) ?>';
 
 	var states = ['', 'active', 'inactive'];
 	var tbody = document.querySelector('tbody');
@@ -91,7 +91,7 @@ if (isset($_POST['cheat'])) {
 						cell.dataset.state = 'inactive';
 					});
 
-					sessionStorage.removeItem('g119_' + solution);
+					sessionStorage.removeItem('g119_' + g119.solution);
 
 					setTimeout(function() {
 						alert('YOU WIN!');
@@ -99,9 +99,6 @@ if (isset($_POST['cheat'])) {
 				}, 500);
 			}
 			else {
-				var map = g119.map(tbody, true);
-				sessionStorage.setItem('g119_' + solution, map);
-
 				// clearTimeout(validator);
 				validator = setTimeout(function() {
 					var valid = g119.validRow(tbody, cell.parentNode.sectionRowIndex, false);
@@ -139,7 +136,7 @@ if (isset($_POST['cheat'])) {
 	g119.noZoom(tbody);
 
 	document.querySelector('#reset').addEventListener('click', function(e) {
-		sessionStorage.removeItem('g119_' + solution);
+		sessionStorage.removeItem('g119_' + g119.solution);
 		location.reload();
 	});
 
@@ -195,7 +192,7 @@ if (isset($_POST['cheat'])) {
 		}
 	});
 
-	var saved = sessionStorage.getItem('g119_' + solution);
+	var saved = sessionStorage.getItem('g119_' + g119.solution);
 	if (saved) {
 		var map = saved.split('.');
 		if (map[0] == tbody.rows[0].querySelectorAll('td').length) {
