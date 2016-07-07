@@ -249,6 +249,18 @@ g119.map = function(grid, withUnknowns) {
 	return String(width) + '.' + cells.join('').replace(/0*$/, '');
 };
 
+// Validate row & column from a cell
+g119.validateFromCell = function(cell) {
+	var tbody = cell.parentNode.parentNode;
+	return setTimeout(function() {
+		var valid = g119.validRow(tbody, cell.parentNode.sectionRowIndex, false);
+		g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList[valid ? 'remove' : 'add']('invalid');
+
+		var valid = g119.validColumn(tbody, cell.cellIndex, false);
+		g119.getMetaCellForColumn(tbody, cell.cellIndex).classList[valid ? 'remove' : 'add']('invalid');
+	});
+};
+
 // Click handler for grid
 g119.click = function(cell, states, undo) {
 	var delta = undo ? -1 : +1;

@@ -74,7 +74,7 @@ if (isset($_POST['cheat'])) {
 
 	var states = ['', 'active', 'inactive'];
 	var tbody = document.querySelector('tbody');
-	var winner, validator;
+	var winner;
 	tbody.addEventListener('click', function(e) {
 		if (e.target.nodeName == 'A') {
 			e.preventDefault();
@@ -99,14 +99,7 @@ if (isset($_POST['cheat'])) {
 				}, 500);
 			}
 			else {
-				// clearTimeout(validator);
-				validator = setTimeout(function() {
-					var valid = g119.validRow(tbody, cell.parentNode.sectionRowIndex, false);
-					g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList[valid ? 'remove' : 'add']('invalid');
-
-					var valid = g119.validColumn(tbody, cell.cellIndex, false);
-					g119.getMetaCellForColumn(tbody, cell.cellIndex).classList[valid ? 'remove' : 'add']('invalid');
-				});
+				g119.validateFromCell(cell);
 			}
 		}
 	});
@@ -130,6 +123,7 @@ if (isset($_POST['cheat'])) {
 		var cell = g119.history.pop();
 		if (cell) {
 			g119.click(cell, states, true);
+			g119.validateFromCell(cell);
 		}
 	});
 
