@@ -35,7 +35,7 @@ if (isset($_POST['cheat'])) {
 					<button id="cheat1">cheat 1</button>
 					<button id="cheat2">cheat 2</button>
 					<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a> &nbsp;
-					Level <?= $levelName ?> &nbsp;
+					Level <?= $levelName ?> (<span id="difficulty">?</span>) &nbsp;
 					<a class="<?= !isset($g_arrMaps[$level+1]) ? 'disabled' : '' ?>" href="?level=<?= $level+1 ?>">&gt;&gt;</a>
 				</th>
 			</tr>
@@ -128,6 +128,9 @@ if (isset($_POST['cheat'])) {
 	});
 
 	g119.noZoom(tbody);
+
+	var difficulty = g119.difficulty(tbody);
+	document.querySelector('#difficulty').textContent = difficulty;
 
 	document.querySelector('#reset').addEventListener('click', function(e) {
 		sessionStorage.removeItem('g119_' + g119.solution);

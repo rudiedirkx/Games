@@ -66,6 +66,47 @@ g119.options = function(length, hints) {
 	return options;
 };
 
+// Evaluate grid difficulty
+g119.difficulty = function(grid) {
+	var table = document.createElement('table');
+	table.innerHTML = grid.innerHTML;
+
+	grid = table.tBodies[0];
+	[].forEach.call(grid.querySelectorAll('td'), function(cell) {
+		cell.dataset.state = '';
+	});
+
+	var difficulty = 0;
+	var changes = true;
+	var oldwhite = 0;
+	var oldBlack = 0;
+	while (changes) {
+		difficulty++;
+
+		var rows = grid.rows.length - 1;
+		for (var i=0; i<rows; i++) {
+			g119.fillRowWithLine(grid, i, g119.commonCells(g119.validLines(g119.getLineForRow(grid, i), g119.getHintsForRow(grid, i))));
+		}
+
+		var cols = grid.rows[0].cells.length - 1;
+		for (var i=0; i<cols; i++) {
+			g119.fillColumnWithLine(grid, i, g119.commonCells(g119.validLines(g119.getLineForColumn(grid, i), g119.getHintsForColumn(grid, i))));
+		}
+
+		var newWhite = grid.querySelectorAll('td[data-state="inactive"]').length;
+		var newBlack = grid.querySelectorAll('td[data-state="active"]').length;
+
+		changes = oldwhite != newWhite || oldBlack != newBlack;
+		oldwhite = newWhite;
+		oldBlack = newBlack;
+	}
+
+	var leftover = (grid.rows.length-1) * (grid.rows[0].cells.length-1) - newWhite - newBlack;
+	difficulty += Math.ceil(leftover / 4);
+
+	return difficulty;
+};
+
 // See if the entire grid is fully solved according to all hints
 g119.solvedGrid = function(grid) {
 	// Rows
