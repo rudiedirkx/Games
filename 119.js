@@ -287,7 +287,11 @@ g119.map = function(grid, withUnknowns) {
 		return g119.stateToChar(cell.dataset.state, withUnknowns);
 	});
 
-	return String(width) + '.' + cells.join('').replace(/0*$/, '');
+	var str = String(width) + '.' + cells.join('');
+	if (!withUnknowns) {
+		str = str.replace(/0*$/, '');
+	}
+	return str;
 };
 
 // Validate row & column from a cell
