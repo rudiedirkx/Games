@@ -10,7 +10,7 @@ $objDeck = new Deck();
 $objDeck->shuffle();
 
 $iPlayers = 12;
-define('LOWEST_WORTHY_HAND', 6);
+define('LOWEST_WORTHY_HAND', (int) $_GET['min'] ?: 6);
 
 $arrPublic = $arrPlayers = array();
 for ( $i=0; $i<$iPlayers; $i++ ) {
