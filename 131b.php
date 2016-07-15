@@ -10,7 +10,7 @@ $objDeck = new Deck();
 $objDeck->shuffle();
 
 $iPlayers = 12;
-define('LOWEST_WORTHY_HAND', (int) $_GET['min'] ?: 6);
+define('LOWEST_WORTHY_HAND', (int) @$_GET['min'] ?: 6);
 
 $arrPublic = $arrPlayers = array();
 for ( $i=0; $i<$iPlayers; $i++ ) {
@@ -40,6 +40,32 @@ $arrPlayers[0] = array(
 
 require_once('inc.cls.pokertexasholdem.php');
 
+$bNothingWorthy = true;
+$fMaxHand = 0;
+$arrHands = array();
+foreach ( $arrPlayers AS $k => $arrPlayer ) {
+	$fHand = pokertexasholdem::score(array_merge($arrPublic, $arrPlayer));
+	$arrHands[$k] = $fHand;
+
+	if ( (float) $fHand > $fMaxHand ) {
+		$fMaxHand = (float) $fHand;
+	}
+
+	if ( (float) LOWEST_WORTHY_HAND <= (float) $fHand ) {
+		$bNothingWorthy = false;
+	}
+}
+
+if ( !empty($_GET['plain']) ) {
+	if ( $bNothingWorthy ) {
+		echo '<meta http-equiv="refresh" content="0" />';
+	}
+	echo '<title>' . $fMaxHand . '</title>';
+	echo '<pre>' . $fMaxHand . '</pre>';
+	echo '<pre>' . number_format(microtime(1) - $fUtcStart, 4) . '</pre>';
+	exit;
+}
+
 ?>
 <html>
 
@@ -57,9 +83,6 @@ body, table {
 <body>
 <?php
 
-$bNothingWorthy = true;
-$iMaxHand = 0;
-$arrHands = array();
 echo '<table border="0" cellpadding="2" cellspacing="1">';
 foreach ( $arrPlayers AS $k => $arrPlayer ) {
 	echo '<tr>';
@@ -67,18 +90,14 @@ foreach ( $arrPlayers AS $k => $arrPlayer ) {
 		echo '<td rowspan="'.count($arrPlayers).'">'.implode(', ', $arrPublic).'</td>';
 		echo '<td rowspan="'.count($arrPlayers).'">&nbsp;+&nbsp;</td>';
 	}
-	$fHand = pokertexasholdem::score(array_merge($arrPublic, $arrPlayer));
-	$arrHands[] = $fHand;
-	if ( (float)$fHand > $iMaxHand ) {
-		$iMaxHand = (float)$fHand;
+
+	$fHand = $arrHands[$k];
+
+	$szHand = $fHand;
+	if ( (float) LOWEST_WORTHY_HAND <= (float) $fHand ) {
+		$szHand = '<b class="worthy h' . str_replace('.', '_', (float) $fHand) . '">' . $szHand . '</b>';
 	}
-	if ( (float)LOWEST_WORTHY_HAND <= (float)$fHand ) {
-		$bNothingWorthy = false;
-		$szHand = '<b class="worthy h'.str_replace('.', '_', (float)$fHand).'">'.$fHand.'</b>';
-	}
-	else {
-		$szHand = $fHand;
-	}
+
 	echo '<td>'.implode(', ', $arrPlayer).'</td>';
 	echo '<td>&nbsp;=&nbsp;</td>';
 	echo '<td>'.$szHand.'</td>';
@@ -99,6 +118,6 @@ echo '<p>'.number_format(($fTime=microtime(true)-$fUtcStart), 4).'</p>';
 ?>
 </body>
 
-<title><?php echo $iMaxHand; ?></title>
+<title><?php echo $fMaxHand; ?></title>
 
 </html>
