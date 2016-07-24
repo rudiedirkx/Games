@@ -58,7 +58,7 @@ if (isset($_POST['cheat'])) {
 					</th>
 				<? endfor ?>
 				<th>
-					<button id="undo">undo 1</button>
+					<button id="undo">undo (<span id="undo-steps">0</span>)</button>
 				</th>
 			</tr>
 		</tbody>
@@ -72,6 +72,8 @@ if (isset($_POST['cheat'])) {
 	<script>
 	g119.solution = '<?= hashMap($map) ?>';
 
+	var $undoSteps = document.querySelector('#undo-steps');
+
 	var states = ['', 'active', 'inactive'];
 	var tbody = document.querySelector('tbody');
 	var winner;
@@ -81,6 +83,7 @@ if (isset($_POST['cheat'])) {
 
 			var cell = e.target.parentNode;
 			g119.click(cell, states);
+			$undoSteps.textContent = g119.history.length;
 
 			clearTimeout(winner);
 
@@ -123,6 +126,7 @@ if (isset($_POST['cheat'])) {
 		var cell = g119.history.pop();
 		if (cell) {
 			g119.click(cell, states, true);
+			$undoSteps.textContent = g119.history.length;
 			g119.validateFromCell(cell);
 		}
 	});
