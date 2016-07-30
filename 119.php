@@ -98,8 +98,8 @@ if (isset($_POST['cheat'])) {
 
 					setTimeout(function() {
 						alert('YOU WIN!');
-					});
-				}, 500);
+					}, 40);
+				}, 800);
 			}
 			else {
 				g119.validateFromCell(cell);
