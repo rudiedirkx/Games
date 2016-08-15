@@ -19,6 +19,9 @@ thead #cheat2 {
 	float: right;
 	margin-left: .25em;
 }
+button:not(.loading) .loading {
+	display: none;
+}
 thead a.disabled {
 	visibility: hidden;
 }

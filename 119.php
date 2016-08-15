@@ -32,7 +32,7 @@ if (isset($_POST['cheat'])) {
 			<tr>
 				<th colspan="40">
 					<button id="reset">reset</button>
-					<button id="cheat1">cheat 1</button>
+					<button id="cheat1">cheat 1<span class="loading"> ...</span></button>
 					<button id="cheat2">cheat 2</button>
 					<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a> &nbsp;
 					Level <?= $levelName ?> (<span id="difficulty">?</span>) &nbsp;
@@ -142,7 +142,10 @@ if (isset($_POST['cheat'])) {
 	});
 
 	document.querySelector('#cheat1').addEventListener('click', function(e) {
+		this.classList.add('loading');
+
 		var xhr = new XMLHttpRequest;
+		xhr.button = this;
 		xhr.open('post', location.href, true);
 		xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 		xhr.onload = function(e) {
@@ -153,6 +156,8 @@ if (isset($_POST['cheat'])) {
 				var state = g119.stateToChar(cell.dataset.state, true);
 				cell.classList[state != '_' && state != rsp.map[y][x] ? 'add' : 'remove']('invalid');
 			});
+
+			this.button.classList.remove('loading');
 		};
 		xhr.send('cheat=1');
 	});
