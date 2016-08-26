@@ -66,7 +66,13 @@ if (isset($_POST['cheat'])) {
 
 	<p><a href="119B.php">Build your own</a></p>
 
-	<p>Solution: <a id="export" href="#">export</a> | <a id="import" href="#">import</a></p>
+	<p>
+		Solution:
+		| <a id="export" href="#" title="Export to string">export</a>
+		| <a id="import" href="#" title="Import exported string">import</a>
+		| <a id="save" href="#" title="Save to the public cloud">save</a>
+		| <a id="load" href="#" title="Load from the public cloud">load</a>
+	</p>
 
 	<script src="119.js"></script>
 	<script>
@@ -181,21 +187,57 @@ if (isset($_POST['cheat'])) {
 		prompt('Copy this:', map);
 	});
 
+	function importString(map) {
+		var bw = map.match(/^(\d+)\.([\d_]+)$/);
+		if (bw) {
+			var cells = tbody.querySelectorAll('td');
+			for (var i=0; i<bw[2].length; i++) {
+				if (cells[i]) {
+					cells[i].dataset.state = g119.charToState(bw[2][i]);
+				}
+			}
+		}
+	}
+
 	document.querySelector('#import').addEventListener('click', function(e) {
 		e.preventDefault();
 
 		var map = prompt('Paste an export:', '');
-		if (map) {
-			var bw = map.match(/^(\d+)\.([\d_]+)$/);
-			if (bw) {
-				var cells = tbody.querySelectorAll('td');
-				for (var i=0; i<bw[2].length; i++) {
-					if (cells[i]) {
-						cells[i].dataset.state = g119.charToState(bw[2][i]);
-					}
-				}
+		map && importString(map);
+	});
+
+	document.querySelector('#save').addEventListener('click', function(e) {
+		e.preventDefault();
+
+		var map = g119.map(tbody, 1);
+		var query = [
+			'store=' + encodeURIComponent(location.host),
+			'put=solutions.' + encodeURIComponent(g119.solution),
+			'value=' + encodeURIComponent(JSON.stringify(map)),
+		].join('&');
+
+		var xhr = new XMLHttpRequest;
+		xhr.open('post', 'https://store.webblocks.nl/?' + query, true);
+		xhr.send();
+	});
+
+	document.querySelector('#load').addEventListener('click', function(e) {
+		e.preventDefault();
+
+		var query = [
+			'store=' + encodeURIComponent(location.host),
+			'get=solutions.' + encodeURIComponent(g119.solution),
+		].join('&');
+
+		var xhr = new XMLHttpRequest;
+		xhr.open('post', 'https://store.webblocks.nl/?' + query, true);
+		xhr.onload = function(e) {
+			var rsp = JSON.parse(this.responseText.substr(this.getResponseHeader('X-anti-hijack')));
+			if (rsp.exists) {
+				importString(rsp.value);
 			}
-		}
+		};
+		xhr.send();
 	});
 
 	var saved = sessionStorage.getItem('g119_' + g119.solution);
