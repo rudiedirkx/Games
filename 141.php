@@ -57,28 +57,6 @@ else if ( $_action == "stop") {
 	go();
 }
 
-/** GAME RULES **/
-else if ( $_page == "gamerules" ) {
-	echo '<p><a href="#" onclick="return Blackbox.ShowGameRules();">Less...</a></p>';
-	echo "You must find all Atoms! The Atoms are hidden in the grey field.<br/>";
-	echo "You can fire beams that might tell you the location of the Atoms.<br/>";
-	echo "You do that by clicking on side cells (the lighter grey ones).<br/>";
-	echo "A beam turns before it hits an Atom.<br/>If you fire a beam from below and there is an Atom on the left somewhere,";
-	echo "the beam will turn to the right:<br/>";
-	echo "<img src=\"?image=bb2\"><br/>";
-	echo "<b>When the beam reaches another side cell, both cells are colored!</b><br/>";
-	echo "If it hits an atom its absorbed:<br/>";
-	echo "<img src=\"?image=bb1\"><br/>";
-	echo "<b>The side cell (where the beam came from) is then GREY!</b><br/>";
-	echo "It's also possible that a beam makes a U-turn and gets right back where it came from.<br/>";
-	echo "Either it doesnt get the chance to enter the field (there's an atom right or left of where the beam enters)<br/>";
-	echo "or it must make a U-turn:<br/>";
-	echo "<img src=\"?image=bb3\"><br/>";
-	echo "<b>The side cell is then WHITE!</b><br/>";
-	echo '<a href="#" onclick="return Blackbox.ShowGameRules();">Less...</a>';
-	exit;
-}
-
 /** IMAGES **/
 else if ( isset($_GET['image']) ) {
 	$bin = get_image($_GET['image'], false);
@@ -176,35 +154,6 @@ Blackbox.ChangeName = function() {
 	}
 	return false;
 };
-
-Blackbox.ShowGameRules = function() {
-	if ( oldgamerulesinnerhtml ) {
-		$('#game_rules').innerHTML = oldgamerulesinnerhtml;
-		oldgamerulesinnerhtml = false;
-		$('#right_frame').style.width = '200px';
-
-		return false;
-	}
-
-	if ( gamerulesinnerhtml )
-	{
-		oldgamerulesinnerhtml = $('#game_rules').innerHTML;
-		$('#game_rules').innerHTML = gamerulesinnerhtml;
-		$('#right_frame').style.width = '400px';
-	}
-	else
-	{
-		$.get(location.pathname + '?page=gamerules').on('done', function(e) {
-			oldgamerulesinnerhtml = $('#game_rules').innerHTML;
-			gamerulesinnerhtml = this.responseText;
-			$('#game_rules').innerHTML = gamerulesinnerhtml;
-			$('#right_frame').style.width = '400px';
-		});
-	}
-	return false;
-};
-var oldgamerulesinnerhtml = false;
-var gamerulesinnerhtml = false;
 
 Blackbox.reset = function( f_bResetAll ) {
 	// delete old instance
@@ -693,18 +642,27 @@ function toggleFrame(name) {
 	<div id="about">
 		<p><b>WHAT TO DO</b></p>
 
-		<p>You must find all atoms. The sooner the better. When you think you got them, hit 'CHECK' to check if you do!</p>
-		<p><a href onclick="return toggleFrame('gamerules')">More...</a></p>
+		<p>You must find all Atoms! The Atoms are hidden in the grey field.</p>
 
 		<p><b>Atoms to find: <?= $ATOMS ?></b></p>
 		<p>Playtime: <b id="playtime">-</b></p>
 		<p>Selected atoms: <span id="stats_hilighted">0</span></p>
+
+		<p>You can fire beams that might tell you the location of the Atoms.</p>
+		<p>You do that by clicking on side cells (the lighter grey ones).</p>
+		<p>A beam turns before it hits an Atom.<br/>If you fire a beam from below and there is an Atom on the left somewhere, the beam will turn to the right:</p>
+		<p><img src="?image=bb2"></p>
+		<p><b>When the beam reaches another side cell, both cells are colored!</b></p>
+		<p>If it hits an atom its absorbed:</p>
+		<p><img src="?image=bb1"></p>
+		<p><b>The side cell (where the beam came from) is then GREY!</b></p>
+		<p>It's also possible that a beam makes a U-turn and gets right back where it came from.</p>
+		<p>Either it doesnt get the chance to enter the field (there's an atom right or left of where the beam enters)</p>
+		<p>or it must make a U-turn:</p>
+		<p><img src="?image=bb3"></p>
+		<p><b>The side cell is then WHITE!</b></p>
 	</div>
 </div>
-
-<!-- <div id="gamerules" class="frame right">
-	<?php include 'tpl.blackbox_rules.php' ?>
-</div> -->
 
 </body>
 
