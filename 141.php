@@ -175,7 +175,7 @@ Blackbox.reset = function( f_bResetAll ) {
 		// Recreate field
 		for ( x=-1; x<=objBlackbox.m_sides; x++ ) {
 			for ( y=-1; y<=objBlackbox.m_sides; y++ ) {
-				fld_id = 'fld_'+x+'_'+y+'';
+				fld_id = '#fld_'+x+'_'+y+'';
 				if ( $(fld_id) ) {
 					$(fld_id).innerHTML = "";
 					$(fld_id).style.backgroundColor = "";
@@ -497,7 +497,7 @@ Blackbox.prototype = {
 				{
 					if ( this.m_mapAtoms[x][y] )
 					{
-						fld_id = 'fld_'+x+'_'+y+'';
+						var fld_id = '#fld_'+x+'_'+y+'';
 						$(fld_id).innerHTML = "&dagger;"
 					}
 				}
