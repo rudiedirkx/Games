@@ -73,6 +73,7 @@ function Blackbox() {
 	this.m_iHighlights = 0;
 	this.m_iMaxHilights = <?= (int) $ATOMS ?>;
 	this.m_iAtomsFound = 0;
+	this.m_iBeams = 0;
 
 	this.m_iColor = 0;
 	this.m_arrColors = <?= json_encode($RECHTDOORKLEUREN) ?>;
@@ -158,6 +159,8 @@ Blackbox.prototype = {
 		{
 			return Blackbox.reset();
 		}
+
+		this.m_iBeams++;
 
 		// Calculate...
 		f_x = f_coords[0];
@@ -477,7 +480,7 @@ Blackbox.prototype = {
 			return Blackbox.reset();
 		}
 
-		if ( this.m_iAtomsFound == this.m_iMaxHilights )
+		if ( this.m_iAtomsFound == this.m_iAtoms )
 		{
 			// FOUND //
 
@@ -489,9 +492,9 @@ Blackbox.prototype = {
 			this.RevealAtoms();
 
 			// Alert to user
-			setTimeout(function() {
-				alert('You found all the atoms in ' + iPlaytime + ' seconds');
-			}, 60);
+			setTimeout(function(self) {
+				alert('You have found all atoms in ' + iPlaytime + ' seconds, using ' + self.m_iBeams + ' beams!');
+			}, 60, this);
 
 			// Make sure game over flag is true
 			this.m_GameOver = true;

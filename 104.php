@@ -126,12 +126,12 @@ else if ( isset($_POST['check']) ) {
 	$_SESSION[S_NAME]['map'] = array();
 
 	if ( $iFound !== $ATOMS ) {
-		exit('You found '.$iFound.' / '.$ATOMS.': not enough!');
+		exit('You have found '.$iFound.' / '.$ATOMS.': not enough!');
 	}
 
 	$playtime = time() - $_SESSION[S_NAME]['starttime'];
 	$beams = (int)$_SESSION[S_NAME]['beams'];
-	exit('You found the ' . $ATOMS . ' atoms with ' . $beams . ' beams in ' . $playtime . ' seconds!');
+	exit('You have found all atoms in ' . $playtime . ' seconds, using ' . $beams . ' beams!');
 }
 
 ?>
