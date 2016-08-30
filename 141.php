@@ -30,7 +30,6 @@ $RECHTDOORKLEUREN	= array(
 	'#46c',
 	'#704',
 );
-$arrBoolean = array('false', 'true');
 
 $_page		= isset($_POST['page'])		? strtolower(trim($_POST['page']))		: ( isset($_GET['page'])	? strtolower(trim($_GET['page']))	: '' );
 $_action	= isset($_POST['action'])	? strtolower(trim($_POST['action']))	: ( isset($_GET['action'])	? strtolower(trim($_GET['action']))	: '' );
@@ -39,22 +38,6 @@ $_action	= isset($_POST['action'])	? strtolower(trim($_POST['action']))	: ( isse
 /** GET SECRET **/
 if ( $_action == "get_secret" ) {
 	exit( empty($_SESSION[S_NAME]['_secret']) ? '' : $_SESSION[S_NAME]['_secret'] );
-}
-
-/** GET MAP **/
-else if ( $_action == "get_map" ) {
-	$_SESSION[S_NAME]['_secret'] = rand_string(24);
-	$arrOutput = array($_SESSION[S_NAME]['_secret'], Create_Field($SIDES, $ATOMS));
-	exit(json_encode( $arrOutput ));
-}
-
-/** STOP **/
-else if ( $_action == "stop") {
-	$_SESSION[S_NAME]	= array(
-		'map' => array(),
-	);
-
-	go();
 }
 
 /** IMAGES **/
@@ -68,10 +51,6 @@ else if ( isset($_GET['image']) ) {
 	exit;
 }
 
-$szActionTrackBeam	= ( isset($_SESSION[S_NAME]['gameover']) && $_SESSION[S_NAME]['gameover'] > 1 ) ? "stop" : "trackbeam";
-$szActionFieldColor	= ( "stop" == $szActionTrackBeam ) ? "stop" : "fieldcolor";
-$OPENSOURCE = ( "stop" == $szActionTrackBeam && $_SESSION[S_NAME]['gameover'] == 3 ) ? 1 : $OPENSOURCE;
-
 ?>
 <!doctype html>
 <html>
@@ -83,44 +62,24 @@ $OPENSOURCE = ( "stop" == $szActionTrackBeam && $_SESSION[S_NAME]['gameover'] ==
 <link rel="stylesheet" href="blackbox.css" />
 <script src="js/rjs-custom.js"></script>
 <script>
-var xhrBusy = 0;
-window.on('xhrStart', function() {
-	xhrBusy++;
-	$('#loading').show();
-}).on('xhrDone', function() {
-	xhrBusy--;
-	xhrBusy == 0 && $('#loading').hide();
-});
-
 function time() {
 	return Math.floor(Date.now() / 1000);
 }
 
-function move( url, target ) {
-	if ( target ) {
-		window.popup( url, target );
-		return false;
-	}
-	document.location = url;
-	return false;
-}
-
-
 function Blackbox() {
-	this.m_opensource = <?= $arrBoolean[(int)(bool)$OPENSOURCE] ?>;
+	this.m_opensource = <?= json_encode($OPENSOURCE) ?>;
 
-	this.m_mapAtoms = {};
-	this.m_mapUser = {};
-
+	this.m_iAtoms = <?= (int) $ATOMS ?>;
 	this.m_iHighlights = 0;
-	this.m_iMaxHilights = <?= (int)$ATOMS ?>;
+	this.m_iMaxHilights = <?= (int) $ATOMS ?>;
 	this.m_iAtomsFound = 0;
-
-	this.m_secret = "";
 
 	this.m_iColor = 0;
 	this.m_arrColors = <?= json_encode($RECHTDOORKLEUREN) ?>;
 	this.m_sides = <?= (int)$SIDES ?>;
+
+	this.m_mapAtoms = this.CreateRandomMap();
+	this.m_mapUser = {};
 
 	this.m_GameOver = false;
 	Blackbox.m_iStartTime = 0;
@@ -144,44 +103,25 @@ Blackbox.UpdateTimer = function() {
 	}
 };
 
-Blackbox.ChangeName = function() {
-	var new_name = prompt('New name?', $('#your_name').getText());
-	if ( new_name ) {
-		var data = 'new_name=' + encodeURIComponent(new_name);
-		$.post(location.pathname, data).on('done', function(e) {
-			$('#your_name').setHTML(this.responseText);
-		});
-	}
-	return false;
-};
-
-Blackbox.reset = function( f_bResetAll ) {
+Blackbox.reset = function() {
 	// delete old instance
 	objBlackbox = null;
 
 	// create new instance
 	objBlackbox = new Blackbox();
 
-	// fetch map & secret
-	$.get(location.pathname + '?action=get_map').on('done', function(e) {
-		var retval = JSON.parse(this.responseText);
-		objBlackbox.m_secret = retval[0];
-		objBlackbox.m_mapAtoms = retval[1];
-	});
+	$('#stats_hilighted').setHTML(objBlackbox.m_iHighlights);
 
-	if ( f_bResetAll ) {
-		$('#stats_hilighted').setHTML(objBlackbox.m_iHighlights);
-
-		// Recreate field
-		for ( x=-1; x<=objBlackbox.m_sides; x++ ) {
-			for ( y=-1; y<=objBlackbox.m_sides; y++ ) {
-				fld_id = '#fld_'+x+'_'+y+'';
-				if ( $(fld_id) ) {
-					$(fld_id).innerHTML = "";
-					$(fld_id).style.backgroundColor = "";
-					if ( objBlackbox._ValidCoords(x,y) ) {
-						$(fld_id).className = "grid";
-					}
+	// Recreate field
+	for ( var x=-1; x<=objBlackbox.m_sides; x++ ) {
+		for ( var y=-1; y<=objBlackbox.m_sides; y++ ) {
+			var fld_id = '#fld_'+x+'_'+y+'';
+			var fld = $(fld_id);
+			if ( fld ) {
+				fld.innerHTML = "";
+				fld.style.backgroundColor = "";
+				if ( objBlackbox._ValidCoords(x, y) ) {
+					fld.className = "grid";
 				}
 			}
 		}
@@ -191,11 +131,32 @@ Blackbox.reset = function( f_bResetAll ) {
 }
 
 Blackbox.prototype = {
+	CreateRandomMap : function()
+	{
+		var atoms = [];
+		var map = {};
+		while ( atoms.length < this.m_iAtoms ) {
+			var x = Math.floor(Math.random() * this.m_sides);
+			var y = Math.floor(Math.random() * this.m_sides);
+			var atom = x + '_' + y;
+			if ( atoms.indexOf(atom) == -1 ) {
+				atoms.push(atom);
+
+				if ( !map[x] ) {
+					map[x] = {};
+				}
+				map[x][y] = true;
+			}
+		}
+
+		return map;
+	},
+
 	Fire : function( f_coords )
 	{
 		if ( this.m_GameOver )
 		{
-			return Blackbox.reset(true);
+			return Blackbox.reset();
 		}
 
 		// Calculate...
@@ -444,7 +405,7 @@ Blackbox.prototype = {
 	{
 		if ( this.m_GameOver )
 		{
-			return Blackbox.reset(true);
+			return Blackbox.reset();
 		}
 
 		szHilightClass = 'hilite';
@@ -513,7 +474,7 @@ Blackbox.prototype = {
 	{
 		if ( this.m_GameOver )
 		{
-			return Blackbox.reset(true);
+			return Blackbox.reset();
 		}
 
 		if ( this.m_iAtomsFound == this.m_iMaxHilights )
@@ -528,7 +489,9 @@ Blackbox.prototype = {
 			this.RevealAtoms();
 
 			// Alert to user
-			alert('You found all the atoms in ' + iPlaytime + ' seconds');
+			setTimeout(function() {
+				alert('You found all the atoms in ' + iPlaytime + ' seconds');
+			}, 60);
 
 			// Make sure game over flag is true
 			this.m_GameOver = true;
@@ -568,7 +531,7 @@ Blackbox.prototype = {
 var objBlackbox;
 function fc(c){return objBlackbox.Fieldcolor(c);}
 function fi(c){return objBlackbox.Fire(c);}
-window.onload = function(){Blackbox.reset(false);}
+window.onload = function(){Blackbox.reset();}
 
 
 function toggleFrame(name) {
@@ -635,8 +598,7 @@ function toggleFrame(name) {
 	</div>
 
 	<div id="menu">
-		<p><a href onclick="return Blackbox.reset(true);">Restart</a></p>
-		<!-- p><a href="#changename" onclick="return Blackbox.ChangeName();">Change Name</a></p -->
+		<p><a href onclick="return Blackbox.reset();">Restart</a></p>
 	</div>
 
 	<div id="about">
@@ -668,29 +630,6 @@ function toggleFrame(name) {
 
 </html>
 <?php
-
-function save_atom( $sides, &$parrMap ) {
-	$x = rand(0, $sides);
-	$y = rand(0, $sides);
-	if ( empty($parrMap[$x][$y]) )
-	{
-		$parrMap[$x][$y] = true;
-		return true;
-	}
-
-	return save_atom($sides, $parrMap);
-}
-
-function create_field( $f_iSides, $f_iAtoms ) {
-	$parrMap = array();
-
-	for ( $i=0; $i<$f_iAtoms; $i++ )
-	{
-		Save_Atom( $f_iSides-1, $parrMap );
-	}
-
-	return $parrMap;
-}
 
 function go() {
 	header("Location: ".basename($_SERVER['SCRIPT_NAME'])."");
