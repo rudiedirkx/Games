@@ -488,12 +488,15 @@ Blackbox.prototype = {
 			iPlaytime = time() - Blackbox.m_iStartTime;
 			Blackbox.m_iStartTime = 0;
 
+			// Calculate some bogus score
+			var score = Math.max(0, 2000 - iPlaytime * 10 - this.m_iBeams * 30);
+
 			// Visualize atoms
 			this.RevealAtoms();
 
 			// Alert to user
 			setTimeout(function(self) {
-				alert('You have found all atoms in ' + iPlaytime + ' seconds, using ' + self.m_iBeams + ' beams!');
+				alert('You have found all atoms in ' + iPlaytime + ' seconds, using ' + self.m_iBeams + ' beams!\n\nScore: ' + score);
 			}, 60, this);
 
 			// Make sure game over flag is true

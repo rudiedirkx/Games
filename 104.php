@@ -131,7 +131,9 @@ else if ( isset($_POST['check']) ) {
 
 	$playtime = time() - $_SESSION[S_NAME]['starttime'];
 	$beams = (int)$_SESSION[S_NAME]['beams'];
-	exit('You have found all atoms in ' . $playtime . ' seconds, using ' . $beams . ' beams!');
+	$score = max(0, 2000 - $playtime * 10 - $beams * 30);
+
+	exit('You have found all atoms in ' . $playtime . ' seconds, using ' . $beams . " beams!\n\nScore: ");
 }
 
 ?>
