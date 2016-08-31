@@ -81,6 +81,7 @@ function Blackbox() {
 	this.m_GameOver = false;
 	Blackbox.m_iStartTime = 0;
 	$('#playtime').setText('-');
+	$('#score').setText('-');
 
 	this.m_szAbsorbed = '#555';
 	this.m_szWhite = '#fff';
@@ -96,8 +97,17 @@ Blackbox.UpdateTimer = function() {
 
 		$('#playtime').setText(output);
 
+		var score = Blackbox.Score();
+		$('#score').setText(score);
+
 		setTimeout(Blackbox.UpdateTimer, 100);
 	}
+};
+
+Blackbox.Score = function() {
+	var iPlaytime = (Date.now() - Blackbox.m_iStartTime) / 1000;
+	var score = Math.round(Math.max(0, 2000 - iPlaytime * 5 - objBlackbox.m_iBeams * 30));
+	return score;
 };
 
 Blackbox.reset = function() {
@@ -481,21 +491,25 @@ Blackbox.prototype = {
 
 			// Calculate playtime and stop timer
 			var iPlaytime = Math.round((Date.now() - Blackbox.m_iStartTime) / 1000);
-			Blackbox.m_iStartTime = 0;
 
 			// Calculate some bogus score
-			var score = Math.max(0, 2000 - iPlaytime * 10 - this.m_iBeams * 30);
+			var score = Blackbox.Score();
+			var hiscore = localStorage.blackboxHiscore && score > parseInt(localStorage.blackboxHiscore) ? "\n\nThat's a new hi-score!" : '';
+			localStorage.blackboxHiscore = score;
 
 			// Visualize atoms
 			this.RevealAtoms();
 
-			// Alert to user
-			setTimeout(function(self) {
-				alert('You have found all atoms in ' + iPlaytime + ' seconds, using ' + self.m_iBeams + ' beams!\n\nScore: ' + score);
-			}, 60, this);
+			// Stop timer
+			Blackbox.m_iStartTime = 0;
 
 			// Make sure game over flag is true
 			this.m_GameOver = true;
+
+			// Alert to user
+			setTimeout(function(self) {
+				alert('You have found all atoms in ' + iPlaytime + ' seconds, using ' + self.m_iBeams + ' beams!\n\nScore: ' + score + hiscore);
+			}, 60, this);
 		}
 		else
 		{
@@ -609,6 +623,7 @@ function toggleFrame(name) {
 
 		<p><b>Atoms to find: <?= $ATOMS ?></b></p>
 		<p>Playtime: <b id="playtime">-</b></p>
+		<p>Score: <b id="score">-</b></p>
 		<p>Selected atoms: <span id="stats_hilighted">0</span></p>
 
 		<p>You can fire beams that might tell you the location of the Atoms.</p>
