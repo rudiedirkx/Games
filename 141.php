@@ -62,10 +62,6 @@ else if ( isset($_GET['image']) ) {
 <link rel="stylesheet" href="blackbox.css" />
 <script src="js/rjs-custom.js"></script>
 <script>
-function time() {
-	return Math.floor(Date.now() / 1000);
-}
-
 function Blackbox() {
 	this.m_opensource = <?= json_encode($OPENSOURCE) ?>;
 
@@ -84,7 +80,7 @@ function Blackbox() {
 
 	this.m_GameOver = false;
 	Blackbox.m_iStartTime = 0;
-	$('#playtime').setHTML("-");
+	$('#playtime').setText('-');
 
 	this.m_szAbsorbed = '#555';
 	this.m_szWhite = '#fff';
@@ -94,13 +90,13 @@ function Blackbox() {
 
 Blackbox.m_iStartTime = 0;
 Blackbox.UpdateTimer = function() {
-	if ( 0 < Blackbox.m_iStartTime ) {
-		var iPlaytime = time() - this.m_iStartTime,
-			output = iPlaytime + " sec";
+	if ( Blackbox.m_iStartTime > 0 ) {
+		var iPlaytime = Math.round((Date.now() - Blackbox.m_iStartTime) / 1000);
+		var output = iPlaytime + ' sec';
 
-		$('#playtime').setHTML(output);
+		$('#playtime').setText(output);
 
-		setTimeout('Blackbox.UpdateTimer()', 100);
+		setTimeout(Blackbox.UpdateTimer, 100);
 	}
 };
 
@@ -190,9 +186,8 @@ Blackbox.prototype = {
 		}
 
 		// Check if timer has already started
-		if ( 0 == Blackbox.m_iStartTime )
-		{
-			Blackbox.m_iStartTime = time();
+		if ( Blackbox.m_iStartTime == 0 ) {
+			Blackbox.m_iStartTime = Date.now();
 			Blackbox.UpdateTimer();
 		}
 
@@ -485,7 +480,7 @@ Blackbox.prototype = {
 			// FOUND //
 
 			// Calculate playtime and stop timer
-			iPlaytime = time() - Blackbox.m_iStartTime;
+			var iPlaytime = Math.round((Date.now() - Blackbox.m_iStartTime) / 1000);
 			Blackbox.m_iStartTime = 0;
 
 			// Calculate some bogus score
