@@ -494,8 +494,11 @@ Blackbox.prototype = {
 
 			// Calculate some bogus score
 			var score = Blackbox.Score();
-			var hiscore = localStorage.blackboxHiscore && score > parseInt(localStorage.blackboxHiscore) ? "\n\nThat's a new hi-score!" : '';
-			localStorage.blackboxHiscore = score;
+			var hiscore = '';
+			if (localStorage.blackboxHiscore && score > parseInt(localStorage.blackboxHiscore)) {
+				hiscore = "\n\nThat's a new hi-score!";
+				localStorage.blackboxHiscore = score;
+			}
 
 			// Visualize atoms
 			this.RevealAtoms();
