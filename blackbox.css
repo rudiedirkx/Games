@@ -70,6 +70,9 @@ td.grid {
 	font-weight: bold;
 	font-size: 13px;
 }
+td.impossible {
+	background: #faa;
+}
 td.cfield_hilite,
 td.hilite {
 	background: lime;

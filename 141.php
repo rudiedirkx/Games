@@ -549,16 +549,34 @@ Blackbox.prototype = {
 var objBlackbox;
 function fc(c){return objBlackbox.Fieldcolor(c);}
 function fi(c){return objBlackbox.Fire(c);}
-window.onload = function(){Blackbox.reset();}
+window.onload = function() {
+	Blackbox.reset();
 
+	var dragging = false, addClass = true;
+	$('#blackbox')
+		.on('contextmenu', function(e) {
+			e.preventDefault();
+		})
+		.on('mousedown', function(e) {
+			dragging = false;
 
-function toggleFrame(name) {
-	var el = $(name);
-	el.toggleClass('show');
-	if ( el.hasClass('show') ) {
-		el.getElement('a').focus();
-	}
-	return false;
+			if (e.rightClick && e.target.hasClass('grid')) {
+				e.preventDefault();
+				dragging = true;
+				e.target.toggleClass('impossible');
+				addClass = e.target.hasClass('impossible');
+			}
+		})
+		.on('mouseover', function(e) {
+			if (dragging) {
+				e.target.toggleClass('impossible', addClass);
+			}
+		})
+	;
+	document.on('mouseup', function(e) {
+		e.preventDefault();
+		dragging = false;
+	});
 }
 </script>
 </head>
