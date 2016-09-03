@@ -92,7 +92,7 @@ Pixelus = LevelableGame.extend({
 	},
 	updateStats: function() {
 		this.parent();
-		$('stats-stones').html(this.stones);
+		$('stats-stones').html(String(this.stones));
 		$('map-container')[this.stones ? 'removeClass' : 'addClass']('actionless');
 	}
 })

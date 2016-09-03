@@ -1,8 +1,6 @@
 <?php
 // STEPPING STONES
 
-session_start();
-
 // require_once("connect.php");
 define( "S_NAME", "st_user" );
 
@@ -19,11 +17,7 @@ if ( isset($_GET['newlevel'], $_GET['level']) ) {
 	exit(json_encode($arrLevel));
 }
 
-else if ( isset($_POST['new_name']) ) {
-	exit(htmlspecialchars($_POST['new_name']));
-}
-
-else if ( isset($_POST['name'], $_POST['level'], $_POST['jumps']) ) {
+else if ( isset($_POST['level'], $_POST['jumps']) ) {
 	if ( !isset($g_arrLevels[$_POST['level']]) ) {
 		exit('Invalid level!');
 	}
@@ -65,7 +59,6 @@ else if ( isset($_POST['name'], $_POST['level'], $_POST['jumps']) ) {
 	}
 
 	if ( $iStones < $iStartStones/2 ) {
-		// mysql_query("INSERT INTO steppingstones (name, score, level, utc) VALUES ('".addslashes($_POST['name'])."', ".$iStones.", '".addslashes($_POST['level'])."', ".time().")");
 		exit('Game saved (' . $iStones . ' stones left)!');
 	}
 
@@ -82,7 +75,6 @@ else if ( isset($_POST['name'], $_POST['level'], $_POST['jumps']) ) {
 <script src="js/rjs-custom.js"></script>
 <script>
 function SteppingStones( f_level ) {
-	this.m_szName = 'Anonymous';
 	this.m_iLevel = 0;
 	this.m_arrJumper = [0, 0];
 	this.m_iStones = 0;
@@ -142,17 +134,9 @@ r.extend(SteppingStones, {
 		if ( this.m_bGameOver || this.m_arrStack.length <= 1 ) return;
 
 		this.m_bGameOver = true;
-		var szName = prompt("What's your name?", this.m_szName);
-		if ( !szName ) {
-			return false;
-		}
-
-		this.m_szName = szName;
-		$('#your_name').setText(szName);
 
 		var self = this;
 		var data = {
-			"name": szName,
 			"level": this.m_iLevel,
 			"jumps": this.m_arrStack
 		};

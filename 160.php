@@ -1,9 +1,7 @@
 <?php
 // Pixelus
 
-session_start();
 define('S_NAME', 'pxl');
-require_once('inc.cls.json.php');
 
 $g_arrLevels = array(
 	1 => array(
@@ -249,7 +247,7 @@ if ( isset($_REQUEST['get_map']) ) {
 
 	reset_game($level);
 
-	exit(json::encode(array(
+	exit(json_encode(array(
 		'level'		=> $_SESSION[S_NAME]['level'],
 		'map'		=> $_SESSION[S_NAME]['map'],
 		'stones'	=> $_SESSION[S_NAME]['stones'],
@@ -287,9 +285,6 @@ if ( isset($_REQUEST['get_map']) ) {
 <tr>
 	<td class="pad" style="padding-top:0;">
 	<table id="map-table">
-		<thead>
-			<tr><th class="pad" colspan="30">Your name: <span id="your_name">?</span></th></tr>
-		</thead>
 		<tbody id="map-container"></tbody>
 		<tfoot>
 			<tr><th class="pad" colspan="30">Stones left: <span id="stats-stones">0</span><br />Moves: <span id="stats-moves">0</span></th></tr>
@@ -303,8 +298,6 @@ if ( isset($_REQUEST['get_map']) ) {
 		<a href="#" id="btn-restart-level">restart</a><br />
 		<br />
 		<a href="?action=reset">reset</a><br />
-		<br />
-		<a href="#" onclick="objPixelus.changeName(prompt('New name:', $('your_name').innerHTML));return false;">Change name</a><br />
 		<br />
 	</td>
 </tr>
@@ -341,13 +334,8 @@ function reset_game( $f_iLevel = 0 ) {
 	$arrLevel = $g_arrLevels[$f_iLevel];
 
 	$_SESSION[S_NAME]['play']		= true;
-	if ( empty($_SESSION[S_NAME]['name']) ) {
-		$_SESSION[S_NAME]['name'] = 'Anonymous';
-	}
 	$_SESSION[S_NAME]['level']		= $f_iLevel;
 	$_SESSION[S_NAME]['map']		= $arrLevel['map'];
 	$_SESSION[S_NAME]['stones']		= $arrLevel['stones'];
 
 }
-
-
