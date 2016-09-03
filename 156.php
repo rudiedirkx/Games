@@ -6,8 +6,19 @@ if ( isset($_GET['image']) ) {
 		exit('Invalid tile!');
 	}
 
-	// black, brown, red, orange, yellow, lime, blue, purple, gray, white
-	$g_arrColors = array('0,0,0', '139,69,19', '255,0,0', '255,140,0', '255,255,0', '50,205,50', '70,130,180', '160,32,240', '190,190,190', '255,255,255');
+	$g_arrColors = array(
+		0 => '0,0,0', // black
+		1 => '139,69,19', // brown
+		2 => '255,0,0', // red
+		3 => '255,140,0', // orange
+		4 => '255,255,0', // yellow
+		5 => '50,205,50', // lime
+		6 => '70,130,180', // blue
+		7 => '160,32,240', // purple
+		8 => '190,190,190', // gray
+		9 => '255,255,255', // white
+	);
+	$whiteText = array(0, 1, 6);
 
 	$arrNumbers = array(
 		array('bgpos' => array( 0,0, 40,0, 20,20, 0,0 ), 'txtpos' => array( 18,3 )),
@@ -18,9 +29,11 @@ if ( isset($_GET['image']) ) {
 	$img = imagecreatetruecolor(40, 40);
 	foreach ( $arrNumbers AS $k => $v ) {
 		$n = (int)substr($_GET['image'], $k, 1);
+
 		$bgc = explode(',', $g_arrColors[$n]);
 		imagefilledpolygon($img, $v['bgpos'], 4, imagecolorallocate($img, $bgc[0], $bgc[1], $bgc[2]));
-		$tc = explode(',', (1 >= $n ? $g_arrColors[9] : $g_arrColors[0]));
+
+		$tc = explode(',', in_array($n, $whiteText) ? $g_arrColors[9] : $g_arrColors[0]);
 		imagestring($img, 3, $v['txtpos'][0], $v['txtpos'][1], (string)$n, imagecolorallocate($img, $tc[0], $tc[1], $tc[2]));
 	}
 	// topleft to bottomright
@@ -228,7 +241,7 @@ function retile(ft) {
 			tile.n = tile.firstParent('TD').cellIndex + g_iSize * tile.firstParent('TR').sectionRowIndex;
 		}
 		tile.setOpacity(op0);
-		tile.src = tile.tile ? '?image='+tile.tile : '/icons/blank.gif';
+		tile.src = tile.tile ? '?image=' + tile.tile : '';
 	});
 	return false;
 }
