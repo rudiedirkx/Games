@@ -1,12 +1,8 @@
 <?php
-// THE BOX
-session_start();
 
 $bShowCoords	= false;
 $bDebug			= true;
 
-require_once('connect.php');
-require_once('inc.cls.json.php');
 define( 'S_NAME', 'bx_user' );
 define( 'BASEPAGE',	basename($_SERVER['SCRIPT_NAME']) );
 
@@ -32,24 +28,16 @@ if ( 'reset' === $_action ) {
 	exit;
 }
 
-/** CHANGE NAME **/
-else if ( isset($_POST['new_name']) ) {
-	if ( goede_gebruikersnaam(trim($_POST['new_name'])) ) {
-		$_SESSION[S_NAME]['name'] = trim($_POST['new_name']);
-	}
-	exit(htmlspecialchars($_SESSION[S_NAME]['name']));
-}
-
 /** START GAME **/
 else if ( 'get_maps' === $_action ) {
 	if ( !isset($_POST['level'], $g_arrLevels[(int)$_POST['level']]) ) {
-		exit(json::encode(array('error' => true)));
+		exit(json_encode(array('error' => true)));
 	}
 	$arrLevel = $g_arrLevels[(int)$_POST['level']];
 
 	reset_game((int)$_POST['level']);
 
-	exit(json::encode(array(
+	exit(json_encode(array(
 		'level'		=> $_SESSION[S_NAME]['level'],
 		'map'		=> $arrLevel['map'],
 		'pusher'	=> $arrLevel['pusher'],
@@ -58,7 +46,7 @@ else if ( 'get_maps' === $_action ) {
 }
 
 /** MOVE **/
-else if ( "move" == $_action && isset($_POST['dir'], $_POST['level'], $_POST['name']) ) {
+else if ( "move" == $_action && isset($_POST['dir'], $_POST['level']) ) {
 
 	if ( !isset($g_arrLevels[$_POST['level']]) ) {
 		exit('Invalid level!');
@@ -136,7 +124,6 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level'], $_POST['na
 	}
 
 	if ( 0 === CountBadBoxes($arrMap) ) {
-		mysql_query("INSERT INTO the_box_one (level, name, moves, utc) VALUES ('".addslashes($_POST['level'])."', '".addslashes($_POST['name'])."', ".(int)$iMoves.", ".time().")");
 		exit('LEVEL '.$_POST['level'].' ACHIEVEMENT SAVED');
 	}
 	exit('Level is not complete... No errors have occurred!');
@@ -167,9 +154,6 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level'], $_POST['na
 <tr>
 	<td class="pad" style="padding-top:0;">
 	<table id="thebox" border="0">
-		<thead>
-			<tr><th class="pad" colspan="30">Your name: <span id="your_name">?</span></th></tr>
-		</thead>
 		<tbody id="thebox_tbody"></tbody>
 		<tfoot>
 			<tr><th class="pad" colspan="30">Energy spent: <span id="stats_moves">0</span></th></tr>
@@ -185,8 +169,6 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level'], $_POST['na
 		<a href="#" onclick="return objTheBox.UndoLastMove();">undo</a><br />
 		<br />
 		<a href="?action=reset">reset</a><br />
-		<br />
-		<a href="#" onclick="objTheBox.ChangeName(prompt('New name:', $('your_name').innerHTML));return false;">Change name</a><br />
 		<br />
 	</td>
 </tr>
@@ -208,7 +190,7 @@ Ajax.setGlobalHandlers({
 	}
 });
 
-var objTheBox = new TheBox(<?php // echo (int)$_SESSION[S_NAME]['level']; ?>);
+var objTheBox = new TheBox;
 objTheBox.LoadAndPrintMap( document.location.hash ? document.location.hash.substr(1) : <?php echo (int)$_SESSION[S_NAME]['level']; ?> );
 
 document.addEvent('keydown', function(e) {
@@ -264,9 +246,6 @@ function reset_game( $f_iLevel = 0 ) {
 	$arrLevel = $g_arrLevels[$f_iLevel];
 
 	$_SESSION[S_NAME]['play']		= true;
-	if ( empty($_SESSION[S_NAME]['name']) ) {
-		$_SESSION[S_NAME]['name'] = 'Anonymous';
-	}
 	$_SESSION[S_NAME]['moves']		= 0;
 	$_SESSION[S_NAME]['level']		= $f_iLevel;
 	$_SESSION[S_NAME]['pusher']		= $arrLevel['pusher'];

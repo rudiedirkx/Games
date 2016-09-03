@@ -1,7 +1,6 @@
 
 // CONSTRUCTOR //
 function TheBox( f_iLevel ) {
-	this.m_szName = 'Anonymous';
 	if ( f_iLevel ) this.LoadAndPrintMap(f_iLevel);
 
 } // END TheBox()
@@ -79,12 +78,9 @@ TheBox.prototype = {
 
 		if ( 0 == this.CountBadBoxes() ) {
 			this.m_bGameOver = true;
-			var szName = prompt('What\'s your name?', this.m_szName);
-			this.m_szName = szName;
-			$('your_name').innerHTML = szName;
 			var self = this;
 			new Ajax('?', {
-				data : 'action=move&name=' + encodeURIComponent(szName) + '&level=' + this.m_iLevel + '&dir=' + this.m_arrStack.join(''),
+				data : 'action=move&level=' + this.m_iLevel + '&dir=' + this.m_arrStack.join(''),
 				onComplete : function(t) {
 					self.SaveMessage(t);
 				}
@@ -244,21 +240,5 @@ TheBox.prototype = {
 		return iBoxes;
 
 	}, // END CountBadBoxes()
-
-
-	/**
-	 * C h a n g e   n a m e
-	 */
-	ChangeName : function( f_szNewName ) {
-		if ( f_szNewName ) {
-			new Ajax('?', {
-				data : 'new_name=' + f_szNewName,
-				onComplete : function(t) {
-					$('your_name').innerHTML = t;
-				}
-			}).request();
-		}
-
-	} // END ChangeName()
 
 } // END Class TheBox
