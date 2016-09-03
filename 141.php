@@ -458,6 +458,11 @@ Blackbox.prototype = {
 
 	RevealAtoms : function()
 	{
+		if ( this.m_GameOver )
+		{
+			return Blackbox.reset();
+		}
+
 		for ( x=0; x<this.m_sides; x++ )
 		{
 			if ( this.m_mapAtoms[x] )
