@@ -62,6 +62,9 @@ else if ( isset($_GET['image']) ) {
 <link rel="stylesheet" href="blackbox.css" />
 <script src="js/rjs-custom.js"></script>
 <script>
+// @todo Draw beams
+// {"0":{"2":true,"7":true},"3":{"4":true},"5":{"1":true},"6":{"6":true}}
+
 function Blackbox() {
 	this.m_opensource = <?= json_encode($OPENSOURCE) ?>;
 

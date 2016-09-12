@@ -93,6 +93,8 @@ if (isset($_POST['cheat'])) {
 
 			clearTimeout(winner);
 
+			g119.validateFromCell(cell);
+
 			var solved = g119.solvedGrid(tbody);
 			if (solved) {
 				winner = setTimeout(function() {
@@ -100,15 +102,12 @@ if (isset($_POST['cheat'])) {
 						cell.dataset.state = 'inactive';
 					});
 
-					sessionStorage.removeItem('g119_' + g119.solution);
-
 					setTimeout(function() {
+						sessionStorage.removeItem('g119_' + g119.solution);
+
 						alert('YOU WIN!');
 					}, 40);
 				}, 800);
-			}
-			else {
-				g119.validateFromCell(cell);
 			}
 		}
 	});
