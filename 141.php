@@ -114,6 +114,8 @@ Blackbox.Score = function() {
 };
 
 Blackbox.reset = function() {
+	Blackbox.showHiscore();
+
 	// delete old instance
 	objBlackbox = null;
 
@@ -138,7 +140,14 @@ Blackbox.reset = function() {
 	}
 
 	return false;
-}
+};
+
+Blackbox.showHiscore = function() {
+	var hiscore = localStorage.blackboxHiscore;
+	if (hiscore) {
+		$('#hiscore').setText(hiscore);
+	}
+};
 
 Blackbox.prototype = {
 	CreateRandomMap : function()
@@ -506,6 +515,8 @@ Blackbox.prototype = {
 			if (localStorage.blackboxHiscore && score > parseInt(localStorage.blackboxHiscore)) {
 				hiscore = "\n\nThat's a new hi-score!";
 				localStorage.blackboxHiscore = score;
+
+				Blackbox.showHiscore();
 			}
 
 			// Visualize atoms
@@ -653,6 +664,7 @@ window.onload = function() {
 		<p><b>Atoms to find: <?= $ATOMS ?></b></p>
 		<p>Playtime: <b id="playtime">-</b></p>
 		<p>Score: <b id="score">-</b></p>
+		<p>Hi-score: <b id="hiscore">-</b></p>
 		<p>Selected atoms: <span id="stats_hilighted">0</span></p>
 
 		<p>You can fire beams that might tell you the location of the Atoms.</p>
