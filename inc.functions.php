@@ -2,6 +2,17 @@
 
 define('THUMB_SIZE', 91);
 
+function do_html( $text ) {
+	return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8') ?: htmlspecialchars((string)$text, ENT_QUOTES, 'ISO-8859-1');
+}
+
+function do_redirect($uri = null) {
+	$uri or $uri = $_SERVER['SCRIPT_NAME'];
+
+	header("Location: " . $uri);
+	exit;
+}
+
 function shash($str) {
 	$hash = 0;
 	for ($i=0; $i < strlen($str); $i++) {
