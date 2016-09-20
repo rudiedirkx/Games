@@ -58,6 +58,7 @@ if ( isset($_POST['word']) ) {
 <html>
 
 <head>
+<meta name="viewport" content="width=device-width">
 <title>WORDMIX</title>
 <style>
 html, body {
