@@ -10,7 +10,7 @@ $sentences = [
 	"I have a bigger car than your father.",
 	"I would like to do my groceries.",
 	"I once saw a cat climbing a tree.",
-	"That were some remarkable moves, he made.",
+	"Those were some remarkable moves, he made.",
 	"now a sentence without a capital or a dot",
 	"That should be a lot harder to construct",
 	"The last word in this sentence is not bitch but slut.",
@@ -74,6 +74,9 @@ body {
 	padding: 5px;
 	line-height: 1.4;
 }
+.used {
+	color: #ccc;
+}
 </style>
 </head>
 
@@ -86,14 +89,31 @@ body {
 <form method="post" autocomplete="off">
 	<p>Level <?= $session['sentence'] + 1 ?> / <?= count($sentences) ?>. Word <?= $session['word'] + 1 ?> / <?= count($session['words']) ?>:</p>
 	<pre id="word" class="word" style="background-color: #eee; padding: 5px; white-space: pre-line">
-		<span><?= implode('</span><span>', str_split(str_shuffle($word))) ?>
+		<?= implode(array_map(function($letter) {
+			return '<span data-letter="' . $letter . '">' . $letter . '</span>';
+		}, str_split(str_shuffle($word)))) ?>
 	</pre>
 	<p><input class="word" name="word" autofocus size="<?= strlen($word) ?>" maxlength="<?= strlen($word) ?>" /></p>
 	<button>CHECK WORD</button>
 </form>
 
 <script>
-// @todo Mark used letters during typing
+document.querySelector('input.word').addEventListener('keyup', function(e) {
+	// Undo hilites
+	[].forEach.call(document.querySelectorAll('[data-letter].used'), function(el) {
+		el.className = '';
+	});
+
+	// Do hilitess
+	var str = this.value;
+	for (var i=0; i<str.length; i++) {
+		var letter = str[i];
+		var el = document.querySelector('[data-letter="' + letter + '"]:not(.used)');
+		if (el) {
+			el.className = 'used';
+		}
+	}
+});
 </script>
 
 <hr />
