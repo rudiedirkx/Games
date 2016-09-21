@@ -90,7 +90,7 @@ body {
 	<p>Level <?= $session['sentence'] + 1 ?> / <?= count($sentences) ?>. Word <?= $session['word'] + 1 ?> / <?= count($session['words']) ?>:</p>
 	<pre id="word" class="word" style="background-color: #eee; padding: 5px; white-space: pre-line">
 		<?= implode(array_map(function($letter) {
-			return '<span data-letter="' . $letter . '">' . $letter . '</span>';
+			return '<span data-letter="' . strtolower($letter) . '">' . $letter . '</span>';
 		}, str_split(str_shuffle($word)))) ?>
 	</pre>
 	<p><input class="word" name="word" autofocus size="<?= strlen($word) ?>" maxlength="<?= strlen($word) ?>" /></p>
@@ -105,7 +105,7 @@ document.querySelector('input.word').addEventListener('keyup', function(e) {
 	});
 
 	// Do hilitess
-	var str = this.value;
+	var str = this.value.toLowerCase();
 	for (var i=0; i<str.length; i++) {
 		var letter = str[i];
 		var el = document.querySelector('[data-letter="' + letter + '"]:not(.used)');
