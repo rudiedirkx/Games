@@ -486,7 +486,7 @@ window.onload = function(e) {
 
 			if ( snakes[maps[lastMap].target].targets(targets) ) {
 				dragCell = null;
-				setTimeout("alert('You done it! Excellent.')", 10);
+				setTimeout("alert('You done it! Excellent.')", 60);
 				return;
 			}
 

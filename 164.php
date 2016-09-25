@@ -360,7 +360,7 @@ window.onload = function(e) {
 								alert("FAIL!");
 								loadMap(lastMap);
 							}
-						}, 1);
+						}, 60);
 					}
 					break;
 				}

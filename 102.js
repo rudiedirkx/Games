@@ -99,7 +99,7 @@ Minesweeper.prototype = {
 			if ( rsp.msg ) {
 				setTimeout(function() {
 					alert(rsp.msg);
-				}, 1);
+				}, 60);
 			}
 
 			if ( done ) {
