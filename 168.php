@@ -79,8 +79,8 @@ document.querySelector('table').addEventListener('click', function(e) {
 				alert('You win!, in ' + turns + ' turns.');
 				setTimeout(function() {
 					location.reload();
-				});
-			});
+				}, 600);
+			}, 60);
 		}
 	}
 });
