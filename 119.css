@@ -22,6 +22,11 @@ thead #cheat2 {
 button:not(.loading) .loading {
 	display: none;
 }
+a.loading {
+	display: inline-block;
+	transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+}
 thead a.disabled {
 	visibility: hidden;
 }

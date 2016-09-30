@@ -208,6 +208,8 @@ if (isset($_POST['cheat'])) {
 	document.querySelector('#save').addEventListener('click', function(e) {
 		e.preventDefault();
 
+		this.classList.add('loading');
+
 		var map = g119.map(tbody, 1);
 		var query = [
 			'store=' + encodeURIComponent(location.host),
@@ -216,12 +218,18 @@ if (isset($_POST['cheat'])) {
 		].join('&');
 
 		var xhr = new XMLHttpRequest;
+		xhr.link = this;
 		xhr.open('post', 'https://store.webblocks.nl/?' + query, true);
+		xhr.onload = function(e) {
+			this.link.classList.remove('loading');
+		};
 		xhr.send();
 	});
 
 	document.querySelector('#load').addEventListener('click', function(e) {
 		e.preventDefault();
+
+		this.classList.add('loading');
 
 		var query = [
 			'store=' + encodeURIComponent(location.host),
@@ -229,12 +237,15 @@ if (isset($_POST['cheat'])) {
 		].join('&');
 
 		var xhr = new XMLHttpRequest;
+		xhr.link = this;
 		xhr.open('post', 'https://store.webblocks.nl/?' + query, true);
 		xhr.onload = function(e) {
 			var rsp = JSON.parse(this.responseText.substr(this.getResponseHeader('X-anti-hijack')));
 			if (rsp.exists) {
 				importString(rsp.value);
 			}
+
+			this.link.classList.remove('loading');
 		};
 		xhr.send();
 	});
