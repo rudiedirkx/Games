@@ -263,7 +263,7 @@ if (isset($_POST['cheat'])) {
 		xhr.link = this;
 		xhr.open('post', 'https://store.webblocks.nl/?' + query, true);
 		xhr.onload = function(e) {
-			var rsp = JSON.parse(this.responseText.substr(this.getResponseHeader('X-anti-hijack')));
+			var rsp = JSON.parse(this.responseText.substr(9));
 			if (rsp.exists) {
 				importString(rsp.value);
 			}
