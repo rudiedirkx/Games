@@ -125,6 +125,9 @@ if (isset($_POST['cheat'])) {
 				handle.call(this, e);
 			}
 		});
+		tbody.addEventListener('click', function(e) {
+			e.preventDefault();
+		});
 	}
 	else {
 		tbody.addEventListener('click', function(e) {
