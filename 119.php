@@ -83,7 +83,7 @@ if (isset($_POST['cheat'])) {
 	var states = ['', 'active', 'inactive'];
 	var tbody = document.querySelector('tbody');
 	var winner;
-	tbody.addEventListener('click', function(e) {
+	var handle = function(e) {
 		if (e.target.nodeName == 'A') {
 			e.preventDefault();
 
@@ -110,7 +110,27 @@ if (isset($_POST['cheat'])) {
 				}, 800);
 			}
 		}
-	});
+	};
+	if ('ontouchstart' in document.body) {
+		var touchElement;
+		tbody.addEventListener('touchstart', function(e) {
+			touchElement = e.target;
+		});
+		tbody.addEventListener('touchmove', function(e) {
+			touchElement = null;
+		});
+		tbody.addEventListener('touchend', function(e) {
+			e.preventDefault();
+			if (touchElement) {
+				handle.call(this, e);
+			}
+		});
+	}
+	else {
+		tbody.addEventListener('click', function(e) {
+			handle.call(this, e);
+		});
+	}
 
 	tbody.addEventListener('mouseover', function(e) {
 		if (e.target.nodeName == 'A') {
