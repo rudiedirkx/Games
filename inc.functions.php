@@ -2,6 +2,16 @@
 
 define('THUMB_SIZE', 91);
 
+function do_html_options( $options, $selected = null, $empty = '' ) {
+	$html = '';
+	$empty && $html .= '<option value="">' . $empty;
+	foreach ( $options AS $value => $label ) {
+		$isSelected = $value == $selected ? ' selected' : '';
+		$html .= '<option value="' . do_html($value) . '"' . $isSelected . '>' . do_html($label) . '</option>';
+	}
+	return $html;
+}
+
 function do_html( $text ) {
 	return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8') ?: htmlspecialchars((string)$text, ENT_QUOTES, 'ISO-8859-1');
 }
