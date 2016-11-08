@@ -10,7 +10,7 @@ require 'inc.functions.php';
  * - Every tile is portrait: always 2x3, never 3x2
  */
 
-$maps = array_map('basename', glob('images/mahjong/map_*.gif'));
+$maps = array_map('basename', glob('images/mahjong/map_*.png'));
 natcasesort($maps);
 $maps = array_combine($maps, $maps);
 

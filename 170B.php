@@ -3,7 +3,7 @@
 
 require 'inc.functions.php';
 
-$maps = array_map('basename', glob('images/mahjong/map_*.gif'));
+$maps = array_map('basename', glob('images/mahjong/map_*.png'));
 natcasesort($maps);
 $maps = array_combine($maps, $maps);
 
@@ -18,11 +18,6 @@ $maps = array_combine($maps, $maps);
 <style>
 canvas {
 	outline: solid 1px black;
-}
-.stats {
-	position: absolute;
-	right: 0;
-	top: 0;
 }
 </style>
 </head>
@@ -45,7 +40,6 @@ window.onerror = function(e) {
 };
 </script>
 <!-- <script src="https://rawgit.com/taylorhakes/promise-polyfill/master/promise.js"></script> -->
-<script src="//home.hotblocks.nl/tests/three/Stats.js"></script>
 <script src="170.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
@@ -67,13 +61,12 @@ var hilite;
 
 var tiles = localStorage.mahjongMapBuilderMap && mahjong.Board.unserialize(JSON.parse(localStorage.mahjongMapBuilderMap)) || [];
 
-function drawLine(x1, y1, x2, y2, _ctx) {
-	_ctx || (_ctx = ctx);
-	_ctx.beginPath();
-	_ctx.moveTo(x1, y1);
-	_ctx.lineTo(x2, y2);
-	_ctx.closePath();
-	_ctx.stroke();
+function drawLine(x1, y1, x2, y2) {
+	ctx.beginPath();
+	ctx.moveTo(x1, y1);
+	ctx.lineTo(x2, y2);
+	ctx.closePath();
+	ctx.stroke();
 }
 
 function drawGrid() {
@@ -143,6 +136,33 @@ function drawTiles() {
 	}
 }
 
+function colorImageData(data, r, g, b) {
+	for (var j = 0; j < data.length; j+=4) {
+		data[j+0] = r * 255;
+		data[j+1] = g * 255;
+		data[j+2] = b * 255;
+		data[j+3] = 255;
+	}
+}
+
+function drawThumb(ctx, x, y) {
+	var data;
+	// Horizontal
+	data = ctx.createImageData(4, 1);
+	colorImageData(data.data, 0, 0, 0);
+	ctx.putImageData(data, x, y);
+	ctx.putImageData(data, x, y+5);
+	// Vertical
+	data = ctx.createImageData(1, 6);
+	colorImageData(data.data, 0, 0, 0);
+	ctx.putImageData(data, x, y);
+	ctx.putImageData(data, x+3, y);
+	// Green
+	data = ctx.createImageData(1, 1);
+	colorImageData(data.data, 0, 1, 0);
+	ctx.putImageData(data, x, y);
+}
+
 // === //
 
 canvas.onmousemove = function(e) {
@@ -196,7 +216,6 @@ mapSelect.onchange = function(e) {
 
 	var src = '/images/mahjong/' + this.value;
 	mahjong.pixels(src).then(function(pixels) {
-		// console.log('pixels', pixels);
 		return mahjong.tiles(pixels);
 	}).then(function(board) {
 		tiles.length = 0;
@@ -244,44 +263,55 @@ exportButton.onclick = function(e) {
 		y[0] = Math.min(y[0], tile.y);
 		y[1] = Math.max(y[1], tile.y);
 	}
-	var dx = -x[0], dy = -y[0];
-	var w = x[1] + dx + 2, h = y[1] + dy + 2;
+	var dx = -x[0];
+	var dy = -y[0];
+	var w = x[1] + dx + 2;
+	var h = y[1] + dy + 2;
 
 	var levels = tiles.reduce(function(levels, tile) {
 		return Math.max(levels, tile.level + 1);
 	}, -1);
 
-	var mapCanvas = document.querySelector('.map-canvas') || document.createElement('canvas');
-	mapCanvas.className = 'map-canvas';
+	var mapCanvas = document.createElement('canvas');
 	mapCanvas.width = w * mahjong.IMPORT_SCALE_X * levels + levels - 1;
 	mapCanvas.height = h * mahjong.IMPORT_SCALE_Y;
 	document.body.appendChild(mapCanvas);
 
 	var ctx = mapCanvas.getContext('2d');
-	ctx.strokeStyle = '#f00';
-	ctx.lineWidth = 1;
+	ctx.fillStyle = '#fff';
+	ctx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
 
-	// Use putImageData() to draw pixels to draw lines
-
+	// Draw red lines
 	for (var i = 1; i < levels; i++) {
-		var x = i * (w * mahjong.IMPORT_SCALE_X + 1);
-		drawLine(x, 0, x, mapCanvas.height, ctx);
-		console.log('red line', x);
+		var x = ((w * mahjong.IMPORT_SCALE_X + 1) * i) - 1;
+
+		var data = ctx.createImageData(1, mapCanvas.height);
+		colorImageData(data.data, 1, 0, 0);
+		ctx.putImageData(data, x, 0);
 	}
 
+	// Draw tiles
 	for (var i = 0; i < tiles.length; i++) {
 		var tile = tiles[i];
-		var tdx = dx + tile.level * (w * mahjong.IMPORT_SCALE_X + 1);
+		var tdx = dx * mahjong.IMPORT_SCALE_X + tile.level * (w * mahjong.IMPORT_SCALE_X + 1);
 		var x = tile.x * mahjong.IMPORT_SCALE_X + tdx;
-		var y = tile.y * mahjong.IMPORT_SCALE_Y + dy;
+		var y = (tile.y + dy) * mahjong.IMPORT_SCALE_Y;
+
+		drawThumb(ctx, x, y);
 	}
+
+	// Download
+	var a = document.createElement('a');
+	a.href = mapCanvas.toDataURL('image/png');
+	a.download = 'map_N.png';
+	document.body.appendChild(a);
+	a.click();
+
+	a.remove();
+	mapCanvas.remove();
 };
 
 // === //
-
-var stats = new Stats();
-stats.getDomElement().className += ' stats';
-document.body.appendChild(stats.getDomElement());
 
 render();
 function render() {
@@ -295,7 +325,6 @@ function render() {
 		drawHilite();
 	}
 
-	window.stats && stats.update();
 	(window.requestAnimationFrame || window.webkitRequestAnimationFrame)(render);
 }
 </script>
