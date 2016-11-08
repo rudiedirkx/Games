@@ -13,7 +13,7 @@ mahjong.colors = {"111":"white","000":"black","100":"red","010":"green"};
 mahjong.IMPORT_SCALE_X = 2;
 mahjong.IMPORT_SCALE_Y = 3;
 
-mahjong.Board = function Board(tiles) {
+mahjong.Board = function Board() {
 	this.levels = [];
 	this.allTiles = [];
 
@@ -28,6 +28,26 @@ mahjong.Board = function Board(tiles) {
 
 		this.levels[tile.level].push(tile);
 	};
+};
+
+mahjong.Board.fromList = function(list) {
+	var board = new mahjong.Board;
+	for (var i = 0; i < list.length; i++) {
+		board.addTile(list[i]);
+	}
+
+	return board;
+};
+
+mahjong.Board.serialize = function(list) {
+	return list.map(function(tile) {
+		return [tile.x, tile.y, tile.level];
+	});
+};
+mahjong.Board.unserialize = function(list) {
+	return list.map(function(tile) {
+		return new mahjong.Tile(tile[0], tile[1], tile[2]);
+	});
 };
 
 mahjong.Tile = function Tile(x, y, level) {
@@ -83,13 +103,6 @@ mahjong.Tile = function Tile(x, y, level) {
 		return x > rect[0] && x < rect[0] + rect[2] && y > rect[1] && y < rect[1] + rect[3];
 	};
 
-};
-
-mahjong.Tile.serialize = function(list) {
-	return list.map(tile => [tile.x, tile.y, tile.level]);
-};
-mahjong.Tile.unserialize = function(list) {
-	return list.map(tile => new mahjong.Tile(tile[0], tile[1], tile[2]));
 };
 
 mahjong.draw = function(canvas, board) {

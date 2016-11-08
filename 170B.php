@@ -33,16 +33,26 @@ canvas {
 	<select class="map"><?= do_html_options($maps, @$_GET['map'], '-- map') ?></select>
 	<button class="save">Save this map</button>
 	<button class="unsave">Clear saved map</button>
+	<button class="export">EXPORT</button>
+	<select class="levels"><?= do_html_options(array_combine(range(1, 9), range(1, 9)), '', '-- levels') ?></select>
 </p>
 
 <canvas width="800" height="500"></canvas>
 
+<script>
+window.onerror = function(e) {
+	alert(e);
+};
+</script>
+<!-- <script src="https://rawgit.com/taylorhakes/promise-polyfill/master/promise.js"></script> -->
 <script src="//home.hotblocks.nl/tests/three/Stats.js"></script>
 <script src="170.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
 var saveButton = document.querySelector('button.save');
 var unsaveButton = document.querySelector('button.unsave');
+var exportButton = document.querySelector('button.export');
+var levelsSelect = document.querySelector('select.levels');
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 var change = true;
@@ -55,14 +65,15 @@ var MARGIN = 2;
 
 var hilite;
 
-var tiles = localStorage.mahjongMapBuilderMap && mahjong.Tile.unserialize(JSON.parse(localStorage.mahjongMapBuilderMap)) || [];
+var tiles = localStorage.mahjongMapBuilderMap && mahjong.Board.unserialize(JSON.parse(localStorage.mahjongMapBuilderMap)) || [];
 
-function drawLine(x1, y1, x2, y2) {
-	ctx.beginPath();
-	ctx.moveTo(x1, y1);
-	ctx.lineTo(x2, y2);
-	ctx.closePath();
-	ctx.stroke();
+function drawLine(x1, y1, x2, y2, _ctx) {
+	_ctx || (_ctx = ctx);
+	_ctx.beginPath();
+	_ctx.moveTo(x1, y1);
+	_ctx.lineTo(x2, y2);
+	_ctx.closePath();
+	_ctx.stroke();
 }
 
 function drawGrid() {
@@ -126,18 +137,17 @@ function drawHilite() {
 function drawTiles() {
 	for (var i = 0; i < tiles.length; i++) {
 		var tile = tiles[i];
-		drawTile(tile, getLevelColor(tile.level));
+		if (!tile.disabled) {
+			drawTile(tile, getLevelColor(tile.level));
+		}
 	}
-}
-
-function validTile(tile) {
-	return true;
-	// return tile.x % 2 == 0 && tile.y % 3 == 0;
 }
 
 // === //
 
 canvas.onmousemove = function(e) {
+	if (levelsSelect.value) return;
+
 	if (hilite = getSquare(e)) {
 		hilite.level = getLevel(hilite);
 	}
@@ -150,11 +160,30 @@ canvas.onmouseout = function(e) {
 };
 
 canvas.onclick = function(e) {
+	if (levelsSelect.value) return;
+
 	if (hilite) {
-		if (validTile(hilite)) {
-			tiles.push(hilite);
-			change = true;
-		}
+		tiles.push(hilite);
+		change = true;
+	}
+};
+
+canvas.oncontextmenu = function(e) {
+	e.preventDefault();
+
+	if (levelsSelect.value) return;
+
+	var x = e.offsetX;
+	var y = e.offsetY;
+
+	var board = mahjong.Board.fromList(tiles);
+	var target = mahjong.target(board, x, y);
+	if (target && target.isOnTop()) {
+		board = null;
+
+		var index = tiles.indexOf(target);
+		tiles.splice(index, 1);
+		change = true;
 	}
 };
 
@@ -180,8 +209,19 @@ mapSelect.onchange = function(e) {
 	});
 };
 
+levelsSelect.onchange = function(e) {
+	var max = this.value ? parseInt(this.value) : 99;
+	for (var i = 0; i < tiles.length; i++) {
+		var tile = tiles[i];
+		tile.disabled = tile.level+1 > max;
+	}
+
+	hilite = null;
+	change = true;
+};
+
 saveButton.onclick = function(e) {
-	localStorage.mahjongMapBuilderMap = JSON.stringify(mahjong.Tile.serialize(tiles));
+	localStorage.mahjongMapBuilderMap = JSON.stringify(mahjong.Board.serialize(tiles));
 };
 
 unsaveButton.onclick = function(e) {
@@ -189,6 +229,52 @@ unsaveButton.onclick = function(e) {
 	tiles.length = 0;
 
 	change = true;
+};
+
+exportButton.onclick = function(e) {
+	// Get map size
+	// Draw tiles on canvas
+	// Download Blob/File
+
+	var x = [999, 0], y = [999, 0];
+	for (var i = 0; i < tiles.length; i++) {
+		var tile = tiles[i];
+		x[0] = Math.min(x[0], tile.x);
+		x[1] = Math.max(x[1], tile.x);
+		y[0] = Math.min(y[0], tile.y);
+		y[1] = Math.max(y[1], tile.y);
+	}
+	var dx = -x[0], dy = -y[0];
+	var w = x[1] + dx + 2, h = y[1] + dy + 2;
+
+	var levels = tiles.reduce(function(levels, tile) {
+		return Math.max(levels, tile.level + 1);
+	}, -1);
+
+	var mapCanvas = document.querySelector('.map-canvas') || document.createElement('canvas');
+	mapCanvas.className = 'map-canvas';
+	mapCanvas.width = w * mahjong.IMPORT_SCALE_X * levels + levels - 1;
+	mapCanvas.height = h * mahjong.IMPORT_SCALE_Y;
+	document.body.appendChild(mapCanvas);
+
+	var ctx = mapCanvas.getContext('2d');
+	ctx.strokeStyle = '#f00';
+	ctx.lineWidth = 1;
+
+	// Use putImageData() to draw pixels to draw lines
+
+	for (var i = 1; i < levels; i++) {
+		var x = i * (w * mahjong.IMPORT_SCALE_X + 1);
+		drawLine(x, 0, x, mapCanvas.height, ctx);
+		console.log('red line', x);
+	}
+
+	for (var i = 0; i < tiles.length; i++) {
+		var tile = tiles[i];
+		var tdx = dx + tile.level * (w * mahjong.IMPORT_SCALE_X + 1);
+		var x = tile.x * mahjong.IMPORT_SCALE_X + tdx;
+		var y = tile.y * mahjong.IMPORT_SCALE_Y + dy;
+	}
 };
 
 // === //
@@ -210,7 +296,7 @@ function render() {
 	}
 
 	window.stats && stats.update();
-	requestAnimationFrame(render);
+	(window.requestAnimationFrame || window.webkitRequestAnimationFrame)(render);
 }
 </script>
 
