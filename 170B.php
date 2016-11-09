@@ -39,7 +39,6 @@ window.onerror = function(e) {
 	alert(e);
 };
 </script>
-<!-- <script src="https://rawgit.com/taylorhakes/promise-polyfill/master/promise.js"></script> -->
 <script src="170.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
@@ -72,11 +71,11 @@ function drawLine(x1, y1, x2, y2) {
 function drawGrid() {
 	ctx.strokeStyle = '#ddd';
 	ctx.lineWidth = 2;
-	for (var y=-1; y<1000; y+=SQUARE_H+MARGIN) {
-		drawLine(0, y, 1000, y);
+	for (var y=-1; y<canvas.height; y+=SQUARE_H+MARGIN) {
+		drawLine(0, y, canvas.width, y);
 	}
-	for (var x=-1; x<1000; x+=SQUARE_W+MARGIN) {
-		drawLine(x, 0, x, 1000);
+	for (var x=-1; x<canvas.width; x+=SQUARE_W+MARGIN) {
+		drawLine(x, 0, x, canvas.height);
 	}
 }
 
@@ -136,6 +135,20 @@ function drawTiles() {
 	}
 }
 
+function updateMapSize() {
+	var height = 5 + tiles.reduce((height, tile) => Math.max(height, tile.y), 0);
+	if (canvas.height < (height + 0.5) * (SQUARE_H + MARGIN)) {
+		canvas.height = (height + 0.5) * (SQUARE_H + MARGIN);
+		change = true;
+	}
+
+	var width = 5 + tiles.reduce((width, tile) => Math.max(width, tile.x), 0);
+	if (canvas.width < (width + 0.5) * (SQUARE_W + MARGIN)) {
+		canvas.width = (width + 0.5) * (SQUARE_W + MARGIN);
+		change = true;
+	}
+}
+
 function colorImageData(data, r, g, b) {
 	for (var j = 0; j < data.length; j+=4) {
 		data[j+0] = r * 255;
@@ -184,6 +197,7 @@ canvas.onclick = function(e) {
 
 	if (hilite) {
 		tiles.push(hilite);
+		updateMapSize();
 		change = true;
 	}
 };
@@ -223,6 +237,8 @@ mapSelect.onchange = function(e) {
 			var tile = board.allTiles[i];
 			tiles.push(tile);
 		}
+
+		updateMapSize();
 
 		change = true;
 	});
@@ -314,6 +330,7 @@ exportButton.onclick = function(e) {
 // === //
 
 render();
+updateMapSize();
 function render() {
 	if (change) {
 		change = false;

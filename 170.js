@@ -28,6 +28,70 @@ mahjong.Board = function Board() {
 
 		this.levels[tile.level].push(tile);
 	};
+
+	this.assignValues = function() {
+		if (this.allTiles.length % 2 != 0) {
+			throw new Error('Number of tiles must be a multiple of 2.');
+		}
+
+		var range = 9;
+
+		var values = [];
+		for (var i = 0; i < this.allTiles.length/2; i++) {
+			var value = (i % range) + 1;
+			values.push(value);
+			values.push(value);
+		}
+
+		this.assign(this.allTiles, values);
+	};
+
+	this.assign = function(tiles, values) {
+		values.sort(function(a, b) {
+			return Math.random() > 0.5 ? -1 : 1;
+		});
+
+		for (var i = 0; i < values.length; i++) {
+			tiles[i].value = values[i];
+		}
+	};
+
+	this.shuffle = function() {
+		var values = this.activeValues();
+		var tiles = this.activeTiles();
+
+		this.assign(tiles, values);
+	};
+
+	this.activeTiles = function() {
+		return this.allTiles.filter(mahjong.Tile.enabled);
+	};
+
+	this.activeValues = function() {
+		return this.activeTiles().map(mahjong.Tile.value);
+	};
+
+	this.activeTilesOnTop = function() {
+		return this.allTiles.filter(mahjong.Tile.enabled).filter(mahjong.Tile.onTop);
+	};
+
+	this.activeValuesOnTop = function() {
+		return this.activeTilesOnTop().map(mahjong.Tile.value);
+	};
+
+	this.moves = function() {
+		var values = this.activeValuesOnTop().reduce(function(values, value) {
+			(values[value]) ? (values[value]++) : (values[value] = 1);
+			return values;
+		}, {});
+
+		var moves = 0;
+		for (var value in values) {
+			moves += Math.floor(values[value] / 2);
+		}
+
+		return moves;
+	};
 };
 
 mahjong.Board.fromList = function(list) {
@@ -93,9 +157,17 @@ mahjong.Tile = function Tile(x, y, level) {
 	};
 
 	this.draw = function(ctx, color) {
-		ctx.fillStyle = color;
 		var rect = this.rect();
+		ctx.fillStyle = color;
 		ctx.fillRect.apply(ctx, rect);
+
+		if (this.value) {
+			ctx.font = '16px sans-serif';
+			ctx.fillStyle = '#fff';
+			ctx.textAlign = 'left';
+			ctx.textBaseline = 'top';
+			ctx.fillText(String(this.value), rect[0] + 5, rect[1] + 5);
+		}
 	};
 
 	this.hitBy = function(x, y) {
@@ -103,6 +175,18 @@ mahjong.Tile = function Tile(x, y, level) {
 		return x > rect[0] && x < rect[0] + rect[2] && y > rect[1] && y < rect[1] + rect[3];
 	};
 
+};
+
+mahjong.Tile.enabled = function(tile) {
+	return !tile.disabled;
+};
+
+mahjong.Tile.onTop = function(tile) {
+	return tile.isOnTop();
+};
+
+mahjong.Tile.value = function(tile) {
+	return tile.value;
 };
 
 mahjong.draw = function(canvas, board) {

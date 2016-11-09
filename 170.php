@@ -33,7 +33,8 @@ canvas {
 
 <p>
 	<select class="map"><?= do_html_options($maps, @$_GET['map']) ?></select>
-	<select class="levels"><option>1</option></select>
+	<button class="shuffle">Shuffle</button>
+	<button class="moves" disabled>?</button>
 </p>
 
 <canvas width="1000" height="500"></canvas>
@@ -43,12 +44,14 @@ window.onerror = function(e) {
 	alert(e.error || e.message);
 };
 </script>
-<!-- <script src="https://rawgit.com/taylorhakes/promise-polyfill/master/promise.js"></script> -->
+<? if (isset($_GET['compat'])): ?>
+	<script src="https://rawgit.com/taylorhakes/promise-polyfill/master/promise.js"></script>
+<? endif ?>
 <script src="170.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
-var levelSelect = document.querySelector('select.levels');
-
+var shuffleButton = document.querySelector('button.shuffle');
+var movesButton = document.querySelector('button.moves');
 var canvas = document.querySelector('canvas');
 
 var SQUARE_W = 16;
@@ -57,11 +60,17 @@ var TILE_W = 2;
 var TILE_H = 2;
 var MARGIN = 2;
 
+// === //
+
+var hilite;
+
 mapSelect.onchange = function(e) {
-	draw(true);
+	load();
 };
-levelSelect.onchange = function(e) {
-	draw(false);
+
+shuffleButton.onclick = function(e) {
+	canvas.board.shuffle();
+	draw();
 };
 
 canvas.onmousedown = function(e) {
@@ -72,19 +81,44 @@ canvas.onclick = function(e) {
 
 	var x = e.offsetX;
 	var y = e.offsetY;
-	point(x, y);
+
+	var wait = 0;
 
 	var tile = mahjong.target(canvas.board, x, y);
-	if (tile) {
-		if (tile.isOnTop()) {
-			tile.disabled = true;
-			mahjong.draw(canvas, canvas.board, canvas.levels);
-			point(x, y);
+	if (tile && tile.isOnTop()) {
+		if (hilite) {
+			if (hilite.value == tile.value) {
+				// remove both
+				hiliteTile(tile);
+				hiliteTile(hilite);
+
+				hilite.disabled = true;
+				tile.disabled = true;
+
+				hilite = null;
+
+				wait = 150;
+			}
+			else {
+				// change hilite
+				hilite = tile;
+			}
+		}
+		else {
+			// hilite new tile
+			hilite = tile;
 		}
 	}
+
+	setTimeout(function() {
+		draw();
+		// point(x, y);
+	}, wait);
 };
 
-draw(true);
+// === //
+
+load();
 
 function point(x, y) {
 	var ctx = canvas.getContext('2d');
@@ -93,42 +127,38 @@ function point(x, y) {
 	ctx.fillRect(x-1, y-1, 3, 3);
 }
 
-function setLevelOptions(levels) {
-	var options = '';
-	for (var i=0; i<levels; i++) {
-		options += '<option>' + (i + 1);
+function drawHilite() {
+	if (hilite) {
+		hiliteTile(hilite);
 	}
-	levelSelect.innerHTML = options;
-	levelSelect.value = levels;
 }
 
-function draw(resetLevels) {
+function hiliteTile(tile) {
+	var rect = tile.rect();
+
+	var ctx = canvas.getContext('2d');
+	ctx.strokeStyle = '#00f';
+	ctx.lineWidth = 1;
+	ctx.strokeRect(rect[0]-1, rect[1]-1, rect[2]+2, rect[3]+2);
+}
+
+function draw() {
+	mahjong.draw(canvas, canvas.board);
+	drawHilite();
+	movesButton.textContent = canvas.board.moves();
+}
+
+function load() {
 	var src = '/images/mahjong/' + mapSelect.value;
 	mahjong.pixels(src).then(function(pixels) {
-		console.log('pixels', pixels);
 		return mahjong.tiles(pixels);
 	}).then(function(board) {
 		console.log('board', board);
 		canvas.board = board;
 
-		resetLevels && setLevelOptions(board.levels.length);
+		board.assignValues();
 
-		// console.time('tiles on top');
-		// var tilesOnTop = board.allTiles.filter(tile => tile.isOnTop());
-		// console.timeEnd('tiles on top');
-		// console.log('tiles on top', tilesOnTop.map(tile => tile.level));
-
-		var levels = parseInt(levelSelect.value);
-		for (var i = 0; i < board.allTiles.length; i++) {
-			var tile = board.allTiles[i];
-			if (tile.level > levels-1) {
-				tile.disabled = true;
-			}
-		}
-
-		mahjong.draw(canvas, board);
-	}).catch(function() {
-		alert(this);
+		draw();
 	});
 }
 </script>
