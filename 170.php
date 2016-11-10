@@ -23,6 +23,11 @@ $maps = array_combine($maps, $maps);
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MAHJONG</title>
 <style>
+button.ffw {
+	font-weight: bold;
+	color: green;
+	box-shadow: 0 0 3px green;
+}
 canvas {
 	outline: solid 1px black;
 }
@@ -41,7 +46,7 @@ canvas {
 
 <script>
 window.onerror = function(e) {
-	alert(e.error || e.message);
+	alert(e);
 };
 </script>
 <? if (isset($_GET['compat'])): ?>
@@ -85,8 +90,8 @@ canvas.onclick = function(e) {
 	var wait = 0;
 
 	var tile = mahjong.target(canvas.board, x, y);
-	if (tile && tile.isOnTop()) {
-		if (hilite) {
+	if (tile && tile.isOnTop() && tile.sidesAreFree()) {
+		if (hilite && hilite != tile) {
 			if (hilite.value == tile.value) {
 				// remove both
 				hiliteTile(tile);
@@ -113,6 +118,11 @@ canvas.onclick = function(e) {
 	setTimeout(function() {
 		draw();
 		// point(x, y);
+		if (canvas.board.activeTiles().length == 0) {
+			setTimeout(function() {
+				alert('YOU WIN!');
+			}, 100);
+		}
 	}, wait);
 };
 
@@ -145,7 +155,10 @@ function hiliteTile(tile) {
 function draw() {
 	mahjong.draw(canvas, canvas.board);
 	drawHilite();
-	movesButton.textContent = canvas.board.moves();
+
+	var moves = canvas.board.moves();
+	movesButton.textContent = moves;
+	movesButton.classList.toggle('ffw', moves * 2 == canvas.board.activeTiles().length);
 }
 
 function load() {
@@ -158,6 +171,7 @@ function load() {
 
 		board.assignValues();
 
+		mahjong.Board.canvasSize(canvas, board.allTiles);
 		draw();
 	});
 }

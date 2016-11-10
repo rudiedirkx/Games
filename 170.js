@@ -71,16 +71,16 @@ mahjong.Board = function Board() {
 		return this.activeTiles().map(mahjong.Tile.value);
 	};
 
-	this.activeTilesOnTop = function() {
-		return this.allTiles.filter(mahjong.Tile.enabled).filter(mahjong.Tile.onTop);
+	this.activeFreeTilesOnTop = function() {
+		return this.allTiles.filter(mahjong.Tile.enabled).filter(mahjong.Tile.onTop).filter(mahjong.Tile.free);
 	};
 
-	this.activeValuesOnTop = function() {
-		return this.activeTilesOnTop().map(mahjong.Tile.value);
+	this.activeFreeValuesOnTop = function() {
+		return this.activeFreeTilesOnTop().map(mahjong.Tile.value);
 	};
 
 	this.moves = function() {
-		var values = this.activeValuesOnTop().reduce(function(values, value) {
+		var values = this.activeFreeValuesOnTop().reduce(function(values, value) {
 			(values[value]) ? (values[value]++) : (values[value] = 1);
 			return values;
 		}, {});
@@ -103,6 +103,28 @@ mahjong.Board.fromList = function(list) {
 	return board;
 };
 
+mahjong.Board.canvasSize = function(canvas, tiles) {
+	var change = false;
+
+	var height = 5 + tiles.reduce(function(height, tile) {
+		return Math.max(height, tile.y);
+	}, 0);
+	if (canvas.height < (height + 0.5) * (SQUARE_H + MARGIN)) {
+		canvas.height = (height + 0.5) * (SQUARE_H + MARGIN);
+		change = true;
+	}
+
+	var width = 5 + tiles.reduce(function(width, tile) {
+		return Math.max(width, tile.x);
+	}, 0);
+	if (canvas.width < (width + 0.5) * (SQUARE_W + MARGIN)) {
+		canvas.width = (width + 0.5) * (SQUARE_W + MARGIN);
+		change = true;
+	}
+
+	return change;
+};
+
 mahjong.Board.serialize = function(list) {
 	return list.map(function(tile) {
 		return [tile.x, tile.y, tile.level];
@@ -121,6 +143,39 @@ mahjong.Tile = function Tile(x, y, level) {
 
 	this.levelUp = function() {
 		return this.board.levels[ this.level + 1 ];
+	};
+
+	this.sidesAreFree = function() {
+		var left = true;
+		var right = true;
+
+		for (var i = 0; i < this.board.levels[this.level].length; i++) {
+			var tile = this.board.levels[this.level][i];
+			if (!tile.disabled) {
+				var sibling = tile.adjacent(this);
+				if (sibling == 'left') {
+					left = false;
+				}
+				else if (sibling == 'right') {
+					right = false;
+				}
+			}
+		}
+
+		return left || right;
+	};
+
+	this.adjacent = function(tile) {
+		if (Math.abs(tile.y - this.y) < TILE_H) {
+			if (tile.x == this.x + TILE_W) {
+				return 'right';
+			}
+			if (tile.x + TILE_W == this.x) {
+				return 'left';
+			}
+		}
+
+		return '';
 	};
 
 	this.isOnTop = function() {
@@ -164,9 +219,9 @@ mahjong.Tile = function Tile(x, y, level) {
 		if (this.value) {
 			ctx.font = '16px sans-serif';
 			ctx.fillStyle = '#fff';
-			ctx.textAlign = 'left';
-			ctx.textBaseline = 'top';
-			ctx.fillText(String(this.value), rect[0] + 5, rect[1] + 5);
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillText(String(this.value), rect[0] + rect[2]/2, rect[1] + rect[3]/2);
 		}
 	};
 
@@ -183,6 +238,10 @@ mahjong.Tile.enabled = function(tile) {
 
 mahjong.Tile.onTop = function(tile) {
 	return tile.isOnTop();
+};
+
+mahjong.Tile.free = function(tile) {
+	return tile.sidesAreFree();
 };
 
 mahjong.Tile.value = function(tile) {

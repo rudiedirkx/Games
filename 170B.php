@@ -136,15 +136,7 @@ function drawTiles() {
 }
 
 function updateMapSize() {
-	var height = 5 + tiles.reduce((height, tile) => Math.max(height, tile.y), 0);
-	if (canvas.height < (height + 0.5) * (SQUARE_H + MARGIN)) {
-		canvas.height = (height + 0.5) * (SQUARE_H + MARGIN);
-		change = true;
-	}
-
-	var width = 5 + tiles.reduce((width, tile) => Math.max(width, tile.x), 0);
-	if (canvas.width < (width + 0.5) * (SQUARE_W + MARGIN)) {
-		canvas.width = (width + 0.5) * (SQUARE_W + MARGIN);
+	if (mahjong.Board.canvasSize(canvas, tiles)) {
 		change = true;
 	}
 }
