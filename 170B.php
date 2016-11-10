@@ -6,6 +6,7 @@ require 'inc.functions.php';
 $maps = array_map('basename', glob('images/mahjong/map_*.png'));
 natcasesort($maps);
 $maps = array_combine($maps, $maps);
+$nextMapNumber = 1 + (int) substr(end($maps), 4);
 
 ?>
 <!doctype html>
@@ -28,6 +29,7 @@ canvas {
 	<select class="map"><?= do_html_options($maps, @$_GET['map'], '-- map') ?></select>
 	<button class="save">Save this map</button>
 	<button class="unsave">Clear saved map</button>
+	<button class="tiles" disabled>?</button>
 	<button class="export">EXPORT</button>
 	<select class="levels"><?= do_html_options(array_combine(range(1, 9), range(1, 9)), '', '-- levels') ?></select>
 </p>
@@ -44,6 +46,7 @@ window.onerror = function(e) {
 var mapSelect = document.querySelector('select.map');
 var saveButton = document.querySelector('button.save');
 var unsaveButton = document.querySelector('button.unsave');
+var tilesButton = document.querySelector('button.tiles');
 var exportButton = document.querySelector('button.export');
 var levelsSelect = document.querySelector('select.levels');
 var canvas = document.querySelector('canvas');
@@ -113,16 +116,9 @@ function tilesOverlap(tile1, tile2) {
 	return false;
 }
 
-function getLevelColor(level) {
-	var L = (12 - 3*level).toString(16);
-	return '#' + L + L + L;
-	// var colors = ['#bbb', '#999', '#777', '#555', '#333', '#111'];
-	// return colors[level] || '#000';
-}
-
 function drawHilite() {
 	if (hilite) {
-		drawTile(hilite, getLevelColor(hilite.level));
+		drawTile(hilite, mahjong.Tile.color(hilite.level));
 	}
 }
 
@@ -130,9 +126,14 @@ function drawTiles() {
 	for (var i = 0; i < tiles.length; i++) {
 		var tile = tiles[i];
 		if (!tile.disabled) {
-			drawTile(tile, getLevelColor(tile.level));
+			tile.value = tile.level + 1;
+			drawTile(tile, mahjong.Tile.color(tile.level));
 		}
 	}
+}
+
+function updateNumTiles() {
+	tilesButton.textContent = tiles.length;
 }
 
 function updateMapSize() {
@@ -175,6 +176,7 @@ canvas.onmousemove = function(e) {
 
 	if (hilite = getSquare(e)) {
 		hilite.level = getLevel(hilite);
+		hilite.value = hilite.level + 1;
 	}
 	change = true;
 };
@@ -189,7 +191,9 @@ canvas.onclick = function(e) {
 
 	if (hilite) {
 		tiles.push(hilite);
+		hilite = null;
 		updateMapSize();
+		updateNumTiles();
 		change = true;
 	}
 };
@@ -209,6 +213,7 @@ canvas.oncontextmenu = function(e) {
 
 		var index = tiles.indexOf(target);
 		tiles.splice(index, 1);
+		updateNumTiles();
 		change = true;
 	}
 };
@@ -216,6 +221,7 @@ canvas.oncontextmenu = function(e) {
 mapSelect.onchange = function(e) {
 	if (this.value == '') {
 		tiles.length = 0;
+		updateNumTiles();
 		change = true;
 		return;
 	}
@@ -231,6 +237,7 @@ mapSelect.onchange = function(e) {
 		}
 
 		updateMapSize();
+		updateNumTiles();
 
 		change = true;
 	});
@@ -259,10 +266,6 @@ unsaveButton.onclick = function(e) {
 };
 
 exportButton.onclick = function(e) {
-	// Get map size
-	// Draw tiles on canvas
-	// Download Blob/File
-
 	var x = [999, 0], y = [999, 0];
 	for (var i = 0; i < tiles.length; i++) {
 		var tile = tiles[i];
@@ -311,7 +314,7 @@ exportButton.onclick = function(e) {
 	// Download
 	var a = document.createElement('a');
 	a.href = mapCanvas.toDataURL('image/png');
-	a.download = 'map_N.png';
+	a.download = 'map_<?= $nextMapNumber ?>.png';
 	document.body.appendChild(a);
 	a.click();
 
@@ -323,6 +326,8 @@ exportButton.onclick = function(e) {
 
 render();
 updateMapSize();
+updateNumTiles();
+
 function render() {
 	if (change) {
 		change = false;

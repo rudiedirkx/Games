@@ -232,6 +232,11 @@ mahjong.Tile = function Tile(x, y, level) {
 
 };
 
+mahjong.Tile.color = function(level) {
+	var L = (12 - 2*level).toString(16);
+	return '#' + L + L + L;
+};
+
 mahjong.Tile.enabled = function(tile) {
 	return !tile.disabled;
 };
@@ -254,8 +259,7 @@ mahjong.draw = function(canvas, board) {
 
 	for (var level = 0; level < board.levels.length; level++) {
 		var tiles = board.levels[level];
-		var L = (12 - 3*level).toString(16);
-		var color = '#' + L + L + L;
+		var color = mahjong.Tile.color(level);
 
 		for (var i = 0; i < tiles.length; i++) {
 			var tile = tiles[i];
