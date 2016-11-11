@@ -103,22 +103,26 @@ mahjong.Board.fromList = function(list) {
 	return board;
 };
 
-mahjong.Board.canvasSize = function(canvas, tiles) {
+mahjong.Board.canvasSize = function(canvas, tiles, cosy) {
 	var change = false;
 
-	var height = 5 + tiles.reduce(function(height, tile) {
+	var height = TILE_H + tiles.reduce(function(height, tile) {
 		return Math.max(height, tile.y);
 	}, 0);
-	if (canvas.height < (height + 0.5) * (SQUARE_H + MARGIN)) {
-		canvas.height = (height + 0.5) * (SQUARE_H + MARGIN);
+	var margin = cosy ? 0 : 4 * (SQUARE_H + MARGIN);
+	height = height * (SQUARE_H + MARGIN);
+	if (cosy || canvas.height < height) {
+		canvas.height = height + margin;
 		change = true;
 	}
 
-	var width = 5 + tiles.reduce(function(width, tile) {
+	var width = TILE_W + tiles.reduce(function(width, tile) {
 		return Math.max(width, tile.x);
 	}, 0);
-	if (canvas.width < (width + 0.5) * (SQUARE_W + MARGIN)) {
-		canvas.width = (width + 0.5) * (SQUARE_W + MARGIN);
+	var margin = cosy ? 0 : 4 * (SQUARE_W + MARGIN);
+	width = width * (SQUARE_W + MARGIN);
+	if (cosy || canvas.width < width) {
+		canvas.width = width + margin;
 		change = true;
 	}
 

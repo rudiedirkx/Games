@@ -42,7 +42,7 @@ canvas {
 	<button class="moves" disabled>?</button>
 </p>
 
-<canvas width="1000" height="500"></canvas>
+<canvas width="400" height="400"></canvas>
 
 <p><a href="170B.php">Build your own</a></p>
 
@@ -72,6 +72,7 @@ var MARGIN = 2;
 var hilite;
 
 mapSelect.onchange = function(e) {
+	hilite = null;
 	load();
 };
 
@@ -173,7 +174,7 @@ function load() {
 
 		board.assignValues();
 
-		mahjong.Board.canvasSize(canvas, board.allTiles);
+		mahjong.Board.canvasSize(canvas, board.allTiles, true);
 		draw();
 	});
 }
