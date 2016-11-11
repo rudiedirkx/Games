@@ -215,14 +215,19 @@ mahjong.Tile = function Tile(x, y, level) {
 		];
 	};
 
-	this.draw = function(ctx, color) {
+	this.draw = function(ctx, colorIndex) {
+		var L = colorIndex.toString(16);
+		var bgColor = '#' + L + L + L;
+
 		var rect = this.rect();
-		ctx.fillStyle = color;
+		ctx.fillStyle = bgColor;
 		ctx.fillRect.apply(ctx, rect);
 
 		if (this.value) {
+			var textColor = colorIndex > 10 ? '#000' : '#fff';
+
 			ctx.font = '16px sans-serif';
-			ctx.fillStyle = '#fff';
+			ctx.fillStyle = textColor;
 			ctx.textAlign = 'center';
 			ctx.textBaseline = 'middle';
 			ctx.fillText(String(this.value), rect[0] + rect[2]/2, rect[1] + rect[3]/2);
@@ -237,8 +242,8 @@ mahjong.Tile = function Tile(x, y, level) {
 };
 
 mahjong.Tile.color = function(level) {
-	var L = (12 - 2*level).toString(16);
-	return '#' + L + L + L;
+	var C = (12 - 2*level);
+	return Math.max(0, C);
 };
 
 mahjong.Tile.enabled = function(tile) {
