@@ -1,3 +1,19 @@
+<?php
+// SLITHER
+
+$g_arrBoards = require '146_levels.php';
+$allBoards = array();
+foreach ($g_arrBoards as $difficulty => $boards) {
+	$allBoards = array_merge($allBoards, array_map(function($board) {
+		return array_merge(array_map(function($line) use ($board) {
+			return str_pad($line, $board['size'][0], ' ');
+		}, $board['board']), array_fill(0, $board['size'][1] - count($board['board']), str_repeat(' ', $board['size'][0])));
+	}, $boards));
+}
+
+// var_dump($allBoards);
+
+?>
 <!doctype html>
 <html>
 
@@ -319,74 +335,7 @@ var _LEVEL = 1;
 		return map;
 	}
 
-})([
-	[
-		'  3  ',
-		'  3  ',
-		'     ',
-		'     ',
-		'     ',
-	],
-	[
-		'  0  ',
-		'  3  ',
-		'1  2 ',
-		' 23  ',
-		'     ',
-	],
-	[
-		'01010',
-		' 3  2',
-		'2 3  ',
-		'1 1 1',
-		'  3  ',
-	],
-	[
-		' 313 ',
-		'  2  ',
-		' 202 ',
-		'  2  ',
-		'3 1 3',
-	],
-	[
-		' 231 ',
-		'  20 ',
-		' 2   ',
-		'1 2 1',
-		'0   0',
-	],
-	[
-		'     ',
-		' 222 ',
-		'2 3 2',
-		'  2  ',
-		'31  1',
-	],
-	[
-		'0 1 22',
-		' 2  01',
-		'1 2 22',
-		'   0  ',
-		'202 0 ',
-		'212  0',
-	],
-	[
-		' 3 3  ',
-		'    1 ',
-		'  2   ',
-		'0 3   ',
-		'      ',
-		'      ',
-	],
-	[
-		'223   ',
-		'2     ',
-		'123   ',
-		'2     ',
-		'3     ',
-		'      ',
-	]
-]);
+})(<?= json_encode($allBoards) ?>);
 </script>
 
 </body>
