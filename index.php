@@ -129,7 +129,7 @@ canvas {
 	width: 91px;
 	height: 91px;
 	display: block;
-	background: black url(/cached/thumbs.gif) 0 0 no-repeat;
+	background: black url(/cached/thumbs.png) 0 0 no-repeat;
 	background-size: 100% auto;
 	border: 0;
 }
