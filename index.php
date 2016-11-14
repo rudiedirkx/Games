@@ -82,6 +82,7 @@ $g_arrGames = array(
 	array('171',			'Traffic',										'Very simple traffic simulation'),
 	array('172',			'Word',											'Reorder the letters to make a word'),
 	array('173',			'Mamono sweeper',								'HTML version of the Flash game'),
+	array('174',			'Mondrian puzzle',								'Mondrian square puzzle'),
 );
 
 $g_iHeight = ceil(count($g_arrGames)/$g_iWidth);
