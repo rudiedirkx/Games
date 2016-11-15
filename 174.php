@@ -86,40 +86,120 @@ function Line(from, to) {
 		return (this.from.equals(line.from) && this.to.equals(line.to)) || (this.from.equals(line.to) && this.to.equals(line.from));
 	};
 }
+Line.contains = function(lines, line) {
+	for (var i = 0; i < lines.length; i++) {
+		if (lines[i].equals(line)) {
+			return true;
+		}
+	}
 
-function Square(tl, br) {
-	this.tl = tl;
-	this.br = br;
+	return false;
+};
+
+function Square(from, to) {
+	this.from = from;
+	this.to = to;
 
 	this.rect = function() {
 		return [
-			this.tl.rect(),
-			(new Point(this.br.x, this.tl.y)).rect(),
-			this.br.rect(),
-			(new Point(this.tl.x, this.br.y)).rect(),
+			this.from.rect(),
+			(new Point(this.to.x, this.from.y)).rect(),
+			this.to.rect(),
+			(new Point(this.from.x, this.to.y)).rect(),
 		];
 	};
 
 	this.draw = function(color) {
 		var rect = this.rect();
-		drawSquare(this.tl, this.br, color.replace(/0/g, 'b'));
+		drawSquare(this.from, this.to, color.replace(/0/g, 'b'));
 		drawLines(rect.concat(rect[0]), 1, color);
 	};
+
+	this.coverage = function() {
+		return (this.to.x - this.from.x) * (this.to.y - this.from.y);
+	};
+
+	this.lines = function() {
+		var lines = [];
+
+		for (var x = this.from.x; x < this.to.x; x++) {
+			lines.push(new Line(new Point(x, this.from.y), new Point(x+1, this.from.y)));
+			lines.push(new Line(new Point(x, this.to.y), new Point(x+1, this.to.y)));
+		}
+
+		for (var y = this.from.y; y < this.to.y; y++) {
+			lines.push(new Line(new Point(this.from.x, y), new Point(this.from.x, y+1)));
+			lines.push(new Line(new Point(this.to.x, y), new Point(this.to.x, y+1)));
+		}
+
+		return lines;
+	};
 }
+Square.bounds = function(lines) {
+	var sx = -1;
+	var sy = -1;
+	var ex = -1;
+	var ey = -1;
+
+	for (var i = 0; i < lines.length; i++) {
+		var line = lines[i];
+		if ( sx == -1 || sx > Math.min(line.from.x, line.to.x) )	sx = Math.min(line.from.x, line.to.x);
+		if ( sy == -1 || sy > Math.min(line.from.y, line.to.y) )	sy = Math.min(line.from.y, line.to.y);
+		if ( ex == -1 || ex < Math.max(line.from.x, line.to.x) )	ex = Math.max(line.from.x, line.to.x);
+		if ( ey == -1 || ey < Math.max(line.from.y, line.to.y) )	ey = Math.max(line.from.y, line.to.y);
+	}
+
+	return new Square(new Point(sx, sy), new Point(ex, ey));
+};
 Square.invalid = function(lines) {
-	// If any line is not on a bound
+	var square = Square.bounds(lines);
+
+	for (var i = 0; i < lines.length; i++) {
+		var line = lines[i];
+
+		// Vertical
+		if (line.from.x == line.to.x) {
+			// X must be From or To
+			if (line.from.x != square.from.x && line.from.x != square.to.x) {
+				return true;
+			}
+		}
+		// Horizontal
+		else {
+			// Y must be From or To
+			if (line.from.y != square.from.y && line.from.y != square.to.y) {
+				return true;
+			}
+		}
+	}
+
 	return false;
 };
 Square.valid = function(lines) {
-	// If all lines exist, and are not invalid
-	return false;
+	var square = Square.bounds(lines);
+	if (square.coverage() == 0) {
+		return false;
+	}
+
+	var squareLines = square.lines();
+	if (squareLines.length != lines.length) {
+		return false;
+	}
+
+	for (var i = 0; i < squareLines.length; i++) {
+		if (!Line.contains(lines, squareLines[i])) {
+			return false;
+		}
+	}
+
+	return square;
 };
 
-function drawSquare(tl, br, color) {
+function drawSquare(from, to, color) {
 	ctx.fillStyle = color;
-	tl = tl.rect();
-	br = br.rect();
-	ctx.fillRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+	from = from.rect();
+	to = to.rect();
+	ctx.fillRect(from.x, from.y, to.x - from.x, to.y - from.y);
 }
 
 function drawLines(ps, width, color) {
@@ -176,16 +256,17 @@ canvas.onclick = function(e) {
 	var point = new Point(e.offsetX, e.offsetY);
 	var line = point.findClosestLine();
 
-	if (!squaring.length || !line.equals(squaring[squaring.length - 1])) {
+	if (!Line.contains(squaring, line)) {
 		squaring.push(line);
+		var square;
 
-		// Invalid square => reset
+		// Invalid square => undo
 		if (Square.invalid(squaring)) {
-			squaring.length = 0;
+			squaring.pop();
 		}
 		// Complete square => save
-		else if (Square.valid(squaring)) {
-			squares.push(Square.fromLines(squaring));
+		else if (square = Square.valid(squaring)) {
+			squares.push(square);
 			squaring = [];
 		}
 
@@ -211,8 +292,8 @@ function render() {
 
 		canvas.width = canvas.width;
 
-		drawGrid();
 		drawSquares();
+		drawGrid();
 		drawSquaring();
 	}
 
