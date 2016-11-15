@@ -159,7 +159,7 @@ function unmoving() {
 		setTimeout(function() {
 			alert('You win!\n\nIn '+ moves + ' moves');
 			location.reload();
-		}, 1);
+		}, 200);
 	}
 }
 

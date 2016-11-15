@@ -58,7 +58,7 @@ class FillingBuilder {
 			}
 
 			if ($this->checkIntegrity()) {
-				break;
+				return;
 			}
 // var_dump(count($this->errors));
 

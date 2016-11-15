@@ -6,7 +6,7 @@
 <html>
 
 <head>
-<title></title>
+<title>ENTANGLED</title>
 <style>
 * { margin:0; padding:0; }
 #board { height:567px; padding:0 12px; float:left; position:relative; background-color:#eee; }
