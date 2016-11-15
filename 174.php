@@ -20,14 +20,16 @@ canvas {
 
 <canvas width="800" height="600"></canvas>
 
+<p>Click left to line, click right to undo.</p>
+
 <script>
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 
-var SQUARE_SIZE = 100;
+var SQUARE_SIZE = 80;
 var BOARD_SIZE = 5;
 var BOARD_MARGIN = 20;
-var COLORS = ['#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+var COLORS = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
 
 var squares = [];
 var squaring = [];
@@ -109,10 +111,11 @@ function Square(from, to) {
 		];
 	};
 
-	this.draw = function(color) {
-		var rect = this.rect();
-		drawSquare(this.from, this.to, color.replace(/0/g, 'b'));
-		drawLines(rect.concat(rect[0]), 1, color);
+	this.center = function() {
+		return (new Point(
+			this.from.x + (this.to.x - this.from.x)/2,
+			this.from.y + (this.to.y - this.from.y)/2
+		)).rect();
 	};
 
 	this.coverage = function() {
@@ -195,11 +198,28 @@ Square.valid = function(lines) {
 	return square;
 };
 
-function drawSquare(from, to, color) {
-	ctx.fillStyle = color;
-	from = from.rect();
-	to = to.rect();
+function drawSquare(square, color) {
+	// Outer lines
+	var rect = square.rect();
+	drawLines(rect.concat(rect[0]), 3, color);
+
+	// Inner fill
+	ctx.fillStyle = color.replace(/0/g, 'b');
+	var from = square.from.rect();
+	var to = square.to.rect();
 	ctx.fillRect(from.x, from.y, to.x - from.x, to.y - from.y);
+
+	// Number
+	var index = squares.indexOf(square);
+	if (index != -1) {
+		var center = square.center();
+
+		ctx.font = '60px sans-serif';
+		ctx.fillStyle = color;
+		ctx.textAlign = 'center';
+		ctx.textBaseline = 'middle';
+		ctx.fillText(String(index + 1), center.x, center.y);
+	}
 }
 
 function drawLines(ps, width, color) {
@@ -235,14 +255,14 @@ function getColor(i) {
 
 function drawSquares() {
 	for (var i = 0; i < squares.length; i++) {
-		squares[i].draw(getColor(i));
+		drawSquare(squares[i], getColor(i));
 	}
 }
 
 function drawSquaring() {
 	for (var i = 0; i < squaring.length; i++) {
 		var line = squaring[i];
-		drawLine(line.from.rect(), line.to.rect(), 2, 'red');
+		drawLine(line.from.rect(), line.to.rect(), 2, 'black');
 	}
 }
 
