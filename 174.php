@@ -20,9 +20,12 @@ canvas {
 
 <canvas width="800" height="600"></canvas>
 
-<p>Click left to line, click right to undo.</p>
+<p>Click &amp; drag to draw rectangles.</p>
+
+<p>Score: <code id="score">?</code> (low is good)</p>
 
 <script>
+var scoreElement = document.querySelector('#score');
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 
@@ -34,6 +37,7 @@ var COLORS = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
 var squares = [];
 var squaring = [];
 var change = true;
+var drawing = false;
 
 // debug //
 squares.push(new Square(new Point(0, 0), new Point(1, 2)));
@@ -43,33 +47,11 @@ function Point(x, y) {
 	this.x = x;
 	this.y = y;
 
-	this.findClosestLine = function() {
-		var ox = (this.x - BOARD_MARGIN) / (SQUARE_SIZE + 1);
-		var dx = Math.abs(Math.round(ox) - ox);
-		var oy = (this.y - BOARD_MARGIN) / (SQUARE_SIZE + 1);
-		var dy = Math.abs(Math.round(oy) - oy);
-
-		// Vertical
-		if (dx < dy) {
-			var x = Math.round(ox);
-			var y = Math.floor(oy);
-
-			return new Line(
-				new Point(x, y),
-				new Point(x, y+1)
-			);
-		}
-		// Horizontal
-		else {
-			var x = Math.floor(ox);
-			var y = Math.round(oy);
-
-			return new Line(
-				new Point(x, y),
-				new Point(x+1, y)
-			);
-		}
-	}
+	this.findClosestIntersection = function() {
+		var x = Math.round((this.x - BOARD_MARGIN) / (SQUARE_SIZE + 1));
+		var y = Math.round((this.y - BOARD_MARGIN) / (SQUARE_SIZE + 1));
+		return new Point(x, y);
+	};
 
 	this.rect = function() {
 		return new Point(BOARD_MARGIN + this.x * (SQUARE_SIZE+1), BOARD_MARGIN + this.y * (SQUARE_SIZE+1));
@@ -78,7 +60,18 @@ function Point(x, y) {
 	this.equals = function(point) {
 		return this.x == point.x && this.y == point.y;
 	};
+
+	this.validNext = function(point) {
+		return Math.abs(point.x - this.x) + Math.abs(point.y - this.y) == 1;
+	};
 }
+Point.contains = function(points, point) {
+	for (var i = 0; i < points.length; i++) {
+		if (points[i].equals(point)) {
+			return true;
+		}
+	}
+};
 
 function Line(from, to) {
 	this.from = from;
@@ -88,15 +81,6 @@ function Line(from, to) {
 		return (this.from.equals(line.from) && this.to.equals(line.to)) || (this.from.equals(line.to) && this.to.equals(line.from));
 	};
 }
-Line.contains = function(lines, line) {
-	for (var i = 0; i < lines.length; i++) {
-		if (lines[i].equals(line)) {
-			return true;
-		}
-	}
-
-	return false;
-};
 
 function Square(from, to) {
 	this.from = from;
@@ -122,75 +106,50 @@ function Square(from, to) {
 		return (this.to.x - this.from.x) * (this.to.y - this.from.y);
 	};
 
-	this.lines = function() {
-		var lines = [];
+	this.points = function() {
+		var points = [];
 
-		for (var x = this.from.x; x < this.to.x; x++) {
-			lines.push(new Line(new Point(x, this.from.y), new Point(x+1, this.from.y)));
-			lines.push(new Line(new Point(x, this.to.y), new Point(x+1, this.to.y)));
+		for (var x = this.from.x; x <= this.to.x; x++) {
+			points.push(new Point(x, this.from.y));
+			points.push(new Point(x, this.to.y));
 		}
 
-		for (var y = this.from.y; y < this.to.y; y++) {
-			lines.push(new Line(new Point(this.from.x, y), new Point(this.from.x, y+1)));
-			lines.push(new Line(new Point(this.to.x, y), new Point(this.to.x, y+1)));
+		for (var y = this.from.y + 1; y <= this.to.y - 1; y++) {
+			points.push(new Point(this.from.x, y));
+			points.push(new Point(this.to.x, y));
 		}
 
-		return lines;
+		return points;
 	};
 }
-Square.bounds = function(lines) {
-	var sx = -1;
-	var sy = -1;
-	var ex = -1;
-	var ey = -1;
+Square.bounds = function(points) {
+	var from = new Point(99, 99);
+	var to = new Point(-1, -1);
 
-	for (var i = 0; i < lines.length; i++) {
-		var line = lines[i];
-		if ( sx == -1 || sx > Math.min(line.from.x, line.to.x) )	sx = Math.min(line.from.x, line.to.x);
-		if ( sy == -1 || sy > Math.min(line.from.y, line.to.y) )	sy = Math.min(line.from.y, line.to.y);
-		if ( ex == -1 || ex < Math.max(line.from.x, line.to.x) )	ex = Math.max(line.from.x, line.to.x);
-		if ( ey == -1 || ey < Math.max(line.from.y, line.to.y) )	ey = Math.max(line.from.y, line.to.y);
+	for (var i = 0; i < points.length; i++) {
+		var point = points[i];
+
+		from.x = Math.min(from.x, point.x);
+		from.y = Math.min(from.y, point.y);
+		to.x   = Math.max(to.x  , point.x);
+		to.y   = Math.max(to.y  , point.y);
 	}
 
-	return new Square(new Point(sx, sy), new Point(ex, ey));
+	return new Square(from, to);
 };
-Square.invalid = function(lines) {
-	var square = Square.bounds(lines);
-
-	for (var i = 0; i < lines.length; i++) {
-		var line = lines[i];
-
-		// Vertical
-		if (line.from.x == line.to.x) {
-			// X must be From or To
-			if (line.from.x != square.from.x && line.from.x != square.to.x) {
-				return true;
-			}
-		}
-		// Horizontal
-		else {
-			// Y must be From or To
-			if (line.from.y != square.from.y && line.from.y != square.to.y) {
-				return true;
-			}
-		}
-	}
-
-	return false;
-};
-Square.valid = function(lines) {
-	var square = Square.bounds(lines);
+Square.valid = function(points) {
+	var square = Square.bounds(points);
 	if (square.coverage() == 0) {
 		return false;
 	}
 
-	var squareLines = square.lines();
-	if (squareLines.length != lines.length) {
+	var squarePoints = square.points();
+	if (squarePoints.length != points.length) {
 		return false;
 	}
 
-	for (var i = 0; i < squareLines.length; i++) {
-		if (!Line.contains(lines, squareLines[i])) {
+	for (var i = 0; i < squarePoints.length; i++) {
+		if (!Point.contains(points, squarePoints[i])) {
 			return false;
 		}
 	}
@@ -239,6 +198,11 @@ function drawLine(p1, p2, width, color) {
 	drawLines([p1, p2], width, color);
 }
 
+function drawPoint(point) {
+	ctx.fillStyle = 'black';
+	ctx.fillRect(point.x-1, point.y-1, 3, 3);
+}
+
 function drawGrid() {
 	for (var y = BOARD_MARGIN; y < canvas.width; y+=SQUARE_SIZE+1) {
 		drawLine(new Point(0, y), new Point(canvas.width, y), 1, '#ddd');
@@ -260,9 +224,8 @@ function drawSquares() {
 }
 
 function drawSquaring() {
-	for (var i = 0; i < squaring.length; i++) {
-		var line = squaring[i];
-		drawLine(line.from.rect(), line.to.rect(), 2, 'black');
+	for (var i = 1; i < squaring.length; i++) {
+		drawLine(squaring[i-1].rect(), squaring[i].rect(), 2, 'black');
 	}
 }
 
@@ -270,35 +233,67 @@ function updateSize() {
 	canvas.width = canvas.height = BOARD_SIZE * SQUARE_SIZE + BOARD_MARGIN * 2 + BOARD_SIZE + 1;
 }
 
-// === //
-
-canvas.onclick = function(e) {
-	var point = new Point(e.offsetX, e.offsetY);
-	var line = point.findClosestLine();
-
-	if (!Line.contains(squaring, line)) {
-		squaring.push(line);
-		var square;
-
-		// Invalid square => undo
-		if (Square.invalid(squaring)) {
-			squaring.pop();
-		}
-		// Complete square => save
-		else if (square = Square.valid(squaring)) {
+function finishDrawing() {
+	if (drawing && squaring.length) {
+		var square = Square.valid(squaring);
+		if (square) {
+			// @todo Check overlap
 			squares.push(square);
 			squaring = [];
+
+			updateScore();
 		}
-
-		change = true;
 	}
-};
-
-canvas.oncontextmenu = function(e) {
-	e.preventDefault();
 
 	squaring.length = 0;
 	change = true;
+}
+
+function getScore() {
+	var max = -1;
+	var min = 99;
+
+	for (var i = 0; i < squares.length; i++) {
+		var coverage = squares[i].coverage();
+		max = Math.max(max, coverage);
+		min = Math.min(min, coverage);
+	}
+
+	// @todo Check full coverage
+
+	return max - min;
+}
+
+function updateScore() {
+	var score = getScore();
+	scoreElement.textContent = score ? String(score) : '?';
+}
+
+// === //
+
+canvas.onmousedown = function(e) {
+	drawing = true;
+};
+canvas.onmousemove = function(e) {
+	if (drawing) {
+		var point = new Point(e.offsetX, e.offsetY);
+		var intersect = point.findClosestIntersection();
+		if (!squaring.length || squaring[squaring.length-1].validNext(intersect)) {
+			if (!Point.contains(squaring, intersect)) {
+				squaring.push(intersect);
+				change = true;
+			}
+			else if (squaring.length > 1 && squaring[0].equals(intersect)) {
+				finishDrawing();
+				drawing = false;
+			}
+		}
+	}
+};
+document.onmouseup = function(e) {
+	finishDrawing();
+
+	drawing = false;
 };
 
 // === //
