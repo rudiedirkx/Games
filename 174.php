@@ -36,11 +36,12 @@ var COLORS = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
 
 var squares = [];
 var squaring = [];
+var error;
 var change = true;
 var drawing = false;
 
 // debug //
-squares.push(new Square(new Point(0, 0), new Point(1, 2)));
+// squares.push(new Square(new Point(0, 0), new Point(1, 2)));
 // debug //
 
 function Point(x, y) {
@@ -121,6 +122,34 @@ function Square(from, to) {
 
 		return points;
 	};
+
+	this.sameSize = function(square) {
+		return this.to.x - this.from.x == square.to.x - square.from.x && this.to.y - this.from.y == square.to.y - square.from.y;
+	};
+
+	this.sameSizes = function(squares) {
+		for (var i = 0; i < squares.length; i++) {
+			if (squares[i].sameSize(this)) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	this.overlap = function(square) {
+		return this.from.x < square.to.x && this.to.x > square.from.x && this.from.y < square.to.y && this.to.y > square.from.y;
+	};
+
+	this.overlaps = function(squares) {
+		for (var i = 0; i < squares.length; i++) {
+			if (squares[i].overlap(this)) {
+				return true;
+			}
+		}
+
+		return false;
+	};
 }
 Square.bounds = function(points) {
 	var from = new Point(99, 99);
@@ -148,6 +177,10 @@ Square.valid = function(points) {
 		return false;
 	}
 
+	// @todo Catch snake trail: all points covered, but wrong lines:
+	//    _
+	// |_| |
+
 	for (var i = 0; i < squarePoints.length; i++) {
 		if (!Point.contains(points, squarePoints[i])) {
 			return false;
@@ -157,7 +190,7 @@ Square.valid = function(points) {
 	return square;
 };
 
-function drawSquare(square, color) {
+function drawSquare(square, color, number) {
 	// Outer lines
 	var rect = square.rect();
 	drawLines(rect.concat(rect[0]), 3, color);
@@ -169,16 +202,14 @@ function drawSquare(square, color) {
 	ctx.fillRect(from.x, from.y, to.x - from.x, to.y - from.y);
 
 	// Number
-	var index = squares.indexOf(square);
-	if (index != -1) {
-		var center = square.center();
+	number || (number = square.coverage());
+	var center = square.center();
 
-		ctx.font = '60px sans-serif';
-		ctx.fillStyle = color;
-		ctx.textAlign = 'center';
-		ctx.textBaseline = 'middle';
-		ctx.fillText(String(index + 1), center.x, center.y);
-	}
+	ctx.font = '60px sans-serif';
+	ctx.fillStyle = color == 'black' ? 'white' : color;
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.fillText(String(number), center.x, center.y);
 }
 
 function drawLines(ps, width, color) {
@@ -223,6 +254,12 @@ function drawSquares() {
 	}
 }
 
+function drawError() {
+	if (error) {
+		drawSquare(error, 'black', 'x');
+	}
+}
+
 function drawSquaring() {
 	for (var i = 1; i < squaring.length; i++) {
 		drawLine(squaring[i-1].rect(), squaring[i].rect(), 2, 'black');
@@ -237,11 +274,19 @@ function finishDrawing() {
 	if (drawing && squaring.length) {
 		var square = Square.valid(squaring);
 		if (square) {
-			// @todo Check overlap
-			squares.push(square);
-			squaring = [];
+			if (square.overlaps(squares) || square.sameSizes(squares)) {
+				error = square;
+				setTimeout(function() {
+					error = null;
+					change = true;
+				}, 500);
+			}
+			else {
+				squares.push(square);
+				squaring = [];
 
-			updateScore();
+				updateScore();
+			}
 		}
 	}
 
@@ -309,6 +354,7 @@ function render() {
 
 		drawSquares();
 		drawGrid();
+		drawError();
 		drawSquaring();
 	}
 
