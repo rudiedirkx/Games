@@ -1,6 +1,8 @@
 <?php
 // MONDRIAN PUZZLE
 
+require 'inc.functions.php';
+
 ?>
 <!doctype html>
 <html>
@@ -12,19 +14,30 @@
 <style>
 canvas {
 	outline: solid 1px black;
+	max-width: 100%;
+}
+.complete {
+	font-weight: bold;
+	color: green;
 }
 </style>
 </head>
 
 <body>
 
-<canvas width="800" height="600"></canvas>
+<canvas width="100" height="100"></canvas>
 
-<p>Click &amp; drag to draw rectangles.</p>
+<p>
+	Click &amp; drag to draw rectangles.
+	Size: <select id="size"><?= do_html_options(array_combine(range(4, 9), range(4, 9))) ?></select>
+	<button id="reset">Reset</button>
+</p>
 
 <p>Score: <code id="score">?</code> (low is good)</p>
 
 <script>
+var sizeElement = document.querySelector('#size');
+var resetElement = document.querySelector('#reset');
 var scoreElement = document.querySelector('#score');
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
@@ -47,6 +60,12 @@ var drawing = false;
 function Point(x, y) {
 	this.x = x;
 	this.y = y;
+
+	this.factor = function(factor) {
+		this.x *= factor;
+		this.y *= factor;
+		return this;
+	};
 
 	this.findClosestIntersection = function() {
 		var x = Math.round((this.x - BOARD_MARGIN) / (SQUARE_SIZE + 1));
@@ -304,24 +323,46 @@ function getScore() {
 		min = Math.min(min, coverage);
 	}
 
-	// @todo Check full coverage
-
 	return max - min;
+}
+
+function getComplete() {
+	return BOARD_SIZE * BOARD_SIZE == squares.reduce((area, square) => area + square.coverage(), 0);
 }
 
 function updateScore() {
 	var score = getScore();
 	scoreElement.textContent = score ? String(score) : '?';
+	scoreElement.parentNode.classList.toggle('complete', getComplete());
+}
+
+function reset() {
+	error = null;
+	squares.length = 0;
+	squaring.length = 0;
+
+	change = true;
 }
 
 // === //
+
+console.log(sizeElement.value = String(BOARD_SIZE));
+sizeElement.onchange = function(e) {
+	BOARD_SIZE = Number(this.value);
+	updateSize();
+	reset();
+};
+
+resetElement.onclick = function(e) {
+	reset();
+};
 
 canvas.onmousedown = function(e) {
 	drawing = true;
 };
 canvas.onmousemove = function(e) {
 	if (drawing) {
-		var point = new Point(e.offsetX, e.offsetY);
+		var point = (new Point(e.offsetX, e.offsetY)).factor(canvas.width / canvas.offsetWidth);
 		var intersect = point.findClosestIntersection();
 		if (!squaring.length || squaring[squaring.length-1].validNext(intersect)) {
 			if (!Point.contains(squaring, intersect)) {
