@@ -100,6 +100,9 @@ foreach ($g_arrGames as $i => $game) {
 	}
 	$g_arrUseGames[] = $game;
 }
+while (count($g_arrUseGames) < $g_iHeight * $g_iWidth) {
+	$g_arrUseGames[] = null;
+}
 
 $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 
