@@ -36,6 +36,11 @@ canvas {
 <p>Score: <code id="score">?</code> (low is good)</p>
 
 <script>
+window.onerror = function(e) {
+	alert(e);
+};
+</script>
+<script>
 var sizeElement = document.querySelector('#size');
 var resetElement = document.querySelector('#reset');
 var scoreElement = document.querySelector('#score');
@@ -327,7 +332,9 @@ function getScore() {
 }
 
 function getComplete() {
-	return BOARD_SIZE * BOARD_SIZE == squares.reduce((area, square) => area + square.coverage(), 0);
+	return BOARD_SIZE * BOARD_SIZE == squares.reduce(function(area, square) {
+		return area + square.coverage();
+	}, 0);
 }
 
 function updateScore() {
@@ -346,7 +353,7 @@ function reset() {
 
 // === //
 
-console.log(sizeElement.value = String(BOARD_SIZE));
+sizeElement.value = String(BOARD_SIZE);
 sizeElement.onchange = function(e) {
 	BOARD_SIZE = Number(this.value);
 	updateSize();

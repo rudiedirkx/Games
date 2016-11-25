@@ -50,10 +50,9 @@ canvas {
 window.onerror = function(e) {
 	alert(e);
 };
+
+window.Promise || document.write(unescape('%3Cscript%20src%3D%22https%3A//rawgit.com/taylorhakes/promise-polyfill/master/promise.js%22%3E%3C/script%3E'));
 </script>
-<? if (isset($_GET['compat'])): ?>
-	<script src="https://rawgit.com/taylorhakes/promise-polyfill/master/promise.js"></script>
-<? endif ?>
 <script src="170.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');

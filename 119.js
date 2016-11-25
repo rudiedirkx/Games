@@ -71,6 +71,8 @@ g119.difficulty = function(grid) {
 	var table = document.createElement('table');
 	table.innerHTML = grid.innerHTML;
 
+	// @todo Optionally use the board for hints, instead of the THs
+
 	grid = table.tBodies[0];
 	[].forEach.call(grid.querySelectorAll('td'), function(cell) {
 		cell.dataset.state = '';
