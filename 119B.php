@@ -59,16 +59,11 @@ require __DIR__ . '/inc.functions.php';
 	});
 
 	document.querySelector('#random').addEventListener('click', function(e) {
-		var difficulty = -1;
-		while (difficulty != 10) {
-			[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
-				cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
-			});
-			difficulty = g119.difficulty(tbody, true);
-console.log(difficulty);
-		}
+		[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
+			cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
+		});
 
-		// document.querySelector('#play').click();
+		document.querySelector('#play').click();
 	});
 	</script>
 
