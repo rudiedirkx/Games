@@ -335,10 +335,15 @@ g119.validateTable = function(tbody) {
 };
 
 // Mark entire table for validity
+g119.markTableValidityTimer = -1;
 g119.markTableValidity = function(tbody) {
-	var table = tbody.parentNode;
-	var valid = !table.querySelector('th.invalid');
-	table.classList[valid ? 'remove' : 'add']('invalid');
+	clearTimeout(g119.markTableValidityTimer);
+
+	g119.markTableValidityTimer = setTimeout(function() {
+		var table = tbody.parentNode;
+		var valid = !table.querySelector('th.invalid');
+		table.classList[valid ? 'remove' : 'add']('invalid');
+	}, 500);
 };
 
 // Click handler for grid
