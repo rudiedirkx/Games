@@ -5,7 +5,9 @@ require 'inc.functions.php';
 
 $maps = array_map('basename', glob('images/mahjong/map_*.png'));
 natcasesort($maps);
-$maps = array_combine($maps, $maps);
+$maps = array_combine($maps, array_map(function($map) {
+	return substr($map, 0, -4);
+}, $maps));
 $nextMapNumber = 1 + (int) substr(end($maps), 4);
 
 ?>
@@ -17,6 +19,11 @@ $nextMapNumber = 1 + (int) substr(end($maps), 4);
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MAHJONG MAP BUILDER</title>
 <style>
+button:disabled {
+	border-style: dotted;
+	border-color: black;
+	background: white;
+}
 canvas {
 	outline: solid 1px black;
 }
@@ -218,6 +225,10 @@ canvas.oncontextmenu = function(e) {
 		updateNumTiles();
 		change = true;
 	}
+};
+
+canvas.onmousedown = function(e) {
+	e.preventDefault();
 };
 
 mapSelect.onchange = function(e) {

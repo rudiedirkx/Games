@@ -12,7 +12,9 @@ require 'inc.functions.php';
 
 $maps = array_map('basename', glob('images/mahjong/map_*.png'));
 natcasesort($maps);
-$maps = array_combine($maps, $maps);
+$maps = array_combine($maps, array_map(function($map) {
+	return substr($map, 0, -4);
+}, $maps));
 
 ?>
 <!doctype html>
@@ -23,6 +25,11 @@ $maps = array_combine($maps, $maps);
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MAHJONG</title>
 <style>
+button:disabled {
+	border-style: dotted;
+	border-color: black;
+	background: white;
+}
 button.ffw {
 	font-weight: bold;
 	color: green;
