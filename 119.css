@@ -28,7 +28,7 @@ a.loading {
 	-webkit-transform: rotate(45deg);
 }
 thead a.disabled {
-	visibility: hidden;
+	display: none;
 }
 tbody td {
 	background: #bbb;
@@ -73,6 +73,10 @@ th.hilite {
 	background-color: rgba(0, 0, 0, 0.15);
 }
 
+table.invalid td,
+table.invalid th {
+	border-color: red;
+}
 th.invalid {
 	color: red;
 }

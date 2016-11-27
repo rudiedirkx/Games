@@ -300,12 +300,45 @@ g119.map = function(grid, withUnknowns) {
 g119.validateFromCell = function(cell) {
 	var tbody = cell.parentNode.parentNode;
 	return setTimeout(function() {
-		var valid = g119.validRow(tbody, cell.parentNode.sectionRowIndex, false);
-		g119.getMetaCellForRow(tbody, cell.parentNode.sectionRowIndex).classList[valid ? 'remove' : 'add']('invalid');
+		g119.validateRow(tbody, cell.parentNode.sectionRowIndex);
 
-		var valid = g119.validColumn(tbody, cell.cellIndex, false);
-		g119.getMetaCellForColumn(tbody, cell.cellIndex).classList[valid ? 'remove' : 'add']('invalid');
+		g119.validateColumn(tbody, cell.cellIndex);
+
+		g119.markTableValidity(tbody);
 	});
+};
+
+// Mark a row for validity
+g119.validateRow = function(tbody, index) {
+	var valid = g119.validRow(tbody, index, false);
+	g119.getMetaCellForRow(tbody, index).classList[valid ? 'remove' : 'add']('invalid');
+};
+
+// Mark a column for validity
+g119.validateColumn = function(tbody, index) {
+	var valid = g119.validColumn(tbody, index, false);
+	g119.getMetaCellForColumn(tbody, index).classList[valid ? 'remove' : 'add']('invalid');
+};
+
+// Mark all rows & columns for validity
+g119.validateTable = function(tbody) {
+	for (var i = 0; i < tbody.rows.length; i++) {
+		g119.validateRow(tbody, i);
+	}
+
+	var C = tbody.rows[0].querySelectorAll('td').length;
+	for (var i = 0; i < C; i++) {
+		g119.validateColumn(tbody, i);
+	}
+
+	g119.markTableValidity(tbody);
+};
+
+// Mark entire table for validity
+g119.markTableValidity = function(tbody) {
+	var table = tbody.parentNode;
+	var valid = !table.querySelector('th.invalid');
+	table.classList[valid ? 'remove' : 'add']('invalid');
 };
 
 // Click handler for grid
