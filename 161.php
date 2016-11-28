@@ -27,11 +27,11 @@ table th { text-align: center; font-weight: bold; font-size: 8px; }
 table.selected td:not(.selected):not(:hover) { opacity: 0.5; }
 table.selected td.selected, table.selected td:hover { opacity: 1.0; /*-webkit-transform: scale(1.1);*/ }
 table img { display: block; }
-table th.start { background-color: #4169e1; }
+/*table th.start { background-color: #4169e1; }*/
 table th.target { background-color: yellow; }
 
-table td.flooding { background-color: #4169e1; }
-table td.flooded { background-color: #000080; }
+table .flooding { background-color: #4169e1; }
+table .flooded { background-color: #000080; }
 </style>
 <link rel="shortcut icon" href="favicon.ico" />
 </head>
@@ -69,7 +69,10 @@ echo '</table>'."\n\n";
 
 ?>
 
-<p><input type="button" onclick="doTick();" value="Tick!" /></p>
+<p>
+	<button onclick="startTicker()">Start</button>
+	<button onclick="doTick()">Tick 1</button>
+</p>
 
 <script src="js/rjs-custom.js"></script>
 <script>
@@ -78,6 +81,9 @@ echo '</table>'."\n\n";
 var g_props = [[], ['l','r'], ['t','b'], ['l','t'], ['l','b'], ['r','t'], ['r','b']];
 var g_tile, g_curTile, g_speedy = false;
 var flowtbl, stile, ttile, ticker;
+function startTicker() {
+	ticker = setInterval(doTick, 1500);
+}
 function doTick() {
 	switch ( g_curTile.stage ) {
 		case 1:
@@ -98,9 +104,7 @@ function doTick() {
 }
 function doNextStep() {
 	var te = tileExit(g_curTile, g_curTile.entry);
-//console.debug(te);
 	var nt = nextTile(g_curTile, te);
-console.debug(nt);
 	if ( false === nt ) {
 		clearInterval(ticker);
 		alert('Invalid connection!');
@@ -122,9 +126,7 @@ function tileExit(tile, start) {
 		return tile.exit;
 	}
 	var i = tile.connectors.indexOf(start);
-//console.debug('tileExit(): start = '+start+', index = '+i);
 	var te = -1 != i ? tile.connectors[0 == i ? 1 : 0] : false;
-//console.debug('tileExit(): exit = '+te);
 	return te;
 }
 function nextTile(tile) {
@@ -135,7 +137,6 @@ function nextTile(tile) {
 	var cy = tile.cellIndex,
 		cx = tile.parentNode.sectionRowIndex;
 	var ntile = flowtbl.rows[cx+dx].cells[cy+dy];
-// console.log('ntile', ntile);
 	if ( undefined === ntile.connectors ) {
 		return ntile.target === true;
 	}
@@ -179,62 +180,58 @@ function unselect() {
 	}
 }
 
-(function() {
-	// Tile properties
-	$$('#flow td').each(function(td) {
-		td.tile = parseInt(td.attr('tile'));
-		td.connectors = g_props[td.tile];
-		td.flooded = false;
-		td.entry = td.exit = false;
-	});
+// Tile properties
+$$('#flow td').each(function(td) {
+	td.tile = parseInt(td.attr('tile'));
+	td.connectors = g_props[td.tile];
+	td.flooded = false;
+	td.entry = td.exit = false;
+});
 
-	// Start
-	flowtbl = $('#flow');
-	var start = { x : <?php echo $start[0][0]+1 + ( $start[1] == 'l' ? -1 : ( $start[1] == 'r' ? 1 : 0 ) ); ?> , y : <?php echo $start[0][1]+1 + ( $start[1] == 't' ? -1 : ( $start[1] == 'b' ? 1 : 0 ) ); ?> }, target = { x : <?php echo $target[0][0]+1 + ( $target[1] == 'l' ? -1 : ( $target[1] == 'r' ? 1 : 0 ) ); ?> , y : <?php echo $target[0][1]+1 + ( $target[1] == 't' ? -1 : ( $target[1] == 'b' ? 1 : 0 ) ); ?> };
-	with ( flowtbl.rows[start.y].cells[start.x] ) {
-		innerHTML = '<img src="images/161_t<?php echo $start[1]; ?>.png" />';
-		className = 'start';
-		title = 'START';
-	}
-	stile = $('#flow th.start');
-	stile.start = true;
-	stile.exit = oppositeSide('<?php echo $start[1]; ?>');
-	stile.stage = 2;
-	g_curTile = stile;
+// Start
+flowtbl = $('#flow');
+var start = { x : <?php echo $start[0][0]+1 + ( $start[1] == 'l' ? -1 : ( $start[1] == 'r' ? 1 : 0 ) ); ?> , y : <?php echo $start[0][1]+1 + ( $start[1] == 't' ? -1 : ( $start[1] == 'b' ? 1 : 0 ) ); ?> }, target = { x : <?php echo $target[0][0]+1 + ( $target[1] == 'l' ? -1 : ( $target[1] == 'r' ? 1 : 0 ) ); ?> , y : <?php echo $target[0][1]+1 + ( $target[1] == 't' ? -1 : ( $target[1] == 'b' ? 1 : 0 ) ); ?> };
+with ( flowtbl.rows[start.y].cells[start.x] ) {
+	innerHTML = '<img src="images/161_t<?php echo $start[1]; ?>.png" />';
+	className = 'start';
+	title = 'START';
+}
+stile = $('#flow th.start');
+stile.start = true;
+stile.exit = oppositeSide('<?php echo $start[1]; ?>');
+stile.stage = 1;
+g_curTile = stile;
 
-	// Target
-	with ( flowtbl.rows[target.y].cells[target.x] ) {
-		innerHTML = '<img src="images/161_t<?php echo $target[1]; ?>.png" />';
-		className = 'target';
-		title = 'TARGET';
-	}
-	ttile = $('#flow th.target');
-	ttile.target = true;
-	ttile.entry = oppositeSide('<?php echo $target[1]; ?>');
+// Target
+with ( flowtbl.rows[target.y].cells[target.x] ) {
+	innerHTML = '<img src="images/161_t<?php echo $target[1]; ?>.png" />';
+	className = 'target';
+	title = 'TARGET';
+}
+ttile = $('#flow th.target');
+ttile.target = true;
+ttile.entry = oppositeSide('<?php echo $target[1]; ?>');
 
-	flowtbl.on('click', function(e) {
-		e.preventDefault();
-		if ( 'TD' == e.target.nodeName ) {
+flowtbl.on('click', function(e) {
+	e.preventDefault();
+	if ( 'TD' == e.target.nodeName ) {
 //			if ( 't' === e.target.parentNode.className && 0 !== e.target.tile && !e.target.flooded ) {
-				if ( g_tile === e.target ) {
-					unselect();
-				}
-				else if ( !g_tile ) {
-					select(e.target);
-				}
-				else {
-					doSwitch(e.target);
-				}
+			if ( g_tile === e.target ) {
+				unselect();
+			}
+			else if ( !g_tile ) {
+				select(e.target);
+			}
+			else {
+				doSwitch(e.target);
+			}
 //			}
-		}
-	});
-	flowtbl.on('contextmenu', function(e) {
-		// e.preventDefault();
-		unselect();
-	});
-
-	// setTimeout("ticker = setInterval(\"doTick();\", 1500);", 1000);
-})();
+	}
+});
+// flowtbl.on('contextmenu', function(e) {
+// 	e.preventDefault();
+// 	unselect();
+// });
 </script>
 </body>
 

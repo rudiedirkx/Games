@@ -70,7 +70,7 @@ $g_arrGames = array(
 	array('158',			"Fortune's Tower - PHP",						"It's a Fable II Pub game"),
 	array('159',			'Atomix',										'The Ubuntu ripoff'),
 	array('160',			'Pixelus',										'A Zylom game'),
-	array('161b',			'Bioshock hacker',								'From the game: hack a machine'),
+	array('161',			'Bioshock hacker',								'From the game: hack a machine'),
 	array('162',			'Marbles',										'My very own marbles2.com ripoff'),
 	array('163',			'Entangled',									'Entangled ripoff: less HTML5, more CSS3 and JS'),
 	array('164',			'Machinarium I',								'Stole a fun game from Machinarium'),

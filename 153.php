@@ -1,10 +1,7 @@
 <?php
 // F1 racer
 
-session_start();
 define( 'S_NAME', 'f1r' );
-
-require_once('inc.cls.json.php');
 
 $g_arrLevels = array(
 	1 => array(
@@ -89,20 +86,20 @@ $g_arrLevels = array(
 	),
 );
 
-if ( isset($_POST['fetch'], $_POST['level']) ) {
-	if ( !isset($g_arrLevels[$_POST['level']]) ) {
+if ( isset($_GET['fetch'], $_GET['level']) ) {
+	if ( !isset($g_arrLevels[$_GET['level']]) ) {
 		exit('Invalid level!');
 	}
 	$x = $y = 0;
-	foreach ( $g_arrLevels[$_POST['level']] AS $c ) {
+	foreach ( $g_arrLevels[$_GET['level']] AS $c ) {
 		if ( $c[0] > $x ) { $x = $c[0]; }
 		if ( $c[1] > $y ) { $y = $c[1]; }
 	}
 	$arrLevel = array(
-		'map'	=> $g_arrLevels[$_POST['level']],
+		'map'	=> $g_arrLevels[$_GET['level']],
 		'size'	=> array($x+1, $y+1),
 	);
-	exit(json::encode($arrLevel));
+	exit(json_encode($arrLevel));
 }
 
 ?>
@@ -110,8 +107,7 @@ if ( isset($_POST['fetch'], $_POST['level']) ) {
 
 <head>
 <title>F1 racer</title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<style type="text/css">
+<style>
 table.f1track {
 	border-collapse		: collapse;
 }
@@ -137,48 +133,51 @@ table.f1track td.active img {
 	display				: inline;
 }
 </style>
-<script type="text/javascript">
-<!--//
+<script>
+function $(id) {
+	return document.getElementById(id);
+};
+
 var g_arrMap = [], g_iPosition = 0;
 function loadMap(m) {
-	new Ajax('?', {
-		data : 'fetch=1&level=' + m,
-		onComplete : function(t) {
-			try {
-				eval('var r = (' + t + ');');
-			} catch (ex) {
-				alert(t);
-				return false;
-			}
-			g_arrMap = r.map;
-			g_iPosition = 0;
-			// Empty table
-			while ( 0 < $('f1track').childNodes.length ) {
-				$('f1track').removeChild($('f1track').firstChild);
-			}
-			// Fill table
-			for ( var y=0; y<r.size[1]; y++ ) {
-				var tr = $('f1track').insertRow($('f1track').rows.length);
-				for ( var x=0; x<r.size[0]; x++ ) {
-					var td = tr.insertCell(tr.cells.length);
-					td.id = 'f_' + x + '_' + y + '';
-					td.innerHTML = '<img src="/icons/blank.gif" />';
-				}
-			}
-			// Hilite track
-			for ( var i=0; i<r.map.length; i++ ) {
-				var f = $('f_' + r.map[i][0] + '_' + r.map[i][1]);
-				if ( f ) {
-					f.addClass('track');
-				}
-			}
-			$('f_' + r.map[0][0] + '_' + r.map[0][1]).addClass('active');
-			$('f_' + r.map[r.map.length-1][0] + '_' + r.map[r.map.length-1][1]).style.backgroundColor = 'blue';
+	var xhr = new XMLHttpRequest;
+	xhr.open('get', '?fetch=1&level=' + m, true);
+	xhr.onload = function(e) {
+		var r = JSON.parse(this.responseText);
+
+		g_arrMap = r.map;
+		g_iPosition = 0;
+
+		// Empty table
+		var track = $('f1track');
+		while ( track.firstChild ) {
+			track.removeChild(track.firstChild);
 		}
-	}).request();
+
+		// Fill table
+		for ( var y=0; y<r.size[1]; y++ ) {
+			var tr = $('f1track').insertRow($('f1track').rows.length);
+			for ( var x=0; x<r.size[0]; x++ ) {
+				var td = tr.insertCell(tr.cells.length);
+				td.id = 'f_' + x + '_' + y + '';
+				td.innerHTML = '<img src="/icons/blank.gif" />';
+			}
+		}
+
+		// Hilite track
+		for ( var i=0; i<r.map.length; i++ ) {
+			var f = $('f_' + r.map[i][0] + '_' + r.map[i][1]);
+			if ( f ) {
+				f.classList.add('track');
+			}
+		}
+
+		$('f_' + r.map[0][0] + '_' + r.map[0][1]).classList.add('active');
+		$('f_' + r.map[r.map.length-1][0] + '_' + r.map[r.map.length-1][1]).style.backgroundColor = 'blue';
+	};
+	xhr.send();
 	return false;
 }
-//-->
 </script>
 </head>
 
@@ -188,19 +187,20 @@ function loadMap(m) {
 <tfoot><tr><td colspan="30" align="center"><select onchange="if(this.value){loadMap(this.value);}" name="tmp"><option value="">--</option><?php foreach ( array_keys($g_arrLevels) AS $l ) { echo '<option value="'.$l.'">Level '.$l.'</option>'; } ?></select></td></tr></tfoot>
 </table>
 
-<script type="text/javascript">
-<!--//
+<script>
 $('f1track').onclick = function(e) {
-	e = new Event(e).stop();
-	if ( 'IMG' == e.target.nodeName && $(e.target.parentNode).hasClass('active') ) {
-		var op = $(e.target.parentNode);
+	e.preventDefault();
+
+	var img = e.target;
+	if ( 'IMG' == img.nodeName && img.parentNode.classList.contains('active') ) {
+		var op = img.parentNode;
 		// Change old
-		op.removeClass('active');
+		op.classList.remove('active');
 //		op.style.backgroundColor = '';
 		// Change new
 		if ( ++g_iPosition < g_arrMap.length ) {
 			var c = g_arrMap[g_iPosition], np = $('f_' + c[0] + '_' + c[1]);
-			np.addClass('active');
+			np.classList.add('active');
 //			np.style.backgroundColor = 'green';
 		}
 		else {
@@ -210,7 +210,6 @@ $('f1track').onclick = function(e) {
 	return false;
 }
 loadMap(<?php echo key($g_arrLevels); ?>);
-//-->
 </script>
 </body>
 
