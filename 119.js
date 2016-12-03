@@ -338,12 +338,18 @@ g119.validateTable = function(tbody) {
 g119.markTableValidityTimer = -1;
 g119.markTableValidity = function(tbody) {
 	clearTimeout(g119.markTableValidityTimer);
+	var table = tbody.parentNode;
 
-	g119.markTableValidityTimer = setTimeout(function() {
-		var table = tbody.parentNode;
-		var valid = !table.querySelector('th.invalid');
-		table.classList[valid ? 'remove' : 'add']('invalid');
-	}, 500);
+	var valid = !table.querySelector('th.invalid');
+	if (valid) {
+		table.classList.remove('invalid');
+	}
+	else {
+		g119.markTableValidityTimer = setTimeout(function() {
+			var valid = !table.querySelector('th.invalid');
+			table.classList[valid ? 'remove' : 'add']('invalid');
+		}, 500);
+	}
 };
 
 // Click handler for grid
