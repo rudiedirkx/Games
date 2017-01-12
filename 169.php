@@ -1,8 +1,6 @@
 <?php
 // RECTANGLES
 
-echo "RECTANGLES<br>\n";
-
 $width = 6;
 $height = 8;
 
@@ -10,12 +8,12 @@ $_time = microtime(1);
 $grid = Rectangles::create($width, $height);
 $_time = microtime(1) - $_time;
 // print_r($grid);
-Rectangles::table($grid);
+Rectangles::debugTable($grid);
 var_dump(round($_time * 1000, 3));
 
 class Rectangles {
 
-	static function table($grid) {
+	static function debugTable($grid) {
 		$colors = ['#f00', '#ff0', '#0c0', '#0cc', '#00c', 'pink', 'purple'];
 
 		echo '<br><table cellpadding="10" cellspacing="1">';

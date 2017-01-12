@@ -165,8 +165,8 @@ if (isset($_POST['cheat'])) {
 	document.querySelector('#difficulty').textContent = difficulty;
 
 	document.querySelector('#reset').addEventListener('click', function(e) {
-		sessionStorage.removeItem('g119_' + g119.solution);
-		location.reload();
+		g119.reset(tbody);
+		$undoSteps.textContent = g119.history.length;
 	});
 
 	// document.querySelector('#cheat1').addEventListener('click', function(e) {
@@ -249,11 +249,7 @@ if (isset($_POST['cheat'])) {
 		xhr.send();
 	});
 
-	document.querySelector('#load').addEventListener('click', function(e) {
-		e.preventDefault();
-
-		this.classList.add('loading');
-
+	function loadFromStore(done) {
 		var query = [
 			'store=' + encodeURIComponent(location.host),
 			'get=solutions.' + encodeURIComponent(g119.solution),
@@ -268,9 +264,19 @@ if (isset($_POST['cheat'])) {
 				importString(rsp.value);
 			}
 
-			this.link.classList.remove('loading');
+			done && done();
 		};
 		xhr.send();
+	}
+
+	document.querySelector('#load').addEventListener('click', function(e) {
+		e.preventDefault();
+
+		var a = this;
+		a.classList.add('loading');
+		loadFromStore(function() {
+			a.classList.remove('loading');
+		});
 	});
 
 	var saved = sessionStorage.getItem('g119_' + g119.solution);
@@ -284,6 +290,9 @@ if (isset($_POST['cheat'])) {
 				}
 			});
 		}
+	}
+	else {
+		loadFromStore();
 	}
 
 	setTimeout(function() {

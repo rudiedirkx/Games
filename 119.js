@@ -1,6 +1,19 @@
 g119 = {};
 g119.history = [];
 
+// Reset the current level completely
+g119.reset = function(grid) {
+	sessionStorage.removeItem('g119_' + g119.solution);
+	g119.empty(grid);
+	g119.history.length = 0;
+};
+
+g119.empty = function(grid) {
+	[].forEach.call(grid.querySelectorAll('td'), function(cell) {
+		cell.dataset.state = '';
+	});
+};
+
 // All possible active-inactive results for any line
 g119.options = function(length, hints) {
 	var groups = hints.length;
@@ -74,9 +87,7 @@ g119.difficulty = function(grid) {
 	// @todo Optionally use the board for hints, instead of the THs
 
 	grid = table.tBodies[0];
-	[].forEach.call(grid.querySelectorAll('td'), function(cell) {
-		cell.dataset.state = '';
-	});
+	g119.empty(grid);
 
 	var difficulty = 0;
 	var changes = true;
