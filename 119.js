@@ -12,6 +12,13 @@ g119.empty = function(grid) {
 	[].forEach.call(grid.querySelectorAll('td'), function(cell) {
 		cell.dataset.state = '';
 	});
+
+	[].forEach.call(grid.querySelectorAll('.invalid'), function(cell) {
+		cell.classList.remove('invalid');
+	});
+
+	var table = grid.parentNode;
+	table.classList.remove('invalid');
 };
 
 // All possible active-inactive results for any line
