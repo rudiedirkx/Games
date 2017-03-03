@@ -59,9 +59,13 @@ require __DIR__ . '/inc.functions.php';
 	});
 
 	document.querySelector('#random').addEventListener('click', function(e) {
-		[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
-			cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
-		});
+		var difficulty = -1;
+		while (difficulty < 9 || difficulty > 16) {
+			[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
+				cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
+			});
+			difficulty = g119.difficulty(tbody, true);
+		}
 
 		document.querySelector('#play').click();
 	});

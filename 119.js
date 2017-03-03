@@ -87,14 +87,15 @@ g119.options = function(length, hints) {
 };
 
 // Evaluate grid difficulty
-g119.difficulty = function(grid) {
+g119.difficulty = function(sourceGrid, fromCells) {
 	var table = document.createElement('table');
-	table.innerHTML = grid.innerHTML;
+	table.innerHTML = sourceGrid.innerHTML;
 
-	// @todo Optionally use the board for hints, instead of the THs
+	var testGrid = table.tBodies[0];
+	g119.empty(testGrid);
 
-	grid = table.tBodies[0];
-	g119.empty(grid);
+	var width = sourceGrid.querySelectorAll('tr:first-child > td').length;
+	var height = sourceGrid.querySelectorAll('tr > td:first-child').length;
 
 	var difficulty = 0;
 	var changes = true;
@@ -103,25 +104,25 @@ g119.difficulty = function(grid) {
 	while (changes) {
 		difficulty++;
 
-		var rows = grid.rows.length - 1;
-		for (var i=0; i<rows; i++) {
-			g119.fillRowWithLine(grid, i, g119.commonCells(g119.validLines(g119.getLineForRow(grid, i), g119.getHintsForRow(grid, i))));
+		for (var i=0; i<height; i++) {
+			var hints = g119.getHintsForRow(sourceGrid, i, fromCells);
+			g119.fillRowWithLine(testGrid, i, g119.commonCells(g119.validLines(g119.getLineForRow(testGrid, i), hints)));
 		}
 
-		var cols = grid.rows[0].cells.length - 1;
-		for (var i=0; i<cols; i++) {
-			g119.fillColumnWithLine(grid, i, g119.commonCells(g119.validLines(g119.getLineForColumn(grid, i), g119.getHintsForColumn(grid, i))));
+		for (var i=0; i<width; i++) {
+			var hints = g119.getHintsForColumn(sourceGrid, i, fromCells);
+			g119.fillColumnWithLine(testGrid, i, g119.commonCells(g119.validLines(g119.getLineForColumn(testGrid, i), hints)));
 		}
 
-		var newWhite = grid.querySelectorAll('td[data-state="inactive"]').length;
-		var newBlack = grid.querySelectorAll('td[data-state="active"]').length;
+		var newWhite = testGrid.querySelectorAll('td[data-state="inactive"]').length;
+		var newBlack = testGrid.querySelectorAll('td[data-state="active"]').length;
 
 		changes = oldwhite != newWhite || oldBlack != newBlack;
 		oldwhite = newWhite;
 		oldBlack = newBlack;
 	}
 
-	var leftover = (grid.rows.length-1) * (grid.rows[0].cells.length-1) - newWhite - newBlack;
+	var leftover = height * width - newWhite - newBlack;
 	difficulty += Math.ceil(leftover / 4);
 
 	return difficulty;
@@ -272,13 +273,26 @@ g119.getHintsForCell = function(cell) {
 	});
 };
 
+// Get hints for a filled line, not its meta cell
+g119.getHintsForCells = function(line) {
+	return line.replace(/^0+|0+$/g, '').split(/0+/).map(function(on) {
+		return on.length;
+	});
+};
+
 // Get hints for a row
-g119.getHintsForRow = function(grid, index) {
+g119.getHintsForRow = function(grid, index, fromCells) {
+	if (fromCells) {
+		return g119.getHintsForCells(g119.getLineForRow(grid, index));
+	}
 	return g119.getHintsForCell(g119.getMetaCellForRow(grid, index));
 };
 
 // Get hints for a column
-g119.getHintsForColumn = function(grid, index) {
+g119.getHintsForColumn = function(grid, index, fromCells) {
+	if (fromCells) {
+		return g119.getHintsForCells(g119.getLineForColumn(grid, index));
+	}
 	return g119.getHintsForCell(g119.getMetaCellForColumn(grid, index));
 };
 
@@ -322,6 +336,7 @@ g119.validateFromCell = function(cell) {
 
 		g119.validateColumn(tbody, cell.cellIndex);
 
+		g119.markLineValidity(tbody);
 		g119.markTableValidity(tbody);
 	});
 };
@@ -349,7 +364,13 @@ g119.validateTable = function(tbody) {
 		g119.validateColumn(tbody, i);
 	}
 
+	g119.markLineValidity(tbody);
 	g119.markTableValidity(tbody);
+};
+
+// Mark entire lines (hor/ver) as invalid
+g119.markLineValidity = function(tbody) {
+	// @todo Find invalid meta cells and invalidate their line cells
 };
 
 // Mark entire table for validity
