@@ -163,6 +163,7 @@ if (isset($_POST['cheat'])) {
 
 	var difficulty = g119.difficulty(tbody);
 	document.querySelector('#difficulty').textContent = difficulty;
+	document.title += ' (' + difficulty + ')';
 
 	document.querySelector('#reset').addEventListener('click', function(e) {
 		g119.reset(tbody);
