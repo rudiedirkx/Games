@@ -31,9 +31,10 @@ canvas {
 	Click &amp; drag to draw rectangles.
 	Size: <select id="size"><?= do_html_options(array_combine(range(4, 9), range(4, 9))) ?></select>
 	<button id="reset">Reset</button>
+	<button id="undo">Undo</button>
 </p>
 
-<p>Score: <code id="score">?</code> (low is good)</p>
+<p>Score: <code id="score">?</code> (the lower the better, <code id="perfect-score"></code> is perfect)</p>
 
 <script>
 window.onerror = function(e) {
@@ -43,7 +44,9 @@ window.onerror = function(e) {
 <script>
 var sizeElement = document.querySelector('#size');
 var resetElement = document.querySelector('#reset');
+var undoElement = document.querySelector('#undo');
 var scoreElement = document.querySelector('#score');
+var perfectScoreElement = document.querySelector('#perfect-score');
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
 
@@ -70,6 +73,10 @@ function Point(x, y) {
 		this.x *= factor;
 		this.y *= factor;
 		return this;
+	};
+
+	this.distanceTo = function(point) {
+		return Math.sqrt(Math.pow(Math.abs(point.x - this.x), 2) + Math.pow(Math.abs(point.y - this.y), 2));
 	};
 
 	this.findClosestIntersection = function() {
@@ -201,9 +208,10 @@ Square.valid = function(points) {
 		return false;
 	}
 
-	// @todo Catch snake trail: all points covered, but wrong lines:
-	//    _
-	// |_| |
+	var distance = points[0].distanceTo(points[points.length-1]);
+	if (distance !== 1) {
+		return false;
+	}
 
 	for (var i = 0; i < squarePoints.length; i++) {
 		if (!Point.contains(points, squarePoints[i])) {
@@ -343,10 +351,16 @@ function updateScore() {
 	scoreElement.parentNode.classList.toggle('complete', getComplete());
 }
 
+function perfectScore() {
+	perfectScoreElement.textContent = BOARD_SIZE;
+}
+
 function reset() {
 	error = null;
 	squares.length = 0;
 	squaring.length = 0;
+
+	perfectScore();
 
 	change = true;
 }
@@ -359,9 +373,15 @@ sizeElement.onchange = function(e) {
 	updateSize();
 	reset();
 };
+perfectScore();
 
 resetElement.onclick = function(e) {
 	reset();
+};
+
+undoElement.onclick = function(e) {
+	squares.pop();
+	change = true;
 };
 
 canvas.onmousedown = function(e) {
