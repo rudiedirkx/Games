@@ -256,14 +256,24 @@ g119.getLineForCells = function(cells, withUnknowns) {
 	}).join('');
 };
 
+// Get content cells for a row
+g119.getCellsForRow = function(grid, index) {
+	return grid.rows[index].querySelectorAll('td');
+};
+
+// Get content cells for a column
+g119.getCellsForColumn = function(grid, index) {
+	return grid.querySelectorAll('td:nth-child(' + (index + 1) + ')');
+};
+
 // Get user generated line for a row
 g119.getLineForRow = function(grid, index, withUnknowns) {
-	return g119.getLineForCells(grid.rows[index].querySelectorAll('td'), withUnknowns !== false);
+	return g119.getLineForCells(g119.getCellsForRow(grid, index), withUnknowns !== false);
 };
 
 // Get user generated line for a column
 g119.getLineForColumn = function(grid, index, withUnknowns) {
-	return g119.getLineForCells(grid.querySelectorAll('td:nth-child(' + (index + 1) + ')'), withUnknowns !== false);
+	return g119.getLineForCells(g119.getCellsForColumn(grid, index), withUnknowns !== false);
 };
 
 // Get hints for a meta cell
@@ -333,7 +343,6 @@ g119.validateFromCell = function(cell) {
 	var tbody = cell.parentNode.parentNode;
 	return setTimeout(function() {
 		g119.validateRow(tbody, cell.parentNode.sectionRowIndex);
-
 		g119.validateColumn(tbody, cell.cellIndex);
 
 		g119.markLineValidity(tbody);
@@ -370,7 +379,23 @@ g119.validateTable = function(tbody) {
 
 // Mark entire lines (hor/ver) as invalid
 g119.markLineValidity = function(tbody) {
-	// @todo Find invalid meta cells and invalidate their line cells
+	[].forEach.call(tbody.querySelectorAll('.error'), function(cell) {
+		cell.classList.remove('error');
+	});
+
+	var cells = [];
+	[].forEach.call(tbody.querySelectorAll('th.invalid'), function(cell) {
+		if (cell.cellIndex == cell.parentNode.cells.length-1) {
+			cells.push.apply(cells, g119.getCellsForRow(tbody, cell.parentNode.sectionRowIndex));
+		}
+		else {
+			cells.push.apply(cells, g119.getCellsForColumn(tbody, cell.cellIndex));
+		}
+	});
+
+	cells.forEach(function(cell) {
+		cell.classList.add('error');
+	});
 };
 
 // Mark entire table for validity

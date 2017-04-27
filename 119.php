@@ -44,7 +44,7 @@ if (isset($_POST['cheat'])) {
 			<? foreach ($map['map'] as $y => $line): ?>
 				<tr>
 					<? for ($x=0; $x < strlen($line); $x++): ?>
-						<td><a href="#">x</a></td>
+						<td><a href="#"></a></td>
 					<? endfor ?>
 					<th class="hor" data-hints="<?= implode(',', $map['hor'][$y]) ?>">
 						<span><?= implode('</span> <span>', $map['hor'][$y]) ?></span>

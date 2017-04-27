@@ -48,12 +48,23 @@ tbody a {
 	width: 36px;
 	height: 36px;
 	line-height: 36px;
-	opacity: 0;
 	text-align: center;
 }
-tbody td.invalid a {
-	color: red;
-	opacity: 1;
+tbody td.error a {
+	position: relative;
+}
+tbody td.error a:after {
+	content: "";
+	display: block;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -1px;
+	margin-top: -1px;
+	width: 2px;
+	height: 2px;
+	background: red;
+	z-index: 65;
 }
 th.hor {
 	text-align: left;
