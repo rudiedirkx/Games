@@ -103,6 +103,14 @@ if (isset($_POST['cheat'])) {
 					});
 
 					setTimeout(function() {
+						var xhr = new XMLHttpRequest;
+						var query = [
+							'store=' + encodeURIComponent(location.host),
+							'delete=solutions.' + encodeURIComponent(g119.solution),
+						].join('&');
+						xhr.open('get', 'https://store.webblocks.nl/?' + query, true);
+						xhr.send();
+
 						sessionStorage.removeItem('g119_' + g119.solution);
 
 						alert('YOU WIN!');
