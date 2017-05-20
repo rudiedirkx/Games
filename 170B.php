@@ -19,6 +19,9 @@ $nextMapNumber = 1 + (int) substr(end($maps), 4);
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MAHJONG MAP BUILDER</title>
 <style>
+form {
+	display: inline;
+}
 button:disabled {
 	border-style: dotted;
 	border-color: black;
@@ -32,14 +35,18 @@ canvas {
 
 <body>
 
-<p>
+<div style="margin-bottom: 10px">
 	<select class="map"><?= do_html_options($maps, @$_GET['map'], '-- map') ?></select>
 	<button class="save">Save this map</button>
 	<button class="unsave">Clear saved map</button>
 	<button class="tiles" disabled>?</button>
 	<button class="export">EXPORT</button>
+	<form method="post" action="170.php">
+		<input type="hidden" name="tiles" />
+		<button class="play">PLAY</button>
+	</form>
 	<select class="levels"><?= do_html_options(array_combine(range(1, 9), range(1, 9)), '', '-- levels') ?></select>
-</p>
+</div>
 
 <canvas width="800" height="500"></canvas>
 
@@ -57,6 +64,7 @@ var saveButton = document.querySelector('button.save');
 var unsaveButton = document.querySelector('button.unsave');
 var tilesButton = document.querySelector('button.tiles');
 var exportButton = document.querySelector('button.export');
+var playButton = document.querySelector('button.play');
 var levelsSelect = document.querySelector('select.levels');
 var canvas = document.querySelector('canvas');
 var ctx = canvas.getContext('2d');
@@ -333,6 +341,14 @@ exportButton.onclick = function(e) {
 
 	a.remove();
 	mapCanvas.remove();
+};
+
+playButton.onclick = function(e) {
+	// Save
+	localStorage.mahjongMapBuilderMap = JSON.stringify(mahjong.Board.serialize(tiles));
+
+	// Persist tiles
+	this.form.elements['tiles'].value = localStorage.mahjongMapBuilderMap;
 };
 
 // === //

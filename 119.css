@@ -65,6 +65,7 @@ tbody td.error a:after {
 	height: 2px;
 	background: red;
 	z-index: 65;
+	pointer-events: none;
 }
 th.hor {
 	text-align: left;

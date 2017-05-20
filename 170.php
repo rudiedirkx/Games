@@ -171,11 +171,20 @@ function draw() {
 }
 
 function load() {
-	var src = '/images/mahjong/' + mapSelect.value;
-	mahjong.pixels(src).then(function(pixels) {
-		return mahjong.tiles(pixels);
-	}).then(function(board) {
-		console.log('board', board);
+	<? if (!empty($_POST['tiles']) ): ?>
+		setTimeout(function() {
+			var tiles = mahjong.Board.unserialize(<?= json_encode(json_decode($_POST['tiles'])) ?>);
+console.log('tiles', tiles);
+			var board = new mahjong.Board;
+			tiles.map(board.addTile.bind(board));
+	<? else: ?>
+		var src = '/images/mahjong/' + mapSelect.value;
+		mahjong.pixels(src).then(function(pixels) {
+console.log('pixels', pixels);
+			return mahjong.tiles(pixels);
+		}).then(function(board) {
+	<? endif; ?>
+console.log('board', board);
 		canvas.board = board;
 
 		board.assignValues();
