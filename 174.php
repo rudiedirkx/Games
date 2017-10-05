@@ -34,7 +34,7 @@ canvas {
 	<button id="undo">Undo</button>
 </p>
 
-<p>Score: <code id="score">?</code> (the lower the better, <code id="perfect-score"></code> is perfect)</p>
+<p>Score: <code id="score">?</code> (the lower the better<!-- , <code id="perfect-score"></code> is perfect -->)</p>
 
 <script>
 window.onerror = function(e) {
@@ -327,6 +327,10 @@ function finishDrawing() {
 }
 
 function getScore() {
+	if (squares.length < 2) {
+		return 0;
+	}
+
 	var max = -1;
 	var min = 99;
 
@@ -352,7 +356,7 @@ function updateScore() {
 }
 
 function perfectScore() {
-	perfectScoreElement.textContent = BOARD_SIZE;
+	// perfectScoreElement.textContent = BOARD_SIZE;
 }
 
 function reset() {
@@ -361,6 +365,7 @@ function reset() {
 	squaring.length = 0;
 
 	perfectScore();
+	updateScore();
 
 	change = true;
 }
@@ -382,6 +387,7 @@ resetElement.onclick = function(e) {
 undoElement.onclick = function(e) {
 	squares.pop();
 	change = true;
+	updateScore();
 };
 
 canvas.onmousedown = function(e) {
