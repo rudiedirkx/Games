@@ -431,6 +431,8 @@ g119.click = function(cell, states, undo) {
 	if (!undo) {
 		g119.history.push(cell);
 	}
+
+	document.activeElement.blur();
 };
 
 // Disable tap zoom

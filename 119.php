@@ -165,6 +165,8 @@ if (isset($_POST['cheat'])) {
 			$undoSteps.textContent = g119.history.length;
 			g119.validateFromCell(cell);
 		}
+
+		document.activeElement.blur();
 	});
 
 	g119.noZoom(tbody);
@@ -176,6 +178,8 @@ if (isset($_POST['cheat'])) {
 	document.querySelector('#reset').addEventListener('click', function(e) {
 		g119.reset(tbody);
 		$undoSteps.textContent = g119.history.length;
+
+		document.activeElement.blur();
 	});
 
 	// document.querySelector('#cheat1').addEventListener('click', function(e) {
@@ -209,6 +213,8 @@ if (isset($_POST['cheat'])) {
 		for (var i=0; i<cols; i++) {
 			g119.fillColumnWithLine(tbody, i, g119.commonCells(g119.validLines(g119.getLineForColumn(tbody, i), g119.getHintsForColumn(tbody, i))));
 		}
+
+		document.activeElement.blur();
 	});
 
 	document.querySelector('#export').addEventListener('click', function(e) {
@@ -216,6 +222,8 @@ if (isset($_POST['cheat'])) {
 
 		var map = g119.map(tbody, 1);
 		prompt('Copy this:', map);
+
+		document.activeElement.blur();
 	});
 
 	function importString(map) {
@@ -235,6 +243,8 @@ if (isset($_POST['cheat'])) {
 
 		var map = prompt('Paste an export:', '');
 		map && importString(map);
+
+		document.activeElement.blur();
 	});
 
 	document.querySelector('#save').addEventListener('click', function(e) {
@@ -256,6 +266,8 @@ if (isset($_POST['cheat'])) {
 			this.link.classList.remove('loading');
 		};
 		xhr.send();
+
+		document.activeElement.blur();
 	});
 
 	function loadFromStore(done) {
@@ -286,6 +298,8 @@ if (isset($_POST['cheat'])) {
 		loadFromStore(function() {
 			a.classList.remove('loading');
 		});
+
+		document.activeElement.blur();
 	});
 
 	var saved = sessionStorage.getItem('g119_' + g119.solution);
