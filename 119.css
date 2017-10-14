@@ -19,6 +19,9 @@ thead #cheat2 {
 	float: right;
 	margin-left: .25em;
 }
+button {
+	cursor: pointer;
+}
 button:not(.loading) .loading {
 	display: none;
 }

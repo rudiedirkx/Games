@@ -58,17 +58,22 @@ require __DIR__ . '/inc.functions.php';
 		location = '119.php?play=' + encodeURIComponent(map);
 	});
 
-	document.querySelector('#random').addEventListener('click', function(e) {
-		var difficulty = -1;
-		while (difficulty < 9 || difficulty > 16) {
-			[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
-				cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
-			});
-			difficulty = g119.difficulty(tbody, true);
+	localStorage.picrossDifficulty && localStorage.picrossDifficulty.match(/^\d+\-\d+$/) || (localStorage.picrossDifficulty = '10-15');
+	function tryRandom() {
+		var diffTarget = localStorage.picrossDifficulty.split('-');
+		[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
+			cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
+		});
+		var difficulty = g119.difficulty(tbody, true);
+		console.log('Tried random', difficulty);
+		if (difficulty < diffTarget[0] || difficulty > diffTarget[1]) {
+			setTimeout(tryRandom);
 		}
-
-		document.querySelector('#play').click();
-	});
+		else {
+			document.querySelector('#play').click();
+		}
+	}
+	document.querySelector('#random').addEventListener('click', tryRandom);
 	</script>
 
 </body>
