@@ -13,8 +13,9 @@ g119.empty = function(grid) {
 		cell.dataset.state = '';
 	});
 
-	[].forEach.call(grid.querySelectorAll('.invalid'), function(cell) {
+	[].forEach.call(grid.querySelectorAll('.invalid, .error'), function(cell) {
 		cell.classList.remove('invalid');
+		cell.classList.remove('error');
 	});
 
 	var table = grid.parentNode;
