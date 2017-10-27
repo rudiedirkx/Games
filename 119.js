@@ -421,10 +421,15 @@ g119.markTableValidity = function(tbody) {
 g119.click = function(cell, states, undo) {
 	var delta = undo ? -1 : +1;
 
+	var last = document.querySelector('.last-toggle');
+	last && last.classList.remove('last-toggle');
+
 	var state = cell.dataset.state || states[0];
 	var stateIndex = states.indexOf(state);
 	stateIndex = (stateIndex + delta) % states.length;
 	cell.dataset.state = states[(stateIndex + states.length) % states.length];
+
+	cell.classList.add('last-toggle');
 
 	var map = g119.map(tbody, true);
 	sessionStorage.setItem('g119_' + g119.solution, map);
