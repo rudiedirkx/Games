@@ -22,7 +22,8 @@ thead #cheat2 {
 button {
 	cursor: pointer;
 }
-button:not(.loading) .loading {
+button:not(.loading) .loading,
+#random:not(.show) .random-progress {
 	display: none;
 }
 a.loading {

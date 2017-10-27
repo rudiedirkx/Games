@@ -18,7 +18,12 @@ require __DIR__ . '/inc.functions.php';
 		<thead>
 			<tr>
 				<th colspan="40">
-					<button id="random">RANDOM</button>
+					<button id="random">
+						RANDOM
+						<span class="random-progress">
+							(<span id="random-attempt">0</span>: <span id="random-diff">0</span>)
+						</span>
+					</button>
 					| Build-a-level |
 					<button id="play">PLAY</button>
 				</th>
@@ -59,21 +64,33 @@ require __DIR__ . '/inc.functions.php';
 	});
 
 	localStorage.picrossDifficulty && localStorage.picrossDifficulty.match(/^\d+\-\d+$/) || (localStorage.picrossDifficulty = '10-15');
+	var randomAttempt;
 	function tryRandom() {
-		var diffTarget = localStorage.picrossDifficulty.split('-');
 		[].forEach.call(tbody.querySelectorAll('td'), function(cell) {
 			cell.dataset.state = Math.random() < ACTIVES ? 'active' : 'inactive';
 		});
+
 		var difficulty = g119.difficulty(tbody, true);
-		console.log('Tried random', difficulty);
-		if (difficulty < diffTarget[0] || difficulty > diffTarget[1]) {
-			setTimeout(tryRandom);
-		}
-		else {
-			document.querySelector('#play').click();
-		}
+		randomAttempt++;
+
+		document.querySelector('#random').classList.add('show');
+		document.querySelector('#random-attempt').textContent = randomAttempt;
+		document.querySelector('#random-diff').textContent = difficulty;
+
+		setTimeout(function() {
+			var diffTarget = localStorage.picrossDifficulty.split('-');
+			if (difficulty < diffTarget[0] || difficulty > diffTarget[1]) {
+				tryRandom();
+			}
+			else {
+				document.querySelector('#play').click();
+			}
+		}, 100);
 	}
-	document.querySelector('#random').addEventListener('click', tryRandom);
+	document.querySelector('#random').addEventListener('click', function(e) {
+		randomAttempt = 0;
+		tryRandom();
+	});
 	</script>
 
 </body>
