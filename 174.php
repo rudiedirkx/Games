@@ -228,17 +228,23 @@ function drawSquare(square, color, number) {
 	drawLines(rect.concat(rect[0]), 3, color);
 
 	// Inner fill
-	ctx.fillStyle = color.replace(/0/g, 'b');
+	ctx.fillStyle = color == 'error' ? 'black' : color.replace(/0/g, 'b');
 	var from = square.from.rect();
 	var to = square.to.rect();
 	ctx.fillRect(from.x, from.y, to.x - from.x, to.y - from.y);
 
 	// Number
-	number || (number = square.coverage());
+	if (number) {
+		drawSquareNumber(square, color, number);
+	}
+}
+
+function drawSquareNumber(square, color, number) {
+	// number || (number = square.coverage());
 	var center = square.center();
 
 	ctx.font = '60px sans-serif';
-	ctx.fillStyle = color == 'black' ? 'white' : color;
+	ctx.fillStyle = color == 'error' ? 'white' : color;
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
 	ctx.fillText(String(number), center.x, center.y);
@@ -286,9 +292,15 @@ function drawSquares() {
 	}
 }
 
+function drawSquareNumbers() {
+	for (var i = 0; i < squares.length; i++) {
+		drawSquareNumber(squares[i], getColor(i), squares[i].coverage());
+	}
+}
+
 function drawError() {
 	if (error) {
-		drawSquare(error, 'black', 'x');
+		drawSquare(error, 'error', 'x');
 	}
 }
 
@@ -430,6 +442,7 @@ function render() {
 		drawGrid();
 		drawError();
 		drawSquaring();
+		drawSquareNumbers();
 	}
 
 	(window.requestAnimationFrame || window.webkitRequestAnimationFrame)(render);
