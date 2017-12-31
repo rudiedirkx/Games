@@ -3,7 +3,9 @@
 
 // header('Content-type: text/plain');
 
-$builder = new FillingBuilder(10, 15);
+echo '<meta name="viewport" content="width=device-width, initial-scale=1" />';
+
+$builder = new FillingBuilder(7, 7);
 $builder->build();
 $builder->printTable();
 
@@ -53,14 +55,14 @@ class FillingBuilder {
 		$start = microtime(1);
 
 		// for ($i=0; $i < 100; $i++) {
-			while ($this->findEmptyLocation()) {
-				$this->createNewGroup();
+			while ($loc = $this->findEmptyLocation()) {
+				$this->createNewGroup($loc);
 			}
 
 			if ($this->checkIntegrity()) {
 				return;
 			}
-// var_dump(count($this->errors));
+var_dump(count($this->errors));
 
 // 			$this->reset();
 		// }

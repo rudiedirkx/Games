@@ -1,8 +1,10 @@
 <?php
 // RECTANGLES
 
-$width = 6;
-$height = 8;
+$width = 7;
+$height = 7;
+
+echo '<meta name="viewport" content="width=device-width, initial-scale=1" />';
 
 $_time = microtime(1);
 $grid = Rectangles::create($width, $height);
@@ -16,12 +18,18 @@ class Rectangles {
 	static function debugTable($grid) {
 		$colors = ['#f00', '#ff0', '#0c0', '#0cc', '#00c', 'pink', 'purple'];
 
+		$allLabels = array_merge(range('a', 'z'), range(0, 9), range('A', 'Z'));
+		$usedLabels = [];
+
 		echo '<br><table cellpadding="10" cellspacing="1">';
 		foreach ($grid as $y => $row) {
 			echo '<tr>';
-			foreach ($row as $x => $group) {
+			foreach ($row as $x => $cell) {
+				list($group, $size) = $cell;
 				$color = $group == -1 ? '#000' : $colors[ $group % count($colors) ];
-				echo '<td bgcolor="' . $color . '"></td>';
+				// $label = isset($usedLabels[$group]) ? $usedLabels[$group] : ($usedLabels[$group] = $allLabels[count($usedLabels)]);
+				$label = $group;
+				echo '<td bgcolor="' . $color . '">' . $label . '</td>';
 			}
 			echo '</tr>';
 		}
@@ -29,6 +37,14 @@ class Rectangles {
 	}
 
 	static public function create($width, $height) {
+		for ($i=0; $i < 5000; $i++) {
+			if ($grid = self::_create($width, $height)) {
+				return $grid;
+			}
+		}
+	}
+
+	static public function _create($width, $height) {
 		$grid = array_fill(0, $height, array_fill(0, $width, -1));
 		$sizes = [];
 
@@ -43,23 +59,56 @@ class Rectangles {
 
 			@$sizes[ $sizeX * $sizeY ]++;
 
-			for ($y=0; $y < $sizeY; $y++) {
-				for ($x=0; $x < $sizeX; $x++) {
-					$grid[ $y + $next[1] ][ $x + $next[0] ] = $group;
+			$dir = $sizeX > $sizeY ? 'hor' : ($sizeX < $sizeY ? 'ver' : 'square');
+			for ($y = 0; $y < $sizeY; $y++) {
+				for ($x = 0; $x < $sizeX; $x++) {
+					$grid[ $y + $next[1] ][ $x + $next[0] ] = [$group, $sizeX * $sizeY, $dir];
 				}
 			}
 // self::table($grid);
 
 			$group++;
 		}
-
 // print_r($sizes);
 
-		if (isset($sizes[1]) && $sizes[1] > 4) {
-			return self::create($width, $height);
+		// Max number of 1's
+		if (isset($sizes[1]) && $sizes[1] > $width * $height / 10) {
+			return;
+		}
+
+		// No neighboring N's
+		if (!self::validateUniqueNeighbors($grid)) {
+			// return;
 		}
 
 		return $grid;
+	}
+
+	static public function validateUniqueNeighbors($grid) {
+		foreach ($grid as $y => $cols) {
+			foreach ($cols as $x => list($group, $size, $dir)) {
+				foreach (self::neighbors($grid, $x, $y) as list($nx, $ny)) {
+					list($ngroup, $nsize, $ndir) = $grid[$ny][$nx];
+					if ($nsize == $size && $ngroup != $group && $ndir == $dir) {
+var_dump($group, $ngroup);
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	static public function neighbors($grid, $x, $y) {
+		$neighbors = [];
+		foreach ([[0, -1], [1, 0], [0, 1], [-1, 0]] as list($ox, $oy)) {
+			if (isset($grid[$y+$ox][$x+$oy])) {
+				$neighbors[] = [$x+$oy, $y+$ox];
+			}
+		}
+
+		return $neighbors;
 	}
 
 	static public function left($cells) {
