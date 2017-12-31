@@ -9,7 +9,7 @@ Card::$__tostring = function ($c) {
 
 $fStart = microtime(true);
 
-$iRounds = isset($_GET['rounds']) ? max(10, (int)$_GET['rounds']) : 1500;
+$iRounds = isset($_GET['rounds']) ? max(10, (int)$_GET['rounds']) : 10000;
 
 echo $iRounds . " rounds\n\n";
 

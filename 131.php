@@ -34,6 +34,9 @@ td {
 	 text-align: center;
 	 background-color: #ccc;
 }
+.seat.winner {
+	background-color: #aaa;
+}
 a.card {
 	display: inline-block;
 	overflow: hidden;
@@ -87,63 +90,93 @@ while ( 5 > count($arrPublic) ) {
 	array_push($arrPublic, $objDeck->next());
 }
 
+/**/
+$arrPublic = Card::named(['sj', 'h10', 'c9', 'h8', 'c7']);
+$arrPlayers[1] = null;
+$arrPlayers[2] = null;
+$arrPlayers[3] = null;
+$arrPlayers[4] = null;
+$arrPlayers[5] = Card::named(['hq', 'c10']);
+$arrPlayers[6] = Card::named(['h3', 'd7']);
+$arrPlayers[7] = Card::named(['d3', 'c8']);
+$arrPlayers[8] = null;//Card::named(['c6', 'c5']);
+/**
+$arrPublic = Card::named(['h9', 'c6', 'c5', 'c7', 's4']);
+$arrPlayers[1] = Card::named(['h2', 'h3']);
+$arrPlayers[2] = Card::named(['d6', 'ca']);
+$arrPlayers[3] = Card::named(['sa', 'da']);
+$arrPlayers[4] = Card::named(['s9', 's3']);
+$arrPlayers[5] = Card::named(['d7', 'c10']);
+$arrPlayers[6] = Card::named(['s2', 'ck']);
+$arrPlayers[7] = Card::named(['sk', 'c4']);
+$arrPlayers[8] = Card::named(['h4', 's8']);
+/**/
+
 $arrHands = array();
-foreach ($arrPlayers as $s => $cards) {
-	$arrHands[$s] = pokertexasholdem::score(array_merge($arrPublic, $cards));
+foreach (array_filter($arrPlayers) as $s => $cards) {
+	$arrHands[$s] = PokerTexasHoldem::score(array_merge($arrPublic, $cards));
 }
 
 $fWinner = max($arrHands);
 $arrWinners = array_keys($arrHands, $fWinner);
 
-list($arrWinnerCards, $szWinnerSuit) = pokertexasholdem::winnerCardsAndSuit($fWinner);
+list($arrWinnerCards, $szWinnerSuit) = PokerTexasHoldem::winnerCardsAndSuit($fWinner);
+$arrOriginalWinnerCards = $arrWinnerCards;
+$szFlop = printPublic();
 
 ?>
 <table>
 	<tr valign="middle">
-		<?php printSeat(5); ?>
 		<?php printSeat(1); ?>
-		<?php printSeat(6); ?>
-	</tr>
-	<tr valign="middle">
-		<?php printSeat(4); ?>
-		<td class="flop"><?= cardImgs($arrPublic) ?></td>
 		<?php printSeat(2); ?>
+		<?php printSeat(3); ?>
 	</tr>
 	<tr valign="middle">
 		<?php printSeat(8); ?>
-		<?php printSeat(3); ?>
+		<?= $szFlop ?>
+		<?php printSeat(4); ?>
+	</tr>
+	<tr valign="middle">
 		<?php printSeat(7); ?>
+		<?php printSeat(6); ?>
+		<?php printSeat(5); ?>
 	</tr>
 </table>
 <?php
 
 ?>
 
-<p id="readable_hand">WINNER: <?= pokertexasholdem::readable_hand($fWinner) . ' (' . $fWinner . ')' ?></p>
+<p id="readable_hand">WINNER: <?= PokerTexasHoldem::readable_hand($fWinner) . ' (' . $fWinner . ')' ?></p>
 
 <p><?= number_format(microtime(true)-$iUtcStart, 4) ?> sec</p>
 
-<!-- <?php print_r($arrWinnerCards); ?> -->
+<!-- <?php print_r($szWinnerSuit); ?> -->
+<!-- <?php print_r($arrOriginalWinnerCards); ?> -->
 <!-- <?php print_r($arrPlayers); ?> -->
 
 <?php
 
-function cardImgs($cards) {
-	global $arrWinnerCards, $szWinnerSuit;
-	$arrHandWinnerCards = $arrWinnerCards;
-	return implode(array_map(function($card) use (&$arrHandWinnerCards, $szWinnerSuit) {
-		$szClass = !empty($arrHandWinnerCards[$card->pth]) && (!$szWinnerSuit || $card->suit == $szWinnerSuit) ? 'winner' : '';
-		empty($arrHandWinnerCards[$card->pth]) or $arrHandWinnerCards[$card->pth]--;
+function cardImgs($cards, &$arrWinnerCards) {
+	global $szWinnerSuit;
+	return implode(array_map(function($card) use (&$arrWinnerCards, $szWinnerSuit) {
+		$szClass = !empty($arrWinnerCards[$card->pth]) && (!$szWinnerSuit || $card->suit == $szWinnerSuit) ? 'winner' : '';
+		$szClass and !empty($arrWinnerCards[$card->pth]) and $arrWinnerCards[$card->pth]--;
 		return '<a class="card ' . $szClass . '">' . $card . '<span class="hidden"></span></a>';
 	}, $cards));
 }
 
+function printPublic() {
+	global $arrPublic, $arrWinnerCards;
+	return '<td class="flop">' . cardImgs($arrPublic, $arrWinnerCards) . '</td>';
+}
+
 function printSeat($s) {
-	global $arrPlayers, $arrPublic, $arrHands, $arrWinners;
+	global $arrPlayers, $arrHands, $arrWinners, $arrWinnerCards;
 
 	if ( isset($arrPlayers[$s]) ) {
-		$szCards = cardImgs($arrPlayers[$s]);
-		$szTitle = ' (' . pokertexasholdem::readable_hand($arrHands[$s]) . ' (' . $arrHands[$s] . '))';
+		$arrWinnerCardsCopy = array_slice($arrWinnerCards, 0, 99, true);
+		$szCards = cardImgs($arrPlayers[$s], $arrWinnerCardsCopy);
+		$szTitle = ' (' . PokerTexasHoldem::readable_hand($arrHands[$s]) . ' (' . $arrHands[$s] . '))';
 		$szClass = in_array($s, $arrWinners) ? 'winner' : '';
 	}
 	else {

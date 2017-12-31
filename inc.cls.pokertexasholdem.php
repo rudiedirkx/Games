@@ -32,7 +32,8 @@ class PokerTexasHoldem {
 		}
 
 		// Make sure higher come first
-		arsort($this->values);
+		arsort($this->values, SORT_NUMERIC);
+		krsort($this->num_values, SORT_NUMERIC);
 
 		// Find the suit with 5 cards
 		foreach ($num_suits as $suit => $num) {
@@ -48,10 +49,12 @@ class PokerTexasHoldem {
 	 */
 	static public function winnerCardsAndSuit( $f_fHand ) {
 		$szDetails = substr((string)$f_fHand, 2);
+		$iHand = (int)$f_fHand;
+
 		$arrFiveCards = array();
 		$szSuit = null;
 
-		switch ( (int)$f_fHand ) {
+		switch ( $iHand ) {
 			case 0: // hi card
 			case 5: // flush
 				$arrFiveCards = array((int)substr($szDetails, 0, 2), (int)substr($szDetails, 2, 2), (int)substr($szDetails, 4, 2), (int)substr($szDetails, 6, 2), (int)substr($szDetails, 8, 2));
@@ -69,9 +72,13 @@ class PokerTexasHoldem {
 				$arrFiveCards = array((int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 2, 2), (int)substr($szDetails, 4, 2));
 			break;
 			case 4: // straight
+			case 8: // straight flush
 				$s = (int)substr($szDetails, 0, 2);
 				for ( $i=$s; $i>$s-5; $i-- ) {
 					$arrFiveCards[] = $i;
+				}
+				if ($iHand == 8) {
+					$szSuit = substr($szDetails, 2);
 				}
 			break;
 			case 6: // full house
@@ -79,9 +86,6 @@ class PokerTexasHoldem {
 			break;
 			case 7: // 4 of a kind
 				$arrFiveCards = array((int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 0, 2), (int)substr($szDetails, 2, 2));
-			break;
-			case 8:
-
 			break;
 			case 9:
 
@@ -296,6 +300,8 @@ class PokerTexasHoldem {
 			return;
 		}
 
+		rsort($arrValues);
+
 		for ( $i=0; $i<=count($arrValues)-5; $i++ ) {
 			// loop next 5 cards
 			$iHiCard = $iPrevValue = $arrValues[$i];
@@ -459,6 +465,16 @@ class PokerTexasHoldem {
 	static public function score($cards, &$object = null) {
 		$object = new self($cards);
 		return $object->_score();
+	}
+
+	/**
+	 *
+	 */
+	static public function max($hands) {
+		usort($hands, function($a, $b) {
+			return $a === $b ? 0 : ((float) $a > (float) $b ? -1 : 1);
+		});
+		return $hands[0];
 	}
 
 }
