@@ -56,8 +56,6 @@ require __DIR__ . '/inc.functions.php';
 		}
 	});
 
-	g119.noZoom(tbody);
-
 	document.querySelector('#play').addEventListener('click', function(e) {
 		var map = g119.map(tbody);
 		location = '119.php?play=' + encodeURIComponent(map);

@@ -20,7 +20,10 @@ thead #cheat2 {
 	margin-left: .25em;
 }
 button {
+	display: inline-block;
 	cursor: pointer;
+	padding-top: 8px;
+	padding-bottom: 8px;
 }
 button:not(.loading) .loading,
 #random:not(.show) .random-progress {

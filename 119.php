@@ -41,18 +41,18 @@ if (isset($_POST['cheat'])) {
 			</tr>
 		</thead>
 		<tbody>
-			<? foreach ($map['map'] as $y => $line): ?>
+			<? for ($y = 0; $y < count($map['hor']); $y++): ?>
 				<tr>
-					<? for ($x=0; $x < strlen($line); $x++): ?>
+					<? for ($x = 0; $x < count($map['ver']); $x++): ?>
 						<td><a href="#"></a></td>
 					<? endfor ?>
 					<th class="hor" data-hints="<?= implode(',', $map['hor'][$y]) ?>">
 						<span><?= implode('</span> <span>', $map['hor'][$y]) ?></span>
 					</th>
 				</tr>
-			<? endforeach ?>
+			<? endfor ?>
 			<tr>
-				<? for ($x=0; $x < strlen($map['map'][0]); $x++): ?>
+				<? for ($x = 0; $x < count($map['ver']); $x++): ?>
 					<th class="ver" data-hints="<?= implode(',', $map['ver'][$x]) ?>">
 						<span><?= implode('</span> <span>', $map['ver'][$x]) ?></span>
 					</th>
@@ -75,6 +75,11 @@ if (isset($_POST['cheat'])) {
 	</p>
 
 	<script src="119.js"></script>
+	<script>
+	window.onerror = function(e) {
+		alert(e);
+	};
+	</script>
 	<script>
 	g119.solution = '<?= hashMap($map) ?>';
 
@@ -128,13 +133,13 @@ if (isset($_POST['cheat'])) {
 			touchElement = null;
 		});
 		tbody.addEventListener('touchend', function(e) {
-			e.preventDefault();
 			if (touchElement) {
 				handle.call(this, e);
 			}
 		});
 		tbody.addEventListener('click', function(e) {
 			e.preventDefault();
+			e.stopPropagation();
 		});
 	}
 	else {
@@ -169,9 +174,7 @@ if (isset($_POST['cheat'])) {
 		document.activeElement.blur();
 	});
 
-	g119.noZoom(tbody);
-
-	var difficulty = g119.difficulty(tbody);
+	var difficulty = <? if (isset($map['map'])): ?>g119.difficulty(tbody)<? else: ?>'?'<? endif ?>;
 	document.querySelector('#difficulty').textContent = difficulty;
 	document.title += ' (' + difficulty + ')';
 
@@ -349,9 +352,7 @@ function prepareMap($map) {
 }
 
 function hashMap($map) {
-	$width = strlen($map['map'][0]);
-	$cells = rtrim(strtr(implode($map['map']), ['_' => 0, 'x' => 1]), '0');
-	return shash($width . '.' . $cells);
+	return shash(json_encode($map));
 }
 
 function prepareAxis($map, $hor) {
@@ -408,6 +409,18 @@ function getLevelFromInput(&$map) {
 			}, $lines);
 
 			$map = prepareMap($lines);
+			return 999;
+		}
+
+		if (preg_match('#^(\d+)\.([\d\. ]+)$#', $_GET['play'])) {
+			$cells = explode('.', $_GET['play']);
+			$size = array_shift($cells);
+			$cells = array_map(function($cell) {
+				return array_values(array_filter(explode(' ', $cell)));
+			}, $cells);
+
+			$ver = array_splice($cells, -$size);
+			$map = ['hor' => $cells, 'ver' => $ver];
 			return 999;
 		}
 	}

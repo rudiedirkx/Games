@@ -441,13 +441,6 @@ g119.click = function(cell, states, undo) {
 	document.activeElement.blur();
 };
 
-// Disable tap zoom
-g119.noZoom = function(grid) {
-	grid.addEventListener('touchend', function(e) {
-		e.preventDefault();
-	});
-};
-
 // Hash map for solution
 g119.shash = function(str) {
 	var hash = 0, chr, len;
