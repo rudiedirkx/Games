@@ -46,14 +46,14 @@ if (isset($_POST['cheat'])) {
 					<? for ($x = 0; $x < count($map['ver']); $x++): ?>
 						<td><a href="#"></a></td>
 					<? endfor ?>
-					<th class="hor" data-hints="<?= implode(',', $map['hor'][$y]) ?>">
+					<th class="meta hor" data-hints="<?= implode(',', $map['hor'][$y]) ?>">
 						<span><?= implode('</span> <span>', $map['hor'][$y]) ?></span>
 					</th>
 				</tr>
 			<? endfor ?>
-			<tr>
+			<tr class="meta">
 				<? for ($x = 0; $x < count($map['ver']); $x++): ?>
-					<th class="ver" data-hints="<?= implode(',', $map['ver'][$x]) ?>">
+					<th class="meta ver" data-hints="<?= implode(',', $map['ver'][$x]) ?>">
 						<span><?= implode('</span> <span>', $map['ver'][$x]) ?></span>
 					</th>
 				<? endfor ?>
@@ -148,20 +148,26 @@ if (isset($_POST['cheat'])) {
 		});
 	}
 
-	tbody.addEventListener('mouseover', function(e) {
-		if (e.target.nodeName == 'A') {
+	var handle2 = function(e) {
+		var cell = e.target.closest('td, th.meta');
+		if (cell) {
 			[].forEach.call(tbody.querySelectorAll('.hilite'), function(cell) {
 				cell.classList.remove('hilite');
 			});
 
-			var cell = e.target.parentNode;
-
-			var col = cell.cellIndex;
-			g119.getMetaCellForColumn(tbody, col).classList.add('hilite');
-			var row = cell.parentNode.sectionRowIndex;
-			g119.getMetaCellForRow(tbody, row).classList.add('hilite');
+			var col = cell.cellIndex + 1;
+			var row = cell.parentNode.sectionRowIndex + 1;
+			var selector = ['tr:not(.meta):nth-child(' + row + ') > *'];
+			if (col != cell.parentNode.cells.length) {
+				selector.push('tr > :nth-child(' + col + ')');
+			}
+			[].forEach.call(tbody.querySelectorAll(selector.join(', ')), function(cell) {
+				cell.classList.add('hilite');
+			});
 		}
-	});
+	};
+	tbody.addEventListener('mouseover', handle2);
+	tbody.addEventListener('touchstart', handle2);
 
 	document.querySelector('#undo').addEventListener('click', function(e) {
 		var cell = g119.history.pop();
