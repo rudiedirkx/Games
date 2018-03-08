@@ -45,7 +45,8 @@ function maak_foute_code()
 
 if (isset($_POST['check_code']))
 {
-	echo "<META http-equiv=Refresh content=2>\n";
+	echo '<meta http-equiv="refresh" content="2" />';
+	echo '<meta name="viewport" content="width=device-width, initial-scale=1" />';
 	if (isset($_POST['de_code']) && $_POST['de_code']==$_SESSION['goede_code'])
 	{
 		die("You done it!!");
@@ -151,7 +152,7 @@ function Write(Rtext,Rinterval,Rid)
 
 	$_SESSION['code_check'] = $check;
 
-	exit("</td></tr></table>");	
+	exit("</td></tr></table>");
 }
 
 $goede_code = (INT)$codes[0][rand(0,3)].$codes[1][rand(0,3)].$codes[2][rand(0,3)].$codes[3][rand(0,3)];
@@ -161,26 +162,37 @@ $foute_codes = Array();
 maak_foute_codes();
 
 ?>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Safe Cracking</title>
 </head>
 
-<body bgcolor=black OnLoad="document.forms[0].de_code.focus();">
-<table border=0 cellpadding=2 cellspacing=0 style='font-size:10pt;font-family:courier new;'>
-<form method=post><input type=hidden name=check_code value=1>
-<tr valign=bottom><td><select size=<?php echo $num_codes; ?> name=de_code style='border:0px;font-size:10pt;font-family:courier new;background:#116600;color:lime;' OnKeyDown="if (event.keyCode==13) { document.forms[0].de_code.value=this.value;document.forms[0].submit();return false; } return true;">
-<?php
+<body bgcolor="black">
 
-for ($i=0;$i<count($foute_codes);$i++)
-{
-	$a = $foute_codes[$i];
-	echo "<option value='$a'".(($i==floor($num_codes/2))?" selected":"").">".substr($a,0,3).' '.substr($a,3,2).' '.substr($a,5,2).' '.substr($a,7,2)."\n";
-}
-echo "</select></td>";
-echo '<td><iframe src="?pagina=voorbeeldcode" style="overflow:hide;" width=115 height=30 border=0 style="border:0px;"></iframe></td></tr>';
-// echo '<tr><td colspan=2><center><input type=submit value="Verify"></td></tr>';
-echo "</form></table>";
+<form method="post">
+	<input type="hidden" name="check_code" value="1" />
+	<table border="0" cellpadding="2" cellspacing="0" style="font-size: 10pt; font-family: monospace;">
+		<tr valign="bottom">
+			<td>
+				<select size="<?php echo $num_codes; ?>" name="de_code" style="border: 0px; font-size: 10pt; font-family:monospace; background: #116600; color: lime">
+					<? foreach ( $foute_codes as $code ): ?>
+						<option value="<?= $code ?>"><?= substr($code, 0, 3) . ' ' . substr($code, 3, 2) . ' ' . substr($code, 5, 2) . ' ' . substr($code, 7, 2) ?></option>
+					<? endforeach ?>
+				</select>
+			</td>
+			<td>
+				<iframe src="?pagina=voorbeeldcode" style="overflow: hide;" width="115" height="30" border="0" style="border: 0px;"></iframe>
+			</td>
+		</tr>
+	</table>
+</form>
 
-?>
+<script>
+document.querySelector('select').addEventListener('change', function(e) {
+	this.form.submit();
+});
+</script>
