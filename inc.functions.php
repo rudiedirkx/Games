@@ -2,6 +2,10 @@
 
 define('THUMB_SIZE', 91);
 
+function html_asset( $src ) {
+	return $src . '?_' . filemtime($src);
+}
+
 function do_html_options( $options, $selected = null, $empty = '' ) {
 	$html = '';
 	$empty && $html .= '<option value="">' . $empty;

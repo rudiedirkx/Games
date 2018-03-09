@@ -21,6 +21,7 @@ table.bcollapse,
 table#editor {
 	border-collapse		: collapse;
 	border				: 0;
+	touch-action		: none;
 }
 table#thebox tbody td,
 td.fld {
@@ -47,6 +48,7 @@ td.wall2 {
 }
 table#thebox tbody td.target,
 table td.target {
+	background-color	: grey;
 	font-size			: 18px;
 	font-weight			: bold;
 }
@@ -68,6 +70,11 @@ td.pad {
 	padding				: 10px;
 }
 
+#stack_message.hilite {
+	background-color: red;
+	color: white;
+}
+
 #loading {
 	position			: absolute;
 	visibility			: hidden;
@@ -86,8 +93,4 @@ td#debug_td table td {
 	font-size			: 11px;
 	padding				: 1px;
 	text-align			: center;
-}
-
-#stack_message {
-	font-size			: 16px;
 }

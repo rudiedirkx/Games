@@ -1,6 +1,8 @@
 <?php
 // STEPPING STONES
 
+require 'inc.functions.php';
+
 // require_once("connect.php");
 define( "S_NAME", "st_user" );
 
@@ -73,8 +75,8 @@ else if ( isset($_POST['level'], $_POST['jumps']) ) {
 <meta charset="utf-8" />
 <title>STEPPING STONES</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" type="text/css" href="123.css?6" />
-<script src="js/rjs-custom.js?3"></script>
+<link rel="stylesheet" href="<?= html_asset('123.css') ?>" />
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script>
 window.onerror = function(e) {
 	alert(e);

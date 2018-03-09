@@ -1,5 +1,7 @@
 <?php
 
+require 'inc.functions.php';
+
 $bShowCoords	= false;
 $bDebug			= true;
 
@@ -137,9 +139,9 @@ else if ( "move" == $_action && isset($_REQUEST['dir'], $_REQUEST['level']) ) {
 <meta charset="utf-8" />
 <title>THE BOX -ONE TARGET</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script src="js/rjs-custom.js?1"></script>
-<script src="139.js?1"></script>
-<link rel="stylesheet" href="139.css?2" />
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('139.js') ?>"></script>
+<link rel="stylesheet" href="<?= html_asset('139.css') ?>" />
 <script>
 window.onerror = function(e) {
 	alert(e);
