@@ -7,8 +7,8 @@ define( 'S_NAME', 'bx_user' );
 define( 'BASEPAGE',	basename($_SERVER['SCRIPT_NAME']) );
 
 
-$_page		= isset($_POST['page'])		? strtolower(trim($_POST['page']))		: ( isset($_GET['page'])	? strtolower(trim($_GET['page']))	: '' );
-$_action	= isset($_POST['action'])	? strtolower(trim($_POST['action']))	: ( isset($_GET['action'])	? strtolower(trim($_GET['action']))	: '' );
+$_page		= @$_REQUEST['page'];
+$_action	= @$_REQUEST['action'];
 
 
 require_once('139_levels.php');
@@ -30,12 +30,12 @@ if ( 'reset' === $_action ) {
 
 /** START GAME **/
 else if ( 'get_maps' === $_action ) {
-	if ( !isset($_POST['level'], $g_arrLevels[(int)$_POST['level']]) ) {
+	if ( !isset($_REQUEST['level'], $g_arrLevels[(int)$_REQUEST['level']]) ) {
 		exit(json_encode(array('error' => true)));
 	}
-	$arrLevel = $g_arrLevels[(int)$_POST['level']];
+	$arrLevel = $g_arrLevels[(int)$_REQUEST['level']];
 
-	reset_game((int)$_POST['level']);
+	reset_game((int)$_REQUEST['level']);
 
 	exit(json_encode(array(
 		'level'		=> $_SESSION[S_NAME]['level'],
@@ -46,13 +46,13 @@ else if ( 'get_maps' === $_action ) {
 }
 
 /** MOVE **/
-else if ( "move" == $_action && isset($_POST['dir'], $_POST['level']) ) {
+else if ( "move" == $_action && isset($_REQUEST['dir'], $_REQUEST['level']) ) {
 
-	if ( !isset($g_arrLevels[$_POST['level']]) ) {
+	if ( !isset($g_arrLevels[$_REQUEST['level']]) ) {
 		exit('Invalid level!');
 	}
-	$arrLevel = $g_arrLevels[$_POST['level']];
-	$arrDirs = explode(',', $_POST['dir']);
+	$arrLevel = $g_arrLevels[$_REQUEST['level']];
+	$arrDirs = explode(',', $_REQUEST['dir']);
 
 	foreach ( $arrLevel['map'] AS $szLine ) {
 		$arrLine = array();
@@ -70,8 +70,8 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level']) ) {
 
 	$iMoves = 0;
 
-	for ( $i=0; $i<strlen($_POST['dir']); $i++ ) {
-		$szDir = substr($_POST['dir'], $i, 1);
+	for ( $i=0; $i<strlen($_REQUEST['dir']); $i++ ) {
+		$szDir = substr($_REQUEST['dir'], $i, 1);
 		$iMoves++;
 
 		$dx1 = $dx2 = $dy1 = $dy2 = 0;
@@ -92,7 +92,7 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level']) ) {
 			$dy2 = 2;
 		}
 		else {
-			exit('INVALID DIRECTION: '.$_POST['dir']);
+			exit('INVALID DIRECTION: '.$_REQUEST['dir']);
 		}
 
 		$nowFieldC = array($arrPusher[0], $arrPusher[1]);
@@ -124,7 +124,7 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level']) ) {
 	}
 
 	if ( 0 === CountBadBoxes($arrMap) ) {
-		exit('LEVEL '.$_POST['level'].' ACHIEVEMENT SAVED');
+		exit('LEVEL '.$_REQUEST['level'].' ACHIEVEMENT SAVED');
 	}
 	exit('Level is not complete... No errors have occurred!');
 }
@@ -136,15 +136,13 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level']) ) {
 
 <head>
 <title>THE BOX -ONE TARGET</title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<script type="text/javascript" src="139.js"></script>
-<link rel="stylesheet" type="text/css" href="139.css" />
+<script src="js/rjs-custom.js"></script>
+<script src="139.js"></script>
+<link rel="stylesheet" href="139.css" />
 </head>
 
 <body>
 <img id="loading" alt="loading" src="images/loading.gif" />
-
-<script type="text/javascript">if ( window.console && 'object' == typeof window.console && window.console.firebug ) { document.write('<div style="background-color:pink;font-weight:bold;margin:10px;padding:10px;color:white;">Firebug can slow this page down... It\'s not necessary but advised to shut it down.</div>'); }</script>
 
 <table border="1" cellpadding="15" cellspacing="0">
 <tr>
@@ -173,57 +171,31 @@ else if ( "move" == $_action && isset($_POST['dir'], $_POST['level']) ) {
 	</td>
 </tr>
 <tr>
-	<th colspan="2" class="pad" id="stack_message">no stack messages</th>
+	<th colspan="2" class="pad" id="stack_message">&nbsp;</th>
 </tr>
 </table>
 
-<script type="text/javascript">
-<!--//
-Ajax.setGlobalHandlers({
-	onStart : function() {
-		$('loading').style.visibility = 'visible';
-	},
-	onComplete: function() {
-		if( !Ajax.busy ) {
-			$('loading').style.visibility = 'hidden';
-		}
+<script>
+window.on('xhrStart', function(e) {
+	$('#loading').css('visibility', 'visible');
+});
+window.on('xhrDone', function(e) {
+	if (r.xhr.busy == 0) {
+		$('#loading').css('visibility', 'hidden');
 	}
 });
 
 var objTheBox = new TheBox;
 objTheBox.LoadAndPrintMap( document.location.hash ? document.location.hash.substr(1) : <?php echo (int)$_SESSION[S_NAME]['level']; ?> );
 
-document.addEvent('keydown', function(e) {
-	e = new Event(e);
+document.on('keydown', function(e) {
 	var dir;
-	switch ( e.code ) {
-		case 37: if ( e.control ) { objTheBox.LoadAndPrintMap(objTheBox.m_iLevel-1);return; } dir = 'left';	break;
-		case 38: dir = 'up';	break;
-		case 39: if ( e.control ) { objTheBox.LoadAndPrintMap(objTheBox.m_iLevel-(-1));return; } dir = 'right';	break;
-		case 40: dir = 'down';	break;
-		case 48:
-		case 49:
-		case 50:
-		case 51:
-		case 52:
-		case 53:
-		case 54:
-		case 55:
-		case 56:
-		case 57:
-			objTheBox.LoadAndPrintMap(e.code-48);
-			return;
-		break;
-		default:
-			return;
-		break;
+	if ( e.code.match(/^Arrow/) ) {
+		e.preventDefault();
+		dir = e.code.substr(5).toLowerCase();
+		objTheBox.Move(dir);
 	}
-	e.stop();
-	objTheBox.Move(dir);
 });
-
-document.body.focus();
-//-->
 </script>
 </body>
 

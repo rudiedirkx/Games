@@ -69,6 +69,11 @@ td.pad {
 	padding				: 10px;
 }
 
+#stack_message.hilite {
+	background-color: red;
+	color: white;
+}
+
 #loading {
 	position			: absolute;
 	visibility			: hidden;
@@ -87,8 +92,4 @@ td#debug_td table td {
 	font-size			: 11px;
 	padding				: 1px;
 	text-align			: center;
-}
-
-#stack_message {
-	font-size			: 16px;
 }

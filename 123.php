@@ -281,7 +281,7 @@ r.extend(SteppingStones, {
 	</td>
 </tr>
 <tr>
-	<th colspan="2" class="pad" id="stack_message">-</th>
+	<th colspan="2" class="pad" id="stack_message">&nbsp;</th>
 </tr>
 </table>
 
