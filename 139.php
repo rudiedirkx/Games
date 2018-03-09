@@ -130,15 +130,34 @@ else if ( "move" == $_action && isset($_REQUEST['dir'], $_REQUEST['level']) ) {
 }
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!doctype html>
+<html>
 
 <head>
+<meta charset="utf-8" />
 <title>THE BOX -ONE TARGET</title>
-<script src="js/rjs-custom.js"></script>
-<script src="139.js"></script>
-<link rel="stylesheet" href="139.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="js/rjs-custom.js?1"></script>
+<script src="139.js?1"></script>
+<link rel="stylesheet" href="139.css?2" />
+<script>
+window.onerror = function(e) {
+	alert(e);
+};
+</script>
+<script>
+r.extend(Coords2D, {
+	direction: function() {
+		if ( Math.abs(this.y) > Math.abs(this.x) ) {
+			return this.y > 0 ? 'down' : 'up';
+		}
+		return this.x > 0 ? 'right' : 'left';
+	},
+	distance: function(target) {
+		return Math.sqrt(Math.pow(Math.abs(this.x - target.x), 2) + Math.pow(Math.abs(this.y - target.y), 2));
+	},
+});
+</script>
 </head>
 
 <body>
@@ -195,6 +214,30 @@ document.on('keydown', function(e) {
 		dir = e.code.substr(5).toLowerCase();
 		objTheBox.Move(dir);
 	}
+});
+
+var movingStart, movingEnd;
+document.on(['mousedown', 'touchstart'], '#thebox_tbody td', function(e) {
+	e.preventDefault();
+	movingStart = e.pageXY;
+});
+document.on(['mousemove', 'touchmove'], function(e) {
+	e.preventDefault();
+	if ( movingStart ) {
+		movingEnd = e.pageXY;
+	}
+});
+document.on(['mouseup', 'touchend'], function(e) {
+	if ( movingStart && movingEnd ) {
+		var distance = movingStart.distance(movingEnd);
+		if ( distance > 10 ) {
+			var moved = movingEnd.subtract(movingStart);
+			var dir = moved.direction();
+			objTheBox.Move(dir);
+// document.body.append(document.el('pre').setText(dir));
+		}
+	}
+	movingStart = movingEnd = null;
 });
 </script>
 </body>

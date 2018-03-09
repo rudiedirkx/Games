@@ -21,6 +21,7 @@ table.bcollapse,
 table#editor {
 	border-collapse		: collapse;
 	border				: 0;
+	touch-action		: none;
 }
 table#thebox tbody td,
 td.fld {
