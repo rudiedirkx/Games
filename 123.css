@@ -19,6 +19,7 @@ body {
 
 table#stones {
 	border-collapse		: collapse;
+	touch-action		: none;
 }
 tbody#stones_tbody td {
 	width				: 24px;
@@ -35,6 +36,11 @@ tbody#stones_tbody td.no-stone {
 }
 tbody#stones_tbody td.jumper {
 	background-color	: #f00;
+}
+
+#stack_message.hilite {
+	background-color: red;
+	color: white;
 }
 
 #loading {

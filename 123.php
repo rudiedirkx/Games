@@ -70,10 +70,29 @@ else if ( isset($_POST['level'], $_POST['jumps']) ) {
 <html>
 
 <head>
+<meta charset="utf-8" />
 <title>STEPPING STONES</title>
-<link rel="stylesheet" type="text/css" href="123.css" />
-<script src="js/rjs-custom.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" type="text/css" href="123.css?6" />
+<script src="js/rjs-custom.js?3"></script>
 <script>
+window.onerror = function(e) {
+	alert(e);
+};
+</script>
+<script>
+r.extend(Coords2D, {
+	direction: function() {
+		if ( Math.abs(this.y) > Math.abs(this.x) ) {
+			return this.y > 0 ? 'down' : 'up';
+		}
+		return this.x > 0 ? 'right' : 'left';
+	},
+	distance: function(target) {
+		return Math.sqrt(Math.pow(Math.abs(this.x - target.x), 2) + Math.pow(Math.abs(this.y - target.y), 2));
+	},
+});
+
 function SteppingStones( f_level ) {
 	this.m_iLevel = 0;
 	this.m_arrJumper = [0, 0];
@@ -221,8 +240,8 @@ r.extend(SteppingStones, {
 
 	SaveMessage : function( f_msg ) {
 		$('#stack_message').innerHTML = f_msg;
-		$('#stack_message').style.backgroundColor = 'red';
-		setTimeout("$('#stack_message').style.backgroundColor = '';", 500);
+		$('#stack_message').addClass('hilite');
+		setTimeout("$('#stack_message').removeClass('hilite');", 500);
 	}
 });
 </script>
@@ -281,9 +300,7 @@ var objStones = new SteppingStones('<?php echo $g_iFirstLevel; ?>');
 $('#stones_tbody').on('click', function(e) {
 	e.preventDefault();
 
-	if ( e.target.nodeName != 'TD' ) return;
-
-	if ( e.target.stone && e.target.className == 'stone' ) {
+	if ( e.target.stone && e.target.is('td.stone') ) {
 		objStones.selectStone(e.target);
 	}
 });
@@ -300,6 +317,30 @@ document.on('keydown', function(e) {
 
 	e.preventDefault();
 	objStones.jump(dir);
+});
+
+var movingStart, movingEnd;
+document.on(['mousedown', 'touchstart'], '#stones_tbody td', function(e) {
+	e.preventDefault();
+	movingStart = e.pageXY;
+});
+document.on(['mousemove', 'touchmove'], function(e) {
+	e.preventDefault();
+	if ( movingStart ) {
+		movingEnd = e.pageXY;
+	}
+});
+document.on(['mouseup', 'touchend'], function(e) {
+	if ( movingStart && movingEnd ) {
+		var distance = movingStart.distance(movingEnd);
+		if ( distance > 10 ) {
+			var moved = movingEnd.subtract(movingStart);
+			var dir = moved.direction();
+			objStones.jump(dir);
+// document.body.append(document.el('pre').setText(dir));
+		}
+	}
+	movingStart = movingEnd = null;
 });
 </script>
 </body>

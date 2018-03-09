@@ -1,5 +1,5 @@
-// http://home.hotblocks.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// f75d6602bd506f7f4a933e1402f9bdb3d9374191
+// https://home.hotblocks.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
+// d29496654df13a55a32d3314a9729dccf88bbf16
 
 (function(W, D) {
 
@@ -246,6 +246,7 @@
 		this.fromElement = e.fromElement;
 		this.toElement = e.toElement;
 		this.key = e.keyCode || e.which;
+		this.code = e.code;
 		this.alt = e.altKey;
 		this.ctrl = e.ctrlKey;
 		this.shift = e.shiftKey;
@@ -360,60 +361,63 @@
 			}
 
 			var options = {
-				bubbles: !!matches,
+				bubbles: true,
 				subject: this || W
 			};
 
-			var baseType = eventType,
-				customEvent;
-			if ( customEvent = Event.Custom[eventType] ) {
-				if ( customEvent.type ) {
-					baseType = customEvent.type;
-				}
-			}
+			var eventTypes = eventType instanceof Array ? eventType : [eventType];
 
-			var onCallback = function(e, arg2) {
-				if ( e && !(e instanceof AnyEvent) ) {
-					e = new AnyEvent(e);
+			r.each(eventTypes, function(eventType) {
+				var baseType = eventType;
+				var customEvent;
+				if ( customEvent = Event.Custom[eventType] ) {
+					if ( customEvent.type ) {
+						baseType = customEvent.type;
+					}
 				}
+				var onCallback = function(e, arg2) {
+					if ( e && !(e instanceof AnyEvent) ) {
+						e = new AnyEvent(e);
+					}
 
-				var subject = options.subject;
-				if ( e && e.target && matches ) {
-					if ( !(subject = e.target.selfOrAncestor(matches)) ) {
-						return;
+					var subject = options.subject;
+					if ( e && e.target && matches ) {
+						if ( !(subject = e.target.selfOrAncestor(matches)) ) {
+							return;
+						}
+					}
+
+					if ( customEvent && customEvent.filter ) {
+						if ( !customEvent.filter.call(subject, e, arg2) ) {
+							return;
+						}
+					}
+
+					if ( !e.subject ) {
+						e.setSubject(subject);
+					}
+					return callback.call(subject, e, arg2);
+				};
+
+				if ( customEvent && customEvent.before ) {
+					if ( customEvent.before.call(this, options) === false ) {
+						return this;
 					}
 				}
 
-				if ( customEvent && customEvent.filter ) {
-					if ( !customEvent.filter.call(subject, e, arg2) ) {
-						return;
-					}
-				}
+				var events = options.subject.$events || (options.subject.$events = {});
+				events[eventType] || (events[eventType] = []);
+				events[eventType].push({
+					type: baseType,
+					original: callback,
+					callback: onCallback,
+					bubbles: options.bubbles
+				});
 
-				if ( !e.subject ) {
-					e.setSubject(subject);
+				if ( options.subject.addEventListener ) {
+					options.subject.addEventListener(baseType, onCallback, options.bubbles);
 				}
-				return callback.call(subject, e, arg2);
-			};
-
-			if ( customEvent && customEvent.before ) {
-				if ( customEvent.before.call(this, options) === false ) {
-					return this;
-				}
-			}
-
-			var events = options.subject.$events || (options.subject.$events = {});
-			events[eventType] || (events[eventType] = []);
-			events[eventType].push({
-				type: baseType,
-				original: callback,
-				callback: onCallback,
-				bubbles: options.bubbles
 			});
-
-			if ( options.subject.addEventListener ) {
-				options.subject.addEventListener(baseType, onCallback, options.bubbles);
-			}
 
 			return this;
 		},
@@ -784,7 +788,6 @@
 			}
 		}
 	};
-
 	function attachDomReady() {
 		domReadyAttached = true;
 
@@ -917,7 +920,6 @@
 			}
 		}
 	};
-
 	function shortXHR(method) {
 		return function(url, data, options) {
 			if ( !options ) {
