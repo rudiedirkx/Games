@@ -133,7 +133,7 @@ else if ( isset($_POST['check']) ) {
 	$beams = (int)$_SESSION[S_NAME]['beams'];
 	$score = max(0, 2000 - $playtime * 10 - $beams * 30);
 
-	exit('You have found all atoms in ' . $playtime . ' seconds, using ' . $beams . " beams!\n\nScore: ");
+	exit('You have found all atoms in ' . $playtime . ' seconds, using ' . $beams . " beams!\n\nScore: $score");
 }
 
 ?>
@@ -143,7 +143,7 @@ else if ( isset($_POST['check']) ) {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BLACKBOX</title>
+<title>BLACKBOX PHP</title>
 <link rel="stylesheet" href="blackbox.css" />
 <style>
 </style>
