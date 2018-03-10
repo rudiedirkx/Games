@@ -1,7 +1,10 @@
+table {
+	touch-action: none;
+}
 #map-table { border-collapse:collapse; font-family:verdana,arial; }
 #map-container { -webkit-tap-highlight-color: rgba(0,0,0,0); }
 #map-table td { border:solid 1px #eee; font-size:18px; text-align:center; }
-#map-container td { width:35px; height:35px; color:white; font-weight:bold; cursor:pointer; }
+#map-container td { width:23px; height:23px; color:white; font-weight:bold; cursor:pointer; }
 #map-container.actionless td { cursor: default; }
 #map-container td.wall1 { background-color: #111; cursor: default; }
 #map-container td.wall2 { background-color: #333; cursor: default; }

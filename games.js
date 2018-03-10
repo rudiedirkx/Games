@@ -1,154 +1,148 @@
-function not(a) {return !a}
-
-Player = new Class({
-	name: ''
-})
-
-Game = new Class({
-	code: '', // "160"
-	name: '', // "Pixelus"
-	player: null, // typeof Player
-	score: 0,
-	starttime: null,
-	playtime: 0,
-	initialize: function() {
-		this.player = new Player
-	},
-	saveScore: function() {
-
-	},
-	startTheTime: function() {
-		this.starttime = new Date
-	},
-	stopTheTime: function() {
-		this.playtime = new Date - this.starttime
+class Player {
+	constructor(name = '') {
+		this.name = name;
 	}
-})
+}
 
-LevelableGame = Game.extend({
-	level: 0,
-	mapToClass: {},
-	moves: 0,
-	initialize: function( level ) {
-		this.parent()
+class Game {
+	constructor() {
+		this.player = new Player();
+		this.code = '';
+		this.name = '';
+		this.score = 0;
+		this.starttime = null;
+		this.playtime = 0;
+	}
 
-		this.ui_attachMetaEvents()
-		this.ui_attachControlEvents()
+	saveScore() {
 
-		level || (level = 1)
-		this.loadLevel(level || 1)
-	},
+	}
+
+	startTheTime() {
+		this.starttime = new Date;
+	}
+
+	stopTheTime() {
+		this.playtime = new Date - this.starttime;
+	}
+}
+
+class LevelableGame extends Game {
+	constructor( level = 1 ) {
+		super();
+
+		this.level = 0;
+		this.mapToClass = {};
+		this.moves = 0;
+
+		this.ui_attachMetaEvents();
+		this.ui_attachControlEvents();
+
+		this.loadLevel(level);
+	}
+
 	// loads & builds level # n
-	loadLevel: function( n ) {
+	loadLevel( n ) {
 		this.loadMap(n, this.cb_loadMap)
-	},
+	}
+
 	// handles map download response
-	cb_loadMap: function( game, rsp ) {
-		game.level = rsp.level
-		game.buildMap(rsp)
-	},
+	cb_loadMap( rsp ) {
+		this.level = rsp.level
+		this.buildMap(rsp)
+	}
+
 	// loadLevel +1
-	nextLevel: function() {
+	nextLevel() {
 		return this.loadLevel(this.level + 1)
-	},
+	}
+
 	// loadLevel -1
-	prevLevel: function() {
+	prevLevel() {
 		return this.loadLevel(this.level - 1)
-	},
+	}
+
 	// loadLevel -n
-	levelGo: function(n) {
+	levelGo(n) {
 		return this.loadLevel(this.level + n)
-	},
+	}
+
 	// downloads map
-	loadMap: function( level, cb ) {
-		var game = this
-		$.post('?get_map=' + level, function( t ) {
-			try {
-				var rsp = JSON.parse(t)
-			}
-			catch ( ex ) {
-				alert('Response error: ' + t)
-				return;
-			}
+	loadMap( level, cb ) {
+		$.get('?get_map=' + level).on('done', (e, rsp) => {
+			cb.call(game, rsp);
+		});
+	}
 
-			cb(game, rsp)
-		})
-	},
 	// builds map & html
-	buildMap: function( rsp ) {
+	buildMap( rsp ) {
 		// stats
-		$('stats-level').html(this.level)
+		$('#stats-level').setText(this.level)
 
-		var map = rsp.map,
-			container = $('map-container').empty(),
-			X, Y = map.length,
-			x, y,
-			tr, td,
-			t, c
+		var map = rsp.map;
+		var container = $('#map-container').empty();
+		var X;
+		var Y = map.length;
+		var x;
+		var y;
+		var tr;
+		var td;
+		var t;
+		var c
 
 		for ( y=0; y<Y; y++ ) {
-			tr = container.insertRow(y)
+			tr = container.insertRow(y);
 			for ( x=0, X = map[y].length; x<X; x++ ) {
-				td = $(tr.insertCell(x))
-				t = map[y][x]
+				td = tr.insertCell(x);
+				t = map[y][x];
 				if ( ' ' != t ) {
-					td.attr('data-type', t)
-					td.type = t
-					c = this.mapToClass[t] || t
-					td.className = c
-					td[c] = true
-					if ( 'wall' == td.className ) {
-						td.className += ' wall' + (0.5 < Math.random() ? '1' : '2')
+					td.data('type', t);
+					c = this.mapToClass[t] || t;
+					td.addClass(c);
+					if ( 'wall' == c ) {
+						td.addClass('wall' + (0.5 < Math.random() ? '1' : '2'));
 					}
 				}
-				this.postBuildField(td, x, y)
+				this.postBuildField(td, x, y);
 			}
 		}
-	},
-	postBuildField: function( field, x, y ) {},
-	ui_attachMetaEvents: function() {
-		var game = this
-		$('btn-next-level').addEvent('click', function(e) {
-			e.preventDefault()
-
-			game.nextLevel()
-		})
-		$('btn-prev-level').addEvent('click', function(e) {
-			e.preventDefault()
-
-			game.prevLevel()
-		})
-		$('btn-load-level').addEvent('click', function(e) {
-			e.preventDefault()
-
-			var level = prompt('Level:', game.level)
-			if ( null != level ) {
-				game.loadLevel(level)
-			}
-		})
-		$('btn-restart-level').addEvent('click', function(e) {
-			e.preventDefault()
-
-			game.loadLevel(game.level)
-		})
-	},
-	ui_attachControlEvents: function() {},
-	updateStats: function() {
-		$('stats-moves').html(this.moves)
 	}
-})
 
-BoardGame = Game.extend({});
+	postBuildField( field, x, y ) {
+
+	}
+
+	ui_attachMetaEvents() {
+		$('#btn-next-level').on('click', (e) => {
+			e.preventDefault();
+
+			this.nextLevel();
+		});
+		$('#btn-prev-level').on('click', (e) => {
+			e.preventDefault();
+
+			this.prevLevel();
+		});
+		$('#btn-restart-level').on('click', (e) => {
+			e.preventDefault();
+
+			this.loadLevel(this.level);
+		});
+	}
+	ui_attachControlEvents() {
+
+	}
+	updateStats() {
+		$('#stats-moves').setText(this.moves);
+	}
+}
+
+class BoardGame extends Game {
+
+}
 BoardGame.nesw = [
 	[0, -1],
 	[1, 0],
 	[0, 1],
 	[-1, 0]
 ];
-
-/*CumulariAbsolutus = BoardGame.extend({
-	clickField: function() {
-
-	}
-})*/
-

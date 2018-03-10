@@ -1,32 +1,36 @@
 
-Pixelus = LevelableGame.extend({
-	stones: 0,
-	mapToClass: {
-		x: 'wall',
-		o: 'target',
-	},
-	cb_loadMap: function( game, rsp ) {
-		game.stones = rsp.stones;
-		this.parent(game, rsp);
+class Pixelus extends LevelableGame {
+	constructor( level = 1 ) {
+		super(level);
 
-		game.updateStats();
-	},
-	postBuildField: function( field, x, y ) {
-		field.html('<span></span>');
-	},
-	ui_attachControlEvents: function() {
-		var game = this;
-		$('map-container').addEvent('click', function(e) {
-			if ( 'SPAN' == e.target.nodeName ) {
-				var field = e.target.parentNode,
-					x = field.cellIndex,
-					y = field.parentNode.sectionRowIndex;
-				game.clickField(field, x, y);
-			}
-		})
-	},
-	clickField: function( field, x, y ) {
-		if ( !field.wall ) {
+		this.stones = 0;
+		this.mapToClass = {
+			x: 'wall',
+			o: 'target',
+		}
+	}
+
+	cb_loadMap( rsp ) {
+		this.stones = rsp.stones;
+		super.cb_loadMap(rsp);
+
+		this.updateStats();
+	}
+
+	postBuildField( field, x, y ) {
+		field.setHTML('<span></span>');
+	}
+
+	ui_attachControlEvents() {
+		$('#map-container').on('click', 'td', (e) => {
+			var x = e.subject.cellIndex;
+			var y = e.subject.parentNode.sectionRowIndex;
+			this.clickField(e.subject, x, y);
+		});
+	}
+
+	clickField( field, x, y ) {
+		if ( !field.hasClass('wall') ) {
 			if ( !field.hasClass('stone') ) {
 				// sling stone here
 				this.slingStone(field);
@@ -35,9 +39,16 @@ Pixelus = LevelableGame.extend({
 				// remove stone
 				this.removeStone(field);
 			}
+
+			if ( $$('#map-container .target:not(.stone)').length == 0 ) {
+				setTimeout(function() {
+					alert('You win!');
+				}, 100);
+			}
 		}
-	},
-	slingStone: function( target ) {
+	}
+
+	slingStone( target ) {
 		if ( 0 < this.stones ) {
 			if ( this.isReachableField(target) ) {
 				target.addClass('stone');
@@ -47,8 +58,9 @@ Pixelus = LevelableGame.extend({
 		}
 
 		this.updateStats();
-	},
-	isReachableField: function( field ) {
+	}
+
+	isReachableField( field ) {
 		for ( var d=0; d<4; d++ ) {
 			var cd = BoardGame.nesw[d];
 			var nf = this.getNeighborField(field, cd);
@@ -60,8 +72,9 @@ Pixelus = LevelableGame.extend({
 		}
 
 		return false;
-	},
-	pathIsFree: function( startField, direction ) {
+	}
+
+	pathIsFree( startField, direction ) {
 		var cd = BoardGame.nesw[direction];
 		var neighbor = startField;
 		while ( neighbor = this.getNeighborField(neighbor, cd) ) {
@@ -71,17 +84,20 @@ Pixelus = LevelableGame.extend({
 		}
 
 		return true;
-	},
-	isSolid: function( field ) {
+	}
+
+	isSolid( field ) {
 		return field.hasClass('wall') || field.hasClass('stone');
-	},
-	getNeighborField: function( field, cd ) {
+	}
+
+	getNeighborField( field, cd ) {
 		var grid = field.parentNode.parentNode;
 		var x = field.cellIndex,
 			y = field.parentNode.sectionRowIndex;
 		return grid.rows[ y + cd[1] ] && grid.rows[ y + cd[1] ].cells[ x + cd[0] ];
-	},
-	removeStone: function( field ) {
+	}
+
+	removeStone( field ) {
 		// @todo Check for pathIsFree
 
 		field.removeClass('stone');
@@ -89,10 +105,12 @@ Pixelus = LevelableGame.extend({
 		this.moves++;
 
 		this.updateStats();
-	},
-	updateStats: function() {
-		this.parent();
-		$('stats-stones').html(String(this.stones));
-		$('map-container')[this.stones ? 'removeClass' : 'addClass']('actionless');
 	}
-})
+
+	updateStats() {
+		super.updateStats();
+
+		$('#stats-stones').setText(this.stones);
+		$('#map-container').toggleClass('actionless', !this.stones);
+	}
+}
