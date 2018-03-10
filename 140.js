@@ -1,18 +1,50 @@
 
-// CONSTRUCTOR //
-function TheBox( f_iLevel ) {
-	if ( f_iLevel ) this.LoadAndPrintMap(f_iLevel);
+class TheBoxMultiple {
+	constructor( f_iLevel ) {
+		this.m_objGrid = $('#thebox_tbody');
 
-} // END TheBox()
+		this.reset();
 
-// METHODS //
-TheBox.prototype = {
+		if ( f_iLevel ) {
+			this.loadAndPrintMap(f_iLevel);
+		}
+	}
 
-	/**
-	 * M o v e
-	 */
-	Move : function( f_dir ) {
-		if ( this.m_bGameOver ) { return; }
+
+	reset() {
+		this.m_bGameOver	= false;
+		this.m_arrLastMove	= [];
+		this.m_arrStack		= [];
+
+		this.setLevel(0);
+		this.setMoves(0);
+
+		$('#stack_message').setHTML('&nbsp;');
+	}
+
+
+	setLevel( f_iLevel ) {
+		this.m_iLevel = f_iLevel;
+		$('#stats_level').setText(f_iLevel);
+	}
+
+
+	setMoves( f_iMoves ) {
+		if ( f_iMoves != null ) {
+			this.m_iMoves = f_iMoves;
+		}
+		$('#stats_moves').setText(this.m_iMoves);
+	}
+
+
+	getPusher() {
+		var pusher = this.m_objGrid.getElement('.pusher');
+		return [pusher.cellIndex, pusher.parentNode.sectionRowIndex];
+	}
+
+
+	move( f_dir ) {
+		if ( this.m_bGameOver ) return;
 
 		var dx1 = 0, dx2 = 0, dy1 = 0, dy2 = 0;
 		if ( 'left' == f_dir ) {
@@ -32,121 +64,79 @@ TheBox.prototype = {
 			dy2 = 2;
 		}
 		else {
-//			alert("ERR(clicked on " + f_coords.join(":") + " while pusher is" + this._pusher.join(":") + ")");
 			return;
 		}
-		var nowFieldC = [this._pusher[0], this._pusher[1]];
-		var toFieldC = [this._pusher[0]+dx1, this._pusher[1]+dy1];
-		var nextFieldC = [this._pusher[0]+dx2, this._pusher[1]+dy2];
+
+		var pusher = this.getPusher();
+
+		var nowFieldC = [pusher[0], pusher[1]];
+		var toFieldC = [pusher[0]+dx1, pusher[1]+dy1];
+		var nextFieldC = [pusher[0]+dx2, pusher[1]+dy2];
 
 		// TO-FIELD cannot be wall
-		var toField = $('#thebox_tbody').rows[toFieldC[1]].cells[toFieldC[0]];
-		if ( toField.wall ) {
-//			alert("TO-FIELD cannot be wall");
+		var toField = this.m_objGrid.rows[toFieldC[1]].cells[toFieldC[0]];
+		if ( toField.hasClass('wall') ) {
 			return;
 		}
-		var nextField = $('#thebox_tbody').rows[nextFieldC[1]].cells[nextFieldC[0]];
+		var nextField = this.m_objGrid.rows[nextFieldC[1]].cells[nextFieldC[0]];
 
 		// NEXT-FIELD must be empty
-		if ( toField.box && ( nextField.box || nextField.wall ) ) {
-//			alert("Can't push box with box or wall behind it");
+		if ( toField.hasClass('box') && ( nextField.hasClass('box') || nextField.hasClass('wall') ) ) {
 			return;
 		}
-		var nowField = $('#thebox_tbody').rows[nowFieldC[1]].cells[nowFieldC[0]];
+		var nowField = this.m_objGrid.rows[nowFieldC[1]].cells[nowFieldC[0]];
 
-		this.m_arrLastMove = [];
-		this.m_arrLastMove.push(nowFieldC.join('_'));
-		this.m_arrLastMove.push('p');
-		this.m_arrLastMove.push(toFieldC.join('_'));
-		this.m_arrLastMove.push( toField.box ? 'b' : false );
-		this.m_arrLastMove.push(nextFieldC.join('_'));
-		this.m_arrLastMove.push(false);
+		this.m_arrLastMove = [this.m_iMoves, this.m_objGrid.innerHTML];
 
-		if ( toField.box ) {
-			toField.box = false;
-			nextField.box = true;
-			nextField.className = 'box';
+		if ( toField.hasClass('box') ) {
+			toField.removeClass('box');
+			nextField.addClass('box');
+			this.m_iMoves++;
 		}
 
-		this._pusher = toFieldC;
-		nowField.className = '';
-		toField.className = 'pusher';
+		nowField.removeClass('pusher');
+		toField.addClass('pusher');
 
 		this.m_iMoves++;
-		this.AddToStack(f_dir);
-		$('#stats_moves').innerHTML = this.m_iMoves;
+		this.addToStack(f_dir);
+		this.setMoves();
 
-		if ( 0 == this.CountBadBoxes() ) {
+		if ( 0 == this.countBadBoxes() ) {
 			this.m_bGameOver = true;
 			var self = this;
 			var data = 'action=move&level=' + this.m_iLevel + '&dir=' + this.m_arrStack.join('');
 			r.post('?', data).on('done', function(e, t) {
-				self.SaveMessage(t);
+				self.saveMessage(t);
 			});
 		}
+	}
 
-	}, // END Move()
 
-
-	/**
-	 * U n d o   l a s t   m o v e
-	 */
-	UndoLastMove : function() {
-		if ( 6 != this.m_arrLastMove.length || 0 == this.CountBadBoxes() ) {
-			return false;
+	undoLastMove() {
+		if ( this.m_arrLastMove ) {
+			this.m_objGrid.innerHTML = this.m_arrLastMove[1];
+			this.m_arrStack.pop();
+			this.setMoves(this.m_arrLastMove[0]);
+			this.m_arrLastMove = null;
 		}
-		for ( var i=0; i<6; i+=2 ) {
-			var x = this.m_arrLastMove[i].split('_');
-			var objField = $('#thebox_tbody').rows[x[1].toInt()].cells[x[0].toInt()];
-			switch ( this.m_arrLastMove[i+1] ) {
-				case 'p':
-					objField.box = false;
-					this._pusher = [x[0].toInt(), x[1].toInt()];
-					objField.className = 'pusher';
-				break;
-				case 'b':
-					objField.box = true;
-					objField.className = 'box';
-				break;
-				default:
-					objField.box = false;
-					objField.className = '';
-				break;
-			}
-		}
-		this.m_arrStack.pop();
-		this.m_arrLastMove = [];
-		this.m_iMoves--;
-		$('#stats_moves').innerHTML = this.m_iMoves;
+
 		return false;
+	}
 
-	}, // END UndoLastMove()
 
-
-	/**
-	 * A d d   t o   s t a c k
-	 */
-	AddToStack : function( f_dir ) {
+	addToStack( f_dir ) {
 		this.m_arrStack.push(f_dir.substr(0, 1));
+	}
 
-	}, // END AddToStack()
 
-
-	/**
-	 * S a v e   m e s s a g e
-	 */
-	SaveMessage : function( f_msg ) {
+	saveMessage( f_msg ) {
 		$('#stack_message').innerHTML = f_msg;
 		$('#stack_message').addClass('hilite');
 		setTimeout("$('#stack_message').removeClass('hilite');", 500);
+	}
 
-	}, // END SaveMessage()
 
-
-	/**
-	 * L o a d   a n d   p r i n t   m a p
-	 */
-	LoadAndPrintMap : function( f_level ) {
+	loadAndPrintMap( f_level ) {
 		if ( 'undefined' == typeof f_level ) {
 			return;
 		}
@@ -156,40 +146,22 @@ TheBox.prototype = {
 		r.get('?action=get_maps&level=' + f_level).on('done', function(e, rv) {
 			if ( rv.error ) return;
 
-			// save pusher
-			self._pusher = rv['pusher'];
+			self.reset();
+			self.setLevel(rv['level']);
 
-			// save level #
-			$('#stats_level').innerHTML	= rv['level'];
-			$('#stats_moves').innerHTML	= '0';
-			$('#stack_message').innerHTML= '-';
-			self.m_iLevel = rv['level'];
-			self.m_bGameOver = false;
-
-			self.m_iMoves		= 0;
-			self.m_arrLastMove	= [];
-
-			self.m_arrStack		= [];
-
-			// empty current map
-			while ( 0 < $('#thebox_tbody').childNodes.length ) {
-				$('#thebox_tbody').removeChild($('#thebox_tbody').firstChild);
-			}
-
-			// save map
+			self.m_objGrid.empty();
 			r.each(rv.map, function(row, y) {
-				var nr = $('#thebox_tbody').insertRow($('#thebox_tbody').rows.length);
+				var nr = self.m_objGrid.insertRow(self.m_objGrid.rows.length);
 				for ( var x=0; x<row.length; x++ ) {
 					var nc = nr.insertCell(nr.cells.length);
 					nc.innerHTML = '';
 					if ( 'x' == row.substr(x, 1) ) {
-						nc.className = 'wall' + Math.ceil(2*Math.random());
-						nc.wall = true;
+						nc.addClass('wall');
+						nc.addClass('wall' + Math.ceil(2*Math.random()));
 					}
 					else if ( 't' == row.substr(x, 1) ) {
-						nc.className = 'target';
+						nc.addClass('target');
 						nc.innerHTML = 'T';
-						nc.target = true;
 					}
 					else {
 						nc.className = '';
@@ -198,32 +170,18 @@ TheBox.prototype = {
 			});
 
 			// show pusher
-			$('#thebox_tbody').rows[rv.pusher[1]].cells[rv.pusher[0]].className = 'pusher';
+			self.m_objGrid.rows[rv.pusher[1]].cells[rv.pusher[0]].addClass('pusher');
 
 			// show boxes
 			r.each(rv.boxes, function(box) {
-				$('#thebox_tbody').rows[box[1]].cells[box[0]].box = true;
-				$('#thebox_tbody').rows[box[1]].cells[box[0]].className = 'box';
+				self.m_objGrid.rows[box[1]].cells[box[0]].addClass('box');
 			});
 		});
+	}
 
-	}, // End LoadAndPrintMap()
 
+	countBadBoxes() {
+		return $$('.box:not(.target)').length;
+	}
 
-	/**
-	 * C o u n t   b a d   b o x e s
-	 */
-	CountBadBoxes : function() {
-		var iBoxes = 0;
-		r.each($('#thebox_tbody').rows, function(row) {
-			r.each(row.cells, function(cell) {
-				if ( cell.box && !cell.target ) {
-					iBoxes++;
-				}
-			})
-		});
-		return iBoxes;
-
-	}, // END CountBadBoxes()
-
-} // END Class TheBox
+}

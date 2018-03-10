@@ -185,17 +185,17 @@ r.extend(Coords2D, {
 	<td class="pad" style="padding-top:0;"><table id="thebox" border="0">
 		<tbody id="thebox_tbody"></tbody>
 		<tfoot>
-			<tr><th class="pad" colspan="30">Moves: <span id="stats_moves">0</span></th></tr>
+			<tr><th class="pad" colspan="30">Energy spent: <span id="stats_moves">0</span></th></tr>
 		</tfoot>
 	</table></td>
 	<td valign="top" align="left" class="pad">
-		<a href="#" onclick="objTheBox.LoadAndPrintMap(prompt('Map #:', $('stats_level').innerHTML));return false;">load level #</a><br />
+		<a href="#" onclick="objTheBox.loadAndPrintMap(prompt('Map #:', $('stats_level').innerHTML));return false;">load level #</a><br />
 		<br />
-		<a href="#" onclick="objTheBox.LoadAndPrintMap(objTheBox.m_iLevel-1);return false;">&lt;&lt;</a> &nbsp; <a href="#" onclick="objTheBox.LoadAndPrintMap(objTheBox.m_iLevel-(-1));return false;">&gt;&gt;</a><br />
+		<a href="#" onclick="objTheBox.loadAndPrintMap(objTheBox.m_iLevel-1);return false;">&lt;&lt;</a> &nbsp; <a href="#" onclick="objTheBox.loadAndPrintMap(objTheBox.m_iLevel-(-1));return false;">&gt;&gt;</a><br />
 		<br />
-		<a href="#" onclick="objTheBox.LoadAndPrintMap(objTheBox.m_iLevel);return false;">restart</a><br />
+		<a href="#" onclick="objTheBox.loadAndPrintMap(objTheBox.m_iLevel);return false;">restart</a><br />
 		<br />
-		<a href="#" onclick="return objTheBox.UndoLastMove();">undo</a><br />
+		<a href="#" onclick="return objTheBox.undoLastMove();">undo</a><br />
 		<br />
 		<a href="?action=reset">reset</a><br />
 		<br />
@@ -216,15 +216,15 @@ window.on('xhrDone', function(e) {
 	}
 });
 
-var objTheBox = new TheBox();
-objTheBox.LoadAndPrintMap( document.location.hash ? document.location.hash.substr(1) : <?php echo (int)$_SESSION[S_NAME]['level']; ?> );
+var objTheBox = new TheBoxMultiple();
+objTheBox.loadAndPrintMap( document.location.hash ? document.location.hash.substr(1) : <?php echo (int)$_SESSION[S_NAME]['level']; ?> );
 
 document.on('keydown', function(e) {
 	var dir;
 	if ( e.code.match(/^Arrow/) ) {
 		e.preventDefault();
 		dir = e.code.substr(5).toLowerCase();
-		objTheBox.Move(dir);
+		objTheBox.move(dir);
 	}
 });
 
@@ -245,7 +245,7 @@ document.on(['mouseup', 'touchend'], function(e) {
 		if ( distance > 10 ) {
 			var moved = movingEnd.subtract(movingStart);
 			var dir = moved.direction();
-			objTheBox.Move(dir);
+			objTheBox.move(dir);
 // document.body.append(document.el('pre').setText(dir));
 		}
 	}

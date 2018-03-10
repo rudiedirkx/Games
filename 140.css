@@ -38,17 +38,14 @@ table#editor td {
 	height				: 30px;
 	text-align			: center;
 }
-td.wall1, td.wall {
+td.wall1 {
 	background-color	: #000;
-	color				: #fff;
 }
 td.wall2 {
 	background-color	: #222;
-	color				: #fff;
 }
-table#thebox tbody td.target,
-table td.target {
-	background-color	: grey;
+td.target {
+	background-color	: #bbb;
 	font-size			: 18px;
 	font-weight			: bold;
 }
@@ -57,12 +54,6 @@ td.box {
 }
 td.pusher {
 	background-color	: green;
-}
-td.empty {
-	background-color	: #ddd;
-}
-td.out {
-	background-color	: #fff;
 }
 
 th.pad,
