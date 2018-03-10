@@ -42,11 +42,12 @@ if ( 'reset' === $_action ) {
 /** START GAME **/
 else if ( 'get_maps' == $_action ) {
 	if ( !isset($_REQUEST['level'], $g_arrLevels[$_REQUEST['level']]) ) {
-		$iLevel = 0;
+		exit(json_encode(array(
+			'error' => 'Invalid level',
+		)));
 	}
-	else {
-		$iLevel = $_REQUEST['level'];
-	}
+
+	$iLevel = $_REQUEST['level'];
 	$arrLevel = $g_arrLevels[$iLevel];
 
 	reset_game($iLevel);
@@ -148,27 +149,10 @@ else if ( "move" == $_action && isset($_REQUEST['dir'], $_REQUEST['level']) ) {
 <meta charset="utf-8" />
 <title>THE BOX -MULTIPLE TARGETS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('140.js') ?>"></script>
 <link rel="stylesheet" href="<?= html_asset('140.css') ?>" />
-<script>
-window.onerror = function(e) {
-	alert(e);
-};
-</script>
-<script>
-r.extend(Coords2D, {
-	direction: function() {
-		if ( Math.abs(this.y) > Math.abs(this.x) ) {
-			return this.y > 0 ? 'down' : 'up';
-		}
-		return this.x > 0 ? 'right' : 'left';
-	},
-	distance: function(target) {
-		return Math.sqrt(Math.pow(Math.abs(this.x - target.x), 2) + Math.pow(Math.abs(this.y - target.y), 2));
-	},
-});
-</script>
 </head>
 
 <body>
@@ -182,75 +166,38 @@ r.extend(Coords2D, {
 	<td></td>
 </tr>
 <tr>
-	<td class="pad" style="padding-top:0;"><table id="thebox" border="0">
-		<tbody id="thebox_tbody"></tbody>
-		<tfoot>
-			<tr><th class="pad" colspan="30">Energy spent: <span id="stats_moves">0</span></th></tr>
-		</tfoot>
-	</table></td>
+	<td style="padding: 4px">
+		<table id="thebox" border="0">
+			<tbody id="thebox_tbody"></tbody>
+			<tfoot>
+				<tr>
+					<th class="pad" colspan="30">Energy spent: <span id="stats_moves">0</span></th>
+				</tr>
+			</tfoot>
+		</table>
+	</td>
 	<td valign="top" align="left" class="pad">
-		<a href="#" onclick="objTheBox.loadAndPrintMap(prompt('Map #:', $('stats_level').innerHTML));return false;">load level #</a><br />
+		<a href="#" onclick="return objTheBox.loadAndPrintMap(objTheBox.m_iLevel-1), false">&lt;&lt;</a>
+		&nbsp;
+		<a href="#" onclick="return objTheBox.loadAndPrintMap(objTheBox.m_iLevel+1), false">&gt;&gt;</a><br />
 		<br />
-		<a href="#" onclick="objTheBox.loadAndPrintMap(objTheBox.m_iLevel-1);return false;">&lt;&lt;</a> &nbsp; <a href="#" onclick="objTheBox.loadAndPrintMap(objTheBox.m_iLevel-(-1));return false;">&gt;&gt;</a><br />
+		<a href="#" onclick="return objTheBox.loadAndPrintMap(objTheBox.m_iLevel), false">restart</a><br />
 		<br />
-		<a href="#" onclick="objTheBox.loadAndPrintMap(objTheBox.m_iLevel);return false;">restart</a><br />
-		<br />
-		<a href="#" onclick="return objTheBox.undoLastMove();">undo</a><br />
-		<br />
-		<a href="?action=reset">reset</a><br />
+		<a href="#" onclick="return objTheBox.undoLastMove(), false">undo</a><br />
 		<br />
 	</td>
 </tr>
 <tr>
-	<th colspan="2" class="pad" id="stack_message">-</th>
+	<th colspan="2" class="pad" id="stack_message"></th>
 </tr>
 </table>
 
 <script>
-window.on('xhrStart', function(e) {
-	$('#loading').css('visibility', 'visible');
-});
-window.on('xhrDone', function(e) {
-	if (r.xhr.busy == 0) {
-		$('#loading').css('visibility', 'hidden');
-	}
-});
-
 var objTheBox = new TheBoxMultiple();
-objTheBox.loadAndPrintMap( document.location.hash ? document.location.hash.substr(1) : <?php echo (int)$_SESSION[S_NAME]['level']; ?> );
+objTheBox.loadAndPrintMap( document.location.hash ? document.location.hash.substr(1) : <?= key($g_arrLevels) ?> );
 
-document.on('keydown', function(e) {
-	var dir;
-	if ( e.code.match(/^Arrow/) ) {
-		e.preventDefault();
-		dir = e.code.substr(5).toLowerCase();
-		objTheBox.move(dir);
-	}
-});
-
-var movingStart, movingEnd;
-document.on(['mousedown', 'touchstart'], '#thebox_tbody td', function(e) {
-	e.preventDefault();
-	movingStart = e.pageXY;
-});
-document.on(['mousemove', 'touchmove'], function(e) {
-	e.preventDefault();
-	if ( movingStart ) {
-		movingEnd = e.pageXY;
-	}
-});
-document.on(['mouseup', 'touchend'], function(e) {
-	if ( movingStart && movingEnd ) {
-		var distance = movingStart.distance(movingEnd);
-		if ( distance > 10 ) {
-			var moved = movingEnd.subtract(movingStart);
-			var dir = moved.direction();
-			objTheBox.move(dir);
-// document.body.append(document.el('pre').setText(dir));
-		}
-	}
-	movingStart = movingEnd = null;
-});
+objTheBox.listenToAjax();
+objTheBox.listenForMovement();
 </script>
 </body>
 

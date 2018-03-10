@@ -1,27 +1,46 @@
 <?php
 
-$g_arrLevels = array(
-	array(
-		'map' => array(
+$g_arrLevels = [1 =>
+  [
+    'map' => [
+      ' xxxxxx',
+      'xx  t x',
+      'x t x x',
+      'x t   x',
+      'x  x  x',
+      'xx    x',
+      ' x    x',
+      ' xxxxxx',
+    ],
+    'pusher' => [3, 5],
+    'boxes' => [
+      [2, 2],
+      [3, 3],
+      [4, 4],
+    ],
+  ],
+
+	[
+		'map' => [
 			' xxxxxx',
-			'xx  t x',
-			'x t x x',
-			'x t   x',
-			'x  x  x',
+			'xx    x',
+			'xt  x x',
+			'xt    x',
+			'xt x  x',
 			'xx    x',
 			' x    x',
 			' xxxxxx',
-		),
-		'pusher' => array(3, 5),
-		'boxes' => array(
-			array(2, 2),
-			array(3, 3),
-			array(4, 4),
-		),
-	),
+		],
+		'pusher' => [3, 5],
+		'boxes' => [
+			[2, 2],
+			[3, 3],
+			[4, 4],
+		],
+	],
 
-	array(
-	    'map' => array(
+	[
+	    'map' => [
 			'xxxxxxx',
 			'x  t  x',
 			'x xtx x',
@@ -29,17 +48,17 @@ $g_arrLevels = array(
 			'xt    x',
 			'x  xxxx',
 			'xxxx   ',
-		),
-		'pusher' => array(4, 1),
-		'boxes' => array(
-			array(4, 3),
-			array(2, 4),
-			array(3, 4),
-		),
-	),
+		],
+		'pusher' => [4, 1],
+		'boxes' => [
+			[4, 3],
+			[2, 4],
+			[3, 4],
+		],
+	],
 
-	array(
-		'map' => array(
+	[
+		'map' => [
 			'   xxxx',
 			'xxxx  x',
 			'x  t  x',
@@ -48,16 +67,17 @@ $g_arrLevels = array(
 			' x  x  ',
 			' x tx  ',
 			' xxxx  ',
-		),
-		'pusher' => array(5, 1),
-		'boxes' =>  array(
-			array(3, 2),
-			array(4, 2),
-			array(2, 5),
-		),
-	),
-	array(
-		'map' => array(
+		],
+		'pusher' => [5, 1],
+		'boxes' =>  [
+			[3, 2],
+			[4, 2],
+			[2, 5],
+		],
+	],
+
+	[
+		'map' => [
 			'xxx xxx',
 			'xtxxxtx',
 			'x x  tx',
@@ -66,16 +86,17 @@ $g_arrLevels = array(
 			'x  x  x',
 			'x  xxxx',
 			'xxxx   ',
-		),
-		'pusher' => array(5, 3),
-		'boxes' => array(
-			array(2, 3),
-			array(3, 3),
-			array(3, 4),
-		),
-	),
-	array(
-		'map' => array(
+		],
+		'pusher' => [5, 3],
+		'boxes' => [
+			[2, 3],
+			[3, 3],
+			[3, 4],
+		],
+	],
+
+	[
+		'map' => [
 			'   xxxx ',
 			'   x  xx',
 			'xxxx   x',
@@ -84,32 +105,34 @@ $g_arrLevels = array(
 			'xt   xx ',
 			'xxt  x  ',
 			' xxxxx  ',
-		),
-		'pusher' => array(5, 1),
-		'boxes' => array(
-			array(4, 3),
-			array(5, 3),
-			array(4, 5),
-		),
-	),
-	array(
-		'map' => array(
+		],
+		'pusher' => [5, 1],
+		'boxes' => [
+			[4, 3],
+			[5, 3],
+			[4, 5],
+		],
+	],
+
+	[
+		'map' => [
 			'xxxxx   ',
 			'x ttxxxx',
 			'x      x',
 			'x  x x x',
 			'x   t  x',
 			'xxxxxxxx',
-		),
-		'pusher' => array(2, 4),
-		'boxes' => array(
-			array(2, 2),
-			array(4, 3),
-			array(5, 4),
-		),
-	),
-	array(
-		'map' => array(
+		],
+		'pusher' => [2, 4],
+		'boxes' => [
+			[2, 2],
+			[4, 3],
+			[5, 4],
+		],
+	],
+
+	[
+		'map' => [
 			'  xxxxx',
 			'xxx  tx',
 			'x   x x',
@@ -118,16 +141,17 @@ $g_arrLevels = array(
 			'x    xx',
 			'x   xx ',
 			'xxxxx  ',
-		),
-		'pusher' => array(4, 4),
-		'boxes' => array(
-			array(2, 2),
-			array(2, 3),
-			array(3, 3),
-		),
-	),
-	array(
-		'map' => array(
+		],
+		'pusher' => [4, 4],
+		'boxes' => [
+			[2, 2],
+			[2, 3],
+			[3, 3],
+		],
+	],
+
+	[
+		'map' => [
 			'xxxxxxxxxxxx  ',
 			'xtt  x     xxx',
 			'xtt  x       x',
@@ -138,23 +162,24 @@ $g_arrLevels = array(
 			'  x          x',
 			'  x    x     x',
 			'  xxxxxxxxxxxx',
-		),
-		'pusher' => array(7, 4),
-		'boxes' => array(
-			array(7, 2),
-			array(10, 2),
-			array(6, 3),
-			array(10, 5),
-			array(9, 6),
-			array(11, 6),
-			array(4, 7),
-			array(7, 7),
-			array(9, 7),
-			array(11, 7),
-		),
-	),
-	array(
-		'map' => array(
+		],
+		'pusher' => [7, 4],
+		'boxes' => [
+			[7, 2],
+			[10, 2],
+			[6, 3],
+			[10, 5],
+			[9, 6],
+			[11, 6],
+			[4, 7],
+			[7, 7],
+			[9, 7],
+			[11, 7],
+		],
+	],
+
+	[
+		'map' => [
 			'xxxxx  ',
 			'xt txxx',
 			'xtx   x',
@@ -162,421 +187,221 @@ $g_arrLevels = array(
 			'x  x  x',
 			'xx   xx',
 			' xxxxx ',
-		),
-		'pusher' => array(4, 3),
-		'boxes' => array(
-			array(3, 2),
-			array(2, 4),
-			array(4, 2),
-		),
-	),
-  array (
-    'map' => 
-    array (
-      0 => 'xxxxx  ',
-      1 => 'xt  xxx',
-      2 => 'x x   x',
-      3 => 'x t x x',
-      4 => 'x  t  x',
-      5 => 'xx  xxx',
-      6 => ' x  x  ',
-      7 => ' xxxx  ',
-    ),
-    'pusher' => 
-    array (
-      0 => 2,
-      1 => 5,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 2,
-        1 => 4,
-      ),
-      1 => 
-      array (
-        0 => 3,
-        1 => 4,
-      ),
-      2 => 
-      array (
-        0 => 4,
-        1 => 4,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => 'xxxxxxxx',
-      1 => 'xt   t x',
-      2 => 'x x x  x',
-      3 => 'x    tx',
-      4 => 'xxxxx  x',
-      5 => '    x  x',
-      6 => '    xxxx',
-    ),
-    'pusher' => 
-    array (
-      0 => 1,
-      1 => 3,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 2,
-        1 => 3,
-      ),
-      1 => 
-      array (
-        0 => 5,
-        1 => 3,
-      ),
-      2 => 
-      array (
-        0 => 6,
-        1 => 4,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => 'xxxx    ',
-      1 => 'x  x    ',
-      2 => 'x  xxxxx',
-      3 => 'x tt   x',
-      4 => 'xx     x',
-      5 => ' x x xxx',
-      6 => ' xt  x  ',
-      7 => ' xxxxx  ',
-    ),
-    'pusher' => 
-    array (
-      0 => 4,
-      1 => 6,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 3,
-        1 => 3,
-      ),
-      1 => 
-      array (
-        0 => 2,
-        1 => 4,
-      ),
-      2 => 
-      array (
-        0 => 4,
-        1 => 5,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => ' xxxxx  ',
-      1 => ' x   xxx',
-      2 => 'xx t   x',
-      3 => 'xt t  x',
-      4 => 'xx x xxx',
-      5 => ' x   x  ',
-      6 => ' xxxxx  ',
-    ),
-    'pusher' => 
-    array (
-      0 => 3,
-      1 => 1,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 3,
-        1 => 3,
-      ),
-      1 => 
-      array (
-        0 => 4,
-        1 => 3,
-      ),
-      2 => 
-      array (
-        0 => 2,
-        1 => 4,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => ' xxxxx ',
-      1 => 'xx   x ',
-      2 => 'x  x x ',
-      3 => 'x t  xx',
-      4 => 'x t   x',
-      5 => 'xx x  x',
-      6 => ' xt  xx',
-      7 => ' xxxxx ',
-    ),
-    'pusher' => 
-    array (
-      0 => 4,
-      1 => 3,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 2,
-        1 => 2,
-      ),
-      1 => 
-      array (
-        0 => 2,
-        1 => 4,
-      ),
-      2 => 
-      array (
-        0 => 4,
-        1 => 5,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => ' xxxx   ',
-      1 => 'xx  xxxx',
-      2 => 'xtt   tx',
-      3 => 'x x    x',
-      4 => 'x   x  x',
-      5 => 'xxxxx  x',
-      6 => '    xxxx',
-    ),
-    'pusher' => 
-    array (
-      0 => 1,
-      1 => 4,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 3,
-        1 => 2,
-      ),
-      1 => 
-      array (
-        0 => 3,
-        1 => 3,
-      ),
-      2 => 
-      array (
-        0 => 5,
-        1 => 3,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => ' xxxxxx ',
-      1 => ' x  t xx',
-      2 => ' x   tx',
-      3 => ' xxxtx x',
-      4 => 'xx     x',
-      5 => 'x     xx',
-      6 => 'x   xxx ',
-      7 => 'xxxxx   ',
-    ),
-    'pusher' => 
-    array (
-      0 => 5,
-      1 => 1,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 5,
-        1 => 2,
-      ),
-      1 => 
-      array (
-        0 => 4,
-        1 => 3,
-      ),
-      2 => 
-      array (
-        0 => 3,
-        1 => 5,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => ' xxxx   ',
-      1 => ' x  x   ',
-      2 => ' x  x   ',
-      3 => 'xxt xxxx',
-      4 => 'x  t tx',
-      5 => 'x    xxx',
-      6 => 'xxx  x  ',
-      7 => '  xxxx  ',
-    ),
-    'pusher' => 
-    array (
-      0 => 2,
-      1 => 1,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 2,
-        1 => 4,
-      ),
-      1 => 
-      array (
-        0 => 3,
-        1 => 4,
-      ),
-      2 => 
-      array (
-        0 => 3,
-        1 => 5,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => 'xxxxx  ',
-      1 => 'xt  x  ',
-      2 => 'x x xxx',
-      3 => 'x t   x',
-      4 => 'x  t x',
-      5 => 'x   xxx',
-      6 => 'xxxxx  ',
-    ),
-    'pusher' => 
-    array (
-      0 => 3,
-      1 => 5,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 2,
-        1 => 3,
-      ),
-      1 => 
-      array (
-        0 => 3,
-        1 => 3,
-      ),
-      2 => 
-      array (
-        0 => 3,
-        1 => 4,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => '  xxxxx',
-      1 => '  x   x',
-      2 => '  x xtx',
-      3 => 'xxx  tx',
-      4 => 'x     x',
-      5 => 'x  t  x',
-      6 => 'xxxxxxx',
-    ),
-    'pusher' => 
-    array (
-      0 => 1,
-      1 => 4,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 3,
-        1 => 4,
-      ),
-      1 => 
-      array (
-        0 => 4,
-        1 => 4,
-      ),
-      2 => 
-      array (
-        0 => 4,
-        1 => 5,
-      ),
-    ),
-  ),
-  array (
-    'map' => 
-    array (
-      0 => 'xxxxxx  ',
-      1 => 'x    x  ',
-      2 => 'x  x xxx',
-      3 => 'x t    x',
-      4 => 'x   xx x',
-      5 => 'xxt  t x',
-      6 => ' xx   xx',
-      7 => '  xxxxx ',
-    ),
-    'pusher' => 
-    array (
-      0 => 1,
-      1 => 1,
-    ),
-    'boxes' => 
-    array (
-      0 => 
-      array (
-        0 => 2,
-        1 => 2,
-      ),
-      1 => 
-      array (
-        0 => 2,
-        1 => 3,
-      ),
-      2 => 
-      array (
-        0 => 4,
-        1 => 3,
-      ),
-    ),
-  ),
+		],
+		'pusher' => [4, 3],
+		'boxes' => [
+			[3, 2],
+			[2, 4],
+			[4, 2],
+		],
+	],
+  [
+    'map' => [
+      'xxxxx  ',
+      'xt  xxx',
+      'x x   x',
+      'x t x x',
+      'x  t  x',
+      'xx  xxx',
+      ' x  x  ',
+      ' xxxx  ',
+    ],
+    'pusher' => [2, 5],
+    'boxes' => [
+      [2, 4],
+      [3, 4],
+      [4, 4],
+    ],
+  ],
+  [
+    'map' => [
+      'xxxxxxxx',
+      'xt   t x',
+      'x x x  x',
+      'x    tx',
+      'xxxxx  x',
+      '    x  x',
+      '    xxxx',
+    ],
+    'pusher' => [1, 3],
+    'boxes' => [
+      [2, 3],
+      [5, 3],
+      [6, 4],
+    ],
+  ],
+  [
+    'map' => [
+      'xxxx    ',
+      'x  x    ',
+      'x  xxxxx',
+      'x tt   x',
+      'xx     x',
+      ' x x xxx',
+      ' xt  x  ',
+      ' xxxxx  ',
+    ],
+    'pusher' => [4, 6],
+    'boxes' => [
+      [3, 3],
+      [2, 4],
+      [4, 5],
+    ],
+  ],
+  [
+    'map' => [
+      ' xxxxx  ',
+      ' x   xxx',
+      'xx t   x',
+      'xt t  x',
+      'xx x xxx',
+      ' x   x  ',
+      ' xxxxx  ',
+    ],
+    'pusher' => [3, 1],
+    'boxes' => [
+      [3, 3],
+      [4, 3],
+      [2, 4],
+    ],
+  ],
+  [
+    'map' => [
+      ' xxxxx ',
+      'xx   x ',
+      'x  x x ',
+      'x t  xx',
+      'x t   x',
+      'xx x  x',
+      ' xt  xx',
+      ' xxxxx ',
+    ],
+    'pusher' => [4, 3],
+    'boxes' => [
+      [2, 2],
+      [2, 4],
+      [4, 5],
+    ],
+  ],
+  [
+    'map' => [
+      ' xxxx   ',
+      'xx  xxxx',
+      'xtt   tx',
+      'x x    x',
+      'x   x  x',
+      'xxxxx  x',
+      '    xxxx',
+    ],
+    'pusher' => [1, 4],
+    'boxes' => [
+      [3, 2],
+      [3, 3],
+      [5, 3],
+    ],
+  ],
+  [
+    'map' => [
+      ' xxxxxx ',
+      ' x  t xx',
+      ' x   tx',
+      ' xxxtx x',
+      'xx     x',
+      'x     xx',
+      'x   xxx ',
+      'xxxxx   ',
+    ],
+    'pusher' => [5, 1],
+    'boxes' => [
+      [5, 2],
+      [4, 3],
+      [3, 5],
+    ],
+  ],
+  [
+    'map' => [
+      ' xxxx   ',
+      ' x  x   ',
+      ' x  x   ',
+      'xxt xxxx',
+      'x  t tx',
+      'x    xxx',
+      'xxx  x  ',
+      '  xxxx  ',
+    ],
+    'pusher' => [2, 1],
+    'boxes' => [
+      [2, 4],
+      [3, 4],
+      [3, 5],
+    ],
+  ],
+  [
+    'map' => [
+      'xxxxx  ',
+      'xt  x  ',
+      'x x xxx',
+      'x t   x',
+      'x  t x',
+      'x   xxx',
+      'xxxxx  ',
+    ],
+    'pusher' => [3, 5],
+    'boxes' => [
+      [2, 3],
+      [3, 3],
+      [3, 4],
+    ],
+  ],
+  [
+    'map' => [
+      '  xxxxx',
+      '  x   x',
+      '  x xtx',
+      'xxx  tx',
+      'x     x',
+      'x  t  x',
+      'xxxxxxx',
+    ],
+    'pusher' => [1, 4],
+    'boxes' => [
+      [3, 4],
+      [4, 4],
+      [4, 5],
+    ],
+  ],
+  [
+    'map' => [
+      'xxxxxx  ',
+      'x    x  ',
+      'x  x xxx',
+      'x t    x',
+      'x   xx x',
+      'xxt  t x',
+      ' xx   xx',
+      '  xxxxx ',
+    ],
+    'pusher' => [1, 1],
+    'boxes' => [
+      [2, 2],
+      [2, 3],
+      [4, 3],
+    ],
+  ],
 
-	array(
-		'map' => array(
+	[
+		'map' => [
 			'xxxxxxxxx',
 			'x t t t x',
 			'x       x',
 			'x       x',
 			'xxxxxxxxx',
-		),
-		'pusher' => array(3, 2),
-		'boxes' => array(
-			array(2, 2),
-			array(4, 2),
-			array(6, 2),
-		),
-	),
-);
-
-?>
+		],
+		'pusher' => [3, 2],
+		'boxes' => [
+			[2, 2],
+			[4, 2],
+			[6, 2],
+		],
+	],
+];

@@ -1,3 +1,14 @@
+r.extend(Coords2D, {
+	direction: function() {
+		if ( Math.abs(this.y) > Math.abs(this.x) ) {
+			return this.y > 0 ? 'down' : 'up';
+		}
+		return this.x > 0 ? 'right' : 'left';
+	},
+	distance: function(target) {
+		return Math.sqrt(Math.pow(Math.abs(this.x - target.x), 2) + Math.pow(Math.abs(this.y - target.y), 2));
+	},
+});
 
 class TheBoxMultiple {
 	constructor( f_iLevel ) {
@@ -19,13 +30,13 @@ class TheBoxMultiple {
 		this.setLevel(0);
 		this.setMoves(0);
 
-		$('#stack_message').setHTML('&nbsp;');
+		$('#stack_message').setHTML('Push the Boxes to the Targets.');
 	}
 
 
 	setLevel( f_iLevel ) {
-		this.m_iLevel = f_iLevel;
-		$('#stats_level').setText(f_iLevel);
+		this.m_iLevel = parseInt(f_iLevel) || 0;
+		$('#stats_level').setText(this.m_iLevel);
 	}
 
 
@@ -39,29 +50,25 @@ class TheBoxMultiple {
 
 	getPusher() {
 		var pusher = this.m_objGrid.getElement('.pusher');
-		return [pusher.cellIndex, pusher.parentNode.sectionRowIndex];
+		return new Coords2D(pusher.cellIndex, pusher.parentNode.sectionRowIndex);
 	}
 
 
 	move( f_dir ) {
 		if ( this.m_bGameOver ) return;
 
-		var dx1 = 0, dx2 = 0, dy1 = 0, dy2 = 0;
+		var dx = 0, dy = 0;
 		if ( 'left' == f_dir ) {
-			dx1 = -1;
-			dx2 = -2;
+			dx = -1;
 		}
 		else if ( 'right' == f_dir ) {
-			dx1 = 1;
-			dx2 = 2;
+			dx = 1;
 		}
 		else if ( 'up' == f_dir ) {
-			dy1 = -1;
-			dy2 = -2;
+			dy = -1;
 		}
 		else if ( 'down' == f_dir ) {
-			dy1 = 1;
-			dy2 = 2;
+			dy = 1;
 		}
 		else {
 			return;
@@ -69,22 +76,22 @@ class TheBoxMultiple {
 
 		var pusher = this.getPusher();
 
-		var nowFieldC = [pusher[0], pusher[1]];
-		var toFieldC = [pusher[0]+dx1, pusher[1]+dy1];
-		var nextFieldC = [pusher[0]+dx2, pusher[1]+dy2];
+		var nowFieldC = pusher;
+		var toFieldC = new Coords2D(pusher.x + dx, pusher.y + dy);
+		var nextFieldC = new Coords2D(pusher.x + dx*2, pusher.y + dy*2);
 
 		// TO-FIELD cannot be wall
-		var toField = this.m_objGrid.rows[toFieldC[1]].cells[toFieldC[0]];
+		var toField = this.m_objGrid.rows[toFieldC.y].cells[toFieldC.x];
 		if ( toField.hasClass('wall') ) {
 			return;
 		}
-		var nextField = this.m_objGrid.rows[nextFieldC[1]].cells[nextFieldC[0]];
+		var nextField = this.m_objGrid.rows[nextFieldC.y].cells[nextFieldC.x];
 
 		// NEXT-FIELD must be empty
 		if ( toField.hasClass('box') && ( nextField.hasClass('box') || nextField.hasClass('wall') ) ) {
 			return;
 		}
-		var nowField = this.m_objGrid.rows[nowFieldC[1]].cells[nowFieldC[0]];
+		var nowField = this.m_objGrid.rows[nowFieldC.y].cells[nowFieldC.x];
 
 		this.m_arrLastMove = [this.m_iMoves, this.m_objGrid.innerHTML];
 
@@ -119,8 +126,6 @@ class TheBoxMultiple {
 			this.setMoves(this.m_arrLastMove[0]);
 			this.m_arrLastMove = null;
 		}
-
-		return false;
 	}
 
 
@@ -137,14 +142,13 @@ class TheBoxMultiple {
 
 
 	loadAndPrintMap( f_level ) {
-		if ( 'undefined' == typeof f_level ) {
-			return;
-		}
-		document.location = '#'+f_level;
+		if ( f_level == null ) return;
 
 		var self = this;
 		r.get('?action=get_maps&level=' + f_level).on('done', function(e, rv) {
 			if ( rv.error ) return;
+
+			document.location = '#' + f_level;
 
 			self.reset();
 			self.setLevel(rv['level']);
@@ -161,7 +165,6 @@ class TheBoxMultiple {
 					}
 					else if ( 't' == row.substr(x, 1) ) {
 						nc.addClass('target');
-						nc.innerHTML = 'T';
 					}
 					else {
 						nc.className = '';
@@ -169,12 +172,14 @@ class TheBoxMultiple {
 				}
 			});
 
+			var pusher = Coords2D.fromArray(rv.pusher);
+
 			// show pusher
-			self.m_objGrid.rows[rv.pusher[1]].cells[rv.pusher[0]].addClass('pusher');
+			self.m_objGrid.rows[pusher.y].cells[pusher.x].addClass('pusher');
 
 			// show boxes
-			r.each(rv.boxes, function(box) {
-				self.m_objGrid.rows[box[1]].cells[box[0]].addClass('box');
+			r.each(rv.boxes, function([x, y]) {
+				self.m_objGrid.rows[y].cells[x].addClass('box');
 			});
 		});
 	}
@@ -182,6 +187,57 @@ class TheBoxMultiple {
 
 	countBadBoxes() {
 		return $$('.box:not(.target)').length;
+	}
+
+
+	log( msg ) {
+
+	}
+
+
+	listenToAjax() {
+		window.on('xhrStart', function(e) {
+			$('#loading').css('visibility', 'visible');
+		});
+		window.on('xhrDone', function(e) {
+			if ( r.xhr.busy == 0 ) {
+				$('#loading').css('visibility', 'hidden');
+			}
+		});
+	}
+
+
+	listenForMovement() {
+		document.on('keydown', (e) => {
+			if ( e.code.match(/^Arrow/) ) {
+				e.preventDefault();
+				var dir = e.code.substr(5).toLowerCase();
+				this.move(dir);
+			}
+		});
+
+		var movingStart, movingEnd;
+		document.on(['mousedown', 'touchstart'], 'table', (e) => {
+			e.preventDefault();
+			movingStart = e.pageXY;
+		});
+		document.on(['mousemove', 'touchmove'], (e) => {
+			e.preventDefault();
+			if ( movingStart ) {
+				movingEnd = e.pageXY;
+			}
+		});
+		document.on(['mouseup', 'touchend'], (e) => {
+			if ( movingStart && movingEnd ) {
+				var distance = movingStart.distance(movingEnd);
+				if ( distance > 10 ) {
+					var moved = movingEnd.subtract(movingStart);
+					var dir = moved.direction();
+					this.move(dir);
+				}
+			}
+			movingStart = movingEnd = null;
+		});
 	}
 
 }

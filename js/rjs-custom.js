@@ -17,7 +17,16 @@
 	var domReadyAttached = false;
 	var cssDisplays = {};
 	r.arrayish = function(obj) {
-		return obj instanceof Array || ( typeof obj.length == 'number' && typeof obj != 'string' && ( obj[0] !== undefined || obj.length === 0 ) );
+		if ( obj == null ) {
+			return false;
+		}
+		if ( obj instanceof Array ) {
+			return true;
+		}
+		if ( typeof obj.length == 'number' && typeof obj != 'string' && ( obj[0] !== undefined || obj.length === 0 ) ) {
+			return true;
+		}
+		return false;
 	};
 
 	r.array = function(list) {
@@ -231,6 +240,9 @@
 			return this.join() == coord.join();
 		}
 	});
+	Coords2D.fromArray = function(arr) {
+		return new Coords2D(arr[0], arr[1]);
+	};
 	function AnyEvent(e) {
 		if ( typeof e == 'string' ) {
 			this.originalEvent = null;
@@ -361,7 +373,7 @@
 			}
 
 			var options = {
-				bubbles: true,
+				bubbles: !!matches,
 				subject: this || W
 			};
 
