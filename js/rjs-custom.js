@@ -413,7 +413,7 @@
 
 				if ( customEvent && customEvent.before ) {
 					if ( customEvent.before.call(this, options) === false ) {
-						return this;
+						return;
 					}
 				}
 
@@ -429,7 +429,7 @@
 				if ( options.subject.addEventListener ) {
 					options.subject.addEventListener(baseType, onCallback, options.bubbles);
 				}
-			});
+			}, this);
 
 			return this;
 		},

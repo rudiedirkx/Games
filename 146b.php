@@ -1,6 +1,8 @@
 <?php
 // SLITHER
 
+require 'inc.functions.php';
+
 $g_arrBoards = require '146_levels.php';
 $allBoards = array();
 foreach ($g_arrBoards as $difficulty => $boards) {
@@ -39,6 +41,7 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 		pointer-events: none;
 	}
 	</style>
+	<script>window.onerror = function(e) { alert(e); };</script>
 </head>
 
 <body>
@@ -57,8 +60,8 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 
 <div id="red"></div>
 
-<script src="js/rjs-custom.js"></script>
-<script src="146b.js"></script>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('146b.js') ?>"></script>
 <script>
 Array.repeat = function(length, value) {
 	var arr = [length];
