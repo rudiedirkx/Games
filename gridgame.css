@@ -78,16 +78,23 @@ td.wall2 {
     width				: 80%;
 	margin-left			: 10%;
 	margin-top			: 10%;
-	border-radius		: 50px;
+	border-radius		: 5px;
     background-color	: #8b4513;
 }
 
 .steppingstones td.available {
 	background-color	: #ccc;
 }
-.steppingstones td.stone {
-	background-color	: #000;
+.steppingstones td.stone span,
+.steppingstones td.jumper span {
+    display				: block;
+    height				: 90%;
+    width				: 90%;
+	margin-left			: 5%;
+	margin-top			: 5%;
+	border-radius		: 4px;
+    background-color	: #000;
 }
-.steppingstones td.jumper {
+.steppingstones td.jumper span {
 	background-color	: #f00;
 }

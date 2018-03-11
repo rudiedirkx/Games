@@ -33,9 +33,11 @@ class SteppingStones extends GridGame {
 
 	createField( cell, type, rv, x, y ) {
 		if ( 'o' == type ) {
+			cell.setHTML('<span></span>');
 			cell.addClass('available');
 		}
 		else if ( 's' == type ) {
+			cell.setHTML('<span></span>');
 			cell.addClass('available');
 			cell.addClass('stone');
 		}
