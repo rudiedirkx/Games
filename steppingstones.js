@@ -1,4 +1,4 @@
-class SteppingStones extends GridGame {
+class SteppingStones extends LeveledGridGame {
 
 	reset() {
 		super.reset();

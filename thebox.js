@@ -1,4 +1,4 @@
-class TheBoxMultiple extends GridGame {
+class TheBoxMultiple extends LeveledGridGame {
 
 	getPusher() {
 		var pusher = this.m_objGrid.getElement('.pusher');

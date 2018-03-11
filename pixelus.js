@@ -1,14 +1,7 @@
-class Pixelus extends GridGame {
+class Pixelus extends LeveledGridGame {
 
 	constructor() {
 		super();
-
-		this.nesw = [
-			[0, -1],
-			[1, 0],
-			[0, 1],
-			[-1, 0]
-		];
 	}
 
 	reset() {

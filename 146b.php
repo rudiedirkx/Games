@@ -285,7 +285,7 @@ var _LEVEL = 1;
 			hiliteConnector(current, 'red');
 		};
 		iterate();
-		slithering = setInterval(iterate, 100);
+		slithering = setInterval(iterate, 50);
 	}
 
 	function drawLevel() {

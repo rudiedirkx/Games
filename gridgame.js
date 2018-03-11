@@ -8,31 +8,46 @@ r.extend(Coords2D, {
 	distance: function( target ) {
 		return Math.sqrt(Math.pow(Math.abs(this.x - target.x), 2) + Math.pow(Math.abs(this.y - target.y), 2));
 	},
+	replace: function(a, b) {
+		var x = this.x;
+		var y = this.y;
+		x == a && (x = b);
+		y == a && (y = b);
+		return new Coords2D(x, y);
+	},
 });
 
-class GridGame {
+class Game {
 
-	constructor( f_iLevel ) {
+}
+
+class GridGame extends Game {
+
+	constructor() {
+		super();
+
 		this.m_objGrid = $('#grid');
 
-		this.reset();
+		this.nesw = [
+			[0, -1],
+			[1, 0],
+			[0, 1],
+			[-1, 0]
+		];
 
-		if ( f_iLevel ) {
-			this.loadLevel(f_iLevel);
-		}
+		this.dirs = [
+			't',
+			'r',
+			'b',
+			'l',
+		];
+
+		this.reset();
 	}
 
 	reset() {
 		this.m_bGameOver = false;
-		this.m_arrLastMove = null;
-
-		this.setLevel(0);
 		this.setMoves(0);
-	}
-
-	setLevel( f_iLevel ) {
-		this.m_iLevel = parseInt(f_iLevel) || 0;
-		$('#stats-level').setText(this.m_iLevel);
 	}
 
 	setMoves( f_iMoves ) {
@@ -42,10 +57,6 @@ class GridGame {
 		$('#stats-moves').setText(this.m_iMoves);
 	}
 
-	haveWon() {
-		return false;
-	}
-
 	win() {
 		this.m_bGameOver = true;
 		setTimeout(function() {
@@ -53,43 +64,11 @@ class GridGame {
 		}, 100);
 	}
 
-	undoLastMove() {
-	}
-
-	loadLevel( f_level ) {
-		r.get('?load_map=' + f_level).on('done', (e, rv) => {
-			if ( rv.error || !rv.map ) {
-				var error = rv.error ? rv.error : rv;
-				alert('Map load error\n\n' + error);
-				return;
-			}
-
-			document.location = '#' + f_level;
-
-			this.reset();
-			this.setLevel(rv['level']);
-
-			this.m_objGrid.empty();
-
-			r.each(rv.map, (row, y) => {
-				var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
-				r.each(row, (type, x) => {
-					var cell = nr.insertCell(nr.cells.length);
-
-					this.createField(cell, type, rv, x, y);
-				});
-			});
-
-			this.createdMap(rv);
-		});
-	}
-
-	createField( cell, type, rv, x, y ) {
-		cell.setText('?');
-	}
-
-	createdMap(rv) {
-
+	lose() {
+		this.m_bGameOver = true;
+		setTimeout(function() {
+			alert('You lose!');
+		}, 100);
 	}
 
 	listenAjax() {
@@ -149,6 +128,74 @@ class GridGame {
 	}
 
 	handleCellClick( cell ) {
+	}
+
+}
+
+class LeveledGridGame extends GridGame {
+
+	constructor( f_iLevel ) {
+		super();
+
+		if ( f_iLevel ) {
+			this.loadLevel(f_iLevel);
+		}
+	}
+
+	reset() {
+		super.reset();
+
+		this.m_arrLastMove = null;
+
+		this.setLevel(0);
+	}
+
+	setLevel( f_iLevel ) {
+		this.m_iLevel = parseInt(f_iLevel) || 0;
+		$('#stats-level').setText(this.m_iLevel);
+	}
+
+	haveWon() {
+		return false;
+	}
+
+	undoLastMove() {
+	}
+
+	loadLevel( f_level ) {
+		r.get('?load_map=' + f_level).on('done', (e, rv) => {
+			if ( rv.error || !rv.map ) {
+				var error = rv.error ? rv.error : rv;
+				alert('Map load error\n\n' + error);
+				return;
+			}
+
+			document.location = '#' + f_level;
+
+			this.reset();
+			this.setLevel(rv['level']);
+
+			this.m_objGrid.empty();
+
+			r.each(rv.map, (row, y) => {
+				var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
+				r.each(row, (type, x) => {
+					var cell = nr.insertCell(nr.cells.length);
+
+					this.createField(cell, type, rv, x, y);
+				});
+			});
+
+			this.createdMap(rv);
+		});
+	}
+
+	createField( cell, type, rv, x, y ) {
+		cell.setText('?');
+	}
+
+	createdMap( rv ) {
+
 	}
 
 }
