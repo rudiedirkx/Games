@@ -24,7 +24,7 @@ class GridGame {
 
 	reset() {
 		this.m_bGameOver = false;
-		this.m_arrLastMove = [];
+		this.m_arrLastMove = null;
 
 		this.setLevel(0);
 		this.setMoves(0);
@@ -51,6 +51,9 @@ class GridGame {
 		setTimeout(function() {
 			alert('You win!');
 		}, 100);
+	}
+
+	undoLastMove() {
 	}
 
 	loadLevel( f_level ) {
@@ -105,7 +108,7 @@ class GridGame {
 
 	listenGlobalDirection() {
 		document.on('keydown', (e) => {
-			if ( e.code.match(/^Arrow/) ) {
+			if ( e.code.match(/^Arrow/) && !e.alt && !e.ctrl ) {
 				e.preventDefault();
 				var dir = e.code.substr(5).toLowerCase();
 				this.handleGlobalDirection(dir);

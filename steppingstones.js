@@ -14,6 +14,15 @@ class SteppingStones extends GridGame {
 		$('#stats-stones').setText(iStones);
 	}
 
+	undoLastMove() {
+		if ( this.m_arrLastMove ) {
+			this.m_objGrid.setHTML(this.m_arrLastMove[0]);
+			this.m_arrLastMove = null;
+
+			this.setStones();
+		}
+	}
+
 	getJumper() {
 		var jumper = this.m_objGrid.getElement('.jumper');
 		return new Coords2D(
@@ -65,6 +74,8 @@ class SteppingStones extends GridGame {
 		var toField = this.m_objGrid.rows[toFieldC.y].cells[toFieldC.x];
 
 		if ( overField.is('.available.stone') && toField.is('.available:not(.stone)') ) {
+			this.m_arrLastMove = [this.m_objGrid.innerHTML];
+
 			var nowField = this.m_objGrid.rows[jumper.y].cells[jumper.x];
 
 			nowField.removeClass('jumper').removeClass('stone');

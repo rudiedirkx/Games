@@ -24,6 +24,15 @@ class Pixelus extends GridGame {
 		$('#stats-stones').setText(this.m_iStones);
 	}
 
+	undoLastMove() {
+		if ( this.m_arrLastMove ) {
+			this.m_objGrid.setHTML(this.m_arrLastMove[1]);
+			this.setStones(this.m_arrLastMove[0]);
+			this.m_arrLastMove = null;
+			this.setMoves(this.m_iMoves - 1);
+		}
+	}
+
 	createField( cell, type, rv, x, y ) {
 		if ( 'x' == type ) {
 			cell.addClass('wall');
@@ -59,6 +68,8 @@ class Pixelus extends GridGame {
 	slingStone( target ) {
 		if ( 0 < this.m_iStones ) {
 			if ( this.isReachableField(target, true) ) {
+				this.m_arrLastMove = [this.m_iStones, this.m_objGrid.innerHTML];
+
 				target.addClass('stone');
 
 				this.setStones(this.m_iStones - 1);
@@ -71,6 +82,8 @@ class Pixelus extends GridGame {
 
 	removeStone( field ) {
 		if ( this.isReachableField(field, false) ) {
+			this.m_arrLastMove = [this.m_iStones, this.m_objGrid.innerHTML];
+
 			field.removeClass('stone');
 
 			this.setStones(this.m_iStones + 1);
