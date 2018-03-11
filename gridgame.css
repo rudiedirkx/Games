@@ -81,3 +81,13 @@ td.wall2 {
 	border-radius		: 50px;
     background-color	: #8b4513;
 }
+
+.steppingstones td.available {
+	background-color	: #ccc;
+}
+.steppingstones td.stone {
+	background-color	: #000;
+}
+.steppingstones td.jumper {
+	background-color	: #f00;
+}

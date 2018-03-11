@@ -2,7 +2,10 @@ class TheBoxMultiple extends GridGame {
 
 	getPusher() {
 		var pusher = this.m_objGrid.getElement('.pusher');
-		return new Coords2D(pusher.cellIndex, pusher.parentNode.sectionRowIndex);
+		return new Coords2D(
+			pusher.cellIndex,
+			pusher.parentNode.sectionRowIndex
+		);
 	}
 
 	handleGlobalDirection( f_dir ) {

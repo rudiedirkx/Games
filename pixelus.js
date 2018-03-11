@@ -14,7 +14,7 @@ class Pixelus extends GridGame {
 	reset() {
 		super.reset();
 
-		this.m_iStones = 0;
+		this.setStones(0);
 	}
 
 	setStones( f_iStones ) {

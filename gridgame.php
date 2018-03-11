@@ -4,10 +4,10 @@ require 'inc.functions.php';
 require "$levels.php";
 
 if ( isset($_REQUEST['load_map']) ) {
-	$iLevel = (int) $_REQUEST['load_map'];
+	$iLevel = $_REQUEST['load_map'];
 	if ( !isset($g_arrLevels[$iLevel]) ) {
 		exit(json_encode(array(
-			'error' => 'Invalid level',
+			'error' => "Level $iLevel doesn't exist.",
 		)));
 	}
 
