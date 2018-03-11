@@ -1,0 +1,83 @@
+
+* {
+	margin				: 0;
+	padding				: 0;
+	box-sizing			: border-box;
+}
+html,
+body,
+table {
+	font-family			: sans-serif;
+	line-height			: 1.4;
+	touch-action		: none;
+}
+.outside {
+	border-collapse		: collapse;
+}
+.outside td {
+	padding				: 10px;
+	border				: solid 2px #ccc;
+	vertical-align		: top;
+}
+.outside td.inside {
+	padding				: 3px;
+}
+.inside table {
+	border-collapse		: collapse;
+	border				: 0;
+}
+.inside td {
+	padding				: 0;
+	width				: 23px;
+	height				: 23px;
+	border				: solid 1px #eee;
+	text-align			: center;
+}
+td.wall,
+td.wall1 {
+	background-color	: #000;
+}
+td.wall2 {
+	background-color	: #222;
+}
+
+#loading {
+	position			: absolute;
+	visibility			: hidden;
+	width				: 100px;
+	margin-left			: -50px;
+	left				: 50%;
+	height				: 100px;
+	margin-top			: -50px;
+	top					: 50%;
+	border				: none;
+}
+
+.thebox td.target {
+	background-color	: #bbb;
+}
+.thebox td.box {
+	background-color	: red;
+}
+.thebox td.pusher {
+	background-color	: green;
+}
+.thebox td.box:after {
+	content				: "B";
+}
+.thebox td.target:after {
+	content				: "T";
+}
+
+.pixelus td.target {
+	background-color	: #87cefa;
+}
+.pixelus td.stone span {
+    display				: block;
+    height				: 80%;
+    width				: 80%;
+	margin-left			: 10%;
+	margin-top			: 10%;
+	border-radius		: 50px;
+    background-color	: #8b4513;
+}

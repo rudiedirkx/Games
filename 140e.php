@@ -1,139 +1,95 @@
 <?php
 // THE BOX | EDITOR
 
-require_once('inc.cls.json.php');
-require_once('connect.php');
-
-if ( isset($_POST['map'], $_POST['boxes'], $_POST['pusher'], $_POST['name']) ) {
-	$arrMap = explode(',', $_POST['map']);
-	foreach ( $arrMap AS $k => &$szLine ) {
-		if ( '' === trim($szLine) ) {
-			unset($arrMap[$k]);
-		}
-		else {
-			$szLine = rtrim($szLine);
-		}
-		unset($szLine);
-	}
-	$arrMap = array_values($arrMap);
-	$arrBoxes = array();
-	foreach ( explode(',', $_POST['boxes']) AS $szBox ) {
-		$arrBoxes[] = array_map('intval', explode(':', $szBox));
-	}
-	$arrPusher = array_map('intval', explode(':', $_POST['pusher']));
-	$arrLevel = array(
-		'map'		=> $arrMap,
-		'pusher'	=> $arrPusher,
-		'boxes'		=> $arrBoxes,
-	);
-	mysql_query("INSERT INTO the_box_multiple_custom_levels (name, level) VALUES ('".addslashes($_POST['name'])."', '".addslashes(serialize($arrLevel))."');") or die(mysql_error());
-	exit('Your custom level has been saved as C'.mysql_insert_id());
-}
+require 'inc.functions.php';
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!doctype html>
+<html>
 
 <head>
-<title>THE BOX -MULTIPLE TARGETS | EDITOR</title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<link rel="stylesheet" type="text/css" href="140.css" />
+<meta charset="utf-8" />
+<title>THE BOX - EDITOR</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
+<link rel="stylesheet" href="<?= html_asset('gridgame.css') ?>" />
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script src="<?= html_asset("thebox.js") ?>"></script>
+<style>
+[data-type].active {
+	background: lime;
+}
+textarea {
+	tab-size: 4;
+}
+</style>
 </head>
 
-<body>
-<img id="loading" alt="loading" src="images/loading.gif" />
-
-<table border="1" cellpadding="15" cellspacing="0">
-<tr>
-	<th class="pad">NEW LEVEL</th>
-	<td></td>
-</tr>
-<tr>
-	<td class="pad">
-	<table id="thebox" border="0">
-		<tbody id="thebox_tbody"><?php echo str_repeat('<tr>'.str_repeat('<td></td>', 15).'</tr>', 15); ?></tbody>
-	</table></td>
-	<td valign="top" align="left" class="pad">
-		<table>
-		<tr><th class="pad" bgcolor="lime" align="center" colspan="2" id="fieldtype">empty</th></tr>
-		<tr onclick="g_szField='';$('fieldtype').innerHTML='empty';"><td class="fld"></td><td>empty</td>
-		<tr onclick="g_szField='wall';$('fieldtype').innerHTML='wall';"><td class="fld wall"></td><td>wall</td>
-		<tr onclick="g_szField='target';$('fieldtype').innerHTML='target';"><td class="fld target">T</td><td>target</td>
-		<tr onclick="g_szField='box';$('fieldtype').innerHTML='box';"><td class="fld box"></td><td>box</td>
-		<tr><td class="fld pusher"></td><td>pusher</td>
-		<tr><td class="pad" align="center" colspan="2"><a href="#" onclick="return evaluateTheBox();">save</a></td></tr>
-		</table>
-	</td>
-</tr>
+<body class="thebox">
+<table class="outside">
+	<tr>
+		<td class="inside">
+			<table class="inside" id="grid"></table>
+		</td>
+		<td>
+			<table class="inside">
+				<tr data-type="wall" class="active">
+					<td class="wall wall1"></td>
+					<td>Wall</td>
+				</tr>
+				<tr data-type="target">
+					<td class="target"></td>
+					<td>Target</td>
+				</tr>
+				<tr data-type="box">
+					<td class="box"></td>
+					<td>Box</td>
+				</tr>
+				<tr data-type="pusher">
+					<td class="pusher"></td>
+					<td>Pusher</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
 </table>
 
-<script type="text/javascript">
-<!--//
-var g_szField = '', g_arrPusher = null, g_arrTheBox = {};
+<p><button id="btn-export">Export</button></p>
 
-function evaluateTheBox() {
-	var m = [], b = [];
-	$A($('thebox_tbody').rows).each(function(row, y) {
-		var r = '';
-		$A(row.cells).each(function(cell, x) {
-			var f = cell.wall ? 'x' : ( cell.target ? 't' : ' ' );
-			r += f;
-			if ( 'x' !== f && cell.box ) {
-				b.push(x+':'+y);
-			}
-		});
-		m.push(r);
-	});
-	m = m.join(',');
-	b = b.join(',');
-	g_arrTheBox = {map:m, boxes:b, pusher:false};
-	alert('CLICK ON PUSHER FIELD');
-	g_arrPusher = true;
-	setTimeout("g_arrPusher = null;", 5000);
-}
+<p><textarea id="export-code" rows="15" cols="30"></textarea></p>
 
-$('thebox_tbody').addEvent('click', function(e) {
-	e = new Event(e).stop();
-	if ( 'TD' !== e.target.nodeName ) { return; }
-	if ( true === g_arrPusher && false === g_arrTheBox.pusher && !e.target.wall && !e.target.box ) {
-		g_arrTheBox.pusher = e.target.cellIndex + ':' + e.target.parentNode.sectionRowIndex;
-		new Ajax('?', {
-			data : 'name=' + encodeURIComponent(prompt('What\'s your name?', '')) + '&map=' + g_arrTheBox.map + '&boxes=' + g_arrTheBox.boxes + '&pusher=' + g_arrTheBox.pusher,
-			onComplete : function(t) {
-				alert(t);
-			}
-		}).request();
-		return false;
+<script>
+var objGame = new TheBoxEditor();
+objGame.createMap(10, 10);
+objGame.listenControls();
+
+$('#btn-export').on('click', function(e) {
+	e.preventDefault();
+
+	var level;
+	try {
+		level = objGame.exportLevel();
 	}
-	switch ( g_szField ) {
-		case 'target':
-			e.target.target = true;
-			e.target.innerHTML = 'T';
-			e.target.className = 'target';
-		break;
-		case 'wall':
-			e.target.wall = true;
-			e.target.target = false;
-			e.target.innerHTML = '';
-			e.target.className = 'wall';
-		break;
-		case 'box':
-			e.target.box = true;
-			e.target.className = 'box';
-		break;
-		default:
-			e.target.target = false;
-			e.target.box = false;
-			e.target.wall = false;
-			e.target.className = '';
-			e.target.innerHTML = '';
-		break;
+	catch ( ex ) {
+		return alert(ex);
 	}
+
+	var code = [];
+	code.push('\t[');
+	code.push("\t\t'map' => [");
+	r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+	code.push("\t\t],");
+	code.push("\t\t'pusher' => [" + level.pusher.join(', ') + "],");
+	code.push("\t\t'boxes' => [");
+	r.each(level.boxes, box => code.push("\t\t\t[" + box.join(', ') + "],"));
+	code.push("\t\t],");
+	code.push('\t],');
+	code.push('');
+	code.push('');
+
+	$('#export-code').value = code.join('\n');
 });
-
-document.body.focus();
-//-->
 </script>
 </body>
 
