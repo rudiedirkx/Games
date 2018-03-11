@@ -2,10 +2,7 @@ class TheBoxMultiple extends LeveledGridGame {
 
 	getPusher() {
 		var pusher = this.m_objGrid.getElement('.pusher');
-		return new Coords2D(
-			pusher.cellIndex,
-			pusher.parentNode.sectionRowIndex
-		);
+		return this.getCoord(pusher);
 	}
 
 	handleGlobalDirection( f_dir ) {
@@ -35,17 +32,17 @@ class TheBoxMultiple extends LeveledGridGame {
 		var nextFieldC = new Coords2D(pusher.x + dx*2, pusher.y + dy*2);
 
 		// TO-FIELD cannot be wall
-		var toField = this.m_objGrid.rows[toFieldC.y].cells[toFieldC.x];
+		var toField = this.getCell(toFieldC);
 		if ( toField.hasClass('wall') ) {
 			return;
 		}
-		var nextField = this.m_objGrid.rows[nextFieldC.y].cells[nextFieldC.x];
+		var nextField = this.getCell(nextFieldC);
 
 		// NEXT-FIELD must be empty
 		if ( toField.hasClass('box') && ( nextField.hasClass('box') || nextField.hasClass('wall') ) ) {
 			return;
 		}
-		var nowField = this.m_objGrid.rows[nowFieldC.y].cells[nowFieldC.x];
+		var nowField = this.getCell(nowFieldC);
 
 		this.m_arrLastMove = [this.m_iMoves, this.m_objGrid.innerHTML];
 
@@ -83,20 +80,19 @@ class TheBoxMultiple extends LeveledGridGame {
 
 	createField( cell, type, rv, x, y ) {
 		if ( 'x' == type ) {
-			cell.addClass('wall');
-			cell.addClass('wall' + Math.ceil(2*Math.random()));
+			this.makeWall(cell);
 		}
 		else if ( 't' == type ) {
 			cell.addClass('target');
 		}
 	}
 
-	createdMap(rv) {
+	createdMap( rv ) {
 		var pusher = Coords2D.fromArray(rv.pusher);
-		this.m_objGrid.rows[pusher.y].cells[pusher.x].addClass('pusher');
+		this.getCell(pusher).addClass('pusher');
 
-		r.each(rv.boxes, ([x, y]) => {
-			this.m_objGrid.rows[y].cells[x].addClass('box');
+		r.each(rv.boxes, (box) => {
+			this.getCell(Coords2D.fromArray(box)).addClass('box');
 		});
 	}
 
@@ -152,7 +148,7 @@ class TheBoxEditor extends TheBoxMultiple {
 		r.each(this.m_objGrid.rows, (tr, y) => {
 			var row = '';
 			r.each(tr.cells, (cell, y) => {
-				var C = new Coords2D(cell.cellIndex, cell.parentNode.sectionRowIndex);
+				var C = this.getCoord(cell);
 				if ( cell.hasClass('wall') ) {
 					row += 'x';
 				}
@@ -227,8 +223,7 @@ class TheBoxEditor extends TheBoxMultiple {
 	}
 
 	setWall( cell ) {
-		cell.addClass('wall');
-		cell.addClass('wall' + Math.ceil(2*Math.random()));
+		this.makeWall(cell);
 	}
 
 	unsetWall( cell ) {

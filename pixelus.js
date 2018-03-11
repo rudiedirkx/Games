@@ -28,8 +28,7 @@ class Pixelus extends LeveledGridGame {
 
 	createField( cell, type, rv, x, y ) {
 		if ( 'x' == type ) {
-			cell.addClass('wall');
-			cell.addClass('wall' + Math.ceil(2*Math.random()));
+			this.makeWall(cell);
 		}
 		else {
 			cell.setHTML('<span></span>');
@@ -39,7 +38,7 @@ class Pixelus extends LeveledGridGame {
 		}
 	}
 
-	createdMap(rv) {
+	createdMap( rv ) {
 		this.setStones(rv.stones);
 	}
 

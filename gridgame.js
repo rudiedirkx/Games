@@ -57,6 +57,17 @@ class GridGame extends Game {
 		$('#stats-moves').setText(this.m_iMoves);
 	}
 
+	getCell( coord ) {
+		return this.m_objGrid.rows[coord.y] && this.m_objGrid.rows[coord.y].cells[coord.x];
+	}
+
+	getCoord( cell ) {
+		return new Coords2D(
+			cell.cellIndex,
+			cell.parentNode.sectionRowIndex
+		);
+	}
+
 	win() {
 		this.m_bGameOver = true;
 		setTimeout(function() {
@@ -188,6 +199,11 @@ class LeveledGridGame extends GridGame {
 
 			this.createdMap(rv);
 		});
+	}
+
+	makeWall( cell ) {
+		cell.addClass('wall');
+		cell.addClass('wall' + Math.ceil(2*Math.random()));
 	}
 
 	createField( cell, type, rv, x, y ) {

@@ -25,10 +25,7 @@ class SteppingStones extends LeveledGridGame {
 
 	getJumper() {
 		var jumper = this.m_objGrid.getElement('.jumper');
-		return new Coords2D(
-			jumper.cellIndex,
-			jumper.parentNode.sectionRowIndex
-		);
+		return this.getCoord(jumper);
 	}
 
 	createField( cell, type, rv, x, y ) {
@@ -43,9 +40,9 @@ class SteppingStones extends LeveledGridGame {
 		}
 	}
 
-	createdMap(rv) {
+	createdMap( rv ) {
 		var jumper = Coords2D.fromArray(rv.jumper);
-		this.m_objGrid.rows[jumper.y].cells[jumper.x].addClass('stone').addClass('jumper');
+		this.getCell(jumper).addClass('stone').addClass('jumper');
 
 		this.setStones();
 	}
@@ -70,15 +67,15 @@ class SteppingStones extends LeveledGridGame {
 		var jumper = this.getJumper();
 
 		var overFieldC = this.coordsByDir(jumper, direction);
-		var overField = this.m_objGrid.rows[overFieldC.y].cells[overFieldC.x];
+		var overField = this.getCell(overFieldC);
 
 		var toFieldC = this.coordsByDir( overFieldC, direction );
-		var toField = this.m_objGrid.rows[toFieldC.y].cells[toFieldC.x];
+		var toField = this.getCell(toFieldC);
 
 		if ( overField.is('.available.stone') && toField.is('.available:not(.stone)') ) {
 			this.m_arrLastMove = [this.m_objGrid.innerHTML];
 
-			var nowField = this.m_objGrid.rows[jumper.y].cells[jumper.x];
+			var nowField = this.getCell(jumper);
 
 			nowField.removeClass('jumper').removeClass('stone');
 			overField.removeClass('stone');
