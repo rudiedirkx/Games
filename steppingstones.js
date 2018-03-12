@@ -14,15 +14,6 @@ class SteppingStones extends LeveledGridGame {
 		$('#stats-stones').setText(iStones);
 	}
 
-	undoLastMove() {
-		if ( this.m_arrLastMove ) {
-			this.m_objGrid.setHTML(this.m_arrLastMove[0]);
-			this.m_arrLastMove = null;
-
-			this.setStones();
-		}
-	}
-
 	getJumper() {
 		var jumper = this.m_objGrid.getElement('.jumper');
 		return this.getCoord(jumper);
@@ -73,7 +64,7 @@ class SteppingStones extends LeveledGridGame {
 		var toField = this.getCell(toFieldC);
 
 		if ( overField.is('.available.stone') && toField.is('.available:not(.stone)') ) {
-			this.m_arrLastMove = [this.m_objGrid.innerHTML];
+			this.saveUndoState();
 
 			var nowField = this.getCell(jumper);
 

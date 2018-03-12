@@ -45,6 +45,7 @@ if ( isset($_REQUEST['load_map']) ) {
 			<table class="inside" id="grid"></table>
 		</td>
 		<td>
+			<div id="level-header"></div>
 			<a href="#" onclick="return objGame.loadLevel(objGame.m_iLevel-1), false">&lt;&lt;</a>
 			&nbsp;
 			<a href="#" onclick="return objGame.loadLevel(objGame.m_iLevel+1), false">&gt;&gt;</a><br />

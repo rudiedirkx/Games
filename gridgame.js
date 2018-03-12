@@ -28,17 +28,17 @@ class GridGame extends Game {
 
 		this.m_objGrid = $('#grid');
 
-		this.nesw = [
-			[0, -1],
-			[1, 0],
-			[0, 1],
-			[-1, 0]
+		this.dirCoords = [
+			new Coords2D(0, -1),
+			new Coords2D(1, 0),
+			new Coords2D(0, 1),
+			new Coords2D(-1, 0),
 		];
 
-		this.dirs = [
-			't',
+		this.dirNames = [
+			'u',
 			'r',
-			'b',
+			'd',
 			'l',
 		];
 
@@ -170,7 +170,17 @@ class LeveledGridGame extends GridGame {
 		return false;
 	}
 
+	saveUndoState() {
+		this.m_arrLastMove = [this.m_iMoves, this.m_objGrid.innerHTML];
+	}
+
 	undoLastMove() {
+		if ( this.m_arrLastMove ) {
+			this.m_objGrid.setHTML(this.m_arrLastMove[1]);
+			this.setMoves(this.m_arrLastMove[0]);
+			this.m_arrLastMove = null;
+			return true;
+		}
 	}
 
 	loadLevel( f_level ) {
@@ -180,8 +190,6 @@ class LeveledGridGame extends GridGame {
 				alert('Map load error\n\n' + error);
 				return;
 			}
-
-			document.location = '#' + f_level;
 
 			this.reset();
 			this.setLevel(rv['level']);

@@ -98,3 +98,36 @@ td.wall2 {
 .steppingstones td.jumper span {
 	background-color	: #f00;
 }
+
+.atomix td.selected {
+	background-color	: lime;
+}
+.atomix td[data-atom] span {
+    display				: block;
+    height				: 96%;
+    width				: 96%;
+	margin-left			: 2%;
+	margin-top			: 2%;
+	border-radius		: 99px;
+}
+.atomix td[data-atom] span:after {
+	color				: white;
+}
+.atomix td[data-atom="H"] span {
+	background-color	: blue;
+}
+.atomix td[data-atom="H"] span:after {
+	content				: "H";
+}
+.atomix td[data-atom="O"] span {
+	background-color	: red;
+}
+.atomix td[data-atom="O"] span:after {
+	content				: "O";
+}
+.atomix td[data-atom="C"] span {
+	background-color	: gray;
+}
+.atomix td[data-atom="C"] span:after {
+	content				: "C";
+}

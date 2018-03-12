@@ -44,7 +44,7 @@ class TheBoxMultiple extends LeveledGridGame {
 		}
 		var nowField = this.getCell(nowFieldC);
 
-		this.m_arrLastMove = [this.m_iMoves, this.m_objGrid.innerHTML];
+		this.saveUndoState();
 
 		if ( toField.hasClass('box') ) {
 			this.m_iMoves++;
@@ -68,14 +68,6 @@ class TheBoxMultiple extends LeveledGridGame {
 
 	haveWon() {
 		return this.m_objGrid.getElements('.box:not(.target), .target:not(.box)').length == 0;
-	}
-
-	undoLastMove() {
-		if ( this.m_arrLastMove ) {
-			this.m_objGrid.innerHTML = this.m_arrLastMove[1];
-			this.setMoves(this.m_arrLastMove[0]);
-			this.m_arrLastMove = null;
-		}
 	}
 
 	createField( cell, type, rv, x, y ) {

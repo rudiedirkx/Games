@@ -21,8 +21,9 @@ class Pixelus extends LeveledGridGame {
 		if ( this.m_arrLastMove ) {
 			this.m_objGrid.setHTML(this.m_arrLastMove[1]);
 			this.setStones(this.m_arrLastMove[0]);
-			this.m_arrLastMove = null;
 			this.setMoves(this.m_iMoves - 1);
+			this.m_arrLastMove = null;
+			return true;
 		}
 	}
 
@@ -87,8 +88,8 @@ class Pixelus extends LeveledGridGame {
 
 	isReachableField( field, withBufferStop ) {
 		for ( var d=0; d<4; d++ ) {
-			var cd = this.nesw[d];
-			var nf = this.getNeighborField(field, cd);
+			var deltaC = this.dirCoords[d];
+			var nf = this.getNeighborField(field, deltaC);
 			if ( !withBufferStop || (nf && this.isSolid(nf)) ) {
 				if ( this.pathIsFree(field, (d+2)%4) ) {
 					return true;
@@ -100,9 +101,9 @@ class Pixelus extends LeveledGridGame {
 	}
 
 	pathIsFree( startField, direction ) {
-		var cd = this.nesw[direction];
+		var deltaC = this.dirCoords[direction];
 		var neighbor = startField;
-		while ( neighbor = this.getNeighborField(neighbor, cd) ) {
+		while ( neighbor = this.getNeighborField(neighbor, deltaC) ) {
 			if ( this.isSolid(neighbor) ) {
 				return false;
 			}
@@ -115,10 +116,8 @@ class Pixelus extends LeveledGridGame {
 		return field.is('.wall, .stone');
 	}
 
-	getNeighborField( field, cd ) {
-		var x = field.cellIndex;
-		var y = field.parentNode.sectionRowIndex;
-		return this.m_objGrid.rows[ y + cd[1] ] && this.m_objGrid.rows[ y + cd[1] ].cells[ x + cd[0] ];
+	getNeighborField( field, deltaC ) {
+		return this.getCell(this.getCoord(field).add(deltaC));
 	}
 
 	haveWon() {

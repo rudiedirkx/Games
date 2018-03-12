@@ -3,16 +3,16 @@ class BioshockFlood extends GridGame {
 		super();
 
 		this.pipes = [
-			this.createPipe('tb'),
+			this.createPipe('ud'),
 			this.createPipe('lr'),
-			this.createPipe('tr'),
-			this.createPipe('tl'),
-			this.createPipe('br'),
-			this.createPipe('bl'),
-			this.createPipe('tr'),
-			this.createPipe('tl'),
-			this.createPipe('br'),
-			this.createPipe('bl'),
+			this.createPipe('ur'),
+			this.createPipe('ul'),
+			this.createPipe('dr'),
+			this.createPipe('dl'),
+			this.createPipe('ur'),
+			this.createPipe('ul'),
+			this.createPipe('dr'),
+			this.createPipe('dl'),
 		];
 
 		this.reset();
@@ -55,10 +55,10 @@ class BioshockFlood extends GridGame {
 				return 'l';
 			}
 			else if ( C.y == 0 ) {
-				return 'b';
+				return 'd';
 			}
 			else if ( C.y == this.m_iSize + 1 ) {
-				return 't';
+				return 'u';
 			}
 		}
 		else {
@@ -69,14 +69,14 @@ class BioshockFlood extends GridGame {
 	}
 
 	makeOppositeDir( dir ) {
-		var index = this.dirs.indexOf(dir);
-		return this.dirs[ (index+2)%4 ];
+		var index = this.dirNames.indexOf(dir);
+		return this.dirNames[ (index+2)%4 ];
 	}
 
 	getNextCell() {
 		var currentCell = this.getCurrentCell();
 		var direction = this.getCellDirection(currentCell);
-		var deltaC = Coords2D.fromArray(this.nesw[ this.dirs.indexOf(direction) ]);
+		var deltaC = this.dirCoords[ this.dirNames.indexOf(direction) ];
 		var nextCellC = this.getCellCoords(currentCell).add(deltaC);
 		var nextCell = this.m_objGrid.rows[nextCellC.y].cells[nextCellC.x];
 
@@ -173,8 +173,8 @@ class BioshockFlood extends GridGame {
 		var start = parseInt(Math.random() * 4);
 		var end = (start + 2) % 4;
 
-		start = Coords2D.fromArray(this.nesw[start]);
-		end = Coords2D.fromArray(this.nesw[end]);
+		start = this.dirCoords[start];
+		end = this.dirCoords[end];
 
 		start = start.replace(1, size + 1).replace(0, parseInt(Math.random() * size + 1)).replace(-1, 0);
 		end = end.replace(1, size + 1).replace(0, parseInt(Math.random() * size + 1)).replace(-1, 0);

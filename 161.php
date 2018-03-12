@@ -38,10 +38,10 @@ require 'inc.functions.php';
 	background-size		: cover;
 }
 .inside tr:first-child th.io {
-	background-image 	: url(images/161_io_t.png);
+	background-image 	: url(images/161_io_u.png);
 }
 .inside tr:last-child th.io {
-	background-image 	: url(images/161_io_b.png);
+	background-image 	: url(images/161_io_d.png);
 }
 .inside th.io:first-child {
 	background-image 	: url(images/161_io_l.png);
@@ -55,23 +55,23 @@ require 'inc.functions.php';
 .inside th.io.end {
 	background-color	: lightgreen;
 }
-.inside td.pipe-tb {
-	background-image 	: url(images/161_pipe_tb.png);
+.inside td.pipe-ud {
+	background-image 	: url(images/161_pipe_ud.png);
 }
 .inside td.pipe-lr {
 	background-image 	: url(images/161_pipe_lr.png);
 }
-.inside td.pipe-tr {
-	background-image 	: url(images/161_pipe_tr.png);
+.inside td.pipe-ur {
+	background-image 	: url(images/161_pipe_ur.png);
 }
-.inside td.pipe-tl {
-	background-image 	: url(images/161_pipe_tl.png);
+.inside td.pipe-ul {
+	background-image 	: url(images/161_pipe_ul.png);
 }
-.inside td.pipe-br {
-	background-image 	: url(images/161_pipe_br.png);
+.inside td.pipe-dr {
+	background-image 	: url(images/161_pipe_dr.png);
 }
-.inside td.pipe-bl {
-	background-image 	: url(images/161_pipe_bl.png);
+.inside td.pipe-dl {
+	background-image 	: url(images/161_pipe_dl.png);
 }
 .with-selection td:not(.selected) {
 	opacity: 0.5;
