@@ -19,6 +19,45 @@ r.extend(Coords2D, {
 
 class Game {
 
+	constructor() {
+		this.reset();
+	}
+
+	reset() {
+		this.m_bGameOver = false;
+	}
+
+	win() {
+		this.m_bGameOver = true;
+		setTimeout(function() {
+			alert('You win!');
+		}, 100);
+	}
+
+	lose() {
+		this.m_bGameOver = true;
+		setTimeout(function() {
+			alert('You lose!');
+		}, 100);
+	}
+
+	haveWon() {
+		return false;
+	}
+
+	haveLost() {
+		return false;
+	}
+
+	winOrLose() {
+		if ( this.haveWon() ) {
+			this.win();
+		}
+		else if ( this.haveLost() ) {
+			this.lose();
+		}
+	}
+
 }
 
 class GridGame extends Game {
@@ -46,7 +85,7 @@ class GridGame extends Game {
 	}
 
 	reset() {
-		this.m_bGameOver = false;
+		super.reset();
 		this.setMoves(0);
 	}
 
@@ -71,20 +110,6 @@ class GridGame extends Game {
 			cell.cellIndex,
 			cell.parentNode.sectionRowIndex
 		);
-	}
-
-	win() {
-		this.m_bGameOver = true;
-		setTimeout(function() {
-			alert('You win!');
-		}, 100);
-	}
-
-	lose() {
-		this.m_bGameOver = true;
-		setTimeout(function() {
-			alert('You lose!');
-		}, 100);
 	}
 
 	listenAjax() {
@@ -169,10 +194,6 @@ class LeveledGridGame extends GridGame {
 	setLevel( f_iLevel ) {
 		this.m_iLevel = parseInt(f_iLevel) || 0;
 		$('#stats-level').setText(this.m_iLevel);
-	}
-
-	haveWon() {
-		return false;
 	}
 
 	saveUndoState() {

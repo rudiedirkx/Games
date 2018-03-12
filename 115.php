@@ -3,264 +3,182 @@
 
 require 'inc.functions.php';
 
-session_start();
-
-define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
-define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
-
-$OPENSOURCE = 0;
-$COLORS = Array("black","white","green","red","yellow","blue");
-
-function Go_Random($max)
-{
-	global $gekozenkleuren,$COLORS;
-	$id = rand(0,$max-1);
-	if (isset($gekozenkleuren) && is_array($gekozenkleuren) && in_array($COLORS[$id],$gekozenkleuren))
-		Go_Random($max);
-	else
-		$gekozenkleuren[] = $COLORS[$id];
-	return $id;
-}
-function Create_Field($num=4)
-{
-	global $gekozenkleuren,$COLORS;
-
-	for ($i=0;$i<$num;$i++)
-	{
-		Go_Random(count($COLORS));
-	}
-	$_SESSION['mm_veld'] = $gekozenkleuren;
-}
-
-if (isset($_GET['action']) && $_GET['action']=="changename")
-{
-	$_SESSION['mm_user']['name'] = $_POST['name'];
-
-	Header("Location: ".$_SERVER['SCRIPT_NAME']);
-	exit;
-}
-
-if (isset($_POST['action']) && $_POST['action']=="kieskleuren")
-{
-	/* Elke kleur mag maar 1x gekozen worden */
-	$tellen[$_POST['veld1']]=0;
-	$tellen[$_POST['veld2']]=0;
-	$tellen[$_POST['veld3']]=0;
-	$tellen[$_POST['veld4']]=0;
-
-	$tellen[$_POST['veld1']]++;
-	$tellen[$_POST['veld2']]++;
-	$tellen[$_POST['veld3']]++;
-	$tellen[$_POST['veld4']]++;
-	if ($tellen[$_POST['veld1']]>1 || $tellen[$_POST['veld2']]>1 || $tellen[$_POST['veld3']]>1 || $tellen[$_POST['veld4']]>1)
-	{
-		Header("Location: ".$_SERVER['SCRIPT_NAME']);
-		exit;
-	}
-	/* Elke kleur mag maar 1x gekozen worden */
-
-	/* kleuren opslaan in de gebruikersession */
-	if (isset($_SESSION['mm_user']['done']))
-		$hoeveelste = count($_SESSION['mm_user']['done']);
-	else
-		$hoeveelste = 0;
-	$_SESSION['mm_user']['done'][$hoeveelste][1] = $_POST['veld1'];
-	$_SESSION['mm_user']['done'][$hoeveelste][2] = $_POST['veld2'];
-	$_SESSION['mm_user']['done'][$hoeveelste][3] = $_POST['veld3'];
-	$_SESSION['mm_user']['done'][$hoeveelste][4] = $_POST['veld4'];
-	/* kleuren opslaan in de gebruikersession */
-
-	/* Zwart: Hoeveel kleuren op de goede plaats? */
-	$black=0;
-	if ($_SESSION['mm_veld'][0] == $_POST['veld1'])
-		$black++;
-	if ($_SESSION['mm_veld'][1] == $_POST['veld2'])
-		$black++;
-	if ($_SESSION['mm_veld'][2] == $_POST['veld3'])
-		$black++;
-	if ($_SESSION['mm_veld'][3] == $_POST['veld4'])
-		$black++;
-	/* Zwart: Hoeveel kleuren op de goede plaats? */
-
-	/* Wit: Hoeveel goede kleuren? */
-	$white=0;
-	if ($_SESSION['mm_veld'][0]==$_POST['veld1'] || $_SESSION['mm_veld'][1]==$_POST['veld1'] || $_SESSION['mm_veld'][2]==$_POST['veld1'] || $_SESSION['mm_veld'][3]==$_POST['veld1'])
-		$white++;
-	if ($_SESSION['mm_veld'][0]==$_POST['veld2'] || $_SESSION['mm_veld'][1]==$_POST['veld2'] || $_SESSION['mm_veld'][2]==$_POST['veld2'] || $_SESSION['mm_veld'][3]==$_POST['veld2'])
-		$white++;
-	if ($_SESSION['mm_veld'][0]==$_POST['veld3'] || $_SESSION['mm_veld'][1]==$_POST['veld3'] || $_SESSION['mm_veld'][2]==$_POST['veld3'] || $_SESSION['mm_veld'][3]==$_POST['veld3'])
-		$white++;
-	if ($_SESSION['mm_veld'][0]==$_POST['veld4'] || $_SESSION['mm_veld'][1]==$_POST['veld4'] || $_SESSION['mm_veld'][2]==$_POST['veld4'] || $_SESSION['mm_veld'][3]==$_POST['veld4'])
-		$white++;
-	/* Wit: Hoeveel goede kleuren? */
-
-	$_SESSION['mm_user']['done'][$hoeveelste]['black'] = $black;
-	$_SESSION['mm_user']['done'][$hoeveelste]['white'] = $white;
-	if ($black==4)
-	{
-		$score = 10*$hoeveelste+10+(time()-$_SESSION['mm_user']['starttime']);
-		$_SESSION['mm_user']['gameover'] = 1;
-		$_SESSION['mm_user']['playtime'] = time()-$_SESSION['mm_user']['starttime'];
-		$_SESSION['mm_user']['score'] = $score;
-	}
-	if ($hoeveelste == 8)
-		$_SESSION['mm_user']['gameover'] = 2;
-
-	Header("Location: ".$_SERVER['SCRIPT_NAME']);
-	exit;
-}
-
-if (isset($_GET['action']) && $_GET['action']=="stop")
-{
-	$name = $_SESSION['mm_user']['name'];
-	$_SESSION['mm_veld'] = NULL;
-	$_SESSION['mm_user'] = NULL;
-	$_SESSION['mm_user']['name'] = $name;
-
-	Header("Location: ".$_SERVER['SCRIPT_NAME']);
-	exit;
-}
-
-if (!isset($_SESSION['mm_user']['play']) || $_SESSION['mm_user']['play']!=1)
-{
-	if (isset($_POST['check']) && Goede_Gebruikersnaam($_POST['name']))
-	{
-		$_SESSION['mm_user']['play'] = 1;
-		$_SESSION['mm_user']['starttime'] = time();
-		$_SESSION['mm_user']['name'] = $_POST['name'];
-		Create_Field();
-
-		Header("Location: ".$_SERVER['SCRIPT_NAME']);
-		exit;
-	}
-	?>
-	<html>
-	<head><title>MASTERMIND</title></head>
-	<script>
-	if (top.location != this.location) top.location = this.location;
-	</script>
-	<body style='margin:0px;'>
-	<table border=0 cellpadding=0 cellspacing=0 width=100% height=100%>
-	<tr>
-	<td><center>
-	<form method=post action="<?= $_SERVER['SCRIPT_NAME'] ?>"><input type=hidden name=check value=1>
-	Name <input type=text name=name value="<?= (isset($_SESSION['mm_user']['name']))?$_SESSION['mm_user']['name']:"Anonymous" ?>" maxlenght=22><br>
-	<br>
-	<input type=submit value="PLAY"></form>
-	<?php
-	die("</td></tr></table></body>");
-}
-
-$OPENSOURCE = (isset($_SESSION['mm_user']['gameover'])) ? 1 : $OPENSOURCE;
-
 ?>
+<!doctype html>
 <html>
 
 <head>
-<title>MASTERMIND</title>
+<meta charset="utf-8" />
+<title>Mastermind</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script src="<?= html_asset('mastermind.js') ?>"></script>
 <style>
-BODY,TABLE,INPUT { font-family:Verdana;font-size:11px;color:black;line-height:150%;cursor:default; }
+* {
+	box-sizing: border-box;
+	font-family: sans-serif;
+	font-size: 16px;
+}
+html {
+	background-color: #00ddff;
+}
+body {
+	max-width: 400px;
+	padding: 20px;
+	margin: 0 auto;
+}
+table {
+	border-spacing: 15px;
+	background-color: #772200;
+	width: 100%;
+}
+table td {
+	width: 25px;
+	height: 25px;
+	padding: 0;
+	text-align: center;
+	vertical-align: middle;
+	border: solid 1px #774400;
+}
+.unknown-colors td {
+	background-color: #774400;
+	color: white;
+}
+.unknown-colors span {
+	position: relative;
+}
+.unknown-colors td.open span {
+	color: transparent;
+}
+.unknown-colors th + td span:before {
+	content: "";
+	display: block;
+	position: absolute;
+	width: 152px;
+	height: 2px;
+	background: white;
+	top: 28px;
+	left: -12px;
+}
+tbody tr:not(.done):not(.active) {
+	display: none;
+}
+tbody tr.done .choose {
+	display: none;
+}
+tbody tr.active td {
+	cursor: pointer;
+}
+tbody th.desc {
+	width: 50%;
+	text-align: left;
+	padding-left: 1em;
+}
+tbody .score span.position {
+	color: black;
+}
+tbody .score span.color {
+	color: white;
+}
+td.submit {
+	text-align: center;
+	border: 0;
+}
+td.submit button {
+	padding: 2px 40px;
+}
+body.gameover td.submit .check,
+body:not(.gameover) td.submit .restart {
+	display: none;
+}
+
+#color-selection {
+	position: fixed;
+	top: 30px;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	padding: 30px 15px;
+	background-color: #00ddff;
+	outline: solid rgba(0, 0, 0, 0.7) 9999px;
+	white-space: nowrap;
+}
+body:not(.selecting-color) #color-selection {
+	display: none;
+}
+#color-selection li {
+	display: inline-block;
+	width: 25px;
+	height: 25px;
+	cursor: pointer;
+	border: solid 2px transparent;
+}
+#color-selection li.selected {
+	border-color: lime;
+}
+#color-selection li + li {
+	margin-left: 15px;
+}
 </style>
-<script>
-if (top.location != this.location) top.location = this.location;
-</script>
 </head>
 
-<body style='margin:0px;overflow:auto;' bgcolor=#00ddff>
-<?php
+<body class="mastermind">
 
-if (isset($_GET['page']) && $_GET['page']=="gamerules")
-{
-	echo "<table border=0 cellpadding=0 cellspacing=0 width=50% height=100% align=center><tr valign=middle><td><center><b>GUIDE</b><br><br>Your target is a score as <b>low as possible</b>.<br>Your score is the sum of all absolute values of all fields.<br>Fields are named from 1 to 25, 1 being the upper left field and 25 being the lower right.<br>Every field has a value, by default from -12 to 12.<br>You can change the value of one field by clicking another.<br>For example: you click on field 1 (value = -12) -> you substract 12 from field 1-12=-11=14.<br>Another example: you click on field 6 (value = 4) -> you add 4 to field 6+4=10.<br>You can see how your clicking affects other fields by hoovering over the fields (Do x to y).</td></tr></table>";
-	die;
-}
-
-if (isset($_GET['page']) && $_GET['page']=="changename")
-{
-	echo "<table border=0 cellpadding=0 cellspacing=0 width=100% height=100%><form name=changename method=post action=\"?action=changename\"><tr valign=middle><td><center>Name <input type=text name=name value=\"".(($_SESSION['mm_user']['name'])?$_SESSION['mm_user']['name']:"Anonymous")."\" maxlenght=22><br><br><input type=submit value=\"CHANGE\"></td></tr></table>";
-	die;
-}
-
-?>
-
-<table border=0 cellpadding=0 cellspacing=0 width=100% height=100%>
-<tr valign=middle>
-<td width=20%><center>
-<a href="?action=stop"><?= !empty($_SESSION['mm_user']['gameover']) ? "New Game" : "Stop" ?></a><br><br>
-<a href="?page=changename">Change Name</a>
-<br>
-</td>
-<td><center>
-
-
-<table border=0 cellpadding=0 cellspacing=20 bgcolor=#772200>
-<tr height=30>
-<td></td>
-<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][0]:"#774400" ?>>&nbsp;</td>
-<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][1]:"#774400" ?>>&nbsp;</td>
-<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][2]:"#774400" ?>>&nbsp;</td>
-<td width=30 bgcolor=<?= ($OPENSOURCE)?$_SESSION['mm_veld'][3]:"#774400" ?>>&nbsp;</td>
-<td></td>
-</tr>
-<tr height=0>
-<td colspan=6></td>
-</tr>
-<?php
-
-for ($i=0;$i<9;$i++)
-{
-	?>
-<tr height=30>
-<td width=30 align=right><b><?= ($i+1) ?></td>
-<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][1]))?$_SESSION['mm_user']['done'][$i][1]:"" ?>></td>
-<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][2]))?$_SESSION['mm_user']['done'][$i][2]:"" ?>></td>
-<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][3]))?$_SESSION['mm_user']['done'][$i][3]:"" ?>></td>
-<td bgcolor=<?= (isset($_SESSION['mm_user']['done'][$i][4]))?$_SESSION['mm_user']['done'][$i][4]:"" ?>></td>
-<td width=40>
-<?php
-
-if (isset($_SESSION['mm_user']['done'][$i]['black']) && $_SESSION['mm_user']['done'][$i]['black']>0)
-	for ($j=0;$j<$_SESSION['mm_user']['done'][$i]['black'];$j++)
-		echo "<font color=black>*</font> ";
-if (isset($_SESSION['mm_user']['done'][$i]['white']) && $_SESSION['mm_user']['done'][$i]['white']>0)
-	for ($j=0;$j<($_SESSION['mm_user']['done'][$i]['white']-$_SESSION['mm_user']['done'][$i]['black']);$j++)
-		echo "<font color=white>*</font> ";
-
-?>
-</td>
-</tr>
-	<?php
-}
-
-?>
-<tr height=30>
-<td></td>
-<td width=30 bgcolor=#774400 id=kleurveld1>&nbsp;</td>
-<td width=30 bgcolor=#774400 id=kleurveld2>&nbsp;</td>
-<td width=30 bgcolor=#774400 id=kleurveld3>&nbsp;</td>
-<td width=30 bgcolor=#774400 id=kleurveld4>&nbsp;</td>
-<td></td>
-</tr>
-<tr>
-<form name=kieskleuren method=post><input type=hidden name=check value=1><input type=hidden name=action value=kieskleuren>
-<td></td>
-<td><select name=veld1 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld1').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
-<td><select name=veld2 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld2').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
-<td><select name=veld3 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld3').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
-<td><select name=veld4 style='width:30px;height:30px;' onchange="document.getElementById('kleurveld4').bgColor=this.value"><option style='background-color:#774400;' value='#774400'>&nbsp;<option style='background-color:black;' value=black>&nbsp;<option style='background-color:white;' value=white>&nbsp;<option style='background-color:green;' value=green>&nbsp;<option style='background-color:red;' value=red>&nbsp;<option style='background-color:yellow;' value=yellow>&nbsp;<option style='background-color:blue;' value=blue>&nbsp;</select></td>
-<td></td>
-</tr>
-<tr><td colspan=6><input type=<?= (isset($_SESSION['mm_user']['gameover']))?"button":"submit"?> value="<?=(isset($_SESSION['mm_user']['gameover']))?"New Game":"Check"?>" style='width:100%;'<?=(isset($_SESSION['mm_user']['gameover']))?" OnClick=\"document.location='?action=stop';\"":"" ?> /></td></tr>
-</form>
+<table id="table">
+	<thead>
+		<tr class="unknown-colors">
+			<th></th>
+			<td>
+				<span>?</span>
+			</td>
+			<td>
+				<span>?</span>
+			</td>
+			<td>
+				<span>?</span>
+			</td>
+			<td>
+				<span>?</span>
+			</td>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<? for ($i=1; $i <= 10; $i++): ?>
+			<tr class="<?= $i == 1 ? 'active' : '' ?>">
+				<th class="iteration"><?= $i ?>.</th>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<th class="desc">
+					<span class="choose">&lt; choose</span>
+					<span class="score"></span>
+				</th>
+			</tr>
+		<? endfor ?>
+	</tbody>
+	<tfoot>
+		<tr>
+			<td class="submit" colspan="6">
+				<button>
+					<span class="check">CHECK</span>
+					<span class="restart">RESTART</span>
+				</button>
+			</td>
+		</tr>
+	</tfoot>
 </table>
-<br>
-<?= (isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?"<br><b>GameOver!</b> You finished this level! It took you <b>".$_SESSION['mm_user']['playtime']." seconds</b>...<br>Your score is <b>".$_SESSION['mm_user']['score']."</b>.":"" ?>
 
-</td>
-<td width=20%><center><b>GAME RULES</b><br><br></center>You must find the right order of right colors. There are too many colors for the slots. Find the right colors and then the right order.<br>Black star (<font color=black>*</font>) - right color, right place<br>White star (<font color=white>*</font>) - right color<br><a href="?page=gamerules">More...</a><br><br><b>6 colors</b><br>Time: <?= (isset($_SESSION['mm_user']['gameover']) && $_SESSION['mm_user']['gameover']==1)?$_SESSION['mm_user']['playtime']:(time()-$_SESSION['mm_user']['starttime']) ?> sec<br><br>Your name: <?= $_SESSION['mm_user']['name'] ?></td>
-</tr></table>
+<ul id="color-selection"></ul>
 
+<script>
+objGame = new Mastermind();
+objGame.startGame();
+objGame.listenControls();
+</script>
 </body>
+
 </html>
-
-
