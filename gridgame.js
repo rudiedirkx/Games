@@ -57,6 +57,11 @@ class GridGame extends Game {
 		$('#stats-moves').setText(this.m_iMoves);
 	}
 
+	makeWall( cell ) {
+		cell.addClass('wall');
+		cell.addClass('wall' + Math.ceil(2*Math.random()));
+	}
+
 	getCell( coord ) {
 		return this.m_objGrid.rows[coord.y] && this.m_objGrid.rows[coord.y].cells[coord.x];
 	}
@@ -209,17 +214,79 @@ class LeveledGridGame extends GridGame {
 		});
 	}
 
-	makeWall( cell ) {
-		cell.addClass('wall');
-		cell.addClass('wall' + Math.ceil(2*Math.random()));
-	}
-
 	createField( cell, type, rv, x, y ) {
 		cell.setText('?');
 	}
 
 	createdMap( rv ) {
 
+	}
+
+}
+
+class GridGameEditor extends GridGame {
+
+	reset() {
+	}
+
+	createMap( width, height ) {
+		for (var y = 0; y < height; y++) {
+			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
+			for (var x = 0; x < width; x++) {
+				var cell = nr.insertCell(nr.cells.length);
+
+			}
+		}
+	}
+
+	getType() {
+		var tr = $('[data-type].active');
+		if ( tr ) {
+			return tr.data('type');
+		}
+	}
+
+	listenControls() {
+		this.listenCellClick();
+		this.listenTypeClick();
+	}
+
+	listenTypeClick() {
+		$$('[data-type]').on('click', (e) => {
+			this.handleTypeClick(e.subject.data('type'));
+		});
+	}
+
+	handleTypeClick( type ) {
+		$$('[data-type].active').removeClass('active');
+		$$('[data-type="' + type + '"]').addClass('active');
+	}
+
+	handleCellClick( cell ) {
+		var type = this.getType();
+		if ( !type ) {
+			alert('Select a type first');
+			return;
+		}
+
+		this['setType_' + type](cell);
+	}
+
+	setWall( cell ) {
+		this.makeWall(cell);
+	}
+
+	unsetWall( cell ) {
+		cell.removeClass('wall').removeClass('wall1').removeClass('wall2');
+	}
+
+	exportLevel() {
+	}
+
+	validateLevel( level ) {
+	}
+
+	formatLevelCode( level ) {
 	}
 
 }

@@ -110,27 +110,7 @@ class TheBoxSingle extends TheBoxMultiple {
 
 }
 
-class TheBoxEditor extends TheBoxMultiple {
-
-	reset() {
-	}
-
-	createMap( width, height ) {
-		for (var y = 0; y < height; y++) {
-			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
-			for (var x = 0; x < width; x++) {
-				var cell = nr.insertCell(nr.cells.length);
-
-			}
-		}
-	}
-
-	getType() {
-		var tr = $('[data-type].active');
-		if ( tr ) {
-			return tr.data('type');
-		}
-	}
+class TheBoxEditor extends GridGameEditor {
 
 	exportLevel() {
 		var map = [];
@@ -188,38 +168,20 @@ class TheBoxEditor extends TheBoxMultiple {
 		}
 	}
 
-	listenControls() {
-		this.listenCellClick();
-		this.listenTypeClick();
-	}
-
-	listenTypeClick() {
-		$$('[data-type]').on('click', (e) => {
-			this.handleTypeClick(e.subject.data('type'));
-		});
-	}
-
-	handleTypeClick( type ) {
-		$$('[data-type].active').removeClass('active');
-		$$('[data-type="' + type + '"]').addClass('active');
-	}
-
-	handleCellClick( cell ) {
-		var type = this.getType();
-		if ( !type ) {
-			alert('Select a type first');
-			return;
-		}
-
-		this['setType_' + type](cell);
-	}
-
-	setWall( cell ) {
-		this.makeWall(cell);
-	}
-
-	unsetWall( cell ) {
-		cell.removeClass('wall').removeClass('wall1').removeClass('wall2');
+	formatLevelCode( level ) {
+		var code = [];
+		code.push('\t[');
+		code.push("\t\t'map' => [");
+		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push("\t\t'pusher' => [" + level.pusher.join(', ') + "],");
+		code.push("\t\t'boxes' => [");
+		r.each(level.boxes, box => code.push("\t\t\t[" + box.join(', ') + "],"));
+		code.push("\t\t],");
+		code.push('\t],');
+		code.push('');
+		code.push('');
+		return code;
 	}
 
 	setType_wall( cell ) {
@@ -240,6 +202,7 @@ class TheBoxEditor extends TheBoxMultiple {
 		}
 		else {
 			this.unsetWall(cell);
+			cell.removeClass('box');
 			cell.addClass('target');
 		}
 	}

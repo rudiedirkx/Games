@@ -125,3 +125,75 @@ class Pixelus extends LeveledGridGame {
 	}
 
 }
+
+class PixelusEditor extends GridGameEditor {
+
+	exportLevel() {
+		var map = [];
+		var stones = 0;
+
+		r.each(this.m_objGrid.rows, (tr, y) => {
+			var row = '';
+			r.each(tr.cells, (cell, y) => {
+				if ( cell.hasClass('wall') ) {
+					row += 'x';
+				}
+				else if ( cell.hasClass('target') ) {
+					row += 'o';
+					stones++;
+				}
+				else {
+					row += ' ';
+				}
+			});
+			map.push(row);
+		});
+
+		var level = {map, stones};
+		this.validateLevel(level);
+		return level;
+	}
+
+	validateLevel( level ) {
+		var map = level.map.join('');
+		var targets = map.length - map.replace(/o/g, '').length;
+
+		if ( targets == 0 ) {
+			throw 'Need targets.';
+		}
+	}
+
+	formatLevelCode( level ) {
+		var code = [];
+		code.push('\t[');
+		code.push("\t\t'map' => [");
+		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push("\t\t'stones' => " + level.stones + ",");
+		code.push('\t],');
+		code.push('');
+		code.push('');
+		return code;
+	}
+
+	setType_wall( cell ) {
+		if ( cell.hasClass('wall') ) {
+			this.unsetWall(cell);
+		}
+		else {
+			cell.removeClass('target');
+			this.setWall(cell);
+		}
+	}
+
+	setType_target( cell ) {
+		if ( cell.hasClass('target') ) {
+			cell.removeClass('target');
+		}
+		else {
+			this.unsetWall(cell);
+			cell.addClass('target');
+		}
+	}
+
+}
