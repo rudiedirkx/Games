@@ -50,7 +50,7 @@ if ( isset($_REQUEST['load_map']) ) {
 			&nbsp;
 			<a href="#" onclick="return objGame.loadLevel(objGame.m_iLevel+1), false">&gt;&gt;</a><br />
 			<br />
-			<a href="#" onclick="return objGame.loadLevel(objGame.m_iLevel), false">restart</a><br />
+			<a href="#" onclick="return objGame.restart(), false">restart</a><br />
 			<br />
 			<a href="#" onclick="return objGame.undoLastMove(), false">undo</a>
 		</td>
@@ -64,7 +64,11 @@ if ( isset($_REQUEST['load_map']) ) {
 
 <script>
 var objGame = new <?= $jsClass ?>();
-objGame.loadLevel(document.location.hash ? document.location.hash.substr(1) : <?= key($g_arrLevels) ?>);
+<? if ( isset($_POST['import']) ): ?>
+	objGame.loadCustomMap(<?= json_encode(json_decode($_POST['import'])) ?>);
+<? else: ?>
+	objGame.loadLevel(<?= key($g_arrLevels) ?>);
+<? endif ?>
 objGame.listenAjax();
 objGame.listenControls();
 </script>

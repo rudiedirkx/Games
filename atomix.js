@@ -135,3 +135,75 @@ class Atomix extends LeveledGridGame {
 	}
 
 }
+
+class AtomixEditor extends GridGameEditor {
+
+	// @todo Second grid, for molecule
+	// @todo Two text fields
+
+	exportLevel() {
+		var map = [];
+
+		r.each(this.m_objGrid.rows, (tr, y) => {
+			var row = '';
+			r.each(tr.cells, (cell, y) => {
+				if ( cell.hasClass('wall') ) {
+					row += 'x';
+				}
+				else {
+					row += ' ';
+				}
+			});
+			map.push(row);
+		});
+
+		var level = {map};
+		this.validateLevel(level);
+		return level;
+	}
+
+	validateLevel( level ) {
+		// @todo Count atoms in molecule vs map
+	}
+
+	formatLevelCode( level ) {
+		var code = [];
+		code.push('\t[');
+		code.push("\t\t'map' => [");
+		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push('\t],');
+		code.push('');
+		code.push('');
+		return code;
+	}
+
+	setType_wall( cell ) {
+		if ( cell.hasClass('wall') ) {
+			this.unsetWall(cell);
+		}
+		else {
+			cell.data('atom', null);
+			this.setWall(cell);
+		}
+	}
+
+	setAtom( cell, atom ) {
+		if ( !cell.hasClass('wall') ) {
+			cell.data('atom', atom);
+		}
+	}
+
+	setType_H( cell ) {
+		this.setAtom(cell, 'H');
+	}
+
+	setType_O( cell ) {
+		this.setAtom(cell, 'O');
+	}
+
+	setType_C( cell ) {
+		this.setAtom(cell, 'C');
+	}
+
+}

@@ -2,6 +2,8 @@
 
 require 'inc.functions.php';
 
+$gameName = (int) basename($_SERVER['PHP_SELF']);
+
 ?>
 <!doctype html>
 <html>
@@ -32,11 +34,13 @@ textarea {
 			<table class="inside" id="grid"></table>
 		</td>
 		<td>
-			<table class="inside">
-				<? foreach ($types as $type => $label): ?>
+			<table class="inside" id="blocks">
+				<? foreach ($types as $type => $label):
+					list($label, $attrs) = array_merge((array) $label,  [[]]);
+					?>
 					<tr data-type="<?= $type ?>" class="<?= $type == 'wall' ? 'active' : '' ?>">
-						<td class="<?= $type ?>"></td>
-						<td><?= $label ?></td>
+						<td class="<?= $type ?>"<?= html_attributes($attrs) ?>><span></span></td>
+						<td style="text-align: left"><?= $label ?></td>
 					</tr>
 				<? endforeach ?>
 			</table>
@@ -44,29 +48,75 @@ textarea {
 	</tr>
 </table>
 
-<p><button id="btn-export">Export</button></p>
+<p>
+	<button id="btn-remember">Remember</button>
+	&nbsp;
+	<button id="btn-clear">Clear</button>
+	&nbsp;
+	<button id="btn-play">Play</button>
+	&nbsp;
+	<button id="btn-export">Export</button>
+</p>
 
-<p><textarea id="export-code" rows="15" cols="30"></textarea></p>
+<form method="post" action="<?= $gameName ?>.php">
+	<p><textarea name="import" id="export-code" rows="15" cols="30"></textarea></p>
+</form>
 
 <script>
+var gameName = '<?= $gameName ?>';
+var storageName = 'editor_' + gameName;
+
 var objGame = new <?= $jsClass ?>Editor();
-objGame.createMap(10, 10);
+objGame.createMap(16, 16);
 objGame.listenControls();
+
+setTimeout(function() {
+	var saved = localStorage.getItem(storageName);
+	if ( saved ) {
+		objGame.m_objGrid.setHTML(saved);
+	}
+});
+
+function exportLevel() {
+	return new Promise(resolve => {
+		try {
+			resolve(objGame.exportLevel());
+		}
+		catch ( ex ) {
+			alert(ex);
+		}
+	});
+}
+
+$('#btn-remember').on('click', function(e) {
+	e.preventDefault();
+
+	localStorage.setItem(storageName, objGame.m_objGrid.getHTML());
+});
+
+$('#btn-clear').on('click', function(e) {
+	e.preventDefault();
+
+	objGame.m_objGrid.getElements('td').prop('className', '');
+});
+
+$('#btn-play').on('click', function(e) {
+	e.preventDefault();
+
+	exportLevel().then((level) => {
+		var $code = $('#export-code');
+		$code.value = JSON.stringify(level, (k, v) => v instanceof Coords2D ? [v.x, v.y] : v);
+		$code.form.submit();
+	})
+});
 
 $('#btn-export').on('click', function(e) {
 	e.preventDefault();
 
-	var level;
-	try {
-		level = objGame.exportLevel();
-	}
-	catch ( ex ) {
-		return alert(ex);
-	}
-
-	var code = objGame.formatLevelCode(level);
-
-	$('#export-code').value = code.join('\n');
+	exportLevel().then((level) => {
+		var code = objGame.formatLevelCode(level);
+		$('#export-code').value = code.join('\n');
+	})
 });
 </script>
 </body>

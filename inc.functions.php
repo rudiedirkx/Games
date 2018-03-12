@@ -6,6 +6,14 @@ function html_asset( $src ) {
 	return $src . '?_' . filemtime($src);
 }
 
+function html_attributes( array $attrs ) {
+	$html = '';
+	foreach ( $attrs as $name => $value ) {
+		$html .= ' ' . do_html($name) . '="' . do_html($value) . '"';
+	}
+	return $html;
+}
+
 function do_html_options( $options, $selected = null, $empty = '' ) {
 	$html = '';
 	$empty && $html .= '<option value="">' . $empty;

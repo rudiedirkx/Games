@@ -186,13 +186,14 @@ class LeveledGridGame extends GridGame {
 	reset() {
 		super.reset();
 
+		this.m_arrCustomMap = null;
 		this.m_arrLastMove = null;
 
 		this.setLevel(0);
 	}
 
 	setLevel( f_iLevel ) {
-		this.m_iLevel = parseInt(f_iLevel) || 0;
+		this.m_iLevel = f_iLevel;
 		$('#stats-level').setText(this.m_iLevel);
 	}
 
@@ -209,6 +210,10 @@ class LeveledGridGame extends GridGame {
 		}
 	}
 
+	restart() {
+		return this.m_arrCustomMap ? this.loadCustomMap(this.m_arrCustomMap) : this.loadLevel(objGame.m_iLevel);
+	}
+
 	loadLevel( f_level ) {
 		r.get('?load_map=' + f_level).on('done', (e, rv) => {
 			if ( rv.error || !rv.map ) {
@@ -217,22 +222,31 @@ class LeveledGridGame extends GridGame {
 				return;
 			}
 
-			this.reset();
-			this.setLevel(rv['level']);
-
-			this.m_objGrid.empty();
-
-			r.each(rv.map, (row, y) => {
-				var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
-				r.each(row, (type, x) => {
-					var cell = nr.insertCell(nr.cells.length);
-
-					this.createField(cell, type, rv, x, y);
-				});
-			});
-
-			this.createdMap(rv);
+			this.loadMap(rv);
 		});
+	}
+
+	loadCustomMap( rv ) {
+		this.loadMap(rv);
+		this.m_arrCustomMap = rv;
+	}
+
+	loadMap( rv ) {
+		this.reset();
+		this.setLevel(rv.level || '?');
+
+		this.m_objGrid.empty();
+
+		r.each(rv.map, (row, y) => {
+			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
+			r.each(row, (type, x) => {
+				var cell = nr.insertCell(nr.cells.length);
+
+				this.createField(cell, type, rv, x, y);
+			});
+		});
+
+		this.createdMap(rv);
 	}
 
 	createField( cell, type, rv, x, y ) {
@@ -255,7 +269,7 @@ class GridGameEditor extends GridGame {
 			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
 			for (var x = 0; x < width; x++) {
 				var cell = nr.insertCell(nr.cells.length);
-
+				cell.setHTML('<span></span>');
 			}
 		}
 	}
