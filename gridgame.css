@@ -24,7 +24,8 @@ table {
 .outside td.inside {
 	padding				: 3px;
 }
-.inside table {
+.inside table,
+table.inside {
 	border-collapse		: collapse;
 	border				: 0;
 }
@@ -41,6 +42,11 @@ td.wall1 {
 }
 td.wall2 {
 	background-color	: #222;
+}
+
+#level-header > * {
+	margin-top: 0;
+	margin-bottom: 1em;
 }
 
 #loading {

@@ -125,7 +125,14 @@ class Pixelus extends LeveledGridGame {
 
 class PixelusEditor extends GridGameEditor {
 
-	exportLevel() {
+	cellTypes() {
+		return {
+			wall: 'Wall',
+			target: 'Target',
+		};
+	}
+
+	exportLevel( validate = true ) {
 		var map = [];
 
 		r.each(this.m_objGrid.rows, (tr, y) => {
@@ -145,7 +152,7 @@ class PixelusEditor extends GridGameEditor {
 		});
 
 		var level = {map};
-		this.validateLevel(level);
+		validate && this.validateLevel(level);
 		return level;
 	}
 

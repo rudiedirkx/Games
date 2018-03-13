@@ -34,7 +34,6 @@ class Atomix extends LeveledGridGame {
 			header += '</tr>';
 		})
 		header += '</table>';
-		header += '<br>';
 
 		$('#level-header').setHTML(header);
 	}
@@ -141,7 +140,51 @@ class AtomixEditor extends GridGameEditor {
 	// @todo Second grid, for molecule
 	// @todo Two text fields
 
-	exportLevel() {
+	reset() {
+		super.reset();
+
+		this.m_objMoleculeGrid = null;
+		this.m_objMoleculeEditor = null;
+	}
+
+	clear() {
+		super.clear();
+
+		this.m_objGrid.getElements('td').data('atom', null);
+	}
+
+	createEditor() {
+		super.createEditor();
+
+		this.createMoleculeMap();
+	}
+
+	cellTypes() {
+		return {
+			wall: 'Wall',
+			H: 'Hydrogen',
+			O: 'Oxygen',
+			C: 'Carbon',
+		};
+	}
+
+	createMoleculeMap() {
+		this.m_objMoleculeGrid = document.el('table').addClass('inside').appendTo($('#level-header'));
+		this.m_objMoleculeEditor = new this.constructor(this.m_objMoleculeGrid);
+		this.m_objMoleculeEditor.createMap(6, 4);
+		this.m_objMoleculeEditor.listenCellClick();
+	}
+
+	createCellTypeCell( type ) {
+		var dataAtom = type != 'wall' ? 'data-atom="' + type + '"' : '';
+		return '<td ' + dataAtom + ' class="' + type + '"><span></span></td>';
+	}
+
+	createdMapCell( cell ) {
+		cell.setHTML('<span></span>');
+	}
+
+	exportLevel( validate = true ) {
 		var map = [];
 
 		r.each(this.m_objGrid.rows, (tr, y) => {
@@ -158,7 +201,7 @@ class AtomixEditor extends GridGameEditor {
 		});
 
 		var level = {map};
-		this.validateLevel(level);
+		validate && this.validateLevel(level);
 		return level;
 	}
 
@@ -190,7 +233,12 @@ class AtomixEditor extends GridGameEditor {
 
 	setAtom( cell, atom ) {
 		if ( !cell.hasClass('wall') ) {
-			cell.data('atom', atom);
+			if ( cell.data('atom') == atom ) {
+				cell.data('atom', null);
+			}
+			else {
+				cell.data('atom', atom);
+			}
 		}
 	}
 
@@ -204,6 +252,18 @@ class AtomixEditor extends GridGameEditor {
 
 	setType_C( cell ) {
 		this.setAtom(cell, 'C');
+	}
+
+	remember( name ) {
+		localStorage.setItem(name, JSON.stringify({
+			map: this.m_objGrid.getHTML(),
+			molecule: this.m_objMoleculeEditor.m_objGrid.getHTML(),
+		}));
+	}
+
+	restoreLevel( level ) {
+		this.m_objGrid.setHTML(level.map);
+		this.m_objMoleculeEditor.m_objGrid.setHTML(level.molecule);
 	}
 
 }

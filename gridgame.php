@@ -65,7 +65,7 @@ if ( isset($_REQUEST['load_map']) ) {
 </table>
 
 <script>
-var objGame = new <?= $jsClass ?>();
+var objGame = new <?= $jsClass ?>($('#grid'));
 <? if ( isset($_POST['import']) ): ?>
 	objGame.loadCustomMap(<?= json_encode(json_decode($_POST['import'])) ?>);
 <? else: ?>

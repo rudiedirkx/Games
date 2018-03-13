@@ -112,7 +112,16 @@ class TheBoxSingle extends TheBoxMultiple {
 
 class TheBoxEditor extends GridGameEditor {
 
-	exportLevel() {
+	cellTypes() {
+		return {
+			wall: 'Wall',
+			target: 'Target',
+			box: 'Box',
+			pusher: 'Pusher',
+		};
+	}
+
+	exportLevel( validate = true ) {
 		var map = [];
 		var boxes = [];
 		var pusher = null;
@@ -142,7 +151,7 @@ class TheBoxEditor extends GridGameEditor {
 		});
 
 		var level = {map, boxes, pusher};
-		this.validateLevel(level);
+		validate && this.validateLevel(level);
 		return level;
 	}
 

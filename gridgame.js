@@ -1,3 +1,9 @@
+r.extend(Element, {
+	idOrRnd: function() {
+		return this.id || this.attr('id', '_' + String(Math.random()).substr(2)).id;
+	},
+});
+
 r.extend(Coords2D, {
 	direction: function() {
 		if ( Math.abs(this.y) > Math.abs(this.x) ) {
@@ -62,10 +68,10 @@ class Game {
 
 class GridGame extends Game {
 
-	constructor() {
+	constructor( gridElement ) {
 		super();
 
-		this.m_objGrid = $('#grid');
+		this.m_objGrid = gridElement;
 
 		this.dirCoords = [
 			new Coords2D(0, -1),
@@ -160,7 +166,7 @@ class GridGame extends Game {
 	}
 
 	listenCellClick() {
-		this.m_objGrid.on('click', '#grid td', (e) => {
+		this.m_objGrid.on('click', '#' + this.m_objGrid.idOrRnd() + ' td', (e) => {
 			this.handleCellClick(e.subject);
 		});
 	}
@@ -174,14 +180,6 @@ class GridGame extends Game {
 }
 
 class LeveledGridGame extends GridGame {
-
-	constructor( f_iLevel ) {
-		super();
-
-		if ( f_iLevel ) {
-			this.loadLevel(f_iLevel);
-		}
-	}
 
 	reset() {
 		super.reset();
@@ -280,14 +278,46 @@ class GridGameEditor extends GridGame {
 	reset() {
 	}
 
+	clear() {
+		this.m_objGrid.getElements('td').prop('className', '');
+	}
+
+	createEditor() {
+		this.createMap(12, 12);
+		this.createCellTypes();
+	}
+
+	cellTypes() {
+		return {};
+	}
+
+	createCellTypes() {
+		var html = '';
+		r.each(this.cellTypes(), (label, type) => {
+			var activeClass = type == 'wall' ? 'active' : '';
+			html += '<tr data-type="' + type + '" class="' + activeClass + '">';
+			html += '	' + this.createCellTypeCell(type);
+			html += '	<td style="text-align: left">' + label + '</td>';
+			html += '</tr>';
+		});
+		$('#building-blocks').setHTML(html);
+	}
+
+	createCellTypeCell( type ) {
+		return '<td class="' + type + '"></td>';
+	}
+
 	createMap( width, height ) {
 		for (var y = 0; y < height; y++) {
 			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
 			for (var x = 0; x < width; x++) {
 				var cell = nr.insertCell(nr.cells.length);
-				cell.setHTML('<span></span>');
+				this.createdMapCell(cell);
 			}
 		}
+	}
+
+	createdMapCell( cell ) {
 	}
 
 	getType() {
@@ -331,7 +361,31 @@ class GridGameEditor extends GridGame {
 		cell.removeClass('wall').removeClass('wall1').removeClass('wall2');
 	}
 
-	exportLevel() {
+	remember( name ) {
+		localStorage.setItem(name, JSON.stringify({
+			map: this.m_objGrid.getHTML(),
+		}));
+	}
+
+	forget( name ) {
+		localStorage.removeItem(name);
+	}
+
+	restore( name ) {
+		var saved = localStorage.getItem(name);
+		if ( saved ) {
+			saved = JSON.parse(saved);
+			if ( saved ) {
+				this.restoreLevel(saved);
+			}
+		}
+	}
+
+	restoreLevel( level ) {
+		this.m_objGrid.setHTML(level.map);
+	}
+
+	exportLevel( validate = true ) {
 	}
 
 	validateLevel( level ) {

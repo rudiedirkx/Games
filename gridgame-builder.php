@@ -22,7 +22,9 @@ $gameName = (int) basename($_SERVER['PHP_SELF']);
 	background: lime;
 }
 textarea {
-	tab-size: 4;
+	width: 100%;
+	tab-size: 2;
+	font-family: monospace;
 }
 </style>
 </head>
@@ -34,22 +36,16 @@ textarea {
 			<table class="inside" id="grid"></table>
 		</td>
 		<td>
-			<table class="inside" id="blocks">
-				<? foreach ($types as $type => $label):
-					list($label, $attrs) = array_merge((array) $label,  [[]]);
-					?>
-					<tr data-type="<?= $type ?>" class="<?= $type == 'wall' ? 'active' : '' ?>">
-						<td class="<?= $type ?>"<?= html_attributes($attrs) ?>><span></span></td>
-						<td style="text-align: left"><?= $label ?></td>
-					</tr>
-				<? endforeach ?>
-			</table>
+			<div id="level-header"></div>
+			<table class="inside" id="building-blocks"></table>
 		</td>
 	</tr>
 </table>
 
 <p>
 	<button id="btn-remember">Remember</button>
+	&nbsp;
+	<button id="btn-forget">Forget</button>
 	&nbsp;
 	<button id="btn-clear">Clear</button>
 	&nbsp;
@@ -59,22 +55,19 @@ textarea {
 </p>
 
 <form method="post" action="<?= $gameName ?>.php">
-	<p><textarea name="import" id="export-code" rows="15" cols="30"></textarea></p>
+	<p><textarea name="import" id="export-code" rows="15"></textarea></p>
 </form>
 
 <script>
 var gameName = '<?= $gameName ?>';
 var storageName = 'editor_' + gameName;
 
-var objGame = new <?= $jsClass ?>Editor();
-objGame.createMap(16, 16);
+var objGame = new <?= $jsClass ?>Editor($('#grid'));
+objGame.createEditor();
 objGame.listenControls();
 
 setTimeout(function() {
-	var saved = localStorage.getItem(storageName);
-	if ( saved ) {
-		objGame.m_objGrid.setHTML(saved);
-	}
+	objGame.restore(storageName);
 });
 
 function exportLevel() {
@@ -91,13 +84,20 @@ function exportLevel() {
 $('#btn-remember').on('click', function(e) {
 	e.preventDefault();
 
-	localStorage.setItem(storageName, objGame.m_objGrid.getHTML());
+	objGame.remember(storageName);
+});
+
+$('#btn-forget').on('click', function(e) {
+	e.preventDefault();
+
+	objGame.forget(storageName);
+	location.reload();
 });
 
 $('#btn-clear').on('click', function(e) {
 	e.preventDefault();
 
-	objGame.m_objGrid.getElements('td').prop('className', '');
+	objGame.clear();
 });
 
 $('#btn-play').on('click', function(e) {
