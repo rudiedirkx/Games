@@ -1,5 +1,5 @@
 // https://home.hotblocks.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// d29496654df13a55a32d3314a9729dccf88bbf16
+// 1a0165734fa27a872c3ce739cb69cb3be8550234
 
 (function(W, D) {
 
@@ -238,6 +238,9 @@
 		},
 		equal: function(coord) {
 			return this.join() == coord.join();
+		},
+		toArray: function() {
+			return [this.x, this.y];
 		}
 	});
 	Coords2D.fromArray = function(arr) {

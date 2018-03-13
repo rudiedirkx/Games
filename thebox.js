@@ -177,7 +177,7 @@ class TheBoxEditor extends GridGameEditor {
 		}
 	}
 
-	formatLevelCode( level ) {
+	formatAsPHP( level ) {
 		var code = [];
 		code.push('\t[');
 		code.push("\t\t'map' => [");

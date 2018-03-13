@@ -23,7 +23,7 @@ $gameName = (int) basename($_SERVER['PHP_SELF']);
 }
 textarea {
 	width: 100%;
-	tab-size: 2;
+	tab-size: 4;
 	font-family: monospace;
 }
 </style>
@@ -73,7 +73,9 @@ setTimeout(function() {
 function exportLevel() {
 	return new Promise(resolve => {
 		try {
-			resolve(objGame.exportLevel());
+			var level = objGame.exportLevel();
+			console.log(level);
+			resolve(level);
 		}
 		catch ( ex ) {
 			alert(ex);
@@ -114,7 +116,7 @@ $('#btn-export').on('click', function(e) {
 	e.preventDefault();
 
 	exportLevel().then((level) => {
-		var code = objGame.formatLevelCode(level);
+		var code = objGame.formatAsPHP(level);
 		$('#export-code').value = code.join('\n');
 	})
 });

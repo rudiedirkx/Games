@@ -2,6 +2,32 @@
 
 $g_arrLevels = [1 =>
 	[
+		'molecule' => "Rudieum",
+		'formula' => "OC<sub>2</sub>H",
+		'map' => [
+			'xxxxxxxx',
+			'x      x',
+			'x      x',
+			'x xxxx x',
+			'x x  x x',
+			'x x  x x',
+			'x xx x x',
+			'x      x',
+			'xxxxxxxx',
+		],
+		'atoms' => [
+			[3,4,"H"],
+			[4,4,"O"],
+			[3,5,"C"],
+			[4,5,"C"],
+		],
+		'target' => [
+			'CH',
+			'OC',
+		],
+	],
+
+	[
 		'molecule' => 'Water',
 		'formula' => 'H<sub>2</sub>O',
 		'map' => [

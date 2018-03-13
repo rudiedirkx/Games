@@ -11,7 +11,7 @@ r.extend(Coords2D, {
 		}
 		return this.x > 0 ? 'right' : 'left';
 	},
-	distance: function( target ) {
+	distance: function(target) {
 		return Math.sqrt(Math.pow(Math.abs(this.x - target.x), 2) + Math.pow(Math.abs(this.y - target.y), 2));
 	},
 	replace: function(a, b) {
@@ -241,6 +241,8 @@ class LeveledGridGame extends GridGame {
 	}
 
 	loadCustomMap( rv ) {
+		console.log('custom level', rv);
+
 		this.loadMap(rv);
 		this.m_arrCustomMap = rv;
 	}
@@ -391,7 +393,8 @@ class GridGameEditor extends GridGame {
 	validateLevel( level ) {
 	}
 
-	formatLevelCode( level ) {
+	formatAsPHP( level ) {
+		// @todo JS(ON) to PHP?
 	}
 
 }

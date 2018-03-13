@@ -57,7 +57,7 @@ class Atomix extends LeveledGridGame {
 			return row.split('').some((atom, offsetX) => {
 				var offset = new Coords2D(offsetX, offsetY);
 				var cell = this.getCell(startC.add(offset));
-				if ( atom != ' ' && atom !== cell.data('atom') ) {
+				if ( !cell || (atom != ' ' && atom !== cell.data('atom')) ) {
 					return true;
 				}
 			});
@@ -98,7 +98,7 @@ class Atomix extends LeveledGridGame {
 	}
 
 	passableCell( cell ) {
-		if ( !cell.hasClass('wall') && !cell.data('atom') ) {
+		if ( cell && !cell.hasClass('wall') && !cell.data('atom') ) {
 			return cell;
 		}
 	}
@@ -137,13 +137,11 @@ class Atomix extends LeveledGridGame {
 
 class AtomixEditor extends GridGameEditor {
 
-	// @todo Second grid, for molecule
 	// @todo Two text fields
 
 	reset() {
 		super.reset();
 
-		this.m_objMoleculeGrid = null;
 		this.m_objMoleculeEditor = null;
 	}
 
@@ -169,8 +167,8 @@ class AtomixEditor extends GridGameEditor {
 	}
 
 	createMoleculeMap() {
-		this.m_objMoleculeGrid = document.el('table').addClass('inside').appendTo($('#level-header'));
-		this.m_objMoleculeEditor = new this.constructor(this.m_objMoleculeGrid);
+		var grid = document.el('table').addClass('inside').appendTo($('#level-header'));
+		this.m_objMoleculeEditor = new this.constructor(grid);
 		this.m_objMoleculeEditor.createMap(6, 4);
 		this.m_objMoleculeEditor.listenCellClick();
 	}
@@ -187,6 +185,11 @@ class AtomixEditor extends GridGameEditor {
 	exportLevel( validate = true ) {
 		var map = [];
 
+		var molecule = 'Molecule';
+		var formula = 'Formula';
+
+		var atoms = [];
+
 		r.each(this.m_objGrid.rows, (tr, y) => {
 			var row = '';
 			r.each(tr.cells, (cell, y) => {
@@ -196,11 +199,21 @@ class AtomixEditor extends GridGameEditor {
 				else {
 					row += ' ';
 				}
+
+				var atom = cell.data('atom');
+				if ( atom ) {
+					var C = this.getCoord(cell);
+					atoms.push(C.toArray().concat(atom));
+				}
 			});
 			map.push(row);
 		});
 
-		var level = {map};
+		var target = this.m_objMoleculeEditor.m_objGrid.getElements('tr').map((tr) => {
+			return tr.getElements('td').map((cell) => cell.data('atom') || ' ').join('').trimRight();
+		}).filter((line) => line.length > 0);
+
+		var level = {map, atoms, target, molecule, formula};
 		validate && this.validateLevel(level);
 		return level;
 	}
@@ -209,11 +222,19 @@ class AtomixEditor extends GridGameEditor {
 		// @todo Count atoms in molecule vs map
 	}
 
-	formatLevelCode( level ) {
+	formatAsPHP( level ) {
 		var code = [];
 		code.push('\t[');
+		code.push("\t\t'molecule' => " + JSON.stringify(level.molecule) + ",");
+		code.push("\t\t'formula' => " + JSON.stringify(level.formula) + ",");
 		code.push("\t\t'map' => [");
 		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push("\t\t'atoms' => [");
+		r.each(level.atoms, atom => code.push("\t\t\t" + JSON.stringify(atom) + ","));
+		code.push("\t\t],");
+		code.push("\t\t'target' => [");
+		r.each(level.target, line => code.push("\t\t\t'" + line + "',"));
 		code.push("\t\t],");
 		code.push('\t],');
 		code.push('');
