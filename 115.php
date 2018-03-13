@@ -16,28 +16,29 @@ require 'inc.functions.php';
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('mastermind.js') ?>"></script>
 <style>
-* {
-	box-sizing: border-box;
-	font-family: sans-serif;
-	font-size: 16px;
-}
 html {
 	background-color: #00ddff;
 }
 body {
-	max-width: 400px;
+	margin: 0;
 	padding: 20px;
+}
+.outside {
+	max-width: 400px;
 	margin: 0 auto;
+	padding-bottom: 140px;
+	background-color: #772200;
 }
 table {
 	border-spacing: 15px;
-	background-color: #772200;
 	width: 100%;
 }
 table td {
 	width: 25px;
 	height: 25px;
 	padding: 0;
+	line-height: 1;
+	font-size: 14px;
 	text-align: center;
 	vertical-align: middle;
 	border: solid 1px #774400;
@@ -126,51 +127,53 @@ body:not(.selecting-color) #color-selection {
 
 <body class="mastermind">
 
-<table id="table">
-	<thead>
-		<tr class="unknown-colors">
-			<th></th>
-			<td>
-				<span>?</span>
-			</td>
-			<td>
-				<span>?</span>
-			</td>
-			<td>
-				<span>?</span>
-			</td>
-			<td>
-				<span>?</span>
-			</td>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-		<? for ($i=1; $i <= 10; $i++): ?>
-			<tr class="<?= $i == 1 ? 'active' : '' ?>">
-				<th class="iteration"><?= $i ?>.</th>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<th class="desc">
-					<span class="choose">&lt; choose</span>
-					<span class="score"></span>
-				</th>
+<div class="outside">
+	<table id="table">
+		<thead>
+			<tr class="unknown-colors">
+				<th></th>
+				<td>
+					<span>?</span>
+				</td>
+				<td>
+					<span>?</span>
+				</td>
+				<td>
+					<span>?</span>
+				</td>
+				<td>
+					<span>?</span>
+				</td>
+				<th></th>
 			</tr>
-		<? endfor ?>
-	</tbody>
-	<tfoot>
-		<tr>
-			<td class="submit" colspan="6">
-				<button>
-					<span class="check">CHECK</span>
-					<span class="restart">RESTART</span>
-				</button>
-			</td>
-		</tr>
-	</tfoot>
-</table>
+		</thead>
+		<tbody>
+			<? for ($i=1; $i <= 10; $i++): ?>
+				<tr class="<?= $i == 1 ? 'active' : '' ?>">
+					<th class="iteration"><?= $i ?>.</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<th class="desc">
+						<span class="choose">&lt; choose</span>
+						<span class="score"></span>
+					</th>
+				</tr>
+			<? endfor ?>
+		</tbody>
+		<tfoot>
+			<tr>
+				<td class="submit" colspan="6">
+					<button>
+						<span class="check">CHECK</span>
+						<span class="restart">RESTART</span>
+					</button>
+				</td>
+			</tr>
+		</tfoot>
+	</table>
+</div>
 
 <ul id="color-selection"></ul>
 

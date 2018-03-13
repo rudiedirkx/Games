@@ -1,12 +1,17 @@
 * {
 	box-sizing			: border-box;
-}
-html,
-body,
-table {
 	font-family			: sans-serif;
+	font-size			: 16px;
 	line-height			: 1.4;
+}
+table {
 	touch-action		: none;
+}
+@media (orientation: portrait) {
+	html,
+	body {
+		touch-action	: none;
+	}
 }
 .outside {
 	border-collapse		: collapse;
