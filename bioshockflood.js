@@ -22,8 +22,6 @@ class BioshockFlood extends GridGame {
 		super.reset();
 
 		this.m_iSize = 0;
-
-		this.unselect();
 	}
 
 	getSelectedCell() {
@@ -102,6 +100,7 @@ class BioshockFlood extends GridGame {
 		var direction = this.getCellDirection(currentCell);
 
 		if ( !this.flowsInto(currentCell, direction, nextCell) ) {
+			this.unselect();
 			return this.lose();
 		}
 
@@ -127,6 +126,8 @@ class BioshockFlood extends GridGame {
 
 	createMap( size ) {
 		this.reset();
+
+		this.unselect();
 
 		this.m_objGrid.empty();
 		this.m_iSize = size;
