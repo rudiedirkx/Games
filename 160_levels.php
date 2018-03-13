@@ -10,7 +10,6 @@ $g_arrLevels = [1 =>
 			'x    o',
 			'xoxxx ',
 		],
-		'stones' => 3,
 	],
 
 	[
@@ -30,7 +29,6 @@ $g_arrLevels = [1 =>
 			'  ox    x  ',
 			'   xxxxx   ',
 		],
-		'stones' => 8,
 	],
 
 	[
@@ -52,7 +50,6 @@ $g_arrLevels = [1 =>
 			'         x    ',
 			'         xx   ',
 		],
-		'stones' => 7,
 	],
 
 	[
@@ -72,7 +69,6 @@ $g_arrLevels = [1 =>
 			'   x    x   ',
 			'    xxxx    ',
 		],
-		'stones' => 4,
 	],
 
 	[
@@ -89,7 +85,6 @@ $g_arrLevels = [1 =>
 			'  xx            ',
 			'  x             ',
 		],
-		'stones' => 13,
 	],
 
 	[
@@ -107,7 +102,6 @@ $g_arrLevels = [1 =>
 			'  oxx       xx',
 			'     xxxxxxxx ',
 		],
-		'stones' => 10,
 	],
 
 	[
@@ -124,7 +118,6 @@ $g_arrLevels = [1 =>
 			'  o    o o    o ',
 			' o      o      x',
 		],
-		'stones' => 12,
 	],
 
 	[
@@ -143,7 +136,6 @@ $g_arrLevels = [1 =>
 			'  o      oo   ',
 			'   oxxxxx     ',
 		],
-		'stones' => 7,
 	],
 
 	[
@@ -162,7 +154,6 @@ $g_arrLevels = [1 =>
 			'      x x  xx  ',
 			'       x       ',
 		],
-		'stones' => 8,
 	],
 
 	[
@@ -181,7 +172,6 @@ $g_arrLevels = [1 =>
 			' xxxxxxx    x ',
 			'  xxxxxxxxxo  ',
 		],
-		'stones' => 8,
 	],
 
 	[
@@ -198,7 +188,6 @@ $g_arrLevels = [1 =>
 			'x x x x x  x x  ',
 			'x x x x x  x x  '
 		],
-		'stones' => 8,
 	],
 
 	[
@@ -219,7 +208,6 @@ $g_arrLevels = [1 =>
 			'        oo     ',
 			'          o    ',
 		],
-		'stones' => 14,
 	],
 
 	[
@@ -240,6 +228,5 @@ $g_arrLevels = [1 =>
 			'            x  ',
 			'            x  ',
 		],
-		'stones' => 10,
 	],
 ];

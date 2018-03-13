@@ -46,11 +46,13 @@ if ( isset($_REQUEST['load_map']) ) {
 		</td>
 		<td>
 			<div id="level-header"></div>
-			<a href="#" onclick="return objGame.loadLevel(objGame.m_iLevel-1), false">&lt;&lt;</a>
-			&nbsp;
-			<a href="#" onclick="return objGame.loadLevel(objGame.m_iLevel+1), false">&gt;&gt;</a><br />
-			<br />
-			<a href="#" onclick="return objGame.restart(), false">restart</a><br />
+			<div id="level-nav">
+				<a href="#" onclick="return objGame.prevLevel(), false">&lt;&lt;</a>
+				&nbsp;
+				<a href="#" onclick="return objGame.nextLevel(), false">&gt;&gt;</a><br />
+				<br />
+			</div>
+			<a href="#" onclick="return objGame.restartLevel(), false">restart</a><br />
 			<br />
 			<a href="#" onclick="return objGame.undoLastMove(), false">undo</a>
 		</td>

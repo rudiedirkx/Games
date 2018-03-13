@@ -6,24 +6,19 @@ class Pixelus extends LeveledGridGame {
 
 	reset() {
 		super.reset();
-
-		this.setStones(0);
 	}
 
-	setStones( f_iStones ) {
-		if ( f_iStones != null ) {
-			this.m_iStones = f_iStones;
-		}
-		$('#stats-stones').setText(this.m_iStones);
+	getStones() {
+		return this.m_objGrid.getElements('.target').length - this.m_objGrid.getElements('.stone').length;
+	}
+
+	setStones() {
+		$('#stats-stones').setText(this.getStones());
 	}
 
 	undoLastMove() {
-		if ( this.m_arrLastMove ) {
-			this.m_objGrid.setHTML(this.m_arrLastMove[1]);
-			this.setStones(this.m_arrLastMove[0]);
-			this.setMoves(this.m_iMoves - 1);
-			this.m_arrLastMove = null;
-			return true;
+		if ( super.undoLastMove() ) {
+			this.setStones();
 		}
 	}
 
@@ -40,7 +35,7 @@ class Pixelus extends LeveledGridGame {
 	}
 
 	createdMap( rv ) {
-		this.setStones(rv.stones);
+		this.setStones();
 	}
 
 	listenControls() {
@@ -49,6 +44,8 @@ class Pixelus extends LeveledGridGame {
 
 	handleCellClick( cell ) {
 		if ( !cell.hasClass('wall') ) {
+			if ( this.m_bGameOver ) return;
+
 			if ( !cell.hasClass('stone') ) {
 				this.slingStone(cell);
 			}
@@ -59,14 +56,14 @@ class Pixelus extends LeveledGridGame {
 	}
 
 	slingStone( target ) {
-		if ( 0 < this.m_iStones ) {
+		if ( this.getStones() > 0 ) {
 			if ( this.isReachableField(target, true) ) {
-				this.m_arrLastMove = [this.m_iStones, this.m_objGrid.innerHTML];
+				this.saveUndoState();
 
 				target.addClass('stone');
 
-				this.setStones(this.m_iStones - 1);
 				this.setMoves(this.m_iMoves + 1);
+				this.setStones();
 
 				this.haveWon() && this.win();
 			}
@@ -75,12 +72,12 @@ class Pixelus extends LeveledGridGame {
 
 	removeStone( field ) {
 		if ( this.isReachableField(field, false) ) {
-			this.m_arrLastMove = [this.m_iStones, this.m_objGrid.innerHTML];
+			this.saveUndoState();
 
 			field.removeClass('stone');
 
-			this.setStones(this.m_iStones + 1);
 			this.setMoves(this.m_iMoves + 1);
+			this.setStones();
 
 			this.haveWon() && this.win();
 		}
@@ -130,7 +127,6 @@ class PixelusEditor extends GridGameEditor {
 
 	exportLevel() {
 		var map = [];
-		var stones = 0;
 
 		r.each(this.m_objGrid.rows, (tr, y) => {
 			var row = '';
@@ -140,7 +136,6 @@ class PixelusEditor extends GridGameEditor {
 				}
 				else if ( cell.hasClass('target') ) {
 					row += 'o';
-					stones++;
 				}
 				else {
 					row += ' ';
@@ -149,7 +144,7 @@ class PixelusEditor extends GridGameEditor {
 			map.push(row);
 		});
 
-		var level = {map, stones};
+		var level = {map};
 		this.validateLevel(level);
 		return level;
 	}
@@ -169,7 +164,6 @@ class PixelusEditor extends GridGameEditor {
 		code.push("\t\t'map' => [");
 		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
 		code.push("\t\t],");
-		code.push("\t\t'stones' => " + level.stones + ",");
 		code.push('\t],');
 		code.push('');
 		code.push('');

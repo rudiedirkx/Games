@@ -192,8 +192,16 @@ class LeveledGridGame extends GridGame {
 		this.setLevel(0);
 	}
 
-	setLevel( f_iLevel ) {
-		this.m_iLevel = f_iLevel;
+	setLevel( f_level ) {
+		var iLevel = parseInt(f_level);
+		if ( isNaN(iLevel) ) {
+			this.m_iLevel = f_level;
+			$('#level-nav').hide();
+		}
+		else {
+			this.m_iLevel = iLevel;
+			$('#level-nav').show();
+		}
 		$('#stats-level').setText(this.m_iLevel);
 	}
 
@@ -210,8 +218,16 @@ class LeveledGridGame extends GridGame {
 		}
 	}
 
-	restart() {
+	restartLevel() {
 		return this.m_arrCustomMap ? this.loadCustomMap(this.m_arrCustomMap) : this.loadLevel(objGame.m_iLevel);
+	}
+
+	prevLevel() {
+		return this.loadLevel(this.m_iLevel-1);
+	}
+
+	nextLevel() {
+		return this.loadLevel(this.m_iLevel+1);
 	}
 
 	loadLevel( f_level ) {
