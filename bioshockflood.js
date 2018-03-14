@@ -22,6 +22,7 @@ class BioshockFlood extends GridGame {
 		super.reset();
 
 		this.m_iSize = 0;
+		this.m_iTicker = 0;
 	}
 
 	getSelectedCell() {
@@ -81,13 +82,28 @@ class BioshockFlood extends GridGame {
 		return nextCell;
 	}
 
+	finish() {
+		if ( this.m_bGameOver ) return this.createMap(this.m_iSize);
+
+		clearInterval(this.m_iTicker);
+		this.m_iTicker = setInterval(() => {
+			this.tick();
+			if ( this.m_bGameOver ) {
+				clearInterval(this.m_iTicker);
+			}
+		}, 100);
+	}
+
 	start() {
 		if ( this.m_bGameOver ) return this.createMap(this.m_iSize);
 
-		var ticker = setInterval(() => {
+		if ( this.m_iTicker ) return;
+
+		clearInterval(this.m_iTicker);
+		this.m_iTicker = setInterval(() => {
 			this.tick();
 			if ( this.m_bGameOver ) {
-				clearInterval(ticker);
+				clearInterval(this.m_iTicker);
 			}
 		}, 2500);
 	}
@@ -222,6 +238,10 @@ class BioshockFlood extends GridGame {
 		if ( this.m_bGameOver ) return this.createMap(this.m_iSize);
 
 		if ( cell.hasClass('locked') ) return;
+
+		if ( !this.m_iTicker ) {
+			this.start();
+		}
 
 		var selected = this.getSelectedCell();
 		if ( selected ) {

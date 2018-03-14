@@ -108,6 +108,8 @@ require 'inc.functions.php';
 			&nbsp;
 			<button onclick="return objGame.start(), false">Start</button>
 			&nbsp;
+			<button onclick="return objGame.finish(), false">Finish/fast</button>
+			&nbsp;
 			<button onclick="return objGame.tick(), false">Tick</button>
 		</td>
 	</tr>
