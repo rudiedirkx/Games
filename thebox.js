@@ -121,7 +121,7 @@ class TheBoxEditor extends GridGameEditor {
 		};
 	}
 
-	exportLevel( validate = true ) {
+	exportLevel() {
 		var map = [];
 		var boxes = [];
 		var pusher = null;
@@ -151,7 +151,7 @@ class TheBoxEditor extends GridGameEditor {
 		});
 
 		var level = {map, boxes, pusher};
-		validate && this.validateLevel(level);
+		this.validateLevel(level);
 		return level;
 	}
 

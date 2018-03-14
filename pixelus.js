@@ -1,13 +1,5 @@
 class Pixelus extends LeveledGridGame {
 
-	constructor() {
-		super();
-	}
-
-	reset() {
-		super.reset();
-	}
-
 	getStones() {
 		return this.m_objGrid.getElements('.target').length - this.m_objGrid.getElements('.stone').length;
 	}
@@ -85,7 +77,7 @@ class Pixelus extends LeveledGridGame {
 
 	isReachableField( field, withBufferStop ) {
 		for ( var d=0; d<4; d++ ) {
-			var deltaC = this.dirCoords[d];
+			var deltaC = this.dir4Coords[d];
 			var nf = this.getNeighborField(field, deltaC);
 			if ( !withBufferStop || (nf && this.isSolid(nf)) ) {
 				if ( this.pathIsFree(field, (d+2)%4) ) {
@@ -98,7 +90,7 @@ class Pixelus extends LeveledGridGame {
 	}
 
 	pathIsFree( startField, direction ) {
-		var deltaC = this.dirCoords[direction];
+		var deltaC = this.dir4Coords[direction];
 		var neighbor = startField;
 		while ( neighbor = this.getNeighborField(neighbor, deltaC) ) {
 			if ( this.isSolid(neighbor) ) {
@@ -132,7 +124,7 @@ class PixelusEditor extends GridGameEditor {
 		};
 	}
 
-	exportLevel( validate = true ) {
+	exportLevel() {
 		var map = [];
 
 		r.each(this.m_objGrid.rows, (tr, y) => {
@@ -152,7 +144,7 @@ class PixelusEditor extends GridGameEditor {
 		});
 
 		var level = {map};
-		validate && this.validateLevel(level);
+		this.validateLevel(level);
 		return level;
 	}
 

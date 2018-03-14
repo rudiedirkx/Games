@@ -1,6 +1,6 @@
 class BioshockFlood extends GridGame {
-	constructor() {
-		super();
+	constructor( gridElement ) {
+		super(gridElement);
 
 		this.pipes = [
 			this.createPipe('ud'),
@@ -67,14 +67,14 @@ class BioshockFlood extends GridGame {
 	}
 
 	makeOppositeDir( dir ) {
-		var index = this.dirNames.indexOf(dir);
-		return this.dirNames[ (index+2)%4 ];
+		var index = this.dir4Names.indexOf(dir);
+		return this.dir4Names[ (index+2)%4 ];
 	}
 
 	getNextCell() {
 		var currentCell = this.getCurrentCell();
 		var direction = this.getCellDirection(currentCell);
-		var deltaC = this.dirCoords[ this.dirNames.indexOf(direction) ];
+		var deltaC = this.dir4Coords[ this.dir4Names.indexOf(direction) ];
 		var nextCellC = this.getCellCoords(currentCell).add(deltaC);
 		var nextCell = this.m_objGrid.rows[nextCellC.y].cells[nextCellC.x];
 
@@ -174,8 +174,8 @@ class BioshockFlood extends GridGame {
 		var start = parseInt(Math.random() * 4);
 		var end = (start + 2) % 4;
 
-		start = this.dirCoords[start];
-		end = this.dirCoords[end];
+		start = this.dir4Coords[start];
+		end = this.dir4Coords[end];
 
 		start = start.replace(1, size + 1).replace(0, parseInt(Math.random() * size + 1)).replace(-1, 0);
 		end = end.replace(1, size + 1).replace(0, parseInt(Math.random() * size + 1)).replace(-1, 0);

@@ -33,8 +33,12 @@ table.inside {
 	padding				: 0;
 	width				: 23px;
 	height				: 23px;
+	line-height			: 23px;
 	border				: solid 1px #eee;
 	text-align			: center;
+}
+#building-blocks td:nth-child(2) {
+	padding				: 0 5px;
 }
 td.wall,
 td.wall1 {
@@ -138,4 +142,36 @@ td.wall2 {
 }
 .atomix td[data-atom="C"] span:after {
 	content				: "C";
+}
+
+.f1racer td.wall {
+	background-color	: #090;
+}
+.f1racer td.wall2 {
+	background-color	: green;
+}
+.f1racer td.asphalt {
+	background-color	: black;
+}
+.f1racer td.asphalt.current {
+	cursor				: pointer;
+}
+.f1racer td.asphalt.current:after {
+	content				: "";
+	display				: block;
+	width				: 16px;
+	height				: 16px;
+	margin				: 3px auto 0;
+	background-color	: red;
+	pointer-events		: none;
+}
+.f1racer td.asphalt.done {
+	background-color	: #333;
+}
+.f1racer td.asphalt.choosing-path {
+	background-color	: green;
+}
+.f1racer td.asphalt.choose-path {
+	background-color	: orange;
+	cursor				: pointer;
 }

@@ -64,7 +64,8 @@ $g_arrGames = array(
 	['150',				'SWITCHBOARD',									'Connect the relais to make all lights light up'],
 	['151',				'TOWERS OF HANOI',								'8 disks, 3 towers, make the moves'],
 	// ['152',			'Fibonacci',									''],
-	['153',				'F1 racer',										''],
+	['153',				'F1 Racer',										'Click-race a circuit'],
+	['153B',			'F1 Racer - Editor',							'Create your own F1 Racer level'],
 	['154',				'Maze',											''],
 	['156',				'Tetravex',										'The Ubuntu ripoff'],
 	['157',				"Fortune's Tower - JS",							"It's a Fable II Pub game"],
@@ -169,8 +170,7 @@ canvas {
 		color: #000;
 		text-decoration: none;
 	}
-	#tiles a:hover,
-	#tiles a:focus	{
+	#tiles a:hover	{
 		background: #ccc;
 	}
 	#tiles a:active	{
@@ -232,8 +232,7 @@ canvas {
 	#tiles:hover .img {
 		opacity:0.75;
 	}
-	#tiles a:hover .img,
-	#tiles a:focus .img {
+	#tiles a:hover .img {
 		box-shadow: 0 0 45px #fff;
 		opacity: 1.0;
 		position: relative;

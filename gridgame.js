@@ -22,10 +22,15 @@ r.extend(Coords2D, {
 		return new Coords2D(x, y);
 	},
 });
+Coords2D.jsonReplacer = function() {
+	return (k, v) => v instanceof Coords2D ? v.toArray() : v;
+};
 
 class Game {
 
 	constructor() {
+		this.ALERT_DELAY = 50;
+
 		this.reset();
 	}
 
@@ -37,14 +42,14 @@ class Game {
 		this.m_bGameOver = true;
 		setTimeout(function() {
 			alert('You win!');
-		}, 100);
+		}, this.ALERT_DELAY);
 	}
 
 	lose() {
 		this.m_bGameOver = true;
 		setTimeout(function() {
 			alert('You lose!');
-		}, 100);
+		}, this.ALERT_DELAY);
 	}
 
 	haveWon() {
@@ -71,16 +76,20 @@ class GridGame extends Game {
 	constructor( gridElement ) {
 		super();
 
+		if ( !gridElement ) {
+			throw new Error('GridGame needs a DOM element');
+		}
+
 		this.m_objGrid = gridElement;
 
-		this.dirCoords = [
+		this.dir4Coords = [
 			new Coords2D(0, -1),
 			new Coords2D(1, 0),
 			new Coords2D(0, 1),
 			new Coords2D(-1, 0),
 		];
 
-		this.dirNames = [
+		this.dir4Names = [
 			'u',
 			'r',
 			'd',
@@ -105,6 +114,12 @@ class GridGame extends Game {
 	makeWall( cell ) {
 		cell.addClass('wall');
 		cell.addClass('wall' + Math.ceil(2*Math.random()));
+		return cell;
+	}
+
+	unsetWall( cell ) {
+		cell.removeClass('wall').removeClass('wall1').removeClass('wall2');
+		return cell;
 	}
 
 	getCell( coord ) {
@@ -254,9 +269,9 @@ class LeveledGridGame extends GridGame {
 		this.m_objGrid.empty();
 
 		r.each(rv.map, (row, y) => {
-			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
+			var tr = this.m_objGrid.insertRow();
 			r.each(row, (type, x) => {
-				var cell = nr.insertCell(nr.cells.length);
+				var cell = tr.insertCell();
 
 				this.createField(cell, type, rv, x, y);
 			});
@@ -293,20 +308,31 @@ class GridGameEditor extends GridGame {
 		return {};
 	}
 
+	defaultCellType() {
+		return 'wall';
+	}
+
 	createCellTypes() {
+		var activeCellType = this.defaultCellType();
+
 		var html = '';
 		r.each(this.cellTypes(), (label, type) => {
-			var activeClass = type == 'wall' ? 'active' : '';
+			var activeClass = type == activeCellType ? 'active' : '';
 			html += '<tr data-type="' + type + '" class="' + activeClass + '">';
 			html += '	' + this.createCellTypeCell(type);
 			html += '	<td style="text-align: left">' + label + '</td>';
 			html += '</tr>';
 		});
 		$('#building-blocks').setHTML(html);
+
+		this.createdCellTypes();
 	}
 
 	createCellTypeCell( type ) {
 		return '<td class="' + type + '"></td>';
+	}
+
+	createdCellTypes() {
 	}
 
 	createMap( width, height ) {
@@ -359,10 +385,6 @@ class GridGameEditor extends GridGame {
 		this.makeWall(cell);
 	}
 
-	unsetWall( cell ) {
-		cell.removeClass('wall').removeClass('wall1').removeClass('wall2');
-	}
-
 	remember( name ) {
 		localStorage.setItem(name, JSON.stringify({
 			map: this.m_objGrid.getHTML(),
@@ -387,7 +409,8 @@ class GridGameEditor extends GridGame {
 		this.m_objGrid.setHTML(level.map);
 	}
 
-	exportLevel( validate = true ) {
+	exportLevel() {
+		return {};
 	}
 
 	validateLevel( level ) {

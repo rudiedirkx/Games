@@ -114,7 +114,7 @@ require 'inc.functions.php';
 </table>
 
 <script>
-objGame = new BioshockFlood();
+objGame = new BioshockFlood($('#grid'));
 objGame.createMap(6);
 objGame.listenControls();
 </script>

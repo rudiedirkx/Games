@@ -71,10 +71,10 @@ setTimeout(function() {
 });
 
 function exportLevel() {
-	return new Promise(resolve => {
+	return new Promise((resolve) => {
 		try {
 			var level = objGame.exportLevel();
-			console.log(level);
+			console.log('level 1', level);
 			resolve(level);
 		}
 		catch ( ex ) {
@@ -106,8 +106,9 @@ $('#btn-play').on('click', function(e) {
 	e.preventDefault();
 
 	exportLevel().then((level) => {
+		console.log('level 2', level);
 		var $code = $('#export-code');
-		$code.value = JSON.stringify(level, (k, v) => v instanceof Coords2D ? [v.x, v.y] : v);
+		$code.value = JSON.stringify(level, Coords2D.jsonReplacer());
 		$code.form.submit();
 	})
 });

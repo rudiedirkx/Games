@@ -116,7 +116,7 @@ class Atomix extends LeveledGridGame {
 		var selectedCell = this.getSelectedCell();
 		if ( !selectedCell ) return;
 
-		var deltaC = this.dirCoords[ this.dirNames.indexOf(direction[0]) ];
+		var deltaC = this.dir4Coords[ this.dir4Names.indexOf(direction[0]) ];
 
 		var endCell = this.getEndCell(selectedCell, deltaC);
 		if ( !endCell ) return;
@@ -182,7 +182,7 @@ class AtomixEditor extends GridGameEditor {
 		cell.setHTML('<span></span>');
 	}
 
-	exportLevel( validate = true ) {
+	exportLevel() {
 		var map = [];
 
 		var molecule = 'Molecule';
@@ -214,7 +214,7 @@ class AtomixEditor extends GridGameEditor {
 		}).filter((line) => line.length > 0);
 
 		var level = {map, atoms, target, molecule, formula};
-		validate && this.validateLevel(level);
+		this.validateLevel(level);
 		return level;
 	}
 
