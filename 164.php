@@ -1,4 +1,5 @@
 <?php
+// MACHINARIUM I
 
 $maps = array(1 =>
 	array(),
@@ -71,7 +72,7 @@ html, body {
 	text-decoration: none;
 	color: green;
 }
-.maps a:target {
+.maps a.active {
 	font-weight: bold;
 }
 .maps a:active,
@@ -148,11 +149,9 @@ html, body {
 <div class="grid" id="grid">
 <?php
 for ( $y=0; $y<$g_h; $y++ ) {
-	//echo '<div class="row">';
 	for ( $x=0; $x<$g_w; $x++ ) {
 		echo '<a data-x="'.$x.'" data-y="'.$y.'" class="cell"></a>';
 	}
-	//echo '</div>';
 }
 ?>
 </div>
@@ -160,7 +159,6 @@ for ( $y=0; $y<$g_h; $y++ ) {
 <ul class=maps id="maps"></ul>
 
 <script src="simpledom.js"></script>
-<script src="classlist.js"></script>
 <script>
 function extend(C, m) {
 	for ( var x in m ) {
@@ -261,12 +259,15 @@ NodeList.prototype.removeClasses = Array.prototype.removeClasses;
 NodeList.prototype.clearClasses = Array.prototype.clearClasses;
 
 // config
-var maps = <?=json_encode($maps)?>, mapsel = document.getElementById('maps');
+var maps = <?=json_encode($maps)?>;
+var mapsel = document.getElementById('maps');
 
 function loadMap(m) {
+	document.body.all('a.active').removeClass('active');
+	document.body.all('a#m' + m).addClass('active');
+
 	var map = maps[m];
 	lastMap = m;
-	location.hash = 'm' + m;
 
 	// reset grid
 	grid.all('.cell').clearClasses('cell');
@@ -286,23 +287,30 @@ function loadMap(m) {
 }
 
 // game
-var grid = document.getElementById('grid'),
-	lastMap = (location.hash.match(/^\#m(\d+)$/) || [0,1])[1],
-	started = false,
-	hasReset = false,
-	lastClick,
-	lastHilite;
+var grid = document.getElementById('grid');
+var lastMap = 1;
+var started = false;
+var hasReset = false;
+var lastClick;
+var lastHilite;
 
 // process
 window.onload = function(e) {
 	grid.style.width = grid.style.height = Math.min(window.innerHeight, window.innerWidth, 400) + 'px';
 
+	// maps links
+	for ( var m in maps ) {
+		simple.last(mapsel, simple('li', [simple('a', {"id": 'm'+m, "data-map": m, "href": '#'}, {"click": function(e) {
+			e.preventDefault();
+			loadMap(this.data('map'));
+		}}, ''+m)]));
+	}
+
 	// load map
 	loadMap(lastMap);
 
 	// attach listeners
-	var evType = 'ontouchstart' in document.documentElement ? 'touchstart' : 'mousedown';
-	grid.on(evType, 'cell', function(e) {
+	grid.on('click', 'cell', function(e) {
 		e.preventDefault();
 
 		if ( !started ) {
@@ -367,21 +375,6 @@ window.onload = function(e) {
 			}
 		}
 	});
-
-	window.onhashchange = function(e) {
-		var map = (location.hash.match(/^\#m(\d+)$/) || '')[1];
-		if ( map != lastMap ) {
-			loadMap(map);
-		}
-	};
-
-	// maps links
-	for ( var m in maps ) {
-		simple.last(mapsel, simple('li', [simple('a', {"id": 'm'+m, "data-map": m, "href": '#'}, {"click": function(e) {
-			e.preventDefault();
-			loadMap(this.data('map'));
-		}}, ''+m)]));
-	}
 }
 </script>
 </body>
