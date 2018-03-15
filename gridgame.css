@@ -161,6 +161,7 @@ td.wall2 {
 	display				: block;
 	width				: 16px;
 	height				: 16px;
+	border-radius		: 4px;
 	margin				: 3px auto 0;
 	background-color	: red;
 	pointer-events		: none;

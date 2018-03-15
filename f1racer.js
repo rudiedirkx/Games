@@ -164,7 +164,7 @@ console.log('Got manual resolution!', cell, this.m_fnPathingResolver);
 	getTrackNeighbors( cell, except ) {
 		var cellC = this.getCoord(cell);
 		var neighbors = this.dir8Coords.map((offset) => this.getCell(cellC.add(offset)));
-		var tracks = neighbors.filter((cell) => cell && cell.hasClass('asphalt') && cell != except);
+		var tracks = neighbors.filter((cell) => cell && cell.hasClass('asphalt') && !except.includes(cell));
 		return new Elements(tracks);
 	}
 
@@ -175,14 +175,14 @@ console.log('Got manual resolution!', cell, this.m_fnPathingResolver);
 			var current = track[track.length - 1];
 			track.removeClass('choosing-path');
 			current.addClass('choosing-path');
-			var neighbors = this.getTrackNeighbors(current, track[track.length - 2]);
+			var neighbors = this.getTrackNeighbors(current, track.slice(-5));
 			if ( neighbors.length == 1 ) {
 				current.addClass('done');
 				return setTimeout(() => resolve(neighbors[0]), DELAY);
 			}
 			else if ( neighbors.length == 2 && current != this.getStart() ) {
-				var a = this.getTrackNeighbors(neighbors[0], track[track.length-1]);
-				var b = this.getTrackNeighbors(neighbors[1], track[track.length-1]);
+				var a = this.getTrackNeighbors(neighbors[0], track.slice(-2));
+				var b = this.getTrackNeighbors(neighbors[1], track.slice(-2));
 				var a1 = a.length == 1;
 				var b1 = b.length == 1;
 				if ( a1 && !b1 ) {
