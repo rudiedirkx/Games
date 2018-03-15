@@ -34,7 +34,6 @@ $g_arrGames = array(
 	['119B',			'PICROSS - EDITOR',								'Level editor for PICROSS'],
 	['120',				'WORDMIX',										'Just a few mixed words and a sentence. Get it right and you wiiiiiin'],
 	['121',				'POKER',										'Play poker on your own'],
-	['666',				'BOOTYCALL',									'The game where every guy, no matter how young or old, has fun with'],
 	['123',				'STEPPING STONES',								'Eliminate all stones but one, to reach the ultimate score: 1'],
 	['124',				'SAFE CRACKING',								'Crack the safe by choosing the four right numbers'],
 	['125',				'HOW FAST ARE YOU?',							'Very simple JS game. Hit the field as soon as possible when it turns red!'],
