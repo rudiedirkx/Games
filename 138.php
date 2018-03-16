@@ -1,7 +1,7 @@
 <?php
 // REAL SUDOKU
 
-include("connect.php");
+require __DIR__ . '/inc.bootstrap.php';
 
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
@@ -63,7 +63,7 @@ function change_focus( e, i )
 	if ( e.keyCode )	kc = e.keyCode;
 	else if ( e.which )	kc = e.which;
 	else				kc = '!fck';
-	
+
 	debug = 0;
 
 	if ( debug ) alert( 'KC = ' + kc + ', FIELD = ' + i );

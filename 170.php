@@ -1,7 +1,7 @@
 <?php
 // MAHJONG
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 /**
  * Hardcoded:

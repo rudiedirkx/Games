@@ -1,7 +1,7 @@
 <?php
 // SLITHER
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 $g_arrBoards = require '146_levels.php';
 $allBoards = array();

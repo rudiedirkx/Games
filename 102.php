@@ -1,10 +1,7 @@
 <?php
 // MINESWEEPER
 
-if ( isset($_GET['source']) ) {
-	highlight_file(__FILE__);
-	exit;
-}
+require __DIR__ . '/inc.bootstrap.php';
 
 session_start();
 

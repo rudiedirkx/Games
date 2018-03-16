@@ -1,17 +1,36 @@
-<doctype html>
+<?php
+// NUMBER GUESSING
+
+?>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
 <title>Guess my number from 1-100</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
+<style>
+* {
+	font-size: 19px;
+}
+input, button {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+input {
+	width: 6em;
+	text-align: center;
+}
+</style>
 </head>
 
 <body>
 
 <p>Guess the number (0 - 100):</p>
 <form>
-	<input id="number" type="number" style="width: 3em" autofocus />
+	<input id="number" type="number" autofocus />
 	<button id="guess">Guess</button>
-	<button id="reset">Restart</button>
 </form>
 
 <script>
@@ -44,13 +63,19 @@ var game = {
 			var off = this.game.guess(number);
 			if (off == 0) {
 				this.win();
-				return alert("You win!\n\nIn " + this.game.guesses + " guesses.\n\nPlay another round?");
+				return this.alert("You win!\n\nIn " + this.game.guesses + " guesses.\n\nPlay another round?");
 			}
 
-			alert("You're too " + (off > 0 ? "low" : "high") + ".");
+			this.alert("You're too " + (off > 0 ? "low" : "high") + ".");
 		},
 		win: function() {
 			$number.value = '';
+		},
+		alert: function(msg) {
+			document.activeElement.blur();
+			setTimeout(function() {
+				alert(msg);
+			}, 50);
 		},
 	},
 };
@@ -64,10 +89,6 @@ $form.addEventListener('submit', function(e) {
 	e.preventDefault();
 
 	game.ui.guess($number.value);
-});
-
-$reset.addEventListener('click', function(e) {
-	e.preventDefault();
 });
 </script>
 

@@ -1,14 +1,10 @@
 <?php
 // BLACKBOX (PHP)
 
-if ( isset($_GET['source']) ) {
-	highlight_file(__FILE__);
-	exit;
-}
+require __DIR__ . '/inc.bootstrap.php';
 
 session_start();
 
-// require_once('connect.php');
 define( 'S_NAME', 'bb2' );
 
 define( 'BASEPAGE',	basename($_SERVER['SCRIPT_NAME']) );

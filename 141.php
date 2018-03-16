@@ -5,8 +5,7 @@ session_start();
 
 $bShowCoords	= false;
 
-// require_once("connect.php");
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 define( "S_NAME",	"st_2_user" );
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );

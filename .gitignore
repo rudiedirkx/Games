@@ -3,3 +3,5 @@ swf
 inc.env.php
 connect.php
 robots.txt
+
+/vendor/

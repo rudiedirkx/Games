@@ -1,5 +1,6 @@
 <?php
 // Fortune's Tower
+
 /**
  * TODO:
  * - gatecard checken (misschien maakt ie een nieuwe verticale combi)		v
@@ -13,7 +14,6 @@
 $g_iStartBalance = 0;
 
 define('S_NAME', 'ft_157');
-require_once('inc.cls.json.php');
 
 if ( empty($_COOKIE[S_NAME.'_balance']) ) {
 	setcookie(S_NAME.'_balance', $g_iStartBalance);
@@ -62,7 +62,7 @@ div.set span.card {
 <script type="text/javascript">
 <!--//
 var ROWS = 8, COOKIENAME = '<?php echo S_NAME.'_balance'; ?>', g_iBalance = Cookie.get(COOKIENAME).toInt();
-var g_iBetBase = <?php echo max(1, min(10, isset($_GET['base'])?(int)$_GET['base']:1)); ?>, g_arrCards = <?php echo json::encode($arrCards); ?>, g_iMultiplier = 1, g_iRow = 0, g_bGateCard = true, g_bGameOver = false;
+var g_iBetBase = <?php echo max(1, min(10, isset($_GET['base'])?(int)$_GET['base']:1)); ?>, g_arrCards = <?php echo json_encode($arrCards); ?>, g_iMultiplier = 1, g_iRow = 0, g_bGateCard = true, g_bGameOver = false;
 function nextRow() {
 	if ( 0 === g_iRow ) {
 		return initTower();
@@ -265,7 +265,10 @@ function cashOut(jp) {
 <body>
 <table id="buttons" border="0" cellpadding="4" cellspacing="0">
 <tr>
-	<td align="center" colspan="2">Balance: <span ondblclick="Cookie.set(COOKIENAME, <?php echo $g_iStartBalance; ?>);document.location.reload();" id="balance"><?php echo $_COOKIE[S_NAME.'_balance']; ?></span>, You bet: <span id="bet">0</span></td>
+	<td align="center" colspan="2">
+		Balance: <span ondblclick="Cookie.set(COOKIENAME, <?php echo $g_iStartBalance; ?>);document.location.reload();" id="balance"><?php echo (int) @$_COOKIE[S_NAME.'_balance']; ?></span>,
+		You bet: <span id="bet">0</span>
+	</td>
 </tr>
 <tr>
 	<td align="center" colspan="2">

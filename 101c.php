@@ -10,8 +10,7 @@
 // Todo //
 
 $g_fStartUtc = microtime(true);
-error_reporting(4095);
-require_once('inc.cls.cardgame.php');
+require 'inc.cls.cardgame.php';
 
 // config //
 define( 'S_NAME',			'101_blackjack_v2_2008_02_05' );
@@ -64,17 +63,7 @@ $objGame->deck->add_card( new Card(50) );
 /** direct-blackjack-test **/
 
 
-if ( !empty($_GET['save']) && 1 < strlen(trim($_GET['save'])) ) {
-	$szName = get_magic_quotes_gpc() ? trim($_GET['save']) : addslashes(trim($_GET['save']));
-	if ( DEFAULT_SCORE < $objGame->player->balance && @mysql_query('INSERT INTO blackjack_v2 (name, utc, score) VALUES (\''.$szName.'\', '.time().', '.$objGame->player->balance.');') ) {
-		header('Location: ?reset=1');
-	}
-	else {
-		header('Location: '.basename($_SERVER['PHP_SELF']));
-	}
-	exit;
-}
-else if ( isset($_GET['bet']) ) {
+if ( isset($_GET['bet']) ) {
 	$objGame->bet( (int)max(0, $_GET['bet']) );
 	header('Location: '.basename($_SERVER['PHP_SELF']));
 	exit;
@@ -105,11 +94,14 @@ else if ( !empty($_GET['stand']) ) {
 }
 
 ?>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
 <title>Blackjack v2 | <?php echo $objGame->decks; ?> decks</title>
-<link rel="shortcut icon" href="/favicon.ico" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
 </head>
 
 <body>
@@ -134,9 +126,7 @@ echo 0 < $objGame->player->score() ? '<b>('.$objGame->player->score().')</b>' : 
 
 <form method="get">
 	<input type="submit" name="reset" value="reset" />
-<?php if ( $qHoF = @mysql_query('SELECT *,(SELECT 1+COUNT(1) FROM blackjack_v2 WHERE score > b.score) AS rank FROM blackjack_v2 b ORDER BY score DESC, utc DESC LIMIT 10;') ) { ?>
-	<input<?php echo DEFAULT_SCORE >= $objGame->player->balance ? ' disabled="1"' : ''; ?> type="submit" name="save" value="save" onclick="var n=prompt('Your name:','Anonymous');if(!n){return false;}this.value=n;" />
-<?php } if ( !$objGame->gameover && 2 == count($objGame->player->cards()) && 2 == count($c=$objGame->dealer->cards()) && 'a' === $c[0]->short && $objGame->player->balance >= floor($objGame->player->bet/2) && 0 < floor($objGame->player->bet/2) ) { ?>
+<?php if ( !$objGame->gameover && 2 == count($objGame->player->cards()) && 2 == count($c=$objGame->dealer->cards()) && 'a' === $c[0]->short && $objGame->player->balance >= floor($objGame->player->bet/2) && 0 < floor($objGame->player->bet/2) ) { ?>
 	<input<?php echo 0 < $objGame->player->insurance ? ' style="color:green;" disabled="1"' : ''; ?> type="submit" name="insurance" value="insurance (<?php echo min($objGame->player->balance, floor($objGame->player->bet/2)); ?>)" />
 <?php } ?>
 	<input type="submit" name="bet" value="bet" onclick="var b=prompt('Your bet:','<?php echo min($objGame->player->balance, $objGame->player->bet); ?>');if(!b||0>b){return false;}this.value=b;" />

@@ -1,6 +1,6 @@
 <?php
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 require "$levels.php";
 
 if ( isset($_REQUEST['load_map']) ) {

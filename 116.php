@@ -1,9 +1,7 @@
 <?php
+// CIJFERS
 
-if ( isset($_GET['source']) ) {
-	highlight_file(__FILE__);
-	exit;
-}
+require __DIR__ . '/inc.bootstrap.php';
 
 error_reporting(2047);
 
@@ -98,12 +96,12 @@ function NumberToString( $iNumber, $delim = ' ' )
 
 
 /**
- * 
+ *
  * CONFIGS
- * 
+ *
  * This part is language specific
  * Language-structurally, this script only works for english though :)
- * 
+ *
  **/
 $arrNumbersToTwenty	= Array("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eightteen", "nineteen", "twenty");
 $arrTensToHundred	= Array("zero", "ten", "twenty", "thirty", "fourty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred", "and");
@@ -111,9 +109,9 @@ $arrThousands		= Array("thousand", "million", "billion", "trillion", "quadrillio
 
 
 /**
- * 
+ *
  * THE PAGE
- * 
+ *
  **/
 $max_for_func = pow(1000,count($arrThousands))-1;
 $getal = isset($_GET['getal']) ? max(0, (int)$_GET['getal']) : $max_for_func;
@@ -127,6 +125,7 @@ if ( isset($_GET['ajax']) ) {
 }
 
 ?>
+<title>CIJFERS</title>
 <body>
 
 <p><a href="?source">source</a></p>

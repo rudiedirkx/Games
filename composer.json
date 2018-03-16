@@ -1,0 +1,17 @@
+{
+    "name": "rdx/games",
+    "type": "project",
+    "require": {
+        "rdx/db": "^1.4"
+    },
+    "autoload": {
+        "files": ["inc.functions.php"]
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rudie Dirkx",
+            "email": "github@hotblocks.nl"
+        }
+    ]
+}

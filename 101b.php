@@ -18,7 +18,10 @@ while ( count($deck->cards) < $iDecks*52 ) {
 }
 $deck->shuffle();
 
-echo "<p>$iDecks decks, randomly ordered:</p>\n";
+?>
+<title>Blackjack counting cards</title>
+<p><?= $iDecks ?> decks, randomly ordered:</p>
+<?php
 
 $iCount = 0;
 foreach ( $deck->cards AS $i => $objCard ) {

@@ -1,7 +1,7 @@
 <?php
 // MAHJONG MAP BUILDER
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 ?>
 <!doctype html>

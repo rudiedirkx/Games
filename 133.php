@@ -59,7 +59,7 @@ define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
 /////////////////////////////////////////////////////////////////////////////////
 // MYSQL CONNECT + SESSION START
 
-include("connect.php");
+require __DIR__ . '/inc.bootstrap.php';
 
 session_start();
 

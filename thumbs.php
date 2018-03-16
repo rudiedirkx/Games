@@ -1,6 +1,6 @@
 <?php
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 $thumbs = get_thumbs();
 

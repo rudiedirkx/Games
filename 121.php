@@ -1,7 +1,6 @@
 <?php
 // POKER
 
-error_reporting(2047);
 session_start();
 
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
@@ -17,7 +16,7 @@ $IMAGE_DIR = "images/";						// Waar je 4 plaatjes (zie Array $kleuren+'.gif') s
 
 $voor_rules_naar=array("Jacks","Queens","Kings","Aces");
 
-$MIN_VOOR_ONE_PAIR = 10;						// Voorbeeld: als dit 8 is, heb je geen ONE PAIR met twee zessen. Mogelijke waarden: 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K' of 'A'
+$MIN_VOOR_ONE_PAIR = 1;						// Voorbeeld: als dit 8 is, heb je geen ONE PAIR met twee zessen. Mogelijke waarden: 2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K' of 'A'
 
 $CHEATING_IS_OK = FALSE;							// Als CHEATING aanstaat kan je na het inzetten de 10 gekozen kaarten al zien (ipv de 5 die je in je hand hebt)
 
@@ -45,8 +44,6 @@ $UITBETALEN['royal_flush']			= 10;	// Dit heb ik nog nooit van me leven gezien! 
 
 $MAX_BET = 25000;							// Als MAX_BET==0, is er geen maximale inzet
 
-$MYSQL_ON = TRUE;								// Als je MySQL hebt _EN_ je bent verbonden met een database (!!), wordt er een Hall Of Fame bijgehouden
-$MYSQL_TABLE_NAME = "poker";				// Volledige table name
 
 
 
@@ -61,9 +58,6 @@ $MYSQL_TABLE_NAME = "poker";				// Volledige table name
 
 
 
-
-
-require_once('connect.php');
 
 if (!isset($_SESSION['poker']['score']))
 	$_SESSION['poker']['score'] = 1000;
@@ -93,17 +87,7 @@ if (isset($_GET['otherpage']))
 	Header("Location: ".BASEPAGE);
 	exit;
 }
-if (isset($_GET['save'], $_GET['name']) && $MYSQL_ON)
-{
-	if ( 5000 < $_SESSION['poker']['score'] )
-	{
-		mysql_query("INSERT INTO $MYSQL_TABLE_NAME (name,score,score_time) VALUES ('".strtoupper(strip_tags(trim($_GET['name'])))." (".gethostbyaddr($_SERVER['REMOTE_ADDR']).")','".$_SESSION['poker']['score']."','".time()."')") or die(($DEBUG_MODE)?"MySQL error:<br>".mysql_error():"MySQL ERROR");
-		$_SESSION['poker']['score'] = 0;
-	}
 
-	Header("Location: ".BASEPAGE);
-	exit;
-}
 
 if (isset($_POST['action']) && $_POST['action']=="bet" && isset($_POST['bet']) && 0 <= $_POST['bet'] && 0 <= $_SESSION['poker']['score']-((int)trim($_POST['bet'])) )
 {
@@ -465,7 +449,6 @@ else
 }
 
 echo "<br>\n<br><b>SCORE: ".$_SESSION['poker']['score']."</b> (<a href=\"?action=start_over\">reset</a>) (BET: ".( isset($BET) ? $BET : 0 ).")<br>\n<br>\n</b>";
-echo ($MYSQL_ON) ? "<a href=\"#\" onclick=\"return save_game();\">Save Score</a>" : "";
 echo "<br>";
 
 if ( ($CHEATING_IS_OK || $DEBUG_MODE) && isset($_SESSION['poker']['cards']) && is_array($_SESSION['poker']['cards']))
@@ -533,36 +516,8 @@ Pays <?php echo $UITBETALEN['royal_flush']; ?> times your bet.<br>
 
 	unset($_SESSION['poker']['otherpage']);
 }
-else if (isset($_SESSION['poker']['otherpage']) && $_SESSION['poker']['otherpage']=="top10" && $MYSQL_ON)
-{
-	echo "<br><br><a href=\"?otherpage=pagerules\">Rules</a><br><br><b><u>HALL OF FAME</u></b><br><br>";
-	$q = mysql_query('SELECT * FROM '.$MYSQL_TABLE_NAME.' ORDER BY score DESC, score_time DESC LIMIT 10;');
-	$a=0;
-	echo '<table border="1" cellpadding="4" cellspacing="2" id="top10">'.EOL;
-	while ($qi = mysql_fetch_assoc($q)) {
-		$a++;
-		echo "<tr>".EOL;
-		echo '<td align="right">'.$a.'.</td>'.EOL;
-		echo '<td>'.$qi['name'].'</td>'.EOL;
-		echo '<td align="right">'.number_format($qi['score'], 0, ".", ",").'</td>'.EOL;
-		echo '<td align="right">'.date("D d-m-Y H:i",$qi['score_time']).'</td>'.EOL;
-		echo "</tr>".EOL;
-	}
-	echo "</table>".EOL;
-	unset($_SESSION['poker']['otherpage']);
-}
 else
 {
 	echo "<br>\n<br>\n<a href=\"?otherpage=pagerules\">Rules</a>";
-	if ($MYSQL_ON)
-		echo "<br>\n<br>\n<a href=\"?otherpage=top10\">Hall Of Fame</a>";
 }
 echo "</div>";
-
-if ($DEBUG_MODE)
-{
-	echo "<pre>";
-	print_r($_SESSION['poker']);
-}
-
-?>

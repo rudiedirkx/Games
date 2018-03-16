@@ -1,7 +1,7 @@
 <?php
 // PICROSS
 
-require __DIR__ . '/inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 $g_arrMaps = getMaps();
 if (!($level = getLevelFromInput($map))) {

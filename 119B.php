@@ -1,7 +1,7 @@
 <?php
 // PICROSS BUILDER
 
-require __DIR__ . '/inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 ?>
 <!doctype html>

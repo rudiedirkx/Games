@@ -1,7 +1,7 @@
 <?php
 // INDEX
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 $g_iWidth		= 11;
 $g_iTileWidth	= 91;
@@ -39,16 +39,15 @@ $g_arrGames = array(
 	['123B',			'Stepping stones - Editor',						'Create your own Steppin stones level'],
 	['124',				'SAFE CRACKING',								'Crack the safe by choosing the four right numbers'],
 	['125',				'HOW FAST ARE YOU?',							'Very simple JS game. Hit the field as soon as possible when it turns red!'],
-	['126',				'SOME COLOURS',									'Practically all possible HTML RGB colours'],
 	['127',				'NUMBER GUESSING',								'Try to guess the number in as few tries as possible'],
 	['128',				'HOW COMPUTER CREATED EARTH',					'The story about God, Earth, the creation and those )#$)(@!#& computers'],
 	['131',				"PHP POKER TEXAS HOLD'EM TEST",					'A test to benchmark my PHP PokerTexasHoldem class'],
 	['131b',			"TEXAS HOLD'EM TEST",							'A test to benchmark my new PokerTexasHoldem class'],
-	['132',				'MULTIPLAYER POKER',							"Play Poker Texas Hold'em with 3 other people"],
-	['133',				'DOPEWARS',										'Deal drugs to make lots and lots of moneeehy'],
+	// ['132',				'MULTIPLAYER POKER',							"Play Poker Texas Hold'em with 3 other people"],
+	// ['133',				'DOPEWARS',										'Deal drugs to make lots and lots of moneeehy'],
 	['134',				'TICK TACK TOE',								'The classic'],
-	['136',				'SUDOKU -DoItYourself',							'Make your own sudoku or try one of the earlier'],
-	['137',				'KIDS SUDOKU',									'Make your own very easy sudoku and play it'],
+	// ['136',				'SUDOKU -DoItYourself',							'Make your own sudoku or try one of the earlier'],
+	// ['137',				'KIDS SUDOKU',									'Make your own very easy sudoku and play it'],
 	['139',				'THE BOX - One Target',							'Get all boxes in that one corner'],
 	['140',				'THE BOX - More Targets',						'Every box has one place to go to. Not as easy as One Target'],
 	['140B',			'THE BOX - Editor',								'Create your own The Box level'],

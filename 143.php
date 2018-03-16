@@ -20,10 +20,9 @@ define('REQUEST_TIME', time());
 session_start();
 define('S_NAME', 'abalone');
 
-require 'inc.env.php';
+require 'inc.bootstrap.php';
 require 'inc.db.php';
-
-$db->schema(require '143.schema.php');
+$db->ensureSchema(require '143.schema.php');
 
 
 

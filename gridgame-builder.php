@@ -1,6 +1,6 @@
 <?php
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 $gameName = (int) basename($_SERVER['PHP_SELF']);
 

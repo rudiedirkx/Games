@@ -69,7 +69,7 @@ define( "MAX_BITCHES",	25 );
 /////////////////////////////////////////////////////////////////////////////////
 // MYSQL CONNECT + SESSION START
 
-include("connect.php");
+require __DIR__ . '/inc.bootstrap.php';
 
 session_start();
 
@@ -159,7 +159,7 @@ if ( isset($_GET['action']) && "hiscore" == $_GET['action'] )
 	echo "<html><head><title>dopewars</title>";
 	print_css( );
 	echo "</head><body><center><h3>dopewars - high scores</h3>";
-	
+
 	echo "<p><b>Active dealers - Top 200</b></p>";
 	$hq = mysql_query("SELECT name, score FROM dopewars ORDER BY score DESC LIMIT 200;") or die(mysql_error());
 	$n=1;
@@ -167,7 +167,7 @@ if ( isset($_GET['action']) && "hiscore" == $_GET['action'] )
 	{
 			echo ($n++)." - ".htmlspecialchars($val['name']).' ($'.nummertje($val['score']).")<br>\n";
 	}
-	
+
 	echo "<p><b>Legendary (dead) dealers - All-time-hi-scores - Top 100</p>";
 	$hq = mysql_query("SELECT name, score FROM dopescores ORDER BY score DESC LIMIT 100;") or die(mysql_error());
 	$n=1;
@@ -175,7 +175,7 @@ if ( isset($_GET['action']) && "hiscore" == $_GET['action'] )
 	{
 			echo ($n++)." - ".htmlentities($val['name']).' ($'.nummertje($val['score']).")<br>\n";
 	}
-	
+
 	echo '<p><a href="'.BASEPAGE.'">back</a></p>';
 	echo "</body></html>";
 	exit;
@@ -260,7 +260,7 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 							}
 							Header( "Location: ".BASEPAGE."?NEW_ACCOUNT_MADE" );
 							exit;
-						}											
+						}
 					}
 					else
 					{
@@ -285,7 +285,7 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 							// print_r( $_SESSION['player'] );
 							exit;
 						}
-					}					
+					}
 				}
 			}
 
@@ -310,7 +310,7 @@ if ( ( !isset($_SESSION['player']) || !isset($_SESSION['uid']) ) || isset($_GET[
 				echo "</select></p>";
 				echo "<p><label for=new><input type=checkbox name=new id=new> create new account</label></p>";
 				echo "<input type=submit value=\"login\"> ";
-				echo "</form>";	
+				echo "</form>";
 				echo "</body></html>";
 				exit;
 			}
@@ -511,12 +511,12 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 			else
 			{
 				echo "<h3>" . $str["onthemove"] . " " . $places[$player["destination"]] . "</h3><div style=\"height:100px;margin-top:30px;\">";
-				
+
 				while (list($key, $event) = each ($player["fighthistory"]))
 				{
 					printf ($str[$event] . "<br>", htmlentities($opponent["name"]));
 				}
-	
+
 				check_life( __LINE__ );
 
 				if ( $opponent["opponent"] )
@@ -536,7 +536,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 						}
 						if ($damage >=  5 - $opponent["bitches"]/2)
 						{
-		
+
 							if (mt_rand(0,$opponent["bitches"]))
 							{
 								$opponent = lose_bitch($opponent);
@@ -558,7 +558,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 									$opponent["life"] -= round($damage * .4 + 0.3 * max(0,$opponent["total"])/1000000 );
 								}
 								$opponent["fighthistory"][] = "yourhit";
-		
+
 								if ($opponent["life"] <= 0)
 								{
 									$opponent["life"] = 0;
@@ -761,7 +761,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 								echo "<form><input type=\"submit\" value=\"" . $str["continue"]. "\"></form>";
 								echo "</body></html>";
 								save_exit();
-				
+
 			}
 			else if ( !isset($player['fight']) || !$player['fight'] )
 			{
@@ -855,7 +855,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 		{
 			if ($player['debt'] > MAX_LOAN && $player['threat'] == 0)
 			{
-				$threat = 1;	
+				$threat = 1;
 			}
 			else if ($player['debt'] > MAX_LOAN * 1.2 && $player['threat'] == 1)
 			{
@@ -877,15 +877,15 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 			$player["life"] -= pow($threat, 3) * 4;
 			$player["threat"] = $threat;
 			$player["travel"] = 0;
-		
+
 			check_life(__LINE__);
 
 			echo "</div>";
 		//	printmenu(0);
 			echo "<form><input type=\"submit\" value=\"" . $str["continue"]. "\"></form>";
-			
+
 			echo "</body></html>";
-			save_exit();						
+			save_exit();
 		}
 		else if (mt_rand(0, $foo) == 0 || $player["snitches"] != Array() )
 		{
@@ -898,9 +898,9 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 				$player["currentsnitches"] = array();
 				$player["cops"] = mt_rand(2, 12 - min(9, $foo-2));
 			}
-			
+
 			$player["fight"] = time();
-	
+
 			echo "<h3>" . $str["onthemove"] . " " . $places[$player["destination"]] . "</h3>";
 			echo "<div style=\"height:100px;margin-top:30px;\">";
 
@@ -930,7 +930,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 							printf($str["lostdrugs"], $drugs[$key]["name"]);
 							break;
 						}
-					}	
+					}
 				}
 				else if ($player["space"] && $r < 4)
 				{
@@ -1003,7 +1003,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 		echo "</body></html>";
 		save_exit();
 	}
-	
+
 }
 
 // ****************************************************************************
@@ -1013,7 +1013,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 {
 	if ( isset($player['snitchreport']) && $player['snitchreport'] )
 	{
-	
+
 		echo "<h3>" . $str["onthemove"] . " " . $places[$player["destination"]] . "</h3>";
 		echo "<div style=\"height:100px;margin-top:30px;\">";
 
@@ -1054,7 +1054,7 @@ if ( isset($player['destination']) && $player['destination'] != "" && $player['l
 	//	printmenu(0);
 		echo "<form><input type=\"submit\" value=\"" . $str["continue"]. "\"></form>";
 		echo "</body></html>";
-		
+
 		save_exit();
 	}
 }
@@ -1118,14 +1118,14 @@ if ($player['destination']!="" && $player['location']!=$player['destination'])
 			$prices[$i] = round($prices[$i]);
 		}
 	}
-	
+
 	$drugcnt = mt_rand(count($drugs)/2, count($drugs));
-	
+
 	while ($drugcnt < count($prices))
 	{
 		unset($prices[mt_rand(0,count($drugs))]);
 	}
-	
+
 	$player['location'] = $player['destination'];
 	$player['destination'] = "";
 	$player['prices'] = $prices;
@@ -1284,7 +1284,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] 
 							echo $str["ooh"];
 							break;
 					}
-					break;						
+					break;
 				case 1:
 					// SPY
 					if (is_numeric($dealer)) {
@@ -1326,7 +1326,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] 
 					echo "</form></td><td width=1>";
 					printmenu("right");
 					save_exit();
-					
+
 				case 2:
 					// SNITCH
 					if ( isset($_GET['dealer']) && is_numeric($_GET['dealer']) )
@@ -1358,7 +1358,7 @@ if ( isset($_GET['action']) && $_GET['action'] == "hire" && $player["location"] 
 					echo "</form></td><td width=1>";
 					printmenu("right");
 					save_exit();
-	
+
 				case 3:
 					// DRUGS RUNNER
 
@@ -1392,7 +1392,7 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 	{
 		$player["prices"][$_GET['drug']] = isset($player["prices"][$_GET['drug']]) ? $player["prices"][$_GET['drug']] : 0;
 		$realprice = $_GET['quantity'] * $player["prices"][$_GET['drug']];
-		
+
 		if ( $player["prices"][$_GET['drug']] || $_GET['action'] != "buy" )
 		{
 			if ($_GET['action'] == "buy")
@@ -1421,7 +1421,7 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 
 					$player['drugs'][$_GET['drug']] += $_GET['quantity'];
 					$player['drugprices'][$_GET['drug']] = round($drugamount / $player['drugs'][$_GET['drug']]);
-	
+
 				}
 			}
 			else
@@ -1438,7 +1438,7 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 					$player['space'] += $_GET['quantity'];
 					$player['drugs'][$_GET['drug']] -= $_GET['quantity'];
 				}
-			}			
+			}
 		}
 		$_GET['drug'] = '';
 
@@ -1485,7 +1485,7 @@ if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "
 				$player["cash"] += $realprice;
 				$player["guns"][$_GET['gun']] -= $_GET['quantity'];
 			}
-		}			
+		}
 	}
 }
 
@@ -1504,10 +1504,10 @@ if ( isset($_GET['s']) && $_GET['s'] )
 			echo "<input type=submit name=withdraw value=\"".$str['loan']."\"> ";
 			echo "<input type=submit name=deposit value=\"".$str['pay']."\">";
 			echo "<input name=s type=hidden value=1>";
-		
-			echo "</form>";	
+
+			echo "</form>";
 			break;
-		
+
 		case 1:
 			// ****************************************************************************
 			// BITCHES
@@ -1521,13 +1521,13 @@ if ( isset($_GET['s']) && $_GET['s'] )
 			{
 				echo "<option value=\"$key\">".$val['name']." - $currency ".$val['price']."</option>";
 			}
-			
+
 			echo "</select><br><br>";
 			echo "<input name=s type=hidden value=1>";
 			echo "<input type=submit value=\"".$str['hire']."\"></form>";
-			
+
 			break;
-			
+
 		case 2:
 			// ****************************************************************************
 			// HOSPITAL
@@ -1541,7 +1541,7 @@ if ( isset($_GET['s']) && $_GET['s'] )
 				echo "<input type=hidden name=action value=\"operate\">";
 				echo "<input type=submit value=\"".$str['operate']."\"> ";
 				echo "<input name=s type=hidden value=1>";
-				echo "</form>";	
+				echo "</form>";
 			} else {
 				echo "<p>".$str['recovered']."</p>";
 
@@ -1559,13 +1559,13 @@ if ( isset($_GET['s']) && $_GET['s'] )
 			echo "<input type=\"submit\" name=\"withdraw\" value=\"" . $str["withdraw"] . "\"> ";
 			echo "<input type=\"submit\" name=\"deposit\"  value=\"" . $str["deposit"]  . "\">";
 			echo "<input name=\"s\" type=\"hidden\" value=\"1\">";
-		
-			echo "</form>";	
+
+			echo "</form>";
 			break;
 		case 5:
 			// ****************************************************************************
 			// GUNSHOP
-			
+
 			echo "<table border=1 cellpadding=2 cellspacing=0><tr>";
 			echo "<td><center><form name=buy><input type=\"hidden\" name=\"action\" value=\"buy\">";
 			echo $str["available"];
@@ -1576,13 +1576,13 @@ if ( isset($_GET['s']) && $_GET['s'] )
 				$selected = (isset($_GET['gun']) && $_GET['gun'] == $gun && isset($_GET['action']) && $_GET['action'] == 'buy' ) ? ' SELECTED' : '';
 				echo '<option value="'.$gun.'"' . $selected . '>' . $val["name"] . ' - '.$currency.' ' . $val["price"] . '</option>';
 			}
-			
+
 			echo "</select><br><br>";
 			echo "<input name=\"quantity\" type=\"hidden\" value=\"1\">";
 			echo "<input name=\"s\" type=\"hidden\" value=\"1\">";
 			echo "<input type=\"submit\" value=\"". $str["buy"] . " &gt;\"></form></td>";
-			
-			
+
+
 			echo "<td><center><form action=\"\" name=\"sell\"><input type=\"hidden\" name=\"action\" value=\"sell\">";
 			echo $str["carried"];
 			echo "<br><br><select name=\"gun\" size=\"5\" style=\"width:160px;\">";
@@ -1596,17 +1596,17 @@ if ( isset($_GET['s']) && $_GET['s'] )
 					echo '<option value="'.$gun.'"'.$selected.'>'.$gunname.' - '.$val.'</option>';
 				}
 			}
-			
+
 			echo "</select><br><br>";
 			echo "<input name=\"quantity\" type=\"hidden\" value=\"1\">";
 			echo "<input name=\"s\" type=\"hidden\" value=\"1\">";
 			echo "<input type=\"submit\" value=\"&lt; ". $str["sell"] . "\"></form></td>";
-			
+
 			echo "</tr></table>";
 			break;
 	}
 
-	
+
 	echo "<p><a href=\"".BASEPAGE."\">".$str['leave']."</a></p>";
 
 }
@@ -1625,7 +1625,7 @@ else
 
 	// ****************************************************************************
 	// DEALING DRUGS
-	
+
 	}
 	else if ( isset($_GET['action']) && ($_GET['action'] == "buy" || $_GET['action'] == "sell") && isset($_GET['drug']) && $_GET['drug'] != '' )
 	{
@@ -1633,7 +1633,7 @@ else
 		echo '<input type=hidden name=action value="'.$_GET['action'].'">';
 		echo '<input type=hidden name=drug value="'.$_GET['drug'].'">';
 		$drugname = $drugs[$_GET['drug']]["name"];
-		
+
 		$price = isset($player["prices"][$_GET['drug']]) ? max(1, $player["prices"][$_GET['drug']]) : -1;
 
 		if ($_GET['action'] == "sell")
@@ -1659,8 +1659,8 @@ else
 		} else {
 			echo "<input type=\"submit\" value=\"" . $str["sell"] . "\">";
 		}
-	
-		echo "</form>";	
+
+		echo "</form>";
 	}
 	else
 	{
@@ -1705,8 +1705,8 @@ else
 		}
 		echo "</select><br><br>";
 		echo "<input type=\"submit\" value=\"". $str["buy"] . " &gt;\"></form></td>";
-		
-		
+
+
 		echo "<td><center><form name=sell><input type=\"hidden\" name=\"action\" value=\"sell\">";
 		echo $str["carried"];
 		echo "<br><br><select name=\"drug\" size=\"11\" style=\"width:200px;\">";
@@ -1814,7 +1814,7 @@ function get_language_stuff( )
 		$fight		= Array("blijven staan",
 							"over geven",
 							"vluchten",
-							"schieten");	
+							"schieten");
 
 		$maxmsgs	= Array("%s is in de mode!",
 							"Een lading %s is onderschept, er is schaarste!",
@@ -1860,7 +1860,7 @@ function get_language_stuff( )
 		$str["hire"]		= "huren";
 		$str["hirebitch"]	= "huur hoer voor/als:";
 		$str["maxbitch"]	= "Je niet meer dan 10 hoeren huren als drugskoerier.";
-		$str["maxloan"]		= "De woekeraar wil nog je maximaal &euro; %s lenen.";	
+		$str["maxloan"]		= "De woekeraar wil nog je maximaal &euro; %s lenen.";
 
 		$str["cash"]		= "contanten";
 		$str["bank"]		= "bank";
@@ -1895,11 +1895,11 @@ function get_language_stuff( )
 		$str["copsshoot"]	= "De politie schiet met %s agenten...";
 		$str["copshoot"]	= "De laatste agent schiet...";
 		$str["bitchkilled"]	= "E&eacute;n van je hoeren is doodgeschoten.";
-		$str["yourhit"]		= "Je bent geraakt.";	
-		$str["missed"]		= "Niet geraakt!";	
+		$str["yourhit"]		= "Je bent geraakt.";
+		$str["missed"]		= "Niet geraakt!";
 		$str["forfeit"]		= "Door een plukze-maatregel wordt &euro; %s van je bankrekening gevorderd door het <a href=\"http://www.openbaarministerie.nl/over_om/over_om.php#31\" target=\"_blank\">BOOM</a>.";
-	
-		$str["continue"]	= "verder";	
+
+		$str["continue"]	= "verder";
 
 		$str["onthemove"]	= "Onderweg naar";
 		$str["lostdrugs"]	= "Je werd achtervolgd door een <b>stadsmarinier</b>. Onderweg ben je je %s kwijtgeraakt.";
@@ -1950,11 +1950,11 @@ function get_language_stuff( )
 		$str["youkilledopponent"]	= "Je hebt %s doodgeschoten. Je vindt &euro; %s in de portefeuille.";
 		$str["youshotopponent"]	= "Je hebt %s geraakt.";
 		$str["opponentdead"]	= "%s is dood.";
-	
+
 		$str["bitchgone"]	= "E&eacute;n van je hoeren is er vandoor gegaan.";
-	
+
 		$str["encounter"]	= "Je komt %s tegen, wat doe je?";
-	
+
 		$str["op_status"]	= "Toestand van %s:<br>hoeren: %s<br>wapens: %s<br>gezondheid: %s%%";
 
 		$str["qod"]		= "Wil je echt een overdosis nemen (en wellicht legendarisch worden)?";
@@ -2067,7 +2067,7 @@ function get_language_stuff( )
 		$str["hire"]	= "hire";
 		$str["hirebitch"]	= "hire bitch to / for:";
 		$str["maxbitch"]	= "You can't hire more than 10 bitches to carry drugs.";
-		$str["maxloan"]	= "The loan shark only want to loan you \$; %s more.";	
+		$str["maxloan"]	= "The loan shark only want to loan you \$; %s more.";
 
 		$str["cash"]	= "cash";
 		$str["bank"]	= "bank";
@@ -2102,11 +2102,11 @@ function get_language_stuff( )
 		$str["copsshoot"]	= "%s cops are shooting...";
 		$str["copshoot"]	= "The last cop shoots...";
 		$str["bitchkilled"]	= "One of your bitches got killed.";
-		$str["yourhit"]		= "You've been hit.";	
-		$str["missed"]		= "Miss!";	
+		$str["yourhit"]		= "You've been hit.";
+		$str["missed"]		= "Miss!";
 		$str["forfeit"]		 = "The <a href=\"http://www.usdoj.gov/dea/programs/af.htm\" target=\"_blank\">DEA</a> forfeits $ %s from your bank account.";
 
-		$str["continue"]	= "continue";	
+		$str["continue"]	= "continue";
 
 		$str["lostdrugs"]	= "They chased you! You lost the %s.";
 		$str["foundbody"]	= "You find the dead body of a bitch with %s x %s.";
@@ -2246,7 +2246,7 @@ function save_player( $uid, $player, $stopmoving = 0 )
 	{
 		$player['total'] += $player['drugprices'][$drug] * $val;
 	}
-	
+
 	// update database
 	$pl = addslashes(serialize($player));
 	$qry = "UPDATE dopewars SET player='$pl'";
@@ -2282,7 +2282,7 @@ function check_life( $line = 0 )
 		echo "<br>". $str[dead];
 		echo "<p><a href=\"?logout=1\">new game</a>";
 		echo "</body></html>";
-		exit;	
+		exit;
 	}
 }
 
@@ -2317,7 +2317,7 @@ function report_snitches( )
 	$qry = "SELECT * FROM dopewars WHERE name in ('$qry')";
 	$results = mysql_query($qry);
 	while ($result = mysql_fetch_assoc($results))
-	{	
+	{
 		$subject = unserialize(stripslashes($result['player']));
 		$subject['snitchreport'][] = $player['fightreport'];
 		save_player($result['name'], $subject);
@@ -2415,7 +2415,7 @@ function print_css( )
 	// Make this a stylesheet
 	// You can use an external stylesheet, as follows
 	//   @import url("path/to/stylesheet.css");
-	
+
 	echo 'BODY, TABLE'.EOL;
 	echo '{'.EOL;
 	echo '	font-family:		Verdana, Arial;'.EOL;
@@ -2508,7 +2508,7 @@ function print_css( )
 	echo '{'.EOL;
 	echo '	'.EOL;
 	echo '}'.EOL;
-	
+
 	echo '</style>'.EOL;
 }
 

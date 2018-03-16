@@ -1,7 +1,7 @@
 <?php
 // 9*9 SUDOKU
 
-require 'connect.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );

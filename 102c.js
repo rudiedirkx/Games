@@ -12,7 +12,7 @@ function MinesweeperSolver(table, sweeper) {
 	this.mf_ResetTrace();
 }
 
-MinesweeperSolver.autoClickDelay = 50;
+MinesweeperSolver.autoClickDelay = 0;
 
 // DEBUG //
 MinesweeperSolver.DEBUG = 2;

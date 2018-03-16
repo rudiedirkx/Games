@@ -1,7 +1,7 @@
 <?php
 // WORDMIX
 
-require 'inc.functions.php';
+require __DIR__ . '/inc.bootstrap.php';
 
 session_start();
 

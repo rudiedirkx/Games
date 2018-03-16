@@ -1,4 +1,5 @@
 <?php
+// EINSTEIN'S RIDDLE
 
 $arrHints = array(
 	'The Brit lives in a red house.',
@@ -29,7 +30,7 @@ $arrPets			= array('Birds', 'Cats', 'Dogs', 'Fish', 'Horses');
 <html>
 
 <head>
-<title></title>
+<title>EINSTEIN'S RIDDLE</title>
 <style type="text/css">
 * {
 	margin				: 0;
@@ -97,7 +98,7 @@ addEventHandler(window, 'load', function() {
 	// Asign names to selectboxes
 	foreach ( $('_tb').rows, function(k, row) {
 		foreach ( row.cells, function(k, sb) {
-			
+
 		});
 	});
 });

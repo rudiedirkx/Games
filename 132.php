@@ -5,7 +5,7 @@
  */
 
 $_CHEAT_IPS = array(
-	
+
 );
 
 if ( function_exists('date_default_timezone_set') ) {
@@ -37,7 +37,7 @@ error_reporting(4095);
 session_start();
 
 /** INCLUDES **/
-include_once("connect.php");
+require __DIR__ . '/inc.bootstrap.php';
 
 
 /** SCRIPTING CONSTANTS **/
@@ -1111,7 +1111,7 @@ function wie_is_aan_de_beurt() {
 		return (int)mysql_result($qTurn, 0);
 	}
 
-	
+
 
 	return FALSE;
 

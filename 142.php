@@ -1,4 +1,6 @@
 <?php
+// MULTI PLAYER POKER
+
 // Todo
 // ->> Make `state` a TINYINT, not ENUM - Update everywhere it's used!
 // - Save bets differently
@@ -7,6 +9,8 @@
 // - Update `turn` and `ready_for_next_round` and force small and big blinds
 // - Rotate through players untill bets are equal within `in_or_out` and all `ready_for_next_round`
 // - Sitouts due to lack of chips are determined PRE GAME
+
+exit('disabled');
 
 // misc preparation
 session_start();
@@ -21,17 +25,16 @@ define( 'TABLE_BETS',		'mpp_bets' );
 define( 'TABLE_POOLS',		'mpp_pools' );
 define( 'MAX_PLAYERS_EVER',	10 );
 
-require_once('inc.db_mysql.php');
-db_set(db_connect('localhost', 'usager', 'usager', 'games'));
-require_once('inc.cls.json.php');
+require __DIR__ . '/inc.bootstrap.php';
+
 require_once('inc.cls.cardgame.php');
 require_once('inc.cls.pokertexasholdem.php');
 
 
 if ( isset($_GET['card']) ) {
-	card::$__tostring = create_function('$c', 'return "images/".$c->suit."_".$c->short.".gif";');
+	card::$__tostring = function($c) { return "images/" . $c->suit . "_" . $c->short . ".gif"; };
 	$objCard = new Card($_GET['card']);
-	header('Last-Modified: '.gmdate('D, d M Y H:i:s', 0).' GMT'); 
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s', 0).' GMT');
 	header('Content-type: image/gif');
 	readfile((string)$objCard);
 	exit;
