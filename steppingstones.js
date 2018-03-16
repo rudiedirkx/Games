@@ -32,8 +32,9 @@ class SteppingStones extends LeveledGridGame {
 	}
 
 	createdMap( rv ) {
-		var jumper = Coords2D.fromArray(rv.jumper);
-		this.getCell(jumper).addClass('stone').addClass('jumper');
+		var stoneCells = this.m_objGrid.getElements('.stone');
+		stoneCells.sort(() => Math.random() > 0.5 ? 1 : -1);
+		stoneCells[0].addClass('jumper');
 
 		this.setStones();
 	}
@@ -96,6 +97,94 @@ class SteppingStones extends LeveledGridGame {
 		}
 
 		return start.add(new Coords2D(dx, dy));
+	}
+
+}
+
+class SteppingStonesEditor extends GridGameEditor {
+
+	cellTypes() {
+		return {
+			available: 'Grid',
+			stone: 'Stone',
+		};
+	}
+
+	defaultCellType() {
+		return 'available';
+	}
+
+	createCellTypeCell( type ) {
+		return '<td class="available ' + type + '"><span></span></td>';
+	}
+
+	createdMapCell( cell ) {
+		cell.setHTML('<span></span>');
+	}
+
+	exportLevel() {
+		var map = [];
+
+		r.each(this.m_objGrid.rows, (tr, y) => {
+			var row = '';
+			r.each(tr.cells, (cell, y) => {
+				if ( cell.hasClass('stone') ) {
+					row += 's';
+				}
+				else if ( cell.hasClass('available') ) {
+					row += 'o';
+				}
+				else {
+					row += ' ';
+				}
+			});
+			map.push(row);
+		});
+
+		var level = {map};
+		this.validateLevel(level);
+		return level;
+	}
+
+	validateLevel( level ) {
+		var map = level.map.join('');
+		var stones = map.length - map.replace(/s/g, '').length;
+
+		if ( stones == 0 ) {
+			throw 'Need stones.';
+		}
+	}
+
+	formatAsPHP( level ) {
+		var code = [];
+		code.push('\t[');
+		code.push("\t\t'map' => [");
+		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push('\t],');
+		code.push('');
+		code.push('');
+		return code;
+	}
+
+	setType_available( cell ) {
+		if ( cell.hasClass('available') ) {
+			cell.removeClass('available');
+			cell.removeClass('stone');
+		}
+		else {
+			cell.addClass('available');
+		}
+	}
+
+	setType_stone( cell ) {
+		if ( cell.hasClass('stone') ) {
+			cell.removeClass('stone');
+		}
+		else {
+			cell.addClass('available');
+			cell.addClass('stone');
+		}
 	}
 
 }
