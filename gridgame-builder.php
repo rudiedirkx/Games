@@ -61,6 +61,7 @@ textarea {
 <script>
 var gameName = '<?= $gameName ?>';
 var storageName = 'editor_' + gameName;
+var gameNameTypeMap = <?= json_encode(@$nameTypeMap ?: new stdClass) ?>;
 
 var objGame = new <?= $jsClass ?>Editor($('#grid'));
 objGame.createEditor();
@@ -109,6 +110,9 @@ $('#btn-play').on('click', function(e) {
 		console.log('level 2', level);
 		var $code = $('#export-code');
 		$code.value = JSON.stringify(level, Coords2D.jsonReplacer());
+		if ( level.game && gameNameTypeMap[level.game] ) {
+			$code.form.action = gameNameTypeMap[level.game] + '.php';
+		}
 		$code.form.submit();
 	})
 });

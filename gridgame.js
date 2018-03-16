@@ -147,6 +147,10 @@ class GridGame extends Game {
 	listenControls() {
 	}
 
+	isTouchable( element ) {
+		return element.closest('.outside') || getComputedStyle(document.body).touchAction == 'none';
+	}
+
 	listenGlobalDirection() {
 		document.on('keydown', (e) => {
 			if ( e.code.match(/^Arrow/) && !e.alt && !e.ctrl ) {
@@ -158,8 +162,10 @@ class GridGame extends Game {
 
 		var movingStart, movingEnd;
 		document.on('touchstart', (e) => {
-			e.preventDefault();
-			movingStart = e.pageXY;
+			if ( this.isTouchable(e.target) ) {
+				e.preventDefault();
+				movingStart = e.pageXY;
+			}
 		});
 		document.on('touchmove', (e) => {
 			e.preventDefault();

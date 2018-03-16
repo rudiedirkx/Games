@@ -175,6 +175,8 @@ class TheBoxEditor extends GridGameEditor {
 		if ( !level.pusher ) {
 			throw 'Need pusher.';
 		}
+
+		level.game = targets == 1 ? 'single' : 'multiple';
 	}
 
 	formatAsPHP( level ) {
