@@ -98,9 +98,7 @@ require __DIR__ . '/inc.bootstrap.php';
 		</td>
 	</tr>
 	<tr>
-		<td>
-			Moves: <span id="stats-moves">0</span>
-		</td>
+		<td id="stats"></td>
 	</tr>
 	<tr>
 		<td>

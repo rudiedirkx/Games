@@ -1,4 +1,5 @@
 class Mastermind extends Game {
+
 	constructor() {
 		super();
 
@@ -8,6 +9,12 @@ class Mastermind extends Game {
 
 		this.m_objColorSelector = this.createColorSelector();
 		this.m_fnSelectColor = () => 0;
+	}
+
+	statTypes() {
+		var stats = super.statTypes();
+		delete stats.moves;
+		return stats;
 	}
 
 	createColorSelector() {
@@ -49,6 +56,8 @@ class Mastermind extends Game {
 
 	checkSelection() {
 		if ( this.m_bGameOver ) return this.startGame();
+
+		this.startTime();
 
 		var activeRow = this.m_objTable.getElement('tr.active');
 		var colors = this.getSelection(activeRow);

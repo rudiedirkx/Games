@@ -58,9 +58,7 @@ if ( isset($_REQUEST['load_map']) ) {
 		</td>
 	</tr>
 	<tr>
-		<td colspan="2" class="stats">
-			<?= $stats ?>
-		</td>
+		<td colspan="2" id="stats"></td>
 	</tr>
 </table>
 

@@ -1,4 +1,5 @@
 class BioshockFlood extends GridGame {
+
 	constructor( gridElement ) {
 		super(gridElement);
 
@@ -23,6 +24,10 @@ class BioshockFlood extends GridGame {
 
 		this.m_iSize = 0;
 		this.m_iTicker = 0;
+	}
+
+	getStatsDelimiter() {
+		return ' &nbsp; ';
 	}
 
 	getSelectedCell() {

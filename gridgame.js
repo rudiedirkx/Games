@@ -31,22 +31,80 @@ class Game {
 	constructor() {
 		this.ALERT_DELAY = 50;
 
+		this.createGame();
+
 		this.reset();
 	}
 
 	reset() {
 		this.m_bGameOver = false;
+
+		this.stopTime();
+		this.m_iStartTime = 0;
+		this.m_iTimer = 0;
+		this.setTime('-');
+	}
+
+	statTypes() {
+		return {
+			time: 'Time',
+			moves: 'Moves',
+		};
+	}
+
+	getStatsDelimiter() {
+		return '<br>';
+	}
+
+	createStats() {
+		var delim = this.getStatsDelimiter();
+		var html = '';
+		r.each(this.statTypes(), (label, key) => {
+			html += label + ': <span id="stats-' + key + '"></span>' + delim;
+		});
+		$('#stats').setHTML(html);
+	}
+
+	createGame() {
+		this.createStats();
+	}
+
+	startTime() {
+		if ( this.m_iStartTime != 0 ) return;
+
+		this.stopTime();
+		this.m_iStartTime = Date.now();
+		this.m_iTimer = setInterval(() => this.setTime(this.formatTime(Date.now() - this.m_iStartTime)), 200);
+	}
+
+	stopTime() {
+		clearInterval(this.m_iTimer);
+	}
+
+	setTime( time ) {
+		$('#stats-time').setText(time);
+	}
+
+	formatTime( ms ) {
+		var s = Math.round(ms/1000);
+		var m = Math.floor(s/60);
+		s -= m*60;
+		return (m ? m + ' m ' : '') + s + ' s';
 	}
 
 	win() {
+		this.stopTime();
 		this.m_bGameOver = true;
+
 		setTimeout(function() {
 			alert('You win!');
 		}, this.ALERT_DELAY);
 	}
 
 	lose() {
+		this.stopTime();
 		this.m_bGameOver = true;
+
 		setTimeout(function() {
 			alert('You lose!');
 		}, this.ALERT_DELAY);
@@ -107,6 +165,9 @@ class GridGame extends Game {
 	setMoves( f_iMoves ) {
 		if ( f_iMoves != null ) {
 			this.m_iMoves = f_iMoves;
+		}
+		if ( this.m_iMoves > 0 ) {
+			this.startTime();
 		}
 		$('#stats-moves').setText(this.m_iMoves);
 	}
@@ -229,7 +290,7 @@ class LeveledGridGame extends GridGame {
 	}
 
 	undoLastMove() {
-		if ( this.m_arrLastMove ) {
+		if ( !this.m_bGameOver && this.m_arrLastMove ) {
 			this.m_objGrid.setHTML(this.m_arrLastMove[1]);
 			this.setMoves(this.m_arrLastMove[0]);
 			this.m_arrLastMove = null;
@@ -299,6 +360,9 @@ class LeveledGridGame extends GridGame {
 class GridGameEditor extends GridGame {
 
 	reset() {
+	}
+
+	createGame() {
 	}
 
 	clear() {

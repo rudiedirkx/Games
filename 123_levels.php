@@ -31,6 +31,18 @@ $g_arrLevels = [1 =>
 
 	[
 		'map' => [
+			'       ',
+			' ossso ',
+			' sssss ',
+			' ssoss ',
+			' sssss ',
+			' ossso ',
+			'       ',
+		],
+	],
+
+	[
+		'map' => [
 			'   ooo   ',
 			'   oso   ',
 			'   sss   ',

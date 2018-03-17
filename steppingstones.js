@@ -6,6 +6,13 @@ class SteppingStones extends LeveledGridGame {
 		this.setStones(0);
 	}
 
+	statTypes() {
+		var stats = super.statTypes();
+		delete stats.moves;
+		stats.stones = 'Stones';
+		return stats;
+	}
+
 	setMoves() {
 	}
 
@@ -65,6 +72,8 @@ class SteppingStones extends LeveledGridGame {
 		var toField = this.getCell(toFieldC);
 
 		if ( overField.is('.available.stone') && toField.is('.available:not(.stone)') ) {
+			this.startTime();
+
 			this.saveUndoState();
 
 			var nowField = this.getCell(jumper);

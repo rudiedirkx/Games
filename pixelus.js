@@ -1,5 +1,11 @@
 class Pixelus extends LeveledGridGame {
 
+	statTypes() {
+		var stats = super.statTypes();
+		stats.stones = 'Stones';
+		return stats;
+	}
+
 	getStones() {
 		return this.m_objGrid.getElements('.target').length - this.m_objGrid.getElements('.stone').length;
 	}

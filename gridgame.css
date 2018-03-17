@@ -208,25 +208,25 @@ td.wall2 {
 	margin				: 5px auto 0;
 }
 .machinarium td[data-target="0"] {
-	background-color	: grey;
+	background-color	: #444;
 }
 .machinarium td[data-snake="0"]:after {
 	background-color	: black;
 }
 .machinarium td[data-target="1"] {
-	background-color	: yellow;
+	background-color	: #f3f704;
 }
 .machinarium td[data-snake="1"]:after {
-	background-color	: #f6c922;
+	background-color	: #dcce24;
 }
 .machinarium td[data-target="2"] {
-	background-color	: lightgreen;
+	background-color	: #6ac56a;
 }
 .machinarium td[data-snake="2"]:after {
 	background-color	: green;
 }
 .machinarium td[data-target="3"] {
-	background-color	: lightblue;
+	background-color	: #67b0c7;
 }
 .machinarium td[data-snake="3"]:after {
 	background-color	: blue;

@@ -90,7 +90,7 @@ while ( 5 > count($arrPublic) ) {
 	array_push($arrPublic, $objDeck->next());
 }
 
-/**/
+/**
 $arrPublic = Card::named(['sj', 'h10', 'c9', 'h8', 'c7']);
 $arrPlayers[1] = null;
 $arrPlayers[2] = null;

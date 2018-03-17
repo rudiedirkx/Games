@@ -7,9 +7,6 @@ class Machinarium extends LeveledGridGame {
 		this.m_objDraggingCell = null;
 	}
 
-	setMoves() {
-	}
-
 	createField( cell, type, rv, x, y ) {
 		if ( 'x' != type ) {
 			cell.addClass('available');
@@ -62,6 +59,8 @@ class Machinarium extends LeveledGridGame {
 			coords.shift();
 			coords.push(toCellC);
 		}
+
+		this.setMoves(this.m_iMoves + 1);
 
 		this.drawSnakes();
 	}

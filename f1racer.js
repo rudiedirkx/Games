@@ -7,6 +7,12 @@ class F1Racer extends LeveledGridGame {
 		this.m_iPosition = 0;
 	}
 
+	statTypes() {
+		var stats = super.statTypes();
+		delete stats.moves;
+		return stats;
+	}
+
 	setMoves() {
 	}
 
@@ -55,6 +61,8 @@ class F1Racer extends LeveledGridGame {
 
 	handleCellClick( cell ) {
 		if ( cell.hasClass('current') ) {
+			this.startTime();
+
 			cell.addClass('done');
 
 			this.m_iPosition++;

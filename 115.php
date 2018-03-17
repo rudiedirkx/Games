@@ -95,6 +95,11 @@ body:not(.gameover) td.submit .restart {
 	display: none;
 }
 
+#stats {
+	border: 0;
+	color: white;
+}
+
 #color-selection {
 	position: fixed;
 	top: 30px;
@@ -170,6 +175,9 @@ body:not(.selecting-color) #color-selection {
 						<span class="restart">RESTART</span>
 					</button>
 				</td>
+			</tr>
+			<tr>
+				<td colspan="6" id="stats"></td>
 			</tr>
 		</tfoot>
 	</table>

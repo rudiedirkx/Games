@@ -1,5 +1,11 @@
 class TheBoxMultiple extends LeveledGridGame {
 
+	statTypes() {
+		var stats = super.statTypes();
+		stats.moves = 'Energy spent';
+		return stats;
+	}
+
 	getPusher() {
 		var pusher = this.m_objGrid.getElement('.pusher');
 		return this.getCoord(pusher);
