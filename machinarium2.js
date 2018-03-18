@@ -1,124 +1,3 @@
-class Machinarium1 extends LeveledGridGame {
-
-	reset() {
-		super.reset();
-
-		this.m_iAutoChooseTimer = 0;
-	}
-
-	statTypes() {
-		var stats = super.statTypes();
-		delete stats.moves;
-		return stats;
-	}
-
-	createGame() {
-		super.createGame();
-
-		$('#undo-div').hide();
-	}
-
-	setMoves() {
-	}
-
-	createField( cell, type, rv, x, y ) {
-		if ( 'x' != type ) {
-			cell.addClass('available');
-		}
-	}
-
-	haveWon() {
-		return this.m_objGrid.getElements('.available:not(.taken)').length == 0;
-	}
-
-	haveLost() {
-		return this.m_objGrid.getElements('.available:not(.taken)').length > 0;
-	}
-
-	listenControls() {
-		this.listenCellClick();
-	}
-
-	handleCellClick( cell ) {
-		if ( this.m_bGameOver ) {
-			return this.restartLevel();
-		}
-
-		this.startTime();
-		clearTimeout(this.m_iAutoChooseTimer);
-
-		if ( cell.hasClass('start') ) {
-			this.restartLevel();
-		}
-		else if ( cell.hasClass('direction') ) {
-			var currentCell = this.getCurrent();
-			var currentCellC = this.getCoord(currentCell);
-			this.dir4Coords.some((offset) => {
-				var dirCell = this.getCell(currentCellC.add(offset));
-				if ( dirCell == cell ) {
-					this.followDirection(currentCell, offset);
-					return true;
-				}
-			});
-		}
-		else if ( cell.matches('.available:not(.start):not(.taken)') ) {
-			cell.addClass('start');
-			cell.addClass('taken');
-			this.markCurrent(cell);
-			this.hiliteDirections(cell);
-		}
-	}
-
-	followDirection( cell, offset ) {
-		var taken = cell;
-		var lastTaken;
-		while ( taken = this.isAvailable(this.getCell(this.getCoord(taken).add(offset))) ) {
-			taken.addClass('taken');
-			lastTaken = taken;
-		}
-
-		this.markCurrent(lastTaken);
-		var directions = this.hiliteDirections(lastTaken);
-
-		if ( directions.length == 0 ) {
-			this.winOrLose();
-		}
-		else if ( directions.length == 1 ) {
-			this.m_iAutoChooseTimer = setTimeout(() => directions[0].click(), 300);
-		}
-	}
-
-	getCurrent() {
-		return this.m_objGrid.getElement('.current');
-	}
-
-	markCurrent( cell ) {
-		this.m_objGrid.getElements('.current, .direction').removeClass('current').removeClass('direction');
-		cell.addClass('current');
-	}
-
-	hiliteDirections( currentCell ) {
-		var currentCellC = this.getCoord(currentCell);
-
-		var directions = [];
-		r.each(this.dir4Coords, (offset, i) => {
-			var cell = this.getCell(currentCellC.add(offset));
-			if ( this.isAvailable(cell) ) {
-				cell.addClass('direction');
-				cell.data('direction', this.dir4Names[i]);
-				directions.push(cell);
-			}
-		});
-
-		return directions;
-	}
-
-	isAvailable( cell ) {
-		return cell && cell.hasClass('available') && !cell.hasClass('taken') && cell;
-	}
-
-}
-
 class Machinarium2 extends LeveledGridGame {
 
 	reset() {
@@ -266,6 +145,138 @@ class Machinarium2 extends LeveledGridGame {
 		this.m_objDraggingCell = null;
 
 		this.winOrLose();
+	}
+
+}
+
+class Machinarium2Editor extends GridGameEditor {
+
+	cellTypes() {
+		return {
+			available: 'Available',
+			target_0: 'Target A',
+			snake_0: 'Snake A',
+			target_1: 'Target B',
+			snake_1: 'Snake B',
+			target_2: 'Target C',
+			snake_2: 'Snake C',
+			target_3: 'Target D',
+			snake_3: 'Snake D',
+		};
+	}
+
+	defaultCellType() {
+		return 'available';
+	}
+
+	createCellTypeCell( type ) {
+		var m = type.match(/(target|snake)_(\d+)/);
+		if ( !m ) {
+			return super.createCellTypeCell(type);
+		}
+
+		return '<td class="available" data-' + m[1] + '="' + m[2] + '"></td>';
+	}
+
+	createdMapCell( cell ) {
+		cell.addClass('available');
+	}
+
+	setTargetSnake( type, cell, n ) {
+		if ( cell.data(type) == n ) {
+			cell.data(type, null);
+		}
+		else {
+			cell.data(type, n);
+		}
+	}
+
+	setType_available( cell ) {
+		if ( cell.hasClass('available') ) {
+			cell.removeClass('available');
+			cell.data('target', null);
+			cell.data('snake', null);
+		}
+		else {
+			cell.addClass('available');
+		}
+	}
+
+	setType_target_0( cell ) {
+		return this.setTargetSnake('target', cell, 0);
+	}
+
+	setType_snake_0( cell ) {
+		return this.setTargetSnake('snake', cell, 0);
+	}
+
+	setType_target_1( cell ) {
+		return this.setTargetSnake('target', cell, 1);
+	}
+
+	setType_snake_1( cell ) {
+		return this.setTargetSnake('snake', cell, 1);
+	}
+
+	setType_target_2( cell ) {
+		return this.setTargetSnake('target', cell, 2);
+	}
+
+	setType_snake_2( cell ) {
+		return this.setTargetSnake('snake', cell, 2);
+	}
+
+	setType_target_3( cell ) {
+		return this.setTargetSnake('target', cell, 3);
+	}
+
+	setType_snake_3( cell ) {
+		return this.setTargetSnake('snake', cell, 3);
+	}
+
+	exportLevel() {
+		var map = [];
+		var snakes = [];
+
+		// @todo Find ambiguous snake paths, like F1Racer
+
+		r.each(this.m_objGrid.rows, (tr, y) => {
+			var row = '';
+			r.each(tr.cells, (cell, y) => {
+				if ( cell.hasClass('available') ) {
+					var target = cell.data('target');
+					var snake = cell.data('snake');
+
+					row += target ? target : ' ';
+
+					if ( snake ) {
+						snakes[snake] || (snakes[snake] = []);
+						snakes[snake].push(this.getCoord(cell));
+					}
+				}
+				else {
+					row += 'x';
+				}
+			});
+			map.push(row);
+		});
+
+		return {map, snakes};
+	}
+
+	formatAsPHP( level ) {
+		var code = [];
+		code.push('\t[');
+		code.push("\t\t'map' => [");
+		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push("\t\t'snakes' => [");
+		r.each(level.snakes, snake => code.push("\t\t\t" + JSON.stringify(snake, Coords2D.jsonReplacer()) + ","));
+		code.push("\t\t],");
+		code.push('\t],');
+		code.push('');
+		code.push('');
+		return code;
 	}
 
 }

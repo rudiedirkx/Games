@@ -3,7 +3,7 @@
 
 $levels = '164_levels';
 $title = 'MACHINARIUM I';
-$javascript = 'machinarium';
+$javascript = 'machinarium1';
 $bodyClass = 'machinarium1';
 $jsClass = 'Machinarium1';
 

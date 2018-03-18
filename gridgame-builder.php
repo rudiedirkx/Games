@@ -18,8 +18,8 @@ $gameName = (int) basename($_SERVER['PHP_SELF']);
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset("$javascript.js") ?>"></script>
 <style>
-[data-type].active {
-	background: lime;
+[data-type].active td + td {
+	background: lime !important;
 }
 textarea {
 	width: 100%;

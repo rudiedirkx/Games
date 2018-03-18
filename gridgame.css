@@ -39,6 +39,7 @@ table.inside {
 }
 #building-blocks td:nth-child(2) {
 	padding				: 0 5px;
+	vertical-align		: middle;
 }
 td.wall,
 td.wall1 {
