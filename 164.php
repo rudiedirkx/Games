@@ -1,41 +1,23 @@
 <?php
 // MACHINARIUM I
 
-$maps = array(1 =>
-	array(),
-	array(
-		array(2, 4),
-	),
-	array(
-		array(4, 4),
-		array(3, 1),
-	),
-	array(
-		array(2, 2),
-		array(4, 2),
-	),
-	array(
-		array(1, 1),
-		array(3, 1),
-		array(1, 3),
-		array(2, 3),
-		array(4, 3),
-		array(4, 4),
-	),
-	array(
-		array(4, 0),
-		array(3, 2),
-		array(0, 3),
-		array(2, 4),
-	),
-	array(
-		array(2, 0),
-		array(3, 0),
-		array(4, 0),
-		array(0, 4),
-		array(1, 4),
-	),
-);
+$levels = '164_levels';
+$title = 'MACHINARIUM I';
+$javascript = 'machinarium';
+$bodyClass = 'machinarium1';
+$jsClass = 'Machinarium1';
+
+require 'gridgame.php';
+
+
+
+exit;
+
+?>
+<?php
+// MACHINARIUM I
+
+require '164_levels.php';
 
 $g_w = $g_h = 5;
 
@@ -160,6 +142,8 @@ for ( $y=0; $y<$g_h; $y++ ) {
 
 <script src="simpledom.js"></script>
 <script>
+var g_autoNextTimer;
+
 function extend(C, m) {
 	for ( var x in m ) {
 		C.prototype[x] = m[x];
@@ -243,6 +227,9 @@ extend(HTMLElement, {
 			el.godir = dir;
 			nbs.push(el);
 		}
+		if ( nbs.length == 1 ) {
+			g_autoNextTimer = setTimeout(() => nbs[0].click(), 500);
+		}
 		return nbs.length;
 	},
 	available: function() {
@@ -259,7 +246,7 @@ NodeList.prototype.removeClasses = Array.prototype.removeClasses;
 NodeList.prototype.clearClasses = Array.prototype.clearClasses;
 
 // config
-var maps = <?=json_encode($maps)?>;
+var maps = <?=json_encode($g_arrLevels)?>;
 var mapsel = document.getElementById('maps');
 
 function loadMap(m) {
@@ -312,6 +299,8 @@ window.onload = function(e) {
 	// attach listeners
 	grid.on('click', 'cell', function(e) {
 		e.preventDefault();
+
+		clearTimeout(g_autoNextTimer);
 
 		if ( !started ) {
 			if ( this.available() ) {

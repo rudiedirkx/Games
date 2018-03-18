@@ -4,7 +4,7 @@
 $levels = '165_levels';
 $title = 'MACHINARIUM II';
 $javascript = 'machinarium';
-$bodyClass = 'machinarium';
-$jsClass = 'Machinarium';
+$bodyClass = 'machinarium2';
+$jsClass = 'Machinarium2';
 
 require 'gridgame.php';

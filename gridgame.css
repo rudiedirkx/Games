@@ -177,23 +177,43 @@ td.wall2 {
 	cursor				: pointer;
 }
 
-.machinarium {
+.machinarium1,
+.machinarium2 {
 	background-color	: #ccc;
 	user-select			: none;
 }
-.machinarium .inside td {
+.machinarium1 .inside td,
+.machinarium2 .inside td {
 	width				: 43px;
 	height				: 43px;
 	background-color	: #fff;
 	border-color		: #ccc;
 }
-.machinarium td.end {
-	cursor				: pointer;
-}
-.machinarium .inside td:not(.available) {
+.machinarium1 .inside td:not(.available),
+.machinarium2 .inside td:not(.available) {
 	background-color	: #ccc;
 }
-.machinarium td[data-snake]:after {
+
+.machinarium1 td.available {
+	cursor				: pointer;
+}
+.machinarium1 td.taken {
+	background-color	: yellow;
+}
+.machinarium1 td.start {
+	background-color	: green;
+}
+.machinarium1 td.current {
+	background-color	: blue;
+}
+.machinarium1 td.direction {
+	background-color	: orange;
+}
+
+.machinarium2 td.end {
+	cursor				: pointer;
+}
+.machinarium2 td[data-snake]:after {
 	content				: "";
 	display				: block;
 	width				: 36px;
@@ -202,32 +222,32 @@ td.wall2 {
 	pointer-events		: none;
 	border-radius		: 99px;
 }
-.machinarium td[data-snake].end:after {
+.machinarium2 td[data-snake].end:after {
 	width				: 32px;
 	height				: 32px;
 	margin				: 5px auto 0;
 }
-.machinarium td[data-target="0"] {
+.machinarium2 td[data-target="0"] {
 	background-color	: #444;
 }
-.machinarium td[data-snake="0"]:after {
+.machinarium2 td[data-snake="0"]:after {
 	background-color	: black;
 }
-.machinarium td[data-target="1"] {
+.machinarium2 td[data-target="1"] {
 	background-color	: #f3f704;
 }
-.machinarium td[data-snake="1"]:after {
+.machinarium2 td[data-snake="1"]:after {
 	background-color	: #dcce24;
 }
-.machinarium td[data-target="2"] {
+.machinarium2 td[data-target="2"] {
 	background-color	: #6ac56a;
 }
-.machinarium td[data-snake="2"]:after {
+.machinarium2 td[data-snake="2"]:after {
 	background-color	: green;
 }
-.machinarium td[data-target="3"] {
+.machinarium2 td[data-target="3"] {
 	background-color	: #67b0c7;
 }
-.machinarium td[data-snake="3"]:after {
+.machinarium2 td[data-snake="3"]:after {
 	background-color	: blue;
 }

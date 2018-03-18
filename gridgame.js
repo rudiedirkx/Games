@@ -97,7 +97,7 @@ class Game {
 		this.m_bGameOver = true;
 
 		setTimeout(function() {
-			alert('You win!');
+			alert('You WIN :-)');
 		}, this.ALERT_DELAY);
 	}
 
@@ -106,7 +106,7 @@ class Game {
 		this.m_bGameOver = true;
 
 		setTimeout(function() {
-			alert('You lose!');
+			alert('You LOSE :-(');
 		}, this.ALERT_DELAY);
 	}
 
@@ -285,6 +285,10 @@ class LeveledGridGame extends GridGame {
 		$('#stats-level').setText(this.m_iLevel);
 	}
 
+	setMaxLevel( f_level ) {
+		$('#stats-levels').setText(f_level);
+	}
+
 	saveUndoState() {
 		this.m_arrLastMove = [this.m_iMoves, this.m_objGrid.innerHTML];
 	}
@@ -332,6 +336,7 @@ class LeveledGridGame extends GridGame {
 	loadMap( rv ) {
 		this.reset();
 		this.setLevel(rv.level || '?');
+		this.setMaxLevel(rv.levels || '?');
 
 		this.m_objGrid.empty();
 

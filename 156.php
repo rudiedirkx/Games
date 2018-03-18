@@ -2,7 +2,8 @@
 // Tetravex
 
 if ( isset($_GET['image']) ) {
-	if ( 4 != strlen((string)$_GET['image']) || !preg_match('/^[0-9]{4}$/', (string)$_GET['image']) ) {
+	$sides = (string) $_GET['image'];
+	if ( !preg_match('/^[0-9]{4}$/', $sides) ) {
 		exit('Invalid tile!');
 	}
 
@@ -18,35 +19,26 @@ if ( isset($_GET['image']) ) {
 		8 => '190,190,190', // gray
 		9 => '255,255,255', // white
 	);
-	$whiteText = array(0, 1, 6);
 
-	$arrNumbers = array(
-		array('bgpos' => array( 0,0, 40,0, 20,20, 0,0 ), 'txtpos' => array( 18,3 )),
-		array('bgpos' => array( 0,0, 0,40, 20,20, 0,0 ), 'txtpos' => array( 5, 13 )),
-		array('bgpos' => array( 40,0, 20,20, 40,40, 40,0 ), 'txtpos' => array( 29,13 )),
-		array('bgpos' => array( 0,40, 20,20, 40,40, 0,40 ), 'txtpos' => array( 18,25 )),
-	);
-	$img = imagecreatetruecolor(40, 40);
-	foreach ( $arrNumbers AS $k => $v ) {
-		$n = (int)substr($_GET['image'], $k, 1);
+	$areDark = function($a, $b) use ($sides) {
+		return $sides[$a] == $sides[$b] && in_array($sides[$a], [0, 1, 6]) && in_array($sides[$b], [0, 1, 6]);
+	};
 
-		$bgc = explode(',', $g_arrColors[$n]);
-		imagefilledpolygon($img, $v['bgpos'], 4, imagecolorallocate($img, $bgc[0], $bgc[1], $bgc[2]));
+	header('Content-type: image/svg+xml; charset=utf-8');
 
-		$tc = explode(',', in_array($n, $whiteText) ? $g_arrColors[9] : $g_arrColors[0]);
-		imagestring($img, 3, $v['txtpos'][0], $v['txtpos'][1], (string)$n, imagecolorallocate($img, $tc[0], $tc[1], $tc[2]));
-	}
-	// topleft to bottomright
-	imageline($img, 0,0, 39,39, $m=imagecolorallocate($img, 153, 153, 153));
-	imageline($img, 0,1, 38,39, $d=imagecolorallocate($img, 102, 102, 102));
-	imageline($img, 1,0, 39,38, $l=imagecolorallocate($img, 204, 204, 204));
-	// topright to bottomleft
-	imageline($img, 39,0, 0,39, $m);
-	imageline($img, 38,0, 0,38, $d);
-	imageline($img, 39,1, 1,39, $l);
-	header('Content-type: image/png');
-	imagepng($img);
-	imagedestroy($img);
+	?>
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+		<polygon points="0 0 50 50 100 0" fill="rgb(<?= $g_arrColors[ $sides[0] ] ?>)" />
+		<polygon points="100 0 50 50 100 100" fill="rgb(<?= $g_arrColors[ $sides[2] ] ?>)" />
+		<polygon points="100 100 50 50 0 100" fill="rgb(<?= $g_arrColors[ $sides[3] ] ?>)" />
+		<polygon points="0 100 50 50 0 0" fill="rgb(<?= $g_arrColors[ $sides[1] ] ?>)" />
+		<line x1="0" y1="0" x2="50" y2="50" stroke-width="2" stroke="<?= $areDark(0, 1) ? 'white' : 'black' ?>" />
+		<line x1="100" y1="0" x2="50" y2="50" stroke-width="2" stroke="<?= $areDark(0, 2) ? 'white' : 'black' ?>" />
+		<line x1="100" y1="100" x2="50" y2="50" stroke-width="2" stroke="<?= $areDark(2, 3) ? 'white' : 'black' ?>" />
+		<line x1="0" y1="100" x2="50" y2="50" stroke-width="2" stroke="<?= $areDark(1, 3) ? 'white' : 'black' ?>" />
+	</svg>
+	<?php
+
 	exit;
 }
 
@@ -94,24 +86,35 @@ $_SESSION[S_NAME]['board'] = $arrBoard;
 $_SESSION[S_NAME]['starttime'] = time();
 
 ?>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
 <title>Tetravex</title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<style type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
+<script src="/js/mootools_1_11.js"></script>
+<style>
 #tetracont table {
 	border-collapse	: collapse;
 /*	border			: solid 1px #000;*/
 }
 #tetracont table td {
-	border			: solid 1px #eee;
+	border			: solid 1px #ccc;
 	padding			: 0;
 }
 #tetracont table td img {
-	width			: 40px;
-	height			: 40px;
+	width			: 50px;
+	height			: 50px;
 	cursor			: pointer;
+	display			: block;
+}
+#tetracont table td img.invisible {
+	opacity			: 0;
+}
+#tetracont table td img.selected {
+	opacity			: 0.5;
 }
 </style>
 </head>
@@ -132,9 +135,15 @@ $_SESSION[S_NAME]['starttime'] = time();
 </tr>
 </table>
 
-<script type="text/javascript">
+<script>
 <!--//
-var g_iStartTime = Math.floor($time()/1000), g_bDoCheck = true, g_selected = null, op0 = 1, op1 = 0.5, g_iSize = <?php echo $g_iSize; ?>;
+var g_iStartTime = Math.floor($time()/1000);
+var g_bDoCheck = true;
+var g_selected = null;
+var op0 = 1;
+var op1 = 0.5;
+var g_iSize = <?php echo $g_iSize; ?>;
+
 function shiftTiles(to) {
 	switch ( to ) {
 		case 'left':
@@ -240,8 +249,15 @@ function retile(ft) {
 			tile.uniq = tile.tile ? (''+Math.random()+'').replace(/\./, '') : '';
 			tile.n = tile.firstParent('TD').cellIndex + g_iSize * tile.firstParent('TR').sectionRowIndex;
 		}
-		tile.setOpacity(op0);
-		tile.src = tile.tile ? '?image=' + tile.tile : '';
+		tile.classList.remove('selected');
+		if (tile.tile) {
+			tile.src = '?image=' + tile.tile;
+			tile.removeClass('invisible');
+		}
+		else {
+			tile.removeAttribute('src');
+			tile.addClass('invisible');
+		}
 	});
 	return false;
 }
@@ -291,16 +307,16 @@ document.onclick = function(e) {
 	if ( e.target.nodeName != 'IMG' ) { return false; }
 	if ( e.target.tile ) {
 		if ( g_selected ) {
-			$(g_selected).setOpacity(op0);
+			$(g_selected).classList.remove('selected');
 			if ( g_selected != e.target ) {
 				g_selected = e.target;
-				$(g_selected).setOpacity(op1);
+				$(g_selected).classList.add('selected');
 			}
 			else { g_selected = null; }
 		}
 		else {
 			g_selected = e.target;
-			$(g_selected).setOpacity(op1);
+			$(g_selected).classList.add('selected');
 		}
 	}
 	else if ( g_selected ) {

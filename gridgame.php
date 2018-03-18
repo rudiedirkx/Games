@@ -13,7 +13,7 @@ if ( isset($_REQUEST['load_map']) ) {
 
 	$arrLevel = $g_arrLevels[$iLevel];
 
-	exit(json_encode(['level' => $iLevel] + $arrLevel));
+	exit(json_encode(['level' => $iLevel, 'levels' => count($g_arrLevels)] + $arrLevel));
 }
 
 ?>
@@ -37,7 +37,7 @@ if ( isset($_REQUEST['load_map']) ) {
 <table class="outside">
 	<tr>
 		<td colspan="2" class="level">
-			LEVEL <span id="stats-level">0</span>
+			LEVEL <span id="stats-level">0</span> / <span id="stats-levels">0</span>
 		</td>
 	</tr>
 	<tr>
@@ -53,8 +53,10 @@ if ( isset($_REQUEST['load_map']) ) {
 				<br />
 			</div>
 			<a href="#" onclick="return objGame.restartLevel(), false">restart</a><br />
-			<br />
-			<a href="#" onclick="return objGame.undoLastMove(), false">undo</a>
+			<div id="undo-div">
+				<br />
+				<a href="#" onclick="return objGame.undoLastMove(), false">undo</a>
+			</div>
 		</td>
 	</tr>
 	<tr>
