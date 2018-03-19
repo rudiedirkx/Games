@@ -22,6 +22,7 @@ r.extend(Coords2D, {
 		return new Coords2D(x, y);
 	},
 });
+
 Coords2D.jsonReplacer = function() {
 	return (k, v) => v instanceof Coords2D ? v.toArray() : v;
 };
@@ -482,6 +483,12 @@ class GridGameEditor extends GridGame {
 
 	restoreLevel( level ) {
 		this.m_objGrid.setHTML(level.map);
+	}
+
+	countMapCells( map, cell ) {
+		var allCells = map.join('');
+		var replacedCells = allCells.replace(new RegExp(cell, 'g'), '');
+		return allCells.length - replacedCells.length;
 	}
 
 	exportLevel() {

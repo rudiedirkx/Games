@@ -37,6 +37,8 @@ class Machinarium2 extends LeveledGridGame {
 	drawSnakes() {
 		this.m_objGrid.getElements('[data-snake]').data('snake', null).removeClass('end');
 		r.each(this.m_arrSnakes, (coords, snake) => {
+			if ( coords.length == 0 ) return;
+
 			r.each(coords, (C) => {
 				this.getCell(C).data('snake', snake);
 			});
@@ -151,18 +153,25 @@ class Machinarium2 extends LeveledGridGame {
 
 class Machinarium2Editor extends GridGameEditor {
 
+	constructor( gridElement ) {
+		super(gridElement);
+
+		this.SNAKES = 4;
+	}
+
+	getSnakeName( n ) {
+		return String.fromCharCode(65 + parseInt(n));
+	}
+
 	cellTypes() {
-		return {
+		var types = {
 			available: 'Available',
-			target_0: 'Target A',
-			snake_0: 'Snake A',
-			target_1: 'Target B',
-			snake_1: 'Snake B',
-			target_2: 'Target C',
-			snake_2: 'Snake C',
-			target_3: 'Target D',
-			snake_3: 'Snake D',
 		};
+		for (var i = 0; i < this.SNAKES; i++) {
+			types['target_' + i] = 'Target ' + this.getSnakeName(i);
+			types['snake_' + i] = 'Snake ' + this.getSnakeName(i);
+		}
+		return types;
 	}
 
 	defaultCellType() {
@@ -236,9 +245,6 @@ class Machinarium2Editor extends GridGameEditor {
 
 	exportLevel() {
 		var map = [];
-		var snakes = [];
-
-		// @todo Find ambiguous snake paths, like F1Racer
 
 		r.each(this.m_objGrid.rows, (tr, y) => {
 			var row = '';
@@ -248,11 +254,6 @@ class Machinarium2Editor extends GridGameEditor {
 					var snake = cell.data('snake');
 
 					row += target ? target : ' ';
-
-					if ( snake ) {
-						snakes[snake] || (snakes[snake] = []);
-						snakes[snake].push(this.getCoord(cell));
-					}
 				}
 				else {
 					row += 'x';
@@ -261,7 +262,67 @@ class Machinarium2Editor extends GridGameEditor {
 			map.push(row);
 		});
 
-		return {map, snakes};
+		var snakes = [];
+		for (var i = 0; i < this.SNAKES; i++) {
+			snakes.push(this.findSnakePath(i));
+		}
+
+		var level = {map, snakes};
+		this.validateLevel(level);
+		return level;
+	}
+
+	findSnakePath( n ) {
+		var endCell = this.findSnakeEnd(n);
+		if ( !endCell ) return [];
+
+		debugger;
+
+		var snake = [endCell];
+		var lastCell;
+		while ( lastCell = this.validNextCell(snake) ) {
+			snake.push(lastCell);
+		}
+
+		return snake.map(this.getCoord);
+	}
+
+	validNextCell( snake ) {
+		var current = snake[snake.length-1];
+		var nexts = this.getSnakeNeighbors(current);
+		nexts = nexts.filter((cell) => !snake.includes(cell));
+		if ( nexts.length == 1 ) {
+			return nexts[0];
+		}
+
+		if ( nexts.length > 1 ) {
+			throw 'Invalid snake ' + this.getSnakeName(current.data('snake'));
+		}
+	}
+
+	findSnakeEnd( n ) {
+		var cells = this.m_objGrid.getElements('[data-snake="' + n + '"]');
+		return cells.find((cell) => this.getSnakeNeighbors(cell).length == 1);
+	}
+
+	getSnakeNeighbors( cell ) {
+		var snake = cell.data('snake');
+		var neighbors = this.dir4Coords.map((offset) => {
+			var neighbor = this.getCell(this.getCoord(cell).add(offset));
+			return neighbor && neighbor.data('snake') == snake ? neighbor : null;
+		});
+		neighbors = neighbors.filter((cell) => !!cell);
+		return neighbors;
+	}
+
+	validateLevel( level ) {
+		for (var i = 0; i < this.SNAKES; i++) {
+			var targets = this.countMapCells(level.map, String(i));
+			var snakes = level.snakes[i] ? level.snakes[i].length : 0;
+			if ( targets != snakes ) {
+				throw "Snake " + this.getSnakeName(i) + " doesn't match targets.";
+			}
+		}
 	}
 
 	formatAsPHP( level ) {

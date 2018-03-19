@@ -1,3 +1,7 @@
+:root {
+	--inside-cell		: 23px;
+}
+
 * {
 	box-sizing			: border-box;
 	font-family			: sans-serif;
@@ -31,9 +35,9 @@ table.inside {
 }
 .inside td {
 	padding				: 0;
-	width				: 23px;
-	height				: 23px;
-	line-height			: 23px;
+	width				: var(--inside-cell);
+	height				: var(--inside-cell);
+	line-height			: var(--inside-cell);
 	border				: solid 1px #eee;
 	text-align			: center;
 }
@@ -50,8 +54,8 @@ td.wall2 {
 }
 
 #level-header > * {
-	margin-top: 0;
-	margin-bottom: 1em;
+	margin-top			: 0;
+	margin-bottom		: 1em;
 }
 
 #loading {
@@ -86,13 +90,12 @@ td.wall2 {
 	background-color	: #87cefa;
 }
 .pixelus td.stone span {
-    display				: block;
-    height				: 80%;
-    width				: 80%;
-	margin-left			: 10%;
-	margin-top			: 10%;
+	display				: block;
+	height				: calc(var(--inside-cell) - 6px);
+	width				: calc(var(--inside-cell) - 6px);
+	margin				: 3px auto 0;
 	border-radius		: 5px;
-    background-color	: #8b4513;
+	background-color	: #8b4513;
 }
 
 .steppingstones td.available {
@@ -100,13 +103,12 @@ td.wall2 {
 }
 .steppingstones td.stone span,
 .steppingstones td.jumper span {
-    display				: block;
-    height				: 90%;
-    width				: 90%;
-	margin-left			: 5%;
-	margin-top			: 5%;
+	display				: block;
+	height				: calc(var(--inside-cell) - 6px);
+	width				: calc(var(--inside-cell) - 6px);
+	margin				: 3px auto 0;
 	border-radius		: 4px;
-    background-color	: #000;
+	background-color	: #000;
 }
 .steppingstones td.jumper span {
 	background-color	: #f00;
@@ -116,11 +118,10 @@ td.wall2 {
 	background-color	: lime;
 }
 .atomix td[data-atom] span {
-    display				: block;
-    height				: 96%;
-    width				: 96%;
-	margin-left			: 2%;
-	margin-top			: 2%;
+	display				: block;
+	height				: calc(var(--inside-cell) - 4px);
+	width				: calc(var(--inside-cell) - 4px);
+	margin				: 2px auto 0;
 	border-radius		: 99px;
 }
 .atomix td[data-atom] span:after {
@@ -160,8 +161,8 @@ td.wall2 {
 .f1racer td.asphalt.current:after {
 	content				: "";
 	display				: block;
-	width				: 16px;
-	height				: 16px;
+	width				: calc(var(--inside-cell) - 6px);
+	height				: calc(var(--inside-cell) - 6px);
 	border-radius		: 4px;
 	margin				: 3px auto 0;
 	background-color	: red;
@@ -183,10 +184,12 @@ td.wall2 {
 	background-color	: #ccc;
 	user-select			: none;
 }
+.machinarium1:not(.builder),
+.machinarium2:not(.builder) {
+	--inside-cell		: 43px;
+}
 .machinarium1 .inside td,
 .machinarium2 .inside td {
-	width				: 43px;
-	height				: 43px;
 	background-color	: #fff;
 	border-color		: #ccc;
 }
@@ -217,15 +220,15 @@ td.wall2 {
 .machinarium2 td[data-snake]:after {
 	content				: "";
 	display				: block;
-	width				: 36px;
-	height				: 36px;
+	width				: calc(var(--inside-cell) - 6px);
+	height				: calc(var(--inside-cell) - 6px);
 	margin				: 3px auto 0;
 	pointer-events		: none;
 	border-radius		: 99px;
 }
 .machinarium2 td[data-snake].end:after {
-	width				: 32px;
-	height				: 32px;
+	width				: calc(var(--inside-cell) - 10px);
+	height				: calc(var(--inside-cell) - 10px);
 	margin				: 5px auto 0;
 }
 .machinarium2 td[data-target="0"] {

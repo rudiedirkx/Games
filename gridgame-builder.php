@@ -29,7 +29,7 @@ textarea {
 </style>
 </head>
 
-<body class="<?= $bodyClass ?>">
+<body class="builder <?= $bodyClass ?>">
 <table class="outside">
 	<tr>
 		<td class="inside">
