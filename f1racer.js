@@ -18,7 +18,9 @@ class F1Racer extends LeveledGridGame {
 
 	loadMap( rv ) {
 		this.reset();
+
 		this.setLevel(rv.level || '?');
+		this.setMaxLevel(rv.levels || '?');
 
 		this.m_objGrid.empty();
 

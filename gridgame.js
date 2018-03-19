@@ -336,6 +336,7 @@ class LeveledGridGame extends GridGame {
 
 	loadMap( rv ) {
 		this.reset();
+
 		this.setLevel(rv.level || '?');
 		this.setMaxLevel(rv.levels || '?');
 
