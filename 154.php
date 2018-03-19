@@ -1,29 +1,18 @@
 <?php
 // Maze
 
+require __DIR__ . '/inc.bootstrap.php';
+
 $iUtcStart = microtime(true);
 
-$x = 40;
-$y = 20;
+$x = 20;
+$y = 10;
 
 $arrMaze = array_fill(0, $x*$y, '01111');
 $arrMoves = array();
 
 $iStart = rand(0, $x*$y-1);
 $iPosition = $iStart;
-
-?>
-<style type="text/css">
-table { border:solid 2px #000;border-width:2px 0 0 2px; }
-td { border:solid 2px #000;border-width:0;width:30px;height:30px;text-align:center; }
-.w01 { border-width:0 0 2px 0; }
-.w10 { border-width:0 2px 0 0; }
-.w11 { border-width:0 2px 2px 0; }
-.pos { font-weight:bold;color:red; }
-.d0 { background-color:#eee; }
-.strt { font-weight:bold;color:blue; }
-</style>
-<?php
 
 $arrMaze[$iPosition]{0} = '1';
 $iDiscovered = 1;
@@ -43,14 +32,11 @@ while ( $iDiscovered < $x*$y ) {
 		$dirs .= 'D';
 	}
 	if ( !$dirs ) {
-//		break;
 		$iPosition = array_pop($arrMoves);
-//		echo 'No possible directions. NP: '.$iPosition;
 	}
 	else {
 		array_push($arrMoves, $iPosition);
 		$dir = $dirs{rand(0, strlen($dirs)-1)};
-//		echo 'Possible directions: ['.$dirs.'] -> '.$dir.'<br />';
 		switch ( $dir ) {
 			case 'U':
 				$arrMaze[$iPosition]{1} = $arrMaze[$iPosition-$x]{4} = '0';
@@ -77,35 +63,190 @@ while ( $iDiscovered < $x*$y ) {
 	}
 }
 
-printMaze();
-
-echo '<pre>'.number_format(microtime(true)-$iUtcStart, 4).' ('.$iStart.' -> '.$iPosition.')</pre>';
-
 ?>
-<script type="text/javascript">
-<!--//
-var iStart = <?php echo $iStart; ?>, iPosition = <?php echo $iPosition; ?>, x = <?php echo $x; ?>;
-document.getElementById('maze').rows[Math.floor(iStart/x)].cells[iStart%x].className += ' strt';
-document.getElementById('maze').rows[Math.floor(iPosition/x)].cells[iPosition%x].className += ' pos';
-document.getElementById('maze').onclick = function(e) {
-	e = e || window.event || this.event;
-	if ( 'TD' == e.target.nodeName ) {
-		e.target.style.backgroundColor = 'green';
+<html>
+
+<head>
+<meta charset="utf-8" />
+<title>MAZE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
+<style>
+body {
+	margin-right: 40px;
+}
+table {
+	border: solid 2px #000;
+	border-width: 2px 0 0 2px;
+	touch-action: none;
+}
+td {
+	border: solid 2px #000;
+	border-width: 0;
+	width: 30px;
+	height: 30px;
+	text-align: center;
+	cursor: pointer;
+}
+.w01 {
+	border-width: 0 0 2px 0;
+}
+.w10 {
+	border-width: 0 2px 0 0;
+}
+.w11 {
+	border-width: 0 2px 2px 0;
+}
+.d0 {
+	background-color: #eee;
+}
+.done {
+	background-color: yellow;
+}
+.end {
+	background-color: lightblue;
+}
+.current {
+	background-color: orange;
+}
+</style>
+</head>
+
+<body class="maze outside">
+<?= printMaze() ?>
+
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script>
+var iStart = <?php echo $iStart; ?>;
+var iPosition = <?php echo $iPosition; ?>;
+var x = <?php echo $x; ?>;
+
+var tbl = document.getElementById('maze');
+var start = tbl.rows[Math.floor(iPosition/x)].cells[iPosition%x];
+var end = tbl.rows[Math.floor(iStart/x)].cells[iStart%x];
+var current = start;
+
+start.className += ' done current start';
+end.className += ' end';
+
+class Maze extends GridGame {
+	createStats() {
+	}
+
+	setMoves( f_iMoves ) {
+		if ( f_iMoves != null ) {
+			this.m_iMoves = f_iMoves;
+		}
+		if ( this.m_iMoves > 0 ) {
+			this.startTime();
+		}
+	}
+
+	setTime() {
+	}
+
+	haveWon() {
+		return this.getCurrent().hasClass('end');
+	}
+
+	restart() {
+		location.reload();
+	}
+
+	listenControls() {
+		this.listenCellClick();
+		this.listenGlobalDirection();
+	}
+
+	getCurrent() {
+		return this.m_objGrid.getElement('.current');
+	}
+
+	getBorder( cell, border ) {
+		return parseFloat(getComputedStyle(cell)['border' + border + 'Width']);
+	}
+
+	validMove( current, direction ) {
+		var borders = ['Top', 'Right', 'Bottom', 'Left'];
+
+		var dirIndex = this.dir4Names.indexOf(direction);
+		if ( this.getBorder(current, borders[dirIndex]) > 0 ) {
+			return false;
+		}
+
+		var next = this.getNext(current, direction);
+		if ( this.getBorder(next, borders[(dirIndex+2)%4]) > 0 ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	getDirection( from, to ) {
+		var offset = this.getCoord(to).subtract(this.getCoord(from));
+		var direction = this.dir4Coords.findIndex((C) => C.equal(offset));
+		if ( direction > -1 ) {
+			return this.dir4Names[direction];
+		}
+	}
+
+	getNext( current, direction ) {
+		return this.getCell(this.getCoord(current).add(this.dir4Coords[this.dir4Names.indexOf(direction)]));
+	}
+
+	moveTo( cell ) {
+		this.getCurrent().removeClass('current');
+		cell.addClass('current').addClass('done');
+
+		this.setMoves(this.m_iMoves + 1);
+		this.winOrLose();
+	}
+
+	handleGlobalDirection( direction ) {
+		if ( this.m_bGameOver ) return this.restart();
+
+		direction = direction[0];
+		var current = this.getCurrent();
+		var next = this.getNext(current, direction);
+		if ( next && this.validMove(current, direction) ) {
+			this.moveTo(next);
+		}
+	}
+
+	handleCellClick( cell ) {
+		if ( this.m_bGameOver ) return this.restart();
+
+		var current = this.getCurrent();
+		var direction = this.getDirection(current, cell);
+		if ( direction && this.validMove(current, direction) ) {
+			this.moveTo(cell);
+		}
 	}
 }
-//-->
+
+var objGame = new Maze($('table'));
+objGame.listenControls();
 </script>
+</body>
+
+</html>
 <?php
 
 function printMaze() {
 	global $arrMaze, $iStart, $iPosition, $x, $y;
-	echo '<table width="100%" height="100%" id="maze" border="0" cellpadding="0" cellspacing="0">';
-	foreach ( $arrMaze AS $k => $p ) {
-		if ( 0 == $k%$x ) { echo '<tr>'; }
-		echo '<td class="d'.$p{0}.' w'.substr($p, 3).'">'.$k.'</td>';
-		if ( 0 == ($k+1)%$x ) { echo '</tr>'; }
-	}
-	echo '</table>';
-}
 
-?>
+	$out = '';
+	$out .= '<table width="100%" height="100%" id="maze" border="0" cellpadding="0" cellspacing="0">';
+	foreach ( $arrMaze AS $k => $p ) {
+		if ( 0 == $k%$x ) {
+			$out .= '<tr>';
+		}
+		$out .= '<td class="d' . $p[0] . ' w' . substr($p, 3) . '"></td>';
+		if ( 0 == ($k+1)%$x ) {
+			$out .= '</tr>';
+		}
+	}
+	$out .= '</table>';
+	return $out;
+}
