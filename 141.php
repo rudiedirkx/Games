@@ -57,7 +57,7 @@ else if ( isset($_GET['image']) ) {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BLACKBOX</title>
+<title>BLACKBOX JS</title>
 <link rel="stylesheet" href="blackbox.css" />
 <script src="js/rjs-custom.js"></script>
 <script>
@@ -102,7 +102,7 @@ Blackbox.UpdateTimer = function() {
 		var score = Blackbox.Score();
 		$('#score').setText(score);
 
-		setTimeout(Blackbox.UpdateTimer, 100);
+		setTimeout(Blackbox.UpdateTimer, 200);
 	}
 };
 
