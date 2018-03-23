@@ -1,6 +1,8 @@
 <?php
 // Tetravex
 
+require __DIR__ . '/inc.bootstrap.php';
+
 if ( isset($_GET['image']) ) {
 	$sides = (string) $_GET['image'];
 	if ( !preg_match('/^[0-9]{4}$/', $sides) ) {
@@ -94,11 +96,15 @@ $_SESSION[S_NAME]['starttime'] = time();
 <title>Tetravex</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>window.onerror = function(e) { alert(e); };</script>
-<script src="/js/mootools_1_11.js"></script>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <style>
+html,
+body {
+	touch-action: none;
+}
 #tetracont table {
 	border-collapse	: collapse;
-/*	border			: solid 1px #000;*/
 }
 #tetracont table td {
 	border			: solid 1px #ccc;
@@ -136,8 +142,7 @@ $_SESSION[S_NAME]['starttime'] = time();
 </table>
 
 <script>
-<!--//
-var g_iStartTime = Math.floor($time()/1000);
+var g_iStartTime = Math.floor(Date.now()/1000);
 var g_bDoCheck = true;
 var g_selected = null;
 var op0 = 1;
@@ -148,15 +153,15 @@ function shiftTiles(to) {
 	switch ( to ) {
 		case 'left':
 			for ( var i=0; i<g_iSize; i++ ) {
-				if ( $('solution').rows[i].cells[0].getElementsByTagName('img')[0].tile ) {
+				if ( $('#solution').rows[i].cells[0].getElementsByTagName('img')[0].tile ) {
 //					alert('Can\'t move to the left!');
 					return;
 				}
 			}
 			for ( var x=1; x<g_iSize; x++ ) {
 				for ( var i=0; i<g_iSize; i++ ) {
-					var tile = $('solution').rows[i].cells[x].getElementsByTagName('img')[0];
-					var ttile = $('solution').rows[i].cells[x-1].getElementsByTagName('img')[0];
+					var tile = $('#solution').rows[i].cells[x].getElementsByTagName('img')[0];
+					var ttile = $('#solution').rows[i].cells[x-1].getElementsByTagName('img')[0];
 					ttile.tile = tile.tile;
 					ttile.uniq = tile.uniq;
 					tile.tile = tile.uniq = '';
@@ -166,15 +171,15 @@ function shiftTiles(to) {
 		break;
 		case 'right':
 			for ( var i=0; i<g_iSize; i++ ) {
-				if ( $('solution').rows[i].cells[g_iSize-1].getElementsByTagName('img')[0].tile ) {
+				if ( $('#solution').rows[i].cells[g_iSize-1].getElementsByTagName('img')[0].tile ) {
 //					alert('Can\'t move to the right!');
 					return;
 				}
 			}
 			for ( var x=g_iSize-2; x>=0; x-- ) {
 				for ( var i=0; i<g_iSize; i++ ) {
-					var tile = $('solution').rows[i].cells[x].getElementsByTagName('img')[0];
-					var ttile = $('solution').rows[i].cells[x+1].getElementsByTagName('img')[0];
+					var tile = $('#solution').rows[i].cells[x].getElementsByTagName('img')[0];
+					var ttile = $('#solution').rows[i].cells[x+1].getElementsByTagName('img')[0];
 					ttile.tile = tile.tile;
 					ttile.uniq = tile.uniq;
 					tile.tile = tile.uniq = '';
@@ -184,15 +189,15 @@ function shiftTiles(to) {
 		break;
 		case 'up':
 			for ( var i=0; i<g_iSize; i++ ) {
-				if ( $('solution').rows[0].cells[i].getElementsByTagName('img')[0].tile ) {
+				if ( $('#solution').rows[0].cells[i].getElementsByTagName('img')[0].tile ) {
 //					alert('Can\'t move up!');
 					return;
 				}
 			}
 			for ( var y=1; y<g_iSize; y++ ) {
 				for ( var i=0; i<g_iSize; i++ ) {
-					var tile = $('solution').rows[y].cells[i].getElementsByTagName('img')[0];
-					var ttile = $('solution').rows[y-1].cells[i].getElementsByTagName('img')[0];
+					var tile = $('#solution').rows[y].cells[i].getElementsByTagName('img')[0];
+					var ttile = $('#solution').rows[y-1].cells[i].getElementsByTagName('img')[0];
 					ttile.tile = tile.tile;
 					ttile.uniq = tile.uniq;
 					tile.tile = tile.uniq = '';
@@ -202,15 +207,15 @@ function shiftTiles(to) {
 		break;
 		case 'down':
 			for ( var i=0; i<g_iSize; i++ ) {
-				if ( $('solution').rows[g_iSize-1].cells[i].getElementsByTagName('img')[0].tile ) {
+				if ( $('#solution').rows[g_iSize-1].cells[i].getElementsByTagName('img')[0].tile ) {
 //					alert('Can\'t move down!');
 					return;
 				}
 			}
 			for ( var y=g_iSize-2; y>=0; y-- ) {
 				for ( var i=0; i<g_iSize; i++ ) {
-					var tile = $('solution').rows[y].cells[i].getElementsByTagName('img')[0];
-					var ttile = $('solution').rows[y+1].cells[i].getElementsByTagName('img')[0];
+					var tile = $('#solution').rows[y].cells[i].getElementsByTagName('img')[0];
+					var ttile = $('#solution').rows[y+1].cells[i].getElementsByTagName('img')[0];
 					ttile.tile = tile.tile;
 					ttile.uniq = tile.uniq;
 					tile.tile = tile.uniq = '';
@@ -221,13 +226,14 @@ function shiftTiles(to) {
 	}
 }
 function updatePlaytime() {
-	var sec = Math.floor($time()/1000) - g_iStartTime, min = Math.floor(sec/60);
+	var sec = Math.floor(Date.now()/1000) - g_iStartTime, min = Math.floor(sec/60);
 	sec -= min*60;
-	$('playtime').innerHTML = ( 10 > min ? '0'+min : min ) + ':' + ( 10 > sec ? '0'+sec : sec );
+	$('#playtime').innerHTML = ( 10 > min ? '0'+min : min ) + ':' + ( 10 > sec ? '0'+sec : sec );
 }
 setInterval(updatePlaytime, 200);
 function checkSolution(tbl) {
 	tbl = $(tbl);
+
 	var s = '';
 	tbl.getElements('img').each(function(tile) {
 		if ( tile.tile ) {
@@ -247,7 +253,7 @@ function retile(ft) {
 		if ( ft ) {
 			tile.tile = tile.getAttribute('tile');
 			tile.uniq = tile.tile ? (''+Math.random()+'').replace(/\./, '') : '';
-			tile.n = tile.firstParent('TD').cellIndex + g_iSize * tile.firstParent('TR').sectionRowIndex;
+			tile.n = tile.closest('TD').cellIndex + g_iSize * tile.closest('TR').sectionRowIndex;
 		}
 		tile.classList.remove('selected');
 		if (tile.tile) {
@@ -268,7 +274,7 @@ function getTile(n) {
 }
 function moveTile(move, to) {
 	var ok = false;
-	if ( g_bDoCheck && 'solution' == $(to).firstParent('TABLE').id ) {
+	if ( g_bDoCheck && 'solution' == to.closest('TABLE').id ) {
 		var iTo = to.n;
 		// Above &to
 		var t = getTile(iTo-g_iSize);
@@ -303,20 +309,19 @@ function moveTile(move, to) {
 }
 //document.onmousedown = document.onselectstart = function(e){return false;}
 document.onclick = function(e) {
-	e = new Event(e).stop();
 	if ( e.target.nodeName != 'IMG' ) { return false; }
 	if ( e.target.tile ) {
 		if ( g_selected ) {
-			$(g_selected).classList.remove('selected');
+			g_selected.classList.remove('selected');
 			if ( g_selected != e.target ) {
 				g_selected = e.target;
-				$(g_selected).classList.add('selected');
+				g_selected.classList.add('selected');
 			}
 			else { g_selected = null; }
 		}
 		else {
 			g_selected = e.target;
-			$(g_selected).classList.add('selected');
+			g_selected.classList.add('selected');
 		}
 	}
 	else if ( g_selected ) {
@@ -324,16 +329,31 @@ document.onclick = function(e) {
 	}
 	return false;
 }
-document.onkeyup = function(e) {
-	e = new Event(e);
-	switch ( e.code ) {
-		case 38: shiftTiles('up'); break;
-		case 40: shiftTiles('down'); break;
-		case 37: shiftTiles('left'); break;
-		case 39: shiftTiles('right'); break;
+
+class Tetravex extends GridGame {
+
+	createStats() {
 	}
+
+	setMoves() {
+	}
+
+	setTime() {
+	}
+
+	listenControls() {
+		this.listenGlobalDirection();
+	}
+
+	handleGlobalDirection( direction ) {
+		console.log(direction);
+		shiftTiles(direction);
+	}
+
 }
-//-->
+
+var objGame = new Tetravex($('table'));
+objGame.listenControls();
 </script>
 
 </body>

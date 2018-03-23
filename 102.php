@@ -139,10 +139,7 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 		$bGameOver = true;
 
 		$arrLevel = $_FIELDS[ $_SESSION[S_NAME]['sessions'][SESSION]['field'] ];
-		isset($_SESSION[S_NAME]['name']) or $_SESSION[S_NAME]['name'] = 'Anonymous';
 		$playtime = time()-$_SESSION[S_NAME]['sessions'][SESSION]['starttime'];
-
-		// mysql_query("INSERT INTO minesweeper (name,size_x,size_y,mines,playtime,utc, ip, user_agent) VALUES ('".addslashes($_SESSION[S_NAME]['name'])."',".$arrLevel['sides'][0].",".$arrLevel['sides'][1].",".$arrLevel['mines'].",".$playtime.",".time().", '".addslashes($_SERVER['REMOTE_ADDR'])."', '".addslashes($_SERVER['HTTP_USER_AGENT'])."');");
 
 		$m = floor($playtime / 60);
 		$s = $playtime % 60;
@@ -157,24 +154,21 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	)));
 }
 
-// Change name //
-else if ( isset($_POST['new_name']) ) {
-	$_SESSION[S_NAME]['name'] = $_POST['new_name'];
-	exit(htmlspecialchars($_SESSION[S_NAME]['name']));
-}
-
 if ( $_SERVER['REQUEST_METHOD'] != 'GET' ) {
 	exit('Invalid request');
 }
 
 ?>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MINESWEEPER</title>
-<script src="/js/rjs-custom.js"></script>
-<script src="/102.js"></script>
-<link rel="stylesheet" href="102.css" />
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('102.js') ?>"></script>
+<link rel="stylesheet" href="<?= html_asset('102.css') ?>" />
 <style>
 * {
 	margin: 0;
@@ -201,23 +195,14 @@ div#loading {
 <body>
 
 <div id="loading">
-	<b>AJAX BUSY</b>
+	<b>WORKING...</b>
 </div>
 
-<table border="0" cellspacing="0" width="100%" height="100%">
-<tr valign="middle">
-	<td align="center"<?php if ( !empty($_GET['frame']) ) { ?> style="display:none;"<?php } ?>>
-		<!--
-			<p><a href="#" onclick="window.open('?leaderboard', '', 'statusbar=0,width=650,height=500');return false;">Leaderboard</a></p>
-			<br />
-		-->
-		<p><a class="change-name" href="#" onclick="return objMinesweeper.changeName();">Change Name</a></p>
-		<br />
-		<p><a class="open-in-frame" href="#" onclick="window.open('?frame=1', '', 'statusbar=0'); return false">In frame</a></p>
-		<br />
-		<p><a class="cheat" href="#" onclick="getSolver().mf_SaveAndMarkAndClickAll(function(change) { console.warn('change', change); change || alert('I can only help those who help themselves!'); }); return false">Cheat!</a></p>
-		<br />
-		<p><a class="export" href="#" onclick="
+<div id="container">
+	<div id="left">
+		<a class="cheat" href="#" onclick="getSolver().mf_SaveAndMarkAndClickAll(function(change) { console.warn('change', change); change || alert('I can only help those who help themselves!'); }); return false">Cheat!</a>
+		&nbsp;
+		<a class="export" href="#" onclick="
 			objMinesweeper.export(function(rows) {
 				$('#form-export').setHTML(rows.map(function(row) {
 					return '<input name=&quot;map[]&quot; type=&quot;hidden&quot; value=&quot;' + row + '&quot; />';
@@ -225,10 +210,10 @@ div#loading {
 				$('#form-export').submit();
 			});
 			return false
-		">Export</a></p>
+		">Export</a>
 		<form id="form-export" method="post" action="102d_create.php" target="_blank"></form>
-	</td>
-	<td align="center">
+	</div>
+	<div id="content">
 		<table id="field" style="border:solid 1px #777;"><tr><td class="wrap">
 			<table style="border:solid 10px #bbb;"><tr><td class="wrap">
 				<table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td class="wrap">
@@ -239,17 +224,19 @@ div#loading {
 			</td></tr></table>
 		</td></tr></table>
 		<br />
-		<div><?php $arrFields = array(); foreach ( $_FIELDS AS $szField => $arrField ) { $arrFields[] = '<a href="#" onclick="return objMinesweeper.fetchMap(\''.$szField.'\');">'.$arrField['name'].'</a>'; } echo implode(' | ', $arrFields); ?></div>
-	</td>
-	<td align="center"<?php if ( !empty($_GET['frame']) ) { ?> style="display:none;"<?php } ?>>
-		Mines: <b id="mines_to_find"></b> / <b><span id="mine_percentage"></span> %</b><br />
-		<br />
-		Your name: <b id="your_name">?</b><br />
-		<br />
-		Flags left: <b id="flags_left"></b><br />
-	</td>
-</tr>
-</table>
+		<div>
+			<? $first = true; foreach ($_FIELDS AS $szField => $arrField): ?>
+				<? if (!$first): ?> | <? endif ?>
+				<a href="#" onclick="return objMinesweeper.fetchMap('<?= $szField ?>'), false"><?= $arrField['name'] ?></a>
+			<? $first = false; endforeach ?>
+		</div>
+	</div>
+	<div id="right">
+		Mines: <b id="mines_to_find"></b> (<b><span id="mine_percentage"></span> %</b>)
+		&nbsp;
+		Flags left: <b id="flags_left"></b>
+	</div>
+</div>
 
 <div style="display: none">
 	<img src="images/flag.gif" />
@@ -273,7 +260,6 @@ window.on('xhrDone', function() {
 });
 
 var objMinesweeper = new Minesweeper('<?= @$_SESSION[S_NAME]['sessions'][SESSION]['field'] ?: $g_szDefaultField ?>', '<?= $_GET['session'] ?>');
-// objMinesweeper.<?php echo empty($_SESSION[S_NAME]['name']) ? 'changeName()' : "setName('".addslashes($_SESSION[S_NAME]['name'])."')"; ?>;
 
 // SOLVER //
 function getSolver() {

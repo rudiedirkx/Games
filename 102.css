@@ -1,4 +1,41 @@
+* {
+	box-sizing: border-box;
+}
 
+:root {
+	--inside-cell: 18px;
+}
+html,
+body {
+	min-height: 100vh;
+}
+
+#container {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+}
+#content {
+	text-align: center;
+	padding: 10px;
+}
+#left,
+#right {
+	background-color: #eee;
+	border: solid 0px #ddd;
+	padding: 10px;
+}
+#left {
+	border-right-width: 1px;
+}
+#right {
+	border-left-width: 1px;
+	flex: 1;
+}
+
+table#field {
+	margin: 0 auto;
+}
 table#field,
 #field table {
 	border-collapse: collapse;
@@ -7,10 +44,11 @@ table#field,
 	padding: 0;
 }
 #ms_tbody td {
-	width: 16px;
-	height: 16px;
+	width: var(--inside-cell);
+	height: var(--inside-cell);
 	padding: 0;
 	background-image: url(images/dicht.gif);
+	background-size: cover;
 }
 #ms_tbody td img {
 	display: block;
