@@ -111,7 +111,7 @@ else if ( isset($_POST['reveal']) ) {
 else if ( isset($_POST['check']) ) {
 	$arrAtoms = isset($_POST['atoms']) ? (array)$_POST['atoms'] : array();;
 	if ( count($arrAtoms) !== $ATOMS ) {
-		exit('You suggested '.count($arrAtoms).' atoms, but there are '.$ATOMS.'.');
+		exit(json_encode(['error' => 'You suggested '.count($arrAtoms).' atoms, but there are '.$ATOMS.'.']));
 	}
 	$iFound = 0;
 	foreach ( $arrAtoms AS $c ) {
@@ -122,14 +122,14 @@ else if ( isset($_POST['check']) ) {
 	$_SESSION[S_NAME]['map'] = array();
 
 	if ( $iFound !== $ATOMS ) {
-		exit('You have found '.$iFound.' / '.$ATOMS.': not enough!');
+		exit(json_encode(['error' => 'You have found '.$iFound.' / '.$ATOMS.': not enough!']));
 	}
 
 	$playtime = time() - $_SESSION[S_NAME]['starttime'];
 	$beams = (int)$_SESSION[S_NAME]['beams'];
 	$score = max(0, 2000 - $playtime * 5 - $beams * 30);
 
-	exit('You have found all atoms in ' . $playtime . ' seconds, using ' . $beams . " beams!\n\nScore: $score");
+	exit(json_encode(['success' => 'You have found all atoms in ' . $playtime . ' seconds, using ' . $beams . " beams!\n\nScore: $score"]));
 }
 
 ?>
@@ -228,8 +228,8 @@ Blackbox.prototype = {
 			return '&atoms[]=' + (el.parentNode.sectionRowIndex-1) + ':' + (el.cellIndex-1);
 		});
 
-		$.post('?', 'check=1' + a.join('')).on('done', function(e, t) {
-			alert(t);
+		$.post('?', 'check=1' + a.join('')).on('done', function(e, rsp) {
+			alert(rsp.error || rsp.success);
 		});
 		return false;
 	},
@@ -322,7 +322,6 @@ function toggleFrame(name) {
 		<p>Playtime: <b id="playtime">-</b></p>
 		<p>Score: <b id="score">-</b></p>
 		<p>Hi-score: <b id="hiscore">-</b></p>
-		<p>Selected atoms: <span id="stats_hilighted">0</span></p>
 
 		<p>You can fire beams that might tell you the location of the Atoms.</p>
 		<p>You do that by clicking on side cells (the lighter grey ones).</p>

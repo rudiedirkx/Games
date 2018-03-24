@@ -121,8 +121,6 @@ Blackbox.reset = function() {
 	// create new instance
 	objBlackbox = new Blackbox();
 
-	$('#stats_hilighted').setHTML(objBlackbox.m_iHighlights);
-
 	// Recreate field
 	for ( var x=-1; x<=objBlackbox.m_sides; x++ ) {
 		for ( var y=-1; y<=objBlackbox.m_sides; y++ ) {
@@ -462,7 +460,6 @@ Blackbox.prototype = {
 				this.m_mapUser[f_coords[0]][f_coords[1]] = true;
 			}
 		}
-		$('#stats_hilighted').innerHTML = this.m_iHighlights;
 
 	}, // END Fieldcolor() */
 
@@ -511,12 +508,14 @@ Blackbox.prototype = {
 			// Calculate some bogus score
 			var score = Blackbox.Score();
 			var hiscore = '';
-			if (localStorage.blackboxHiscore && score > parseInt(localStorage.blackboxHiscore)) {
-				hiscore = "\n\nThat's a new hi-score!";
+			if (!localStorage.blackboxHiscore || score > parseInt(localStorage.blackboxHiscore)) {
+				if (localStorage.blackboxHiscore) {
+					hiscore = "\n\nThat's a new hi-score!";
+				}
 				localStorage.blackboxHiscore = score;
-
-				Blackbox.showHiscore();
 			}
+
+			Blackbox.showHiscore();
 
 			// Visualize atoms
 			this.RevealAtoms();
@@ -664,7 +663,6 @@ window.onload = function() {
 		<p>Playtime: <b id="playtime">-</b></p>
 		<p>Score: <b id="score">-</b></p>
 		<p>Hi-score: <b id="hiscore">-</b></p>
-		<p>Selected atoms: <span id="stats_hilighted">0</span></p>
 
 		<p>You can fire beams that might tell you the location of the Atoms.</p>
 		<p>You do that by clicking on side cells (the lighter grey ones).</p>
