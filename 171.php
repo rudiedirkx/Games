@@ -4,7 +4,6 @@
 require __DIR__ . '/inc.bootstrap.php';
 
 // - reuse nextLocation() in move()
-// - reuse gridPosition() in draw()
 // - a turn is 2 actions (position & direction), not 1
 
 ?>
@@ -86,7 +85,7 @@ var GRID = [
 		new Square('es'),
 		new Square('esw'),
 		new Square('esw'),
-		new Square('sw'), // swe
+		new Square('sw'),
 	],
 	[
 		new Square('nes'),
@@ -101,7 +100,7 @@ var GRID = [
 		new Square('sw'),
 	],
 	[
-		new Square('ne'), // new
+		new Square('new'),
 		new Square('new'),
 		new Square('new'),
 		new Square('nw'),
@@ -131,6 +130,8 @@ class Car {
 	}
 
 	isFree(location) {
+		if ( !location ) return true;
+
 		var pos = this.locationPosition(location);
 		return !cars.some((car) => {
 			var carPos = car.locationPosition(car.currentLocation());
@@ -141,8 +142,8 @@ class Car {
 	locationPosition(location) {
 		var gridPos = this.gridPosition(location);
 		return {
-			x: this.grid.x * 4 + gridPos.x,
-			y: this.grid.y * 4 + gridPos.y,
+			x: location.grid.x * 4 + gridPos.x,
+			y: location.grid.y * 4 + gridPos.y,
 		};
 	}
 
@@ -305,46 +306,10 @@ class Car {
 
 		var sidewayPosition = ['s', 'w'].includes(direction) ? 0 : 1;
 
-		var carCenter = {x: 0, y: 0};
-		carCenter[forwardAxis] = dirStart + position * dirMoves;
-		carCenter[sidewayAxis] = 1 + sidewayPosition;
-		return carCenter;
-	}
-
-	draw() {
-		var hor = this.direction == 'e' || this.direction == 'w';
-
-		var C = this.gridPosition(this.currentLocation());
-
-		var carCenter = {
-			x: this.grid.x * 101,
-			y: this.grid.y * 101,
-		};
-
-		var dirMoves = this.direction == 'n' || this.direction == 'w' ? -1 : 1;
-		var dirStart = dirMoves == 1 ? 0 : 100;
-
-		var forwardAxis = hor ? 'x' : 'y';
-		var sidewayAxis = hor ? 'y' : 'x';
-
-		var sidewayPosition = ['s', 'w'].includes(this.direction) ? 0 : 1;
-
-		carCenter[forwardAxis] += dirStart + this.position * dirMoves * 25 + dirMoves * 12.5;
-		carCenter[sidewayAxis] += 37.5 + sidewayPosition * 25;
-
-		var directions = ['n', 'e', 's', 'w'];
-		var carshape = draw.carshape.rotate(Math.PI/2 * directions.indexOf(this.direction));
-		ctx.fillStyle = 'red';
-		ctx.beginPath();
-		carshape.points.forEach((point, i) => {
-			ctx[i == 0 ? 'moveTo' : 'lineTo'](carCenter.x + point.x * 3, carCenter.y + point.y * 3);
-		});
-		ctx.closePath();
-		ctx.fill();
-
-		ctx.fillStyle = 'white';
-		ctx.font = '13px sans-serif';
-		ctx.fillText(this.name, carCenter.x-3, carCenter.y+4);
+		var pos = new Coords2D(0, 0);
+		pos[forwardAxis] = dirStart + position * dirMoves;
+		pos[sidewayAxis] = 1 + sidewayPosition;
+		return pos;
 	}
 }
 
@@ -408,10 +373,29 @@ var draw = {
 			});
 		});
 	},
-	cars() {
-		cars.forEach(function(car) {
-			car.draw();
+	car(car) {
+		var pos = car.gridPosition(car.currentLocation());
+		var center = new Coords2D(
+			car.grid.x * 101 + pos.x * 25 + 12.5,
+			car.grid.y * 101 + pos.y * 25 + 12.5,
+		);
+
+		var directions = ['n', 'e', 's', 'w'];
+		var carshape = draw.carshape.rotate(Math.PI/2 * directions.indexOf(car.direction));
+		ctx.fillStyle = 'red';
+		ctx.beginPath();
+		carshape.points.forEach((point, i) => {
+			ctx[i == 0 ? 'moveTo' : 'lineTo'](center.x + point.x * 3, center.y + point.y * 3);
 		});
+		ctx.closePath();
+		ctx.fill();
+
+		ctx.fillStyle = 'white';
+		ctx.font = '13px sans-serif';
+		ctx.fillText(car.name, center.x-3, center.y+4);
+	},
+	cars() {
+		cars.forEach(this.car);
 	},
 	redraw() {
 		// console.time('redraw');
@@ -461,10 +445,10 @@ addCarButton('Start/stop', function(e) {
 		timer = 0;
 	}
 	else {
-		timer = setInterval(() => moveAllCars(), 200);
+		timer = setInterval(() => moveAllCars(), 80);
 		moveAllCars();
 	}
-});//.click();
+}).click();
 
 cars.forEach(function(car, i) {
 	addCarButton('Car ' + (i+1), (e) => {
