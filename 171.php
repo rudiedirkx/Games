@@ -4,7 +4,6 @@
 require __DIR__ . '/inc.bootstrap.php';
 
 // - reuse nextLocation() in move()
-// - a turn is 2 actions (position & direction), not 1
 
 ?>
 <!doctype html>
@@ -134,17 +133,16 @@ class Car {
 
 		var pos = this.locationPosition(location);
 		return !cars.some((car) => {
-			var carPos = car.locationPosition(car.currentLocation());
-			return carPos.x == pos.x && carPos.y == pos.y;
+			return car != this && car.locationPosition(car.currentLocation()).equal(pos);
 		});
 	}
 
 	locationPosition(location) {
 		var gridPos = this.gridPosition(location);
-		return {
-			x: location.grid.x * 4 + gridPos.x,
-			y: location.grid.y * 4 + gridPos.y,
-		};
+		return new Coords2D(
+			location.grid.x * 4 + gridPos.x,
+			location.grid.y * 4 + gridPos.y
+		);
 	}
 
 	currentLocation() {
@@ -259,26 +257,26 @@ class Car {
 
 		switch ( turn ) {
 			case 'u':
-				this.nextMoves.push('position');
 				var d2 = Car.goLeft(this.direction);
-				this.nextMoves.push({direction: d2, position: 2});
-				// this.nextMoves.push('position');
 				var d3 = Car.goLeft(d2);
-				this.nextMoves.push({direction: d3, position: 2});
+				this.nextMoves.push('position');
+				this.nextMoves.push({direction: d2, position: 1});
+				this.nextMoves.push('position');
+				this.nextMoves.push({direction: d3, position: 1});
 				this.nextMoves.push('position');
 				break;
 
 			case 'l':
-				this.nextMoves.push('position');
 				var d2 = Car.goLeft(this.direction);
+				this.nextMoves.push('position');
+				this.nextMoves.push({direction: d2, position: 1});
 				this.nextMoves.push({direction: d2, position: 2});
 				this.nextMoves.push('position');
 				break;
 
 			case 'r':
 				var d2 = Car.goRight(this.direction);
-				this.nextMoves.push({direction: d2, position: 3});
-				// this.nextMoves.push('position');
+				this.nextMoves.push({direction: d2, position: 2});
 				break;
 		}
 	}
@@ -420,6 +418,9 @@ cars.push(new Car(cars.length+1, new Coords2D(2, 0), 'n', 0));
 cars[cars.length-1].nextDirections.push('w');
 cars.push(new Car(cars.length+1, new Coords2D(3, 0), 'w', 3));
 
+// U-turn coming up
+cars.push(new Car(cars.length+1, new Coords2D(3, 1), 's', 0));
+
 function addCarButton(label, onclick) {
 	var btn = document.createElement('button');
 	btn.textContent = label;
@@ -445,10 +446,10 @@ addCarButton('Start/stop', function(e) {
 		timer = 0;
 	}
 	else {
-		timer = setInterval(() => moveAllCars(), 80);
+		timer = setInterval(() => moveAllCars(), 40);
 		moveAllCars();
 	}
-}).click();
+});//.click();
 
 cars.forEach(function(car, i) {
 	addCarButton('Car ' + (i+1), (e) => {
