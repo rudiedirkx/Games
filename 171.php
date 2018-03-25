@@ -3,7 +3,9 @@
 
 require __DIR__ . '/inc.bootstrap.php';
 
-// - turn is 2 actions (position & direction), not 1
+// - reuse nextLocation() in move()
+// - reuse gridPosition() in draw()
+// - a turn is 2 actions (position & direction), not 1
 
 ?>
 <!doctype html>
@@ -32,17 +34,18 @@ $cars = document.querySelector('#cars');
 $canvas = document.querySelector('canvas');
 ctx = $canvas.getContext('2d');
 
-var D = {n: [-25, -50, 50, 25], e: [25, -25, 25, 50], s: [-25, 25, 50, 25], w: [-50, -25, 25, 50]};
-var O = {n: [0, -1], e: [1, 0], s: [0, 1], w: [-1, 0]};
-var OP = {n: 's', s: 'n', e: 'w', w: 'e'};
-
-r.extend(Coords2D, {
-	rotate: function(angle) {
-		var x = Math.cos(angle) * this.x - Math.sin(angle) * this.y;
-		var y = Math.sin(angle) * this.x + Math.cos(angle) * this.y;
-		return new Coords2D(Math.round(x * 10)/10, Math.round(y * 10)/10);
-	}
-});
+Coords2D.dirOffset = {
+	n: new Coords2D(0, -1),
+	e: new Coords2D(1, 0),
+	s: new Coords2D(0, 1),
+	w: new Coords2D(-1, 0),
+};
+Coords2D.dirOpposite = {
+	n: 's',
+	s: 'n',
+	e: 'w',
+	w: 'e',
+};
 
 class CarShape {
 	constructor(points) {
@@ -110,9 +113,9 @@ var GRID = [
 class Car {
 	constructor(name, grid, direction, position) {
 		this.name = String(name);
-		this.grid = grid; // 0,0 - 3,3
-		this.direction = direction; // nesw
-		this.position = position; // 0 - 3
+		this.grid = grid;
+		this.direction = direction;
+		this.position = position;
 		this.nextMoves = [];
 		this.nextDirections = [];
 	}
@@ -138,8 +141,8 @@ class Car {
 	locationPosition(location) {
 		var gridPos = this.gridPosition(location);
 		return {
-			x: this.grid[0] * 4 + gridPos.x,
-			y: this.grid[1] * 4 + gridPos.y,
+			x: this.grid.x * 4 + gridPos.x,
+			y: this.grid.y * 4 + gridPos.y,
 		};
 	}
 
@@ -181,9 +184,6 @@ class Car {
 			}
 		}
 
-		console.log('grid', grid);
-		console.log('direction', direction);
-		console.log('position', position);
 		return {grid, direction, position};
 	}
 
@@ -207,8 +207,6 @@ class Car {
 		else if ( this.position == 1 ) {
 			var dir = this.chooseDirection();
 			this.assignNextMoves(dir);
-
-			if ( !this.isFree(this.nextLocation()) ) return;
 
 			this.move();
 		}
@@ -234,10 +232,10 @@ class Car {
 	}
 
 	chooseDirection() {
-		var grid = GRID[this.grid[1]][this.grid[0]];
+		var grid = GRID[this.grid.y][this.grid.x];
 		var dir = this.nextDirections.shift() || grid.random();
 
-		var uturn = dir == OP[this.direction];
+		var uturn = dir == Coords2D.dirOpposite[this.direction];
 		if ( uturn && grid.length > 1 ) {
 			return this.chooseDirection();
 		}
@@ -256,7 +254,7 @@ class Car {
 		// r = right
 		var di = 'nesw'.indexOf(this.direction);
 		var left = di == 0 ? 'w' : 'nesw'[di-1];
-		var turn = OP[this.direction] == dir ? 'u' : ( left == dir ? 'l' : 'r' );
+		var turn = Coords2D.dirOpposite[this.direction] == dir ? 'u' : ( left == dir ? 'l' : 'r' );
 
 		switch ( turn ) {
 			case 'u':
@@ -285,11 +283,9 @@ class Car {
 	}
 
 	nextSquare() {
-		var nextGrid = JSON.parse(JSON.stringify(this.grid));
-		nextGrid[0] += O[this.direction][0];
-		nextGrid[1] += O[this.direction][1];
-		var nextSquare = GRID[nextGrid[1]] && GRID[nextGrid[1]][nextGrid[0]];
-		if ( !nextSquare || !nextSquare.includes(OP[this.direction]) ) {
+		const nextGrid = this.grid.add(Coords2D.dirOffset[this.direction]);
+		const nextSquare = GRID[nextGrid.y] && GRID[nextGrid.y][nextGrid.x];
+		if ( !nextSquare || !nextSquare.includes(Coords2D.dirOpposite[this.direction]) ) {
 			return;
 		}
 
@@ -317,14 +313,12 @@ class Car {
 
 	draw() {
 		var hor = this.direction == 'e' || this.direction == 'w';
-		// var w = hor ? 15 : 9;
-		// var h = hor ? 9 : 15;
 
 		var C = this.gridPosition(this.currentLocation());
 
 		var carCenter = {
-			x: this.grid[0] * 101,
-			y: this.grid[1] * 101,
+			x: this.grid.x * 101,
+			y: this.grid.y * 101,
 		};
 
 		var dirMoves = this.direction == 'n' || this.direction == 'w' ? -1 : 1;
@@ -368,6 +362,13 @@ var draw = {
 	structure() {
 		$canvas.width = GRID[0].length * 101 - 1;
 		$canvas.height = GRID.length * 101 - 1;
+
+		const D = {
+			n: [-25, -50, 50, 25],
+			e: [ 25, -25, 25, 50],
+			s: [-25,  25, 50, 25],
+			w: [-50, -25, 25, 50],
+		};
 
 		GRID.forEach(function(line, y) {
 			line.forEach(function(square, x) {
@@ -425,15 +426,15 @@ var draw = {
 var change = true;
 
 var cars = [];
-cars.push(new Car(cars.length+1, [0, 0], 'w', 0));
-cars.push(new Car(cars.length+1, [0, 1], 'w', 1));
-cars.push(new Car(cars.length+1, [0, 2], 'n', 1));
-cars.push(new Car(cars.length+1, [0, 3], 'e', 0));
+cars.push(new Car(cars.length+1, new Coords2D(0, 0), 'w', 0));
+cars.push(new Car(cars.length+1, new Coords2D(0, 1), 'w', 1));
+cars.push(new Car(cars.length+1, new Coords2D(0, 2), 'n', 1));
+cars.push(new Car(cars.length+1, new Coords2D(0, 3), 'e', 0));
 
 // Tick 2 will collide the next 2 cars
-cars.push(new Car(cars.length+1, [2, 0], 'n', 0));
+cars.push(new Car(cars.length+1, new Coords2D(2, 0), 'n', 0));
 cars[cars.length-1].nextDirections.push('w');
-cars.push(new Car(cars.length+1, [3, 0], 'w', 3));
+cars.push(new Car(cars.length+1, new Coords2D(3, 0), 'w', 3));
 
 function addCarButton(label, onclick) {
 	var btn = document.createElement('button');

@@ -11,9 +11,6 @@ r.extend(Coords2D, {
 		}
 		return this.x > 0 ? 'right' : 'left';
 	},
-	distance: function(target) {
-		return Math.sqrt(Math.pow(Math.abs(this.x - target.x), 2) + Math.pow(Math.abs(this.y - target.y), 2));
-	},
 	replace: function(a, b) {
 		var x = this.x;
 		var y = this.y;
