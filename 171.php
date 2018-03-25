@@ -4,7 +4,6 @@
 require __DIR__ . '/inc.bootstrap.php';
 
 // - turn is 2 actions (position & direction), not 1
-// - wait for room instead of overlap
 
 ?>
 <!doctype html>
@@ -110,7 +109,7 @@ var GRID = [
 
 class Car {
 	constructor(name, grid, direction, position) {
-		this.name = name;
+		this.name = String(name);
 		this.grid = grid; // 0,0 - 3,3
 		this.direction = direction; // nesw
 		this.position = position; // 0 - 3
@@ -128,13 +127,75 @@ class Car {
 		return di == 3 ? 'n' : 'nesw'[di+1];
 	}
 
+	isFree(location) {
+		var pos = this.locationPosition(location);
+		return !cars.some((car) => {
+			var carPos = car.locationPosition(car.currentLocation());
+			return carPos.x == pos.x && carPos.y == pos.y;
+		});
+	}
+
+	locationPosition(location) {
+		var gridPos = this.gridPosition(location);
+		return {
+			x: this.grid[0] * 4 + gridPos.x,
+			y: this.grid[1] * 4 + gridPos.y,
+		};
+	}
+
+	currentLocation() {
+		return {
+			grid: this.grid,
+			direction: this.direction,
+			position: this.position,
+		};
+	}
+
+	nextLocation() {
+		var grid = this.grid;
+		var direction = this.direction;
+		var position = this.position;
+
+		if ( this.nextMoves.length ) {
+			var nextMove = this.nextMoves[0];
+			if ( nextMove === 'position' ) {
+				position++;
+			}
+			else {
+				nextMove.direction && (direction = nextMove.direction);
+				nextMove.position && (position = nextMove.position);
+			}
+		}
+		else {
+			position++;
+
+			if ( position == 4 ) {
+				var nextSquare = this.nextSquare();
+				if ( nextSquare ) {
+					position = 0;
+					grid = nextSquare;
+				}
+				else {
+					return;
+				}
+			}
+		}
+
+		console.log('grid', grid);
+		console.log('direction', direction);
+		console.log('position', position);
+		return {grid, direction, position};
+	}
+
 	move() {
 		// Pre-defined move
 		if ( this.nextMoves.length ) {
+			if ( !this.isFree(this.nextLocation()) ) return;
+
 			var nextMove = this.nextMoves.shift();
 
 			// Move forward
-			if ( nextMove == 'position' ) {
+			if ( nextMove === 'position' ) {
 				this.position++;
 			}
 			else {
@@ -147,10 +208,13 @@ class Car {
 			var dir = this.chooseDirection();
 			this.assignNextMoves(dir);
 
-	// console.log(dir, JSON.stringify(this.nextMoves, ''));
+			if ( !this.isFree(this.nextLocation()) ) return;
+
 			this.move();
 		}
 		else {
+			if ( !this.isFree(this.nextLocation()) ) return;
+
 			this.position++;
 
 			// Advance a square
@@ -232,10 +296,31 @@ class Car {
 		return nextGrid;
 	}
 
+	gridPosition(location) {
+		const {direction, position} = location;
+
+		var hor = direction == 'e' || direction == 'w';
+
+		var dirMoves = direction == 'n' || direction == 'w' ? -1 : 1;
+		var dirStart = dirMoves == 1 ? 0 : 3;
+
+		var forwardAxis = hor ? 'x' : 'y';
+		var sidewayAxis = hor ? 'y' : 'x';
+
+		var sidewayPosition = ['s', 'w'].includes(direction) ? 0 : 1;
+
+		var carCenter = {x: 0, y: 0};
+		carCenter[forwardAxis] = dirStart + position * dirMoves;
+		carCenter[sidewayAxis] = 1 + sidewayPosition;
+		return carCenter;
+	}
+
 	draw() {
 		var hor = this.direction == 'e' || this.direction == 'w';
 		// var w = hor ? 15 : 9;
 		// var h = hor ? 9 : 15;
+
+		var C = this.gridPosition(this.currentLocation());
 
 		var carCenter = {
 			x: this.grid[0] * 101,
@@ -340,15 +425,15 @@ var draw = {
 var change = true;
 
 var cars = [];
-cars.push(new Car(1, [0, 0], 'w', 0));
-cars.push(new Car(2, [0, 1], 'w', 1));
-cars.push(new Car(3, [0, 2], 'n', 1));
-cars.push(new Car(4, [0, 3], 'e', 0));
+cars.push(new Car(cars.length+1, [0, 0], 'w', 0));
+cars.push(new Car(cars.length+1, [0, 1], 'w', 1));
+cars.push(new Car(cars.length+1, [0, 2], 'n', 1));
+cars.push(new Car(cars.length+1, [0, 3], 'e', 0));
 
-// First tick will collide the next 2 cars
-cars.push(new Car(5, [2, 0], 'n', 1));
+// Tick 2 will collide the next 2 cars
+cars.push(new Car(cars.length+1, [2, 0], 'n', 0));
 cars[cars.length-1].nextDirections.push('w');
-cars.push(new Car(6, [2, 0], 'w', 0));
+cars.push(new Car(cars.length+1, [3, 0], 'w', 3));
 
 function addCarButton(label, onclick) {
 	var btn = document.createElement('button');
