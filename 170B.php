@@ -37,8 +37,9 @@ canvas {
 
 <div style="margin-bottom: 10px">
 	<select class="map"><?= do_html_options($maps, @$_GET['map'], '-- map') ?></select>
-	<button class="save">Save this map</button>
-	<button class="unsave">Clear saved map</button>
+	<button class="remember">Remember</button>
+	<button class="forget">Forget</button>
+	<button class="undo">Undo</button>
 	<button class="tiles" disabled>?</button>
 	<button class="export">EXPORT</button>
 	<form method="post" action="170.php">
@@ -60,8 +61,9 @@ window.Promise || document.write(unescape('%3Cscript%20src%3D%22https%3A//rawgit
 <script src="170.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
-var saveButton = document.querySelector('button.save');
-var unsaveButton = document.querySelector('button.unsave');
+var rememberButton = document.querySelector('button.remember');
+var forgetButton = document.querySelector('button.forget');
+var undoButton = document.querySelector('button.undo');
 var tilesButton = document.querySelector('button.tiles');
 var exportButton = document.querySelector('button.export');
 var playButton = document.querySelector('button.play');
@@ -275,13 +277,19 @@ levelsSelect.onchange = function(e) {
 	change = true;
 };
 
-saveButton.onclick = function(e) {
+rememberButton.onclick = function(e) {
 	localStorage.mahjongMapBuilderMap = JSON.stringify(mahjong.Board.serialize(tiles));
 };
 
-unsaveButton.onclick = function(e) {
+forgetButton.onclick = function(e) {
 	delete localStorage.mahjongMapBuilderMap;
 	tiles.length = 0;
+
+	change = true;
+};
+
+undoButton.onclick = function(e) {
+	tiles.pop();
 
 	change = true;
 };
