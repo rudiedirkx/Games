@@ -41,6 +41,9 @@ tbody td {
 	background: #bbb;
 	padding: 0;
 }
+tbody td.hilite {
+	background: #aaa;
+}
 tbody td[data-state="active"] {
 	background-color: black;
 }
