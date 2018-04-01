@@ -245,8 +245,9 @@ class GridGame extends Game {
 		});
 	}
 
-	listenCellClick() {
-		this.m_objGrid.on('click', '#' + this.m_objGrid.idOrRnd() + ' td', (e) => {
+	listenCellClick( grid ) {
+		grid || (grid = this.m_objGrid);
+		grid.on('click', '#' + grid.idOrRnd() + ' td', (e) => {
 			this.handleCellClick(e.subject);
 		});
 	}
