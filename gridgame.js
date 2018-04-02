@@ -87,7 +87,7 @@ class Game {
 		var s = Math.round(ms/1000);
 		var m = Math.floor(s/60);
 		s -= m*60;
-		return (m ? m + ' m ' : '') + s + ' s';
+		return m + ':' + ('0' + s).slice(-2);
 	}
 
 	win() {

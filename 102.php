@@ -143,7 +143,7 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 
 		$m = floor($playtime / 60);
 		$s = $playtime % 60;
-		$szMsg = 'YOU FINISHED LEVEL "' . $arrLevel['name'] . '" IN ' . ( $m ? $m . 'm ' : '' ) . $s . "s.\n\nNo more highscore!";
+		$szMsg = "You win!\n\nIt took you " . $m . ":" . str_pad($s, 2, '0', STR_PAD_LEFT) . ".";
 	}
 
 	header('Content-type: text/json');

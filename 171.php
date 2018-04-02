@@ -16,6 +16,7 @@ canvas {
 	border: solid 1px black;
 }
 </style>
+<script>window.onerror = function(e) { alert(e); };</script>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('traffic.js') ?>"></script>
 </head>
