@@ -18,6 +18,7 @@ canvas {
 </style>
 <script>window.onerror = function(e) { alert(e); };</script>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('traffic.js') ?>"></script>
 </head>
 
@@ -36,42 +37,42 @@ window.onload = function() {
 
 	world = new World([
 		[
-			new Square('es'),
-			new Square('esw'),
-			new Square('esw'),
-			new Square('sw'),
+			new Square('rd'),
+			new Square('rdl'),
+			new Square('rdl'),
+			new Square('dl'),
 		],
 		[
-			new Square('nes'),
-			new Square('nesw'),
-			new Square('nsw'),
-			new Square('n'),
+			new Square('urd'),
+			new Square('urdl', 'ew'),
+			new Square('udl'),
+			new Square('u'),
 		],
 		[
-			new Square('ns'),
-			new Square('ns'),
-			new Square('nes'),
-			new Square('sw'),
+			new Square('ud'),
+			new Square('ud'),
+			new Square('urd'),
+			new Square('dl'),
 		],
 		[
-			new Square('new'),
-			new Square('new'),
-			new Square('new'),
-			new Square('nw'),
+			new Square('url'),
+			new Square('url'),
+			new Square('url'),
+			new Square('ul'),
 		],
 	]);
 
-	world.addCar(new Coords2D(0, 0), 'w', 0);
-	world.addCar(new Coords2D(0, 1), 'w', 1);
-	world.addCar(new Coords2D(0, 2), 'n', 1);
-	world.addCar(new Coords2D(0, 3), 'e', 0);
+	world.addCar(new Coords2D(0, 0), 'l', 0);
+	world.addCar(new Coords2D(0, 1), 'l', 1);
+	world.addCar(new Coords2D(0, 2), 'u', 1);
+	world.addCar(new Coords2D(0, 3), 'r', 0);
 
 	// Tick 2 will collide the next 2 cars
-	world.addCar(new Coords2D(2, 0), 'n', 0).then((car) => car.nextDirections.push('w'));
-	world.addCar(new Coords2D(3, 0), 'w', 3);
+	world.addCar(new Coords2D(2, 0), 'u', 0).then((car) => car.nextDirections.push('l'));
+	world.addCar(new Coords2D(3, 0), 'l', 3);
 
 	// U-turn coming up
-	world.addCar(new Coords2D(3, 1), 's', 0);
+	world.addCar(new Coords2D(3, 1), 'd', 0);
 
 
 

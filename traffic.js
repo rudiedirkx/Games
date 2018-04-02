@@ -1,17 +1,3 @@
-
-Coords2D.dirOffset = {
-	n: new Coords2D(0, -1),
-	e: new Coords2D(1, 0),
-	s: new Coords2D(0, 1),
-	w: new Coords2D(-1, 0),
-};
-Coords2D.dirOpposite = {
-	n: 's',
-	s: 'n',
-	e: 'w',
-	w: 'e',
-};
-
 class CarShape {
 	constructor(points) {
 		this.points = points || [
@@ -29,8 +15,9 @@ class CarShape {
 }
 
 class Square {
-	constructor(dirs) {
+	constructor(dirs, lights) {
 		this.dirs = dirs;
+		this.lights = lights || '';
 	}
 	get length() {
 		return this.dirs.length;
@@ -79,14 +66,12 @@ class Car {
 		this.nextDirections = [];
 	}
 
-	static goLeft(dir) {
-		var di = 'nesw'.indexOf(dir);
-		return di == 0 ? 'w' : 'nesw'[di-1];
+	static goLeft( dir ) {
+		return Coords2D.dir4Names[(Coords2D.dir4Names.indexOf(dir) + 3) % 4];
 	}
 
-	static goRight(dir) {
-		var di = 'nesw'.indexOf(dir);
-		return di == 3 ? 'n' : 'nesw'[di+1];
+	static goRight( dir ) {
+		return Coords2D.dir4Names[(Coords2D.dir4Names.indexOf(dir) + 1) % 4];
 	}
 
 	isFree(location) {
@@ -189,11 +174,15 @@ class Car {
 		}
 	}
 
+	getOpposite( dir ) {
+		return Coords2D.dir4Names[ (Coords2D.dir4Names.indexOf(dir) + 2) % 4 ];
+	}
+
 	chooseDirection() {
 		var grid = this.world.map[this.grid.y][this.grid.x];
 		var dir = this.nextDirections.shift() || grid.random();
 
-		var uturn = dir == Coords2D.dirOpposite[this.direction];
+		var uturn = dir == this.getOpposite(this.direction);
 		if ( uturn && grid.length > 1 ) {
 			return this.chooseDirection();
 		}
@@ -210,9 +199,8 @@ class Car {
 		// u = U turn
 		// l = left
 		// r = right
-		var di = 'nesw'.indexOf(this.direction);
-		var left = di == 0 ? 'w' : 'nesw'[di-1];
-		var turn = Coords2D.dirOpposite[this.direction] == dir ? 'u' : ( left == dir ? 'l' : 'r' );
+		var left = this.constructor.goLeft(this.direction);
+		var turn = this.getOpposite(this.direction) == dir ? 'u' : ( left == dir ? 'l' : 'r' );
 
 		switch ( turn ) {
 			case 'u':
@@ -241,9 +229,9 @@ class Car {
 	}
 
 	nextSquare() {
-		const nextGrid = this.grid.add(Coords2D.dirOffset[this.direction]);
+		const nextGrid = this.grid.add(Coords2D.dir4Coords[Coords2D.dir4Names.indexOf(this.direction)]);
 		const nextSquare = this.world.map[nextGrid.y] && this.world.map[nextGrid.y][nextGrid.x];
-		if ( !nextSquare || !nextSquare.includes(Coords2D.dirOpposite[this.direction]) ) {
+		if ( !nextSquare || !nextSquare.includes(this.getOpposite(this.direction)) ) {
 			return;
 		}
 
@@ -253,15 +241,15 @@ class Car {
 	gridPosition(location) {
 		const {direction, position} = location;
 
-		var hor = direction == 'e' || direction == 'w';
+		var hor = direction == 'r' || direction == 'l';
 
-		var dirMoves = direction == 'n' || direction == 'w' ? -1 : 1;
+		var dirMoves = direction == 'u' || direction == 'l' ? -1 : 1;
 		var dirStart = dirMoves == 1 ? 0 : 3;
 
 		var forwardAxis = hor ? 'x' : 'y';
 		var sidewayAxis = hor ? 'y' : 'x';
 
-		var sidewayPosition = ['s', 'w'].includes(direction) ? 0 : 1;
+		var sidewayPosition = ['d', 'l'].includes(direction) ? 0 : 1;
 
 		var pos = new Coords2D(0, 0);
 		pos[forwardAxis] = dirStart + position * dirMoves;
@@ -292,10 +280,10 @@ class Drawer {
 		this.canvas.height = this.world.map.length * 101 - 1;
 
 		const D = {
-			n: [-25, -50, 50, 25],
-			e: [ 25, -25, 25, 50],
-			s: [-25,  25, 50, 25],
-			w: [-50, -25, 25, 50],
+			u: [-25, -50, 50, 25],
+			r: [ 25, -25, 25, 50],
+			d: [-25,  25, 50, 25],
+			l: [-50, -25, 25, 50],
 		};
 
 		this.world.map.forEach((line, y) => {
@@ -326,13 +314,13 @@ class Drawer {
 				// White lines
 				var lineOffset = 5;
 				// N
-				sides.n && this.line({x: sx + 50, y: sy + lineOffset}, {x: sx + 50, y: sy + 50 - lineOffset}, 'white', 2);
+				sides.u && this.line({x: sx + 50, y: sy + lineOffset}, {x: sx + 50, y: sy + 50 - lineOffset}, 'white', 2);
 				// S
-				sides.s && this.line({x: sx + 50, y: sy + 50 + lineOffset}, {x: sx + 50, y: sy + 100 - lineOffset}, 'white', 2);
+				sides.d && this.line({x: sx + 50, y: sy + 50 + lineOffset}, {x: sx + 50, y: sy + 100 - lineOffset}, 'white', 2);
 				// W
-				sides.w && this.line({x: sx + lineOffset, y: sy + 50}, {x: sx + 50 - lineOffset, y: sy + 50}, 'white', 2);
+				sides.l && this.line({x: sx + lineOffset, y: sy + 50}, {x: sx + 50 - lineOffset, y: sy + 50}, 'white', 2);
 				// E
-				sides.e && this.line({x: sx + 50 + lineOffset, y: sy + 50}, {x: sx + 100 - lineOffset, y: sy + 50}, 'white', 2);
+				sides.r && this.line({x: sx + 50 + lineOffset, y: sy + 50}, {x: sx + 100 - lineOffset, y: sy + 50}, 'white', 2);
 			});
 		});
 	}
@@ -344,8 +332,7 @@ class Drawer {
 			car.grid.y * 101 + pos.y * 25 + 12.5,
 		);
 
-		var directions = ['n', 'e', 's', 'w'];
-		var carshape = this.carshape.rotate(Math.PI/2 * directions.indexOf(car.direction));
+		var carshape = this.carshape.rotate(Math.PI/2 * Coords2D.dir4Names.indexOf(car.direction));
 		this.ctx.fillStyle = 'red';
 		this.ctx.beginPath();
 		carshape.points.forEach((point, i) => {

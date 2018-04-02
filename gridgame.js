@@ -19,10 +19,21 @@ r.extend(Coords2D, {
 		return new Coords2D(x, y);
 	},
 });
-
 Coords2D.jsonReplacer = function() {
 	return (k, v) => v instanceof Coords2D ? v.toArray() : v;
 };
+Coords2D.dir4Coords = [
+	new Coords2D( 0, -1),
+	new Coords2D( 1,  0),
+	new Coords2D( 0,  1),
+	new Coords2D(-1,  0),
+];
+Coords2D.dir4Names = [
+	'u',
+	'r',
+	'd',
+	'l',
+];
 
 class Game {
 
@@ -138,19 +149,8 @@ class GridGame extends Game {
 
 		this.m_objGrid = gridElement;
 
-		this.dir4Coords = [
-			new Coords2D(0, -1),
-			new Coords2D(1, 0),
-			new Coords2D(0, 1),
-			new Coords2D(-1, 0),
-		];
-
-		this.dir4Names = [
-			'u',
-			'r',
-			'd',
-			'l',
-		];
+		this.dir4Coords = Coords2D.dir4Coords;
+		this.dir4Names = Coords2D.dir4Names;
 
 		this.reset();
 	}
