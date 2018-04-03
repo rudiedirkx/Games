@@ -2,7 +2,7 @@
     "name": "rdx/games",
     "type": "project",
     "require": {
-        "rdx/db": "^1.4"
+        "rdx/db": "^1.5"
     },
     "autoload": {
         "files": ["inc.functions.php"]
