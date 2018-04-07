@@ -90,6 +90,8 @@ $g_arrGames = array(
 	['174',				'Mondrian puzzle',								'Mondrian square puzzle'],
 	['175',				"Knight's Minesweeper",							'Minesweeper with different detecting neighbors'],
 	['176',				'Memory',										'You know memory. Play against yourself'],
+	['177',				'Squarescape',									'As seen on and stolen from the Play store'],
+	['177B',			'Squarescape - Editor',							'Create your own Squarescape level'],
 );
 
 $g_iHeight = ceil(count($g_arrGames)/$g_iWidth);

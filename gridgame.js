@@ -371,7 +371,8 @@ class GridGameEditor extends GridGame {
 	}
 
 	clear() {
-		this.m_objGrid.getElements('td').prop('className', '');
+		this.m_objGrid.empty();
+		this.createMap(12, 12);
 	}
 
 	createEditor() {

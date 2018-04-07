@@ -64,6 +64,10 @@ if ( isset($_REQUEST['load_map']) ) {
 	</tr>
 </table>
 
+<? if (file_exists($editorFile = ((int) basename($_SERVER['SCRIPT_NAME']) . 'B.php'))): ?>
+	<p><a href="<?= $editorFile ?>">Create your own level</a></p>
+<? endif ?>
+
 <script>
 var objGame = new <?= $jsClass ?>($('#grid'));
 <? if ( isset($_POST['import']) ): ?>

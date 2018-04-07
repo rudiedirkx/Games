@@ -255,3 +255,49 @@ td.wall2 {
 .machinarium2 td[data-snake="3"]:after {
 	background-color	: blue;
 }
+
+.squarescape {
+	background-color	: #ccc;
+	user-select			: none;
+}
+.squarescape .inside td {
+	background-color	: #fff;
+	border-color		: #ccc;
+}
+.squarescape .inside td:not(.available) {
+	background-color	: #ccc;
+}
+.squarescape .inside td.danger,
+.squarescape .inside td.collect {
+	background-color	: #fff;
+}
+.squarescape .inside td.start,
+.squarescape .inside td.player {
+	background-color	: green;
+}
+.squarescape .inside td.end {
+	background-color	: red;
+}
+.squarescape .inside td.pause {
+	background			: repeating-linear-gradient(-45deg, #fff, #fff 4px, #ccc 2px, #ccc 6px);
+}
+.squarescape .inside td.pause.player {
+	background			: repeating-linear-gradient(-45deg, green, green 4px, #ccc 2px, #ccc 6px);
+}
+.squarescape .inside td.danger:after {
+	content				: "x";
+	display				: block;
+	font-size			: 20px;
+	color				: red;
+	font-weight			: bold;
+}
+.squarescape .inside td.collect:after {
+	content				: "";
+	display				: block;
+	width				: calc(var(--inside-cell) - 10px);
+	height				: calc(var(--inside-cell) - 10px);
+	margin				: 5px auto 0;
+	pointer-events		: none;
+	border-radius		: 99px;
+	background-color	: #000;
+}
