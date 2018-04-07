@@ -295,8 +295,6 @@ mahjong.target = function(board, x, y) {
 };
 
 mahjong.pixels = function(src) {
-	// console.time('pixels');
-
 	return new Promise(function(resolve) {
 		var img = new Image;
 		img.src = src;
@@ -339,15 +337,12 @@ mahjong.pixels = function(src) {
 				}
 			}
 
-			// console.timeEnd('pixels');
 			resolve(image);
 		};
 	});
 };
 
 mahjong.tiles = function(pixels) {
-	// console.time('tiles');
-
 	return new Promise(function(resolve) {
 		var board = new mahjong.Board;
 
@@ -367,7 +362,6 @@ mahjong.tiles = function(pixels) {
 			}
 		}
 
-		// console.timeEnd('tiles');
 		resolve(board);
 	});
 };

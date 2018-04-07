@@ -245,4 +245,33 @@ $g_arrLevels = [1 =>
 			' HH',
 		],
 	],
+
+	[
+		'molecule' => "Molecule",
+		'formula' => "Formula",
+		'map' => [
+			'xxxxx',
+			'x   x',
+			'xx  x',
+			'x   x',
+			'x   x',
+			'x   x',
+			'x   x',
+			'xxxxx',
+		],
+		'atoms' => [
+			[1,4,"H"],
+			[3,4,"O"],
+			[2,5,"H"],
+			[3,5,"C"],
+			[1,6,"O"],
+			[2,6,"O"],
+			[3,6,"H"],
+		],
+		'target' => [
+			'HHH',
+			' C',
+			'OOO',
+		],
+	],
 ];

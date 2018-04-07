@@ -39,6 +39,7 @@ canvas {
 	outline: solid 1px black;
 }
 </style>
+<script>window.onerror = function(e) { alert(e); };</script>
 </head>
 
 <body>
@@ -53,22 +54,15 @@ canvas {
 
 <p><a href="170B.php">Build your own</a></p>
 
-<script>
-window.onerror = function(e) {
-	alert(e);
-};
-
-window.Promise || document.write(unescape('%3Cscript%20src%3D%22https%3A//rawgit.com/taylorhakes/promise-polyfill/master/promise.js%22%3E%3C/script%3E'));
-</script>
-<script src="170.js"></script>
+<script src="<?= html_asset('170.js') ?>"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
 var shuffleButton = document.querySelector('button.shuffle');
 var movesButton = document.querySelector('button.moves');
 var canvas = document.querySelector('canvas');
 
-var SQUARE_W = 16;
-var SQUARE_H = 24;
+var SQUARE_W = 14;
+var SQUARE_H = 21;
 var TILE_W = 2;
 var TILE_H = 2;
 var MARGIN = 2;
