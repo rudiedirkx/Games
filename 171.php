@@ -29,36 +29,38 @@ canvas {
 <div id="cars"></div>
 
 <script>
+"use strict";
+
 var world;
 
 window.onload = function() {
 	var $cars = document.querySelector('#cars');
 	var $canvas = document.querySelector('canvas');
 
-	world = new World([
+	world = new Traffic.World([
 		[
-			new Square('rd'),
-			new Square('rdl'),
-			new Square('rdl'),
-			new Square('dl'),
+			new Traffic.Square('rd'),
+			new Traffic.Square('rdl'),
+			new Traffic.Square('rdl'),
+			new Traffic.Square('dl'),
 		],
 		[
-			new Square('urd'),
-			new Square('urdl', 'ew'),
-			new Square('udl'),
-			new Square('u'),
+			new Traffic.Square('urd'),
+			new Traffic.Square('urdl', 'ew'),
+			new Traffic.Square('udl'),
+			new Traffic.Square('u'),
 		],
 		[
-			new Square('ud'),
-			new Square('ud'),
-			new Square('urd'),
-			new Square('dl'),
+			new Traffic.Square('ud'),
+			new Traffic.Square('ud'),
+			new Traffic.Square('urd'),
+			new Traffic.Square('dl'),
 		],
 		[
-			new Square('url'),
-			new Square('url'),
-			new Square('url'),
-			new Square('ul'),
+			new Traffic.Square('url'),
+			new Traffic.Square('url'),
+			new Traffic.Square('url'),
+			new Traffic.Square('ul'),
 		],
 	]);
 
@@ -115,7 +117,7 @@ window.onload = function() {
 
 
 
-	var drawer = new Drawer($canvas, world);
+	var drawer = new Traffic.Drawer($canvas, world);
 
 	function keepDrawing() {
 		drawer.redraw();

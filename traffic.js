@@ -1,4 +1,8 @@
-class CarShape {
+"use strict";
+
+const Traffic = {};
+
+Traffic.CarShape = class CarShape {
 	constructor(points) {
 		this.points = points || [
 			new Coords2D( 0, -2.5),
@@ -10,11 +14,11 @@ class CarShape {
 	}
 
 	rotate(angle) {
-		return new CarShape(this.points.map((C) => C.rotate(angle)));
+		return new Traffic.CarShape(this.points.map((C) => C.rotate(angle)));
 	}
 }
 
-class Square {
+Traffic.Square = class Square {
 	constructor(dirs, lights) {
 		this.dirs = dirs;
 		this.lights = lights || '';
@@ -33,7 +37,7 @@ class Square {
 	}
 }
 
-class World {
+Traffic.World = class World {
 	constructor(map) {
 		this.map = map;
 		this.carIndex = 0;
@@ -42,7 +46,7 @@ class World {
 	}
 
 	addCar(grid, direction, position) {
-		const car = new Car(this, grid, direction, position);
+		const car = new Traffic.Car(this, grid, direction, position);
 		car.name = String(++this.carIndex);
 		this.cars.push(car);
 		this.change = true;
@@ -55,7 +59,7 @@ class World {
 	}
 }
 
-class Car {
+Traffic.Car = class Car {
 	constructor(world, grid, direction, position) {
 		this.world = world;
 		this.name = null;
@@ -204,8 +208,8 @@ class Car {
 
 		switch ( turn ) {
 			case 'u':
-				var d2 = Car.goLeft(this.direction);
-				var d3 = Car.goLeft(d2);
+				var d2 = this.constructor.goLeft(this.direction);
+				var d3 = this.constructor.goLeft(d2);
 				this.nextMoves.push('position');
 				this.nextMoves.push({direction: d2, position: 1});
 				this.nextMoves.push('position');
@@ -214,7 +218,7 @@ class Car {
 				break;
 
 			case 'l':
-				var d2 = Car.goLeft(this.direction);
+				var d2 = this.constructor.goLeft(this.direction);
 				this.nextMoves.push('position');
 				this.nextMoves.push({direction: d2, position: 1});
 				this.nextMoves.push({direction: d2, position: 2});
@@ -222,7 +226,7 @@ class Car {
 				break;
 
 			case 'r':
-				var d2 = Car.goRight(this.direction);
+				var d2 = this.constructor.goRight(this.direction);
 				this.nextMoves.push({direction: d2, position: 2});
 				break;
 		}
@@ -258,12 +262,12 @@ class Car {
 	}
 }
 
-class Drawer {
+Traffic.Drawer = class Drawer {
 	constructor(canvas, world) {
 		this.canvas = canvas;
 		this.ctx = canvas.getContext('2d');
 		this.world = world;
-		this.carshape = new CarShape();
+		this.carshape = new Traffic.CarShape();
 	}
 
 	line(from, to, color, width) {
