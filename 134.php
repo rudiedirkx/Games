@@ -1,10 +1,10 @@
 <?php
-  // PHP Tic Tac Toe
-  // Coded by Joey Cato (jojo@kypsoft.com)
-  // This code is free for anyone to use.
-  // If you do use it, please let me know, I'd love to
-  // see it in action somewhere else. -thx
+// TIC TAC TOE - PHP
 
+// Coded by Joey Cato (jojo@kypsoft.com)
+// This code is free for anyone to use.
+// If you do use it, please let me know, I'd love to
+// see it in action somewhere else. -thx
 
 $game = isset($_GET['game']) ? $_GET['game'] : NULL;
 $player = isset($_GET['player']) ? $_GET['player'] : NULL;
@@ -46,7 +46,7 @@ function draw_piece( $idx )
 			$p[$idx] = $player;
 			$url = '';
 //			$url .= '<a href="?game=1&a='.$p[0].'&b='.$p[1].'&c='.$p[2].'&d='.$p[3].'&e='.$p[4].'&f='.$p[5].'&g='.$p[6].'&h='.$p[7].'&i='.$p[8].'&player='.$player.'">';
-			$url .= '<img p="2" style="cursor:pointer;" onclick="if(\'2\'!=this.getAttribute(\'p\') || !g_bPlaying){return false;}this.src=g_arrPlayerPics[g_iPlayer];this.style.cursor=\'default\';this.setAttribute(\'p\',g_iPlayer);g_iPlayer=!g_iPlayer?1:0;cfw();" src="/icons/blank.gif" width="64" height="64" border="0" />';
+			$url .= '<img p="2" style="cursor:pointer;" onclick="if(\'2\'!=this.getAttribute(\'p\') || !g_bPlaying){return false;}this.src=g_arrPlayerPics[g_iPlayer];this.style.cursor=\'default\';this.setAttribute(\'p\',g_iPlayer);g_iPlayer=!g_iPlayer?1:0;cfw();" src="/images/blank.gif" width="64" height="64" border="0" />';
 //			$url .= '</a>';
 			print $url;
 		break;
@@ -105,7 +105,7 @@ var cfw = function() {
 	if ( '2' != w ) {
 		g_bPlaying = false;
 		g_arrWins[w]++;
-		alert('Player '+(1+parseInt(w))+' won this game!!');
+		setTimeout(() => alert('Player '+(1+parseInt(w))+' won this game!!'), 50);
 //		document.getElementById('p_'+w+'_wins').innerHTML = g_arrNumbers[g_arrWins[w]];
 		document.getElementById('p_'+w+'_wins').innerHTML = g_arrWins[w];
 	}
@@ -168,7 +168,7 @@ var cfw = function() {
 
 <br />
 
-<center><input type="button" value="Start Over" onclick="(function(){var m=document.getElementById('ttt').getElementsByTagName('img'), i=m.length;while(i--){m[i].setAttribute('p','2');m[i].style.cursor='pointer';m[i].src='/icons/blank.gif';}g_iPlayer=g_iPlayerStarted=(0==g_iPlayerStarted?1:0);g_bPlaying=true;})();" /></center>
+<center><input type="button" value="Start Over" onclick="(function(){var m=document.getElementById('ttt').getElementsByTagName('img'), i=m.length;while(i--){m[i].setAttribute('p','2');m[i].style.cursor='pointer';m[i].src='/images/blank.gif';}g_iPlayer=g_iPlayerStarted=(0==g_iPlayerStarted?1:0);g_bPlaying=true;})();" /></center>
 
 </body>
 

@@ -80,7 +80,7 @@ document.querySelector('table').addEventListener('click', function(e) {
 				setTimeout(function() {
 					location.reload();
 				}, 600);
-			}, 60);
+			}, 50);
 		}
 	}
 });
