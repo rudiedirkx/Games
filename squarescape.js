@@ -41,8 +41,10 @@ class Squarescape extends LeveledGridGame {
 
 	move( offset ) {
 		const path = this.findPath(this.getPlayer(), offset);
-		this.drawPath(path);
-		this.setMoves(this.m_iMoves + 1);
+		if ( path.length > 0 ) {
+			this.drawPath(path);
+			this.setMoves(this.m_iMoves + 1);
+		}
 	}
 
 	findPath( from, offset ) {

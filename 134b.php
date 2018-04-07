@@ -17,12 +17,28 @@ table {
 	border-collapse: collapse;
 }
 td {
-	width: 30px;
-	height: 30px;
-	border: solid 1px #aaa;
+	width: 50px;
+	height: 50px;
+	border: solid 2px #aaa;
 	padding: 0;
-	line-height: 30px;
+	line-height: 50px;
 	text-align: center;
+	font-size: 40px;
+}
+tr:first-child > td {
+	border-top: 0;
+}
+tr > td:last-child {
+	border-right: 0;
+}
+tr:last-child > td {
+	border-bottom: 0;
+}
+tr > td:first-child {
+	border-left: 0;
+}
+td.winner {
+	background-color: lightgreen;
 }
 td[data-chosen="0"]:after,
 #turn[data-chosen="0"]:after {
