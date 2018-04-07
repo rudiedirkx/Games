@@ -279,6 +279,23 @@ Traffic.Drawer = class Drawer {
 		this.ctx.stroke();
 	}
 
+	light(square, side, go) {
+		// @todo
+		return;
+
+		var x = square.x * 101;
+		x += ['u', 'l'].includes(side) ? 14 : 78;
+
+		var y = square.y * 101;
+		y += ['u', 'r'].includes(side) ? 14 : 78;
+
+		this.ctx.fillStyle = 'black';
+		this.ctx.fillRect(x, y, 8, 8);
+
+		this.ctx.fillStyle = go ? 'lime' : 'red';
+		this.ctx.fillRect(x+2, y+2, 4, 4);
+	}
+
 	structure() {
 		this.canvas.width = this.world.map[0].length * 101 - 1;
 		this.canvas.height = this.world.map.length * 101 - 1;
@@ -306,25 +323,21 @@ Traffic.Drawer = class Drawer {
 				this.ctx.fillRect(sx + 25, sy + 25, 50, 50);
 
 				// Side streets
-				var sides = {};
 				for ( var dir of square ) {
-					sides[dir] = 1;
-
 					var left = 50 + D[dir][0];
 					var top = 50 + D[dir][1];
 					this.ctx.fillRect(sx + left, sy + top, D[dir][2], D[dir][3]);
 				}
 
+				// Lights
+				square.lights.split('').forEach((side) => this.light({x, y}, side, Math.random() > 0.5));
+
 				// White lines
 				var lineOffset = 5;
-				// N
-				sides.u && this.line({x: sx + 50, y: sy + lineOffset}, {x: sx + 50, y: sy + 50 - lineOffset}, 'white', 2);
-				// S
-				sides.d && this.line({x: sx + 50, y: sy + 50 + lineOffset}, {x: sx + 50, y: sy + 100 - lineOffset}, 'white', 2);
-				// W
-				sides.l && this.line({x: sx + lineOffset, y: sy + 50}, {x: sx + 50 - lineOffset, y: sy + 50}, 'white', 2);
-				// E
-				sides.r && this.line({x: sx + 50 + lineOffset, y: sy + 50}, {x: sx + 100 - lineOffset, y: sy + 50}, 'white', 2);
+				square.includes('u') && this.line({x: sx + 50, y: sy + lineOffset}, {x: sx + 50, y: sy + 50 - lineOffset}, 'white', 2);
+				square.includes('d') && this.line({x: sx + 50, y: sy + 50 + lineOffset}, {x: sx + 50, y: sy + 100 - lineOffset}, 'white', 2);
+				square.includes('l') && this.line({x: sx + lineOffset, y: sy + 50}, {x: sx + 50 - lineOffset, y: sy + 50}, 'white', 2);
+				square.includes('r') && this.line({x: sx + 50 + lineOffset, y: sy + 50}, {x: sx + 100 - lineOffset, y: sy + 50}, 'white', 2);
 			});
 		});
 	}

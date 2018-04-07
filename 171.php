@@ -40,24 +40,24 @@ window.onload = function() {
 	world = new Traffic.World([
 		[
 			new Traffic.Square('rd'),
-			new Traffic.Square('rdl'),
-			new Traffic.Square('rdl'),
+			new Traffic.Square('rdl', 'd'),
+			new Traffic.Square('rdl', 'd'),
 			new Traffic.Square('dl'),
 		],
 		[
 			new Traffic.Square('urd'),
-			new Traffic.Square('urdl', 'ew'),
+			new Traffic.Square('urdl', 'rl'),
 			new Traffic.Square('udl'),
 			new Traffic.Square('u'),
 		],
 		[
 			new Traffic.Square('ud'),
 			new Traffic.Square('ud'),
-			new Traffic.Square('urd'),
+			new Traffic.Square('urd', 'urd'),
 			new Traffic.Square('dl'),
 		],
 		[
-			new Traffic.Square('url'),
+			new Traffic.Square('url', 'ur'),
 			new Traffic.Square('url'),
 			new Traffic.Square('url'),
 			new Traffic.Square('ul'),
