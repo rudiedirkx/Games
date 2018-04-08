@@ -143,7 +143,8 @@ else if ( isset($_POST['check']) ) {
 <link rel="stylesheet" href="blackbox.css" />
 <style>
 </style>
-<script src="js/rjs-custom.js"></script>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
 function Blackbox() {
 	this.reset();
@@ -159,16 +160,18 @@ Blackbox.prototype = {
 		return this.m_bGameOver;
 	},
 
+	getTime: function() {
+		return Math.ceil((Date.now() - this.m_iStartTime) / 1000);
+	},
+
 	timer: function() {
-		var iPlaytime = (Date.now() - this.m_iStartTime) / 1000;
-		$('#playtime').setHTML(String(Math.round(iPlaytime)) + ' sec');
+		$('#playtime').setHTML(String(this.getTime()) + ' sec');
 
 		$('#score').setHTML(this.score());
 	},
 
 	score: function() {
-		var iPlaytime = (Date.now() - this.m_iStartTime) / 1000;
-		var score = Math.round(Math.max(0, 2000 - iPlaytime * 5 - this.m_iBeams * 30));
+		var score = Math.round(Math.max(0, 2000 - this.getTime() * 5 - this.m_iBeams * 30));
 		return score;
 	},
 
@@ -228,7 +231,11 @@ Blackbox.prototype = {
 			return '&atoms[]=' + (el.parentNode.sectionRowIndex-1) + ':' + (el.cellIndex-1);
 		});
 
-		$.post('?', 'check=1' + a.join('')).on('done', function(e, rsp) {
+		$.post('?', 'check=1' + a.join('')).on('done', (e, rsp) => {
+			if ( rsp.success ) {
+				Game.saveScore({time: this.getTime(), moves: this.m_iBeams});
+			}
+
 			alert(rsp.error || rsp.success);
 		});
 		return false;

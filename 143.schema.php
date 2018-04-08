@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'version' => 1,
+	'version' => 'abalone:1',
 	'tables' => [
 		'abalone_games' => [
 			'id' => ['pk' => true],

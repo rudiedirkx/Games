@@ -57,7 +57,6 @@ class Game {
 	statTypes() {
 		return {
 			time: 'Time',
-			moves: 'Moves',
 		};
 	}
 
@@ -83,7 +82,11 @@ class Game {
 
 		this.stopTime();
 		this.m_iStartTime = Date.now();
-		this.m_iTimer = setInterval(() => this.setTime(this.formatTime(Date.now() - this.m_iStartTime)), 200);
+		this.m_iTimer = setInterval(() => this.setTime(this.formatTime(this.getTime())), 200);
+	}
+
+	getTime() {
+		return Math.ceil((Date.now() - this.m_iStartTime) / 1000);
 	}
 
 	stopTime() {
@@ -94,16 +97,32 @@ class Game {
 		$('#stats-time').setText(time);
 	}
 
-	formatTime( ms ) {
-		var s = Math.round(ms/1000);
+	formatTime( s ) {
 		var m = Math.floor(s/60);
 		s -= m*60;
 		return m + ':' + ('0' + s).slice(-2);
 	}
 
+	getScore() {
+		return {
+			time: this.getTime(),
+		};
+	}
+
+	static saveScore( score ) {
+		console.log('saving score', score);
+		if ( !score ) return;
+
+		r.post('score.php', r.serialize(score), {globalStart: false}).on('done', (e, rsp) => {
+			console.log('saved score?', rsp);
+		});
+	}
+
 	win() {
 		this.stopTime();
 		this.m_bGameOver = true;
+
+		this.constructor.saveScore(this.getScore());
 
 		setTimeout(function() {
 			alert('You WIN :-)');
@@ -158,6 +177,21 @@ class GridGame extends Game {
 	reset() {
 		super.reset();
 		this.setMoves(0);
+	}
+
+	statTypes() {
+		return {
+			...super.statTypes(),
+			moves: 'Moves',
+		};
+	}
+
+	getScore() {
+		const score = super.getScore();
+		if ( this.m_iMoves != null ) {
+			score.moves = this.m_iMoves;
+		}
+		return score;
 	}
 
 	setMoves( f_iMoves ) {
@@ -286,6 +320,13 @@ class LeveledGridGame extends GridGame {
 
 	setMaxLevel( f_level ) {
 		$('#stats-levels').setText(f_level);
+	}
+
+	getScore() {
+		return {
+			...super.getScore(),
+			level: this.m_iLevel,
+		};
 	}
 
 	saveUndoState() {

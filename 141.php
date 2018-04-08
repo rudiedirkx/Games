@@ -59,7 +59,8 @@ else if ( isset($_GET['image']) ) {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BLACKBOX JS</title>
 <link rel="stylesheet" href="blackbox.css" />
-<script src="js/rjs-custom.js"></script>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
 // @todo Draw beams
 // {"0":{"2":true,"7":true},"3":{"4":true},"5":{"1":true},"6":{"6":true}}
@@ -526,10 +527,13 @@ Blackbox.prototype = {
 			// Make sure game over flag is true
 			this.m_GameOver = true;
 
+			// Save score
+			Game.saveScore({time: iPlaytime, moves: this.m_iBeams});
+
 			// Alert to user
-			setTimeout(function(self) {
-				alert('You have found all atoms in ' + iPlaytime + ' seconds, using ' + self.m_iBeams + ' beams!\n\nScore: ' + score + hiscore);
-			}, 60, this);
+			setTimeout(() => {
+				alert('You have found all atoms in ' + iPlaytime + ' seconds, using ' + this.m_iBeams + ' beams!\n\nScore: ' + score + hiscore);
+			}, 60);
 		}
 		else
 		{

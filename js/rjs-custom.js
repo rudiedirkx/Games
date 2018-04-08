@@ -1,5 +1,5 @@
 // https://home.hotblocks.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// 4d3787cb437df236acaf373e2d31d70c9f1ae9c0
+// aaf5c113e98223fcaf831e6a69058ad01225088c
 
 (function(W, D) {
 
@@ -859,7 +859,8 @@
 			data: null,
 			url: url,
 			requester: 'XMLHttpRequest',
-			execScripts: true
+			execScripts: true,
+			globalStart: true
 		};
 		options = options ? r.merge({}, defaults, options) : defaults;
 		options.method = options.method.toUpperCase();
@@ -937,7 +938,7 @@
 
 			XHR.busy++;
 
-			xhr.globalFire('xhr', 'start');
+			options.globalStart && xhr.globalFire('xhr', 'start');
 			xhr.fire('start');
 
 			if ( options.async ) {

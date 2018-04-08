@@ -1,9 +1,10 @@
 class Pixelus extends LeveledGridGame {
 
 	statTypes() {
-		var stats = super.statTypes();
-		stats.stones = 'Stones';
-		return stats;
+		return {
+			...super.statTypes(),
+			stones: 'Stones',
+		};
 	}
 
 	getStones() {

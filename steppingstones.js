@@ -13,11 +13,22 @@ class SteppingStones extends LeveledGridGame {
 		return stats;
 	}
 
+	getScore() {
+		var score = super.getScore();
+		delete score.moves;
+		score.score = this.getStones();
+		return score;
+	}
+
 	setMoves() {
 	}
 
+	getStones() {
+		return this.m_objGrid.getElements('.stone').length;
+	}
+
 	setStones( f_iStones ) {
-		var iStones = f_iStones == null ? this.m_objGrid.getElements('.stone').length : f_iStones;
+		var iStones = f_iStones == null ? this.getStones() : f_iStones;
 		$('#stats-stones').setText(iStones);
 	}
 

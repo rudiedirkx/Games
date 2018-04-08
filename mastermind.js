@@ -11,12 +11,6 @@ class Mastermind extends Game {
 		this.m_fnSelectColor = () => 0;
 	}
 
-	statTypes() {
-		var stats = super.statTypes();
-		delete stats.moves;
-		return stats;
-	}
-
 	createColorSelector() {
 		var el = $('#color-selection');
 
