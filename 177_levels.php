@@ -141,5 +141,62 @@ $g_arrLevels = [1 =>
 		'start' => [5,9],
 	],
 
+	[
+		'map' => [
+			'         x  t',
+			'  p      p dx',
+			' xo    x    x',
+			'    x      dx',
+			' p      x   x',
+			'           xx',
+			'        p   x',
+			'  x  x  x   x',
+			'xxxx xxxxxxxx',
+		],
+		'start' => [4,8],
+	],
+
+	[
+		'map' => [
+			'  x    x   p  ',
+			'x    x  d     ',
+			'xp         x  ',
+			't     p x     ',
+			'x   x       x ',
+			'x x       x   ',
+			'x        x    ',
+			'xd    o       ',
+		],
+		'start' => [0,0],
+	],
+
+	[
+		'map' => [
+			'x   xd       ',
+			'x x    x   p ',
+			'x       xxx x',
+			'xd   x       ',
+			't       xxx x',
+			'x  d  xo   p ',
+			'x x    d     ',
+			'x    x       ',
+		],
+		'start' => [12,3],
+	],
+
+	[
+		'map' => [
+			'x   d   xx',
+			'x x   do x',
+			'    x    x',
+			'      x  x',
+			'dx        ',
+			'p     p  x',
+			'  x p  p x',
+			'    d    x',
+			'xxxxxxtxxx',
+		],
+		'start' => [9,4],
+	],
 
 ];

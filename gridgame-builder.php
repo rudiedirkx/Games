@@ -38,6 +38,24 @@ textarea {
 		<td>
 			<div id="level-header"></div>
 			<table class="inside" id="building-blocks"></table>
+			<div id="level-sizes">
+				<p>
+					<button data-resize="-u">t&minus;</button>
+					<button data-resize="+u">t+</button>
+				</p>
+				<p>
+					<button data-resize="-r">r&minus;</button>
+					<button data-resize="+r">r+</button>
+				</p>
+				<p>
+					<button data-resize="-d">b&minus;</button>
+					<button data-resize="+d">b+</button>
+				</p>
+				<p>
+					<button data-resize="-l">l&minus;</button>
+					<button data-resize="+l">l+</button>
+				</p>
+			</div>
 		</td>
 	</tr>
 </table>

@@ -343,7 +343,7 @@ class LeveledGridGame extends GridGame {
 	}
 
 	restartLevel() {
-		return this.m_arrCustomMap ? this.loadCustomMap(this.m_arrCustomMap) : this.loadLevel(objGame.m_iLevel);
+		return this.m_arrCustomMap ? this.loadCustomMap(this.m_arrCustomMap) : this.loadLevel(this.m_iLevel);
 	}
 
 	prevLevel() {
@@ -475,6 +475,69 @@ class GridGameEditor extends GridGame {
 	listenControls() {
 		this.listenCellClick();
 		this.listenTypeClick();
+		this.listenResizers();
+	}
+
+	listenResizers() {
+		$$('#level-sizes [data-resize]').on('click', (e) => {
+			const resize = e.subject.data('resize');
+			const side = resize[1];
+			const change = parseInt(resize.replace(/[urdl]/, '1'));
+			this.handleResizeClick(side, change);
+		});
+	}
+
+	handleResizeClick( side, change ) {
+		if ( change > 0 ) {
+			this.addMapCells(side);
+		}
+		else {
+			this.removeMapCells(side);
+		}
+	}
+
+	addMapCells( side ) {
+		switch ( side ) {
+			case 'u':
+				return this.addMapRow(this.m_objGrid.insertRow(0));
+			case 'r':
+				return this.addMapColumn(undefined, this.m_objGrid.rows);
+			case 'd':
+				return this.addMapRow(this.m_objGrid.insertRow());
+			case 'l':
+				return this.addMapColumn(0, this.m_objGrid.rows);
+		}
+	}
+
+	removeMapCells( side ) {
+		switch ( side ) {
+			case 'u':
+				return this.removeMapElements(this.m_objGrid.getElements('tr:first-child'));
+			case 'r':
+				return this.removeMapElements(this.m_objGrid.getElements('td:last-child'));
+			case 'd':
+				return this.removeMapElements(this.m_objGrid.getElements('tr:last-child'));
+			case 'l':
+				return this.removeMapElements(this.m_objGrid.getElements('td:first-child'));
+		}
+	}
+
+	removeMapElements( els ) {
+		const collection = new Elements(els);
+		collection.invoke('remove');
+	}
+
+	addMapRow( tr ) {
+		const width = tr.parentNode.rows[1].cells.length;
+		for (var i = 0; i < width; i++) {
+			this.createdMapCell(tr.insertCell());
+		}
+	}
+
+	addMapColumn( where, rows ) {
+		for ( var tr of rows ) {
+			this.createdMapCell(tr.insertCell(where));
+		}
 	}
 
 	listenTypeClick() {

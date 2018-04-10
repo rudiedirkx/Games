@@ -58,6 +58,17 @@ td.wall2 {
 	margin-bottom		: 1em;
 }
 
+.builder #grid {
+	box-shadow			: 0 0 0 1px black;
+}
+
+#level-sizes p {
+	margin				: 5px 0;
+}
+#level-sizes button {
+	width				: 2em;
+}
+
 #loading {
 	position			: absolute;
 	visibility			: hidden;
