@@ -7,6 +7,13 @@ class Tetravex extends GridGame {
 		this.m_iSize = 0;
 	}
 
+	getScore() {
+		return {
+			...super.getScore(),
+			level: this.m_iSize,
+		};
+	}
+
 	createGame() {
 		setTimeout(() => {
 			this.m_objSource.on('dragstart', e => e.preventDefault());

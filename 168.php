@@ -1,16 +1,17 @@
 <?php
 // FLOOD
 
+require __DIR__ . '/inc.bootstrap.php';
+
 $colors = ['red', 'green', 'blue', 'yellow'];
 
 // header('Content-type: text/plain');
 
-$width = 10;
-$height = 10;
+$size = 10;
 $map = [];
 
-for ($y=0; $y < $height; $y++) {
-	for ($x=0; $x < $width; $x++) {
+for ($y=0; $y < $size; $y++) {
+	for ($x=0; $x < $size; $x++) {
 		$map[$y][$x] = array_rand($colors);
 	}
 }
@@ -50,9 +51,12 @@ echo '</table>';
 ?>
 <p>Turns: <code id="turns">0</code> | <a id="restart" href="#">restart</a></p>
 
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
 var cell1 = document.querySelector('td');
 var turns = 0;
+var start = Date.now();
 
 document.querySelector('table').addEventListener('click', function(e) {
 	if (e.target.nodeName == 'A') {
@@ -74,13 +78,19 @@ document.querySelector('table').addEventListener('click', function(e) {
 			ncell.bgColor = color;
 		}
 
-		if (collection.length == <?= $width * $height ?>) {
+		if (collection.length == <?= $size * $size ?>) {
 			setTimeout(function() {
 				alert('You win!, in ' + turns + ' turns.');
 				setTimeout(function() {
 					location.reload();
 				}, 600);
 			}, 50);
+
+			Game.saveScore({
+				time: Math.round((Date.now() - start) / 1000),
+				moves: turns,
+				level: <?= $size ?>,
+			});
 		}
 	}
 });

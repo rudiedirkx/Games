@@ -3,6 +3,18 @@
 $g_arrLevels = [1 =>
 	[
 		'map' => [
+			'     ',
+			' x x ',
+			' xox ',
+			' xox ',
+			' xox ',
+			' x x ',
+			'     ',
+		],
+	],
+
+	[
+		'map' => [
 			'xxx xx',
 			'o    x',
 			'x    x',

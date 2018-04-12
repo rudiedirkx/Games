@@ -12,6 +12,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>window.onerror = function(e) { alert(e); };</script>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('mondrian.js') ?>"></script>
 <title>MONDRIAN PUZZLE</title>
 <style>
@@ -53,6 +54,7 @@ var BOARD_SIZE = 5;
 var BOARD_MARGIN = 20;
 var COLORS = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
 
+var start = Date.now();
 var squares = [];
 var squaring = [];
 var error;
@@ -200,11 +202,22 @@ function getComplete() {
 
 function updateScore() {
 	var score = getScore();
+	var complete = getComplete();
 	scoreElement.textContent = score ? String(score) : '?';
-	scoreElement.parentNode.classList.toggle('complete', getComplete());
+	scoreElement.parentNode.classList.toggle('complete', complete);
+
+	if (complete) {
+		Game.saveScore({
+			time: Math.round((Date.now() - start) / 1000),
+			score: score,
+			level: BOARD_SIZE,
+		});
+	}
 }
 
 function reset() {
+	start = Date.now();
+
 	error = null;
 	squares.length = 0;
 	squaring.length = 0;

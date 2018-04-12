@@ -11,6 +11,13 @@ class Mastermind extends Game {
 		this.m_fnSelectColor = () => 0;
 	}
 
+	getScore() {
+		return {
+			...super.getScore(),
+			moves: this.m_objTable.getElements('tbody tr.done').length,
+		};
+	}
+
 	createColorSelector() {
 		var el = $('#color-selection');
 
@@ -66,7 +73,7 @@ class Mastermind extends Game {
 			return alert('The 4 colors must be unique');
 		}
 
-		var [goodPositions, goodColors] = this.getScore(colors);
+		var [goodPositions, goodColors] = this.getStatus(colors);
 		var asterisks = [];
 		for (var i = 0; i < colors.length; i++) {
 			if ( i < goodPositions ) asterisks.push('position');
@@ -83,7 +90,7 @@ class Mastermind extends Game {
 		this.winOrLose();
 	}
 
-	getScore( haveColors ) {
+	getStatus( haveColors ) {
 		var mustColors = this.getMustColors();
 		var goodPositions = mustColors.reduce((num, color, i) => num + Number(color == haveColors[i]), 0);
 		var goodColors = mustColors.reduce((num, color) => num + Number(haveColors.includes(color)), 0);

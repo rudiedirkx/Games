@@ -14,6 +14,9 @@ mahjong.IMPORT_SCALE_X = 2;
 mahjong.IMPORT_SCALE_Y = 3;
 
 mahjong.Board = function Board() {
+	this.start = Date.now();
+	this.level = 0;
+	this.shuffles = 0;
 	this.levels = [];
 	this.allTiles = [];
 
@@ -57,6 +60,8 @@ mahjong.Board = function Board() {
 	};
 
 	this.shuffle = function() {
+		this.shuffles++;
+
 		var values = this.activeValues();
 		var tiles = this.activeTiles();
 

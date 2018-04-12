@@ -1,6 +1,8 @@
 <?php
 // MEMORY
 
+require __DIR__ . '/inc.bootstrap.php';
+
 $width = 5;
 $height = 4;
 
@@ -42,7 +44,10 @@ foreach ( $cards as $i => $card ) {
 echo '</tr></table>';
 
 ?>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
+var start = Date.now();
 var lastOpen;
 var clicks = 0;
 [].forEach.call(document.querySelectorAll('a'), function(a) {
@@ -57,9 +62,13 @@ var clicks = 0;
 			this.classList.add('open');
 
 			if ( document.querySelectorAll('a:not(.open)').length == 0 ) {
+				Game.saveScore({
+					time: Math.round((Date.now() - start) / 1000),
+					moves: clicks,
+				});
 				setTimeout(function() {
-					alert("You win!\n\n" + clicks + " clicks")
-				}, 100);
+					alert("You win!\n\n" + clicks + " clicks");
+				}, 50);
 			}
 			return;
 		}

@@ -19,6 +19,13 @@ class BioshockFlood extends GridGame {
 		this.reset();
 	}
 
+	getScore() {
+		return {
+			...super.getScore(),
+			level: this.m_iSize,
+		};
+	}
+
 	reset() {
 		super.reset();
 

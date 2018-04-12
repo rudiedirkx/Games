@@ -54,6 +54,8 @@ canvas {
 
 <p><a href="170B.php">Build your own</a></p>
 
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('170.js') ?>"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
@@ -124,7 +126,13 @@ canvas.onclick = function(e) {
 		if (canvas.board.activeTiles().length == 0) {
 			setTimeout(function() {
 				alert('YOU WIN!');
-			}, 100);
+			}, 50);
+
+			Game.saveScore({
+				time: Math.round((Date.now() - canvas.board.start) / 1000),
+				level: canvas.board.level,
+				moves: canvas.board.shuffles,
+			});
 		}
 	}, wait);
 };
@@ -177,6 +185,7 @@ console.log('tiles', tiles);
 console.log('pixels', pixels);
 			return mahjong.tiles(pixels);
 		}).then(function(board) {
+			board.level = parseInt(mapSelect.value.replace(/[^\d]+/g, '')) || 0;
 	<? endif; ?>
 console.log('board', board);
 		canvas.board = board;
