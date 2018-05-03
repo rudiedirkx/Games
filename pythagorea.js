@@ -63,9 +63,6 @@ class Pythagorea extends Game {
 	constructor( canvas ) {
 		super();
 
-		this._size = 5;
-		this._scale = 50;
-
 		const S = -1;
 		const E = this._size + 1;
 		this._sides = [
@@ -93,6 +90,9 @@ class Pythagorea extends Game {
 
 	reset() {
 		super.reset();
+
+		this._size = 5;
+		this._scale = 50;
 
 		this.changed = false;
 		this.vertices = this.createStructureVertices();
@@ -395,7 +395,9 @@ class Pythagorea extends Game {
 	}
 
 	handleDragMove( coord ) {
+console.log(coord);
 		const V = this.findClosestVertex(coord);
+console.log(V);
 		if ( V.equal(this.draggingFrom) ) return;
 
 		this.changed = true;
