@@ -3,7 +3,10 @@
 define('THUMB_SIZE', 91);
 
 function html_asset( $src ) {
-	return $src . '?_' . filemtime($src);
+	$local = is_int(strpos($_SERVER['HTTP_HOST'], 'home.'));
+	$mobile = is_int(strpos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
+	$buster = $local && !$mobile ? '' : '?_' . filemtime($src);
+	return $src . $buster;
 }
 
 function html_attributes( array $attrs ) {

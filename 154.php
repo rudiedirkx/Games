@@ -118,8 +118,8 @@ td {
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
-var iStart = <?php echo $iStart; ?>;
-var iPosition = <?php echo $iPosition; ?>;
+var iStart = <?= rand(0, $x*$y-1) ?>;
+var iPosition = <?= rand(0, $x*$y-1) ?>;
 var x = <?php echo $x; ?>;
 
 var tbl = document.getElementById('maze');
