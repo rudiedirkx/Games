@@ -26,6 +26,8 @@ canvas {
 
 <body class="pythagorea">
 
+<p id="level-desc">?</p>
+
 <canvas></canvas>
 
 <p>
@@ -36,11 +38,8 @@ canvas {
 var objGame = new Pythagorea(document.querySelector('canvas'));
 objGame.startPainting();
 objGame.listenControls();
+objGame.loadLevel(Pythagorea.levels[0]);
 
-objGame.addVertex(new Vertex(0, 0));
-objGame.addVertex(new Vertex(2, 1));
-objGame.addEdge(new Edge(...objGame.vertices.slice(-2)));
-// objGame.addVertex(new Vertex(5, 0));
-// objGame.addVertex(new Vertex(5, 1));
-// objGame.addEdge(new Edge(...objGame.vertices.slice(-2)));
+// Create all the squares given these nodes
+// objGame.addEdge(new Edge(new Vertex(3, 2), new Vertex(2, 4)));
 </script>

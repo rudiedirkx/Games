@@ -1,5 +1,5 @@
 class Vertex extends Coords2D {
-	constructor( x, y, explicit = true ) {
+	constructor( x, y, explicit = 1 ) {
 		super(x, y);
 		this.explicit = explicit;
 	}
@@ -13,7 +13,7 @@ class Vertex extends Coords2D {
 		return R(coord.x) == R(this.x) && R(coord.y) == R(this.y);
 	}
 
-	static fromEdges( line1, line2, explicit = true ) {
+	static fromEdges( line1, line2, explicit = 1 ) {
 		var x1 = line1.from.x;
 		var y1 = line1.from.y;
 		var a1 = line1.to.x - line1.from.x;
@@ -43,7 +43,7 @@ class Vertex extends Coords2D {
 }
 
 class Edge {
-	constructor( from, to, explicit = true ) {
+	constructor( from, to, explicit = 1 ) {
 		this.from = from;
 		this.to = to;
 		this.explicit = explicit;
@@ -78,13 +78,17 @@ class Pythagorea extends Game {
 
 		this.lineProps = {
 			"structure": ['#ccc', 1],
-			"explicit": ['#000', 2],
+			"explicit": ['#666', 2],
+			"initial": ['#000', 3],
+			"winner": ['orange', 4],
 			"extended": ['#aaa', 1],
 			"dragging": ['#f00', 2],
 		};
 
 		this.dotProps = {
-			"explicit": ['#000', 3],
+			"explicit": ['#666', 3],
+			"initial": ['#000', 3],
+			"winner": ['orange', 3],
 			"dragging": ['#f00', 3],
 		};
 
@@ -103,6 +107,33 @@ class Pythagorea extends Game {
 		this.edges = this.createStructureEdges();
 
 		this.undoState = [];
+	}
+
+	createGame() {
+		setTimeout(() => {
+			this.canvas.width = this.canvas.height = (this._size + 1) * (this._scale + 0);
+			this.changed = true;
+		});
+	}
+
+	loadLevel( level ) {
+		this.reset();
+
+		this.level = level;
+		document.querySelector('#level-desc').textContent = this.level._desc;
+		this.level.init(this);
+
+		this.changed = true;
+	}
+
+	haveWon() {
+		return this.level && this.level.check(this);
+	}
+
+	win() {
+		super.win();
+
+		this.level && this.level.win(this);
 	}
 
 	saveUndoState() {
@@ -124,7 +155,7 @@ class Pythagorea extends Game {
 
 		for (var x = 0; x <= this._size; x++) {
 			for (var y = 0; y <= this._size; y++) {
-				this.strucVertices.push(new Vertex(x, y, false));
+				this.strucVertices.push(new Vertex(x, y, 0));
 			}
 		}
 
@@ -135,21 +166,14 @@ class Pythagorea extends Game {
 		this.strucEdges = [];
 
 		for (var x = 0; x <= this._size; x++) {
-			this.strucEdges.push(new Edge(new Vertex(x, 0), new Vertex(x, this._size), false));
+			this.strucEdges.push(new Edge(new Vertex(x, 0), new Vertex(x, this._size), 0));
 		}
 
 		for (var y = 0; y <= this._size; y++) {
-			this.strucEdges.push(new Edge(new Vertex(0, y), new Vertex(this._size, y), false));
+			this.strucEdges.push(new Edge(new Vertex(0, y), new Vertex(this._size, y), 0));
 		}
 
 		return this.strucEdges.slice();
-	}
-
-	createGame() {
-		setTimeout(() => {
-			this.canvas.width = this.canvas.height = (this._size + 1) * (this._scale + 0);
-			this.changed = true;
-		});
 	}
 
 	hasVertex( coord ) {
@@ -168,12 +192,12 @@ class Pythagorea extends Game {
 	}
 
 	addEdge( line ) {
-		if ( !this.hasEdge(line) ) {
+		if ( !this.hasEdge(line) || line.explicit == Pythagorea.WINNER ) {
 			// Make structure nodes explicit
 			const [from, to] = [line.from, line.to];
 
-			this.addVertex(new Vertex(line.from.x, line.from.y));
-			this.addVertex(new Vertex(line.to.x, line.to.y));
+			this.addVertex(new Vertex(line.from.x, line.from.y, line.explicit));
+			this.addVertex(new Vertex(line.to.x, line.to.y, line.explicit));
 
 			// Find intersections with all other edges
 			const alongStruc = this.alongStructure(line);
@@ -192,7 +216,7 @@ class Pythagorea extends Game {
 		for ( let E of this.edges ) {
 			let P = E.intersect(line);
 			if ( P && this.withinBounds(P) ) {
-				P.explicit = false;
+				P.explicit = 0;
 				intersections.push(P);
 			}
 		}
@@ -220,6 +244,10 @@ class Pythagorea extends Game {
 		}
 
 		return this._scale/2 + source * this._scale;
+	}
+
+	explicitToType( explicit ) {
+		return explicit == Pythagorea.WINNER ? 'winner' : (explicit == Pythagorea.INITIAL ? 'initial' : 'explicit');
 	}
 
 	drawStructure() {
@@ -251,7 +279,7 @@ class Pythagorea extends Game {
 		// console.time('drawEdges');
 
 		this.edges.forEach((E) => E.explicit && !this.alongStructure(E) && this.drawEdgeExtensions(E));
-		this.edges.forEach((E) => E.explicit && this.drawEdge(E));
+		this.edges.forEach((E) => E.explicit && this.drawEdge(E, this.explicitToType(E.explicit)));
 
 		// console.timeEnd('drawEdges');
 	}
@@ -259,7 +287,7 @@ class Pythagorea extends Game {
 	drawVertices() {
 		// console.time('drawVertices');
 
-		this.vertices.forEach((V) => V.explicit && this.drawVertex(V));
+		this.vertices.forEach((V) => V.explicit && this.drawVertex(V, this.explicitToType(V.explicit)));
 
 		// console.timeEnd('drawVertices');
 	}
@@ -390,8 +418,7 @@ class Pythagorea extends Game {
 		document.on(['mouseup', 'touchend'], (e) => {
 			setTimeout(() => {
 				if ( this.dragging == 2 && this.draggingEdge && !this.hasEdge(this.draggingEdge) ) {
-					this.saveUndoState();
-					this.addEdge(this.draggingEdge);
+					this.handleDragEnd();
 				}
 				if ( this.dragging || this.draggingEdge ) {
 					this.dragging = 0;
@@ -410,12 +437,19 @@ class Pythagorea extends Game {
 		this.draggingEdge = new Edge(this.draggingFrom, V);
 	}
 
+	handleDragEnd() {
+		this.saveUndoState();
+		this.addEdge(this.draggingEdge);
+		this.winOrLose();
+	}
+
 	handleClick( coord ) {
 		const V = this.findClosestVertex(coord);
 
 		if ( this.withinBounds(V) ) {
 			this.saveUndoState();
 			this.addVertex(new Vertex(V.x, V.y));
+			this.winOrLose();
 		}
 	}
 
@@ -448,3 +482,73 @@ class Pythagorea extends Game {
 	setTime() {
 	}
 }
+
+Pythagorea.IMPLICIT = 0;
+Pythagorea.EXPLICIT = 1;
+Pythagorea.INITIAL = 2;
+Pythagorea.WINNER = 3;
+
+class PythagoreaLevel {
+	constructor( desc, init, check, win ) {
+		this._desc = desc;
+		this._init = init;
+		this._check = check;
+		this._win = win;
+	}
+
+	init( game ) {
+		this._init.call(this, game);
+	}
+
+	check( game ) {
+		return this._check.call(this, game);
+	}
+
+	win( game ) {
+		return this._win.call(this, game);
+	}
+
+	edge( from, to ) {
+		return new Edge(from, to, Pythagorea.INITIAL);
+	}
+
+	vertex( x, y ) {
+		return new Vertex(x, y, Pythagorea.INITIAL);
+	}
+
+	flatten( lists ) {
+		return [].concat.call([], ...lists);
+	}
+
+	allVerticesExist( game, vertices ) {
+		return !vertices.some((V) => !game.hasVertex(V));
+	}
+
+	drawEdges( game, vertices ) {
+		vertices.forEach((Vs) => {
+			for (var i = 0; i < Vs.length; i++) {
+				game.addEdge(new Edge(Vs[i-1] || Vs.last(), Vs[i], Pythagorea.WINNER));
+			}
+		});
+		game.changed = true;
+	}
+}
+
+Pythagorea.levels = [
+	new PythagoreaLevel('Create the 3 squares (edges & vertices) from these nodes.', function(game) {
+		console.log('init');
+		game.addEdge(this.edge(this.vertex(3, 2), this.vertex(2, 4)));
+
+		this.vertices = [
+			[new Vertex(3, 2), new Vertex(1, 1), new Vertex(0, 3), new Vertex(2, 4)],
+			[new Vertex(3, 2), new Vertex(5, 3), new Vertex(4, 5), new Vertex(2, 4)],
+			[new Vertex(3, 2), new Vertex(3.5, 3.5), new Vertex(2, 4), new Vertex(1.5, 2.5)],
+		];
+	}, function(game) {
+		console.log('check');
+		return this.allVerticesExist(game, this.flatten(this.vertices));
+	}, function(game) {
+		console.log('win');
+		this.drawEdges(game, this.vertices);
+	}),
+];
