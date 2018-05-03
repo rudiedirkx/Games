@@ -4,6 +4,10 @@ class Vertex extends Coords2D {
 		this.explicit = explicit;
 	}
 
+	comparable() {
+		return new Vertex(Math.round(this.x * 50), Math.round(this.y * 50));
+	}
+
 	equal( coord ) {
 		const R = (v) => Math.round(v * 50);
 		return R(coord.x) == R(this.x) && R(coord.y) == R(this.y);
@@ -219,7 +223,7 @@ class Pythagorea extends Game {
 	}
 
 	drawStructure() {
-		console.time('drawStructure');
+		// console.time('drawStructure');
 
 		for (var x = 0; x <= this._size; x++) {
 			this.drawLine(
@@ -240,24 +244,24 @@ class Pythagorea extends Game {
 		this.ctx.closePath();
 		this.ctx.stroke();
 
-		console.timeEnd('drawStructure');
+		// console.timeEnd('drawStructure');
 	}
 
 	drawEdges() {
-		console.time('drawEdges');
+		// console.time('drawEdges');
 
-		this.edges.forEach((E) => E.explicit && this.drawEdgeExtensions(E));
+		this.edges.forEach((E) => E.explicit && !this.alongStructure(E) && this.drawEdgeExtensions(E));
 		this.edges.forEach((E) => E.explicit && this.drawEdge(E));
 
-		console.timeEnd('drawEdges');
+		// console.timeEnd('drawEdges');
 	}
 
 	drawVertices() {
-		console.time('drawVertices');
+		// console.time('drawVertices');
 
 		this.vertices.forEach((V) => V.explicit && this.drawVertex(V));
 
-		console.timeEnd('drawVertices');
+		// console.timeEnd('drawVertices');
 	}
 
 	drawVertex( coord, type = 'explicit' ) {
@@ -280,8 +284,9 @@ class Pythagorea extends Game {
 		const unique = [];
 		const have = [];
 		intersections.forEach((coord) => {
-			if ( !have.includes(coord.join()) ) {
-				have.push(coord.join());
+			const key = coord ? coord.comparable().join() : null;
+			if ( coord && !have.includes(key) ) {
+				have.push(key);
 				unique.push(coord);
 			}
 		});
@@ -293,10 +298,13 @@ class Pythagorea extends Game {
 
 	drawDragging() {
 		if ( !this.draggingEdge || this.hasEdge(this.draggingEdge) ) return;
+		// console.time('drawVertices');
 
 		this.drawEdge(this.draggingEdge, 'dragging');
 		this.drawVertex(this.draggingEdge.from, 'dragging');
 		this.drawVertex(this.draggingEdge.to, 'dragging');
+
+		// console.timeEnd('drawVertices');
 	}
 
 	drawDot( coord, type ) {
@@ -395,9 +403,7 @@ class Pythagorea extends Game {
 	}
 
 	handleDragMove( coord ) {
-console.log(coord);
 		const V = this.findClosestVertex(coord);
-console.log(V);
 		if ( V.equal(this.draggingFrom) ) return;
 
 		this.changed = true;
