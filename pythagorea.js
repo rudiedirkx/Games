@@ -116,12 +116,16 @@ class Pythagorea extends Game {
 		});
 	}
 
-	loadLevel( level ) {
+	loadLevel( n ) {
 		this.reset();
 
-		this.level = level;
+		this.levelNum = n;
+		this.level = Pythagorea.levels[n];
 		document.querySelector('#level-desc').textContent = this.level._desc;
 		this.level.init(this);
+
+		document.querySelector('#prev').disabled = n <= 0;
+		document.querySelector('#next').disabled = n >= Pythagorea.levels.length-1;
 
 		this.changed = true;
 	}
@@ -391,6 +395,12 @@ class Pythagorea extends Game {
 		document.querySelector('#undo').on('click', (e) => {
 			this.undo();
 		});
+		document.querySelector('#prev').on('click', (e) => {
+			this.loadLevel(this.levelNum - 1);
+		});
+		document.querySelector('#next').on('click', (e) => {
+			this.loadLevel(this.levelNum + 1);
+		});
 	}
 
 	listenClick() {
@@ -524,31 +534,69 @@ class PythagoreaLevel {
 		return !vertices.some((V) => !game.hasVertex(V));
 	}
 
-	drawEdges( game, vertices ) {
+	allEdgesExist( game, edges ) {
+		return !edges.some((E) => !game.hasEdge(E));
+	}
+
+	drawEdges( game, edges ) {
+		edges.forEach((E) => {
+			E.explicit = Pythagorea.WINNER;
+			game.addEdge(E);
+		});
+		game.changed = true;
+	}
+
+	createVerticesEdges( vertices ) {
+		const edges = [];
+		for (var i = 0; i < vertices.length; i++) {
+			edges.push(new Edge(vertices[i-1] || vertices.last(), vertices[i], Pythagorea.WINNER));
+		}
+		return edges;
+	}
+
+	drawVerticesEdges( game, vertices ) {
 		vertices.forEach((Vs) => {
-			for (var i = 0; i < Vs.length; i++) {
-				game.addEdge(new Edge(Vs[i-1] || Vs.last(), Vs[i], Pythagorea.WINNER));
-			}
+			this.createVerticesEdges(Vs).forEach((E) => game.addEdge(E));
 		});
 		game.changed = true;
 	}
 }
 
 Pythagorea.levels = [
-	new PythagoreaLevel('Create the 3 squares (edges & vertices) from these nodes.', function(game) {
-		console.log('init');
+	new PythagoreaLevel('Connect all the given nodes with each other.', function(game) {
+		this.vertices = [this.vertex(2, 2), this.vertex(4, 2), this.vertex(3, 4)];
+		this.vertices.forEach((V) => game.addVertex(V));
+		this.edges = this.createVerticesEdges(this.vertices);
+	}, function(game) {
+		return this.allEdgesExist(game, this.edges);
+	}, function(game) {
+		this.drawEdges(game, this.edges);
+	}),
+
+	new PythagoreaLevel('Create a square with the given side.', function(game) {
+		game.addEdge(this.edge(this.vertex(3, 0), this.vertex(3, 2)));
+	}, function(game) {
+		if ( this.allVerticesExist(game, this.winner = [this.vertex(3, 0), this.vertex(1, 0), this.vertex(1, 2), this.vertex(3, 2)]) ) {
+			return true;
+		}
+		if ( this.allVerticesExist(game, this.winner = [this.vertex(3, 0), this.vertex(5, 0), this.vertex(5, 2), this.vertex(3, 2)]) ) {
+			return true;
+		}
+	}, function(game) {
+		this.drawEdges(game, this.createVerticesEdges(this.winner));
+	}),
+
+	new PythagoreaLevel('Create the 3 squares (sides & corners) from these nodes.', function(game) {
 		game.addEdge(this.edge(this.vertex(3, 2), this.vertex(2, 4)));
 
 		this.vertices = [
-			[new Vertex(3, 2), new Vertex(1, 1), new Vertex(0, 3), new Vertex(2, 4)],
-			[new Vertex(3, 2), new Vertex(5, 3), new Vertex(4, 5), new Vertex(2, 4)],
-			[new Vertex(3, 2), new Vertex(3.5, 3.5), new Vertex(2, 4), new Vertex(1.5, 2.5)],
+			[this.vertex(3, 2), this.vertex(1, 1), this.vertex(0, 3), this.vertex(2, 4)],
+			[this.vertex(3, 2), this.vertex(5, 3), this.vertex(4, 5), this.vertex(2, 4)],
+			[this.vertex(3, 2), this.vertex(3.5, 3.5), this.vertex(2, 4), this.vertex(1.5, 2.5)],
 		];
 	}, function(game) {
-		console.log('check');
 		return this.allVerticesExist(game, this.flatten(this.vertices));
 	}, function(game) {
-		console.log('win');
-		this.drawEdges(game, this.vertices);
+		this.drawVerticesEdges(game, this.vertices);
 	}),
 ];

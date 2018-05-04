@@ -32,14 +32,14 @@ canvas {
 
 <p>
 	<button id="undo">Undo</button>
+	|
+	<button id="prev">&lt;&lt;</button>
+	<button id="next">&gt;&gt;</button>
 </p>
 
 <script>
 var objGame = new Pythagorea(document.querySelector('canvas'));
 objGame.startPainting();
 objGame.listenControls();
-objGame.loadLevel(Pythagorea.levels[0]);
-
-// Create all the squares given these nodes
-// objGame.addEdge(new Edge(new Vertex(3, 2), new Vertex(2, 4)));
+objGame.loadLevel(0);
 </script>
