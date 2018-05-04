@@ -12,7 +12,6 @@ require __DIR__ . '/inc.bootstrap.php';
 <title>PYTHAGOREA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>window.onerror = function(e) { alert(e); };</script>
-<link rel="stylesheet" href="<?= html_asset('pythagorea.css') ?>" />
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('pythagorea.js') ?>"></script>
