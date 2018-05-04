@@ -3,7 +3,7 @@
 
 require __DIR__ . '/inc.bootstrap.php';
 
-$g_iWidth		= 11;
+$g_iWidth		= 12;
 $g_iTileWidth	= 91;
 $g_iTileHeight	= 91;
 $g_szImageDir	= 'images/';
@@ -93,6 +93,9 @@ $g_arrGames = array(
 	['176',				'Memory',										'You know memory. Play against yourself'],
 	['177',				'Squarescape',									'As seen on and stolen from the Play store'],
 	['177B',			'Squarescape - Editor',							'Create your own Squarescape level'],
+	['178',				'Laser',										'As seen on and stolen from the Play store'],
+	['178B',			'Laser - Editor',								'Create your own Laser level'],
+	['179',				'Pythagorea',									'As seen on and stolen from the Play store'],
 );
 
 $g_iHeight = ceil(count($g_arrGames)/$g_iWidth);
