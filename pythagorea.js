@@ -189,7 +189,7 @@ class Pythagorea extends Game {
 	}
 
 	addVertex( coord ) {
-		if ( !this.hasVertex(coord) ) {
+		if ( !this.hasVertex(coord) || coord.explicit == Pythagorea.WINNER ) {
 			this.vertices.push(coord);
 			this.changed = true;
 		}
@@ -540,6 +540,8 @@ class PythagoreaLevel {
 
 	drawEdges( game, edges ) {
 		edges.forEach((E) => {
+			E.from.explicit = Pythagorea.WINNER;
+			E.to.explicit = Pythagorea.WINNER;
 			E.explicit = Pythagorea.WINNER;
 			game.addEdge(E);
 		});
