@@ -78,10 +78,8 @@ class Edge {
 	}
 }
 
-class Pythagorea extends Game {
-	constructor( canvas ) {
-		super();
-
+class Pythagorea extends CanvasGame {
+	createGame() {
 		const S = -1;
 		const E = this._size + 1;
 		this._sides = [
@@ -107,8 +105,10 @@ class Pythagorea extends Game {
 			"dragging": ['#f00', 3],
 		};
 
-		this.canvas = canvas;
-		this.ctx = canvas.getContext('2d');
+		setTimeout(() => {
+			this.canvas.width = this.canvas.height = (this._size + 1) * this._scale;
+			this.changed = true;
+		});
 	}
 
 	reset() {
@@ -117,18 +117,10 @@ class Pythagorea extends Game {
 		this._size = 5;
 		this._scale = 50;
 
-		this.changed = false;
 		this.vertices = this.createStructureVertices();
 		this.edges = this.createStructureEdges();
 
 		this.undoState = [];
-	}
-
-	createGame() {
-		setTimeout(() => {
-			this.canvas.width = this.canvas.height = (this._size + 1) * this._scale;
-			this.changed = true;
-		});
 	}
 
 	loadLevel( n ) {
@@ -364,47 +356,19 @@ class Pythagorea extends Game {
 	drawDot( coord, type ) {
 		const [color, radius] = this.dotProps[type];
 
-		this.ctx.fillStyle = color;
-
-		this.ctx.beginPath();
-		this.ctx.arc(coord.x, coord.y, radius, 0, 2*Math.PI);
-		this.ctx.closePath();
-		this.ctx.fill();
+		super.drawDot(coord, {radius, color});
 	}
 
 	drawLine( from, to, type ) {
 		const [color, width] = this.lineProps[type];
 
-		this.ctx.lineWidth = width;
-		this.ctx.strokeStyle = color;
-
-		this.ctx.beginPath();
-		this.ctx.moveTo(from.x, from.y);
-		this.ctx.lineTo(to.x, to.y);
-		this.ctx.closePath();
-		this.ctx.stroke();
+		super.drawLine(from, to, {color, width});
 	}
 
 	drawContent() {
 		this.drawEdges();
 		this.drawVertices();
 		this.drawDragging();
-	}
-
-	paint() {
-		this.canvas.width = 1 * this.canvas.width;
-
-		this.drawStructure();
-		this.drawContent();
-		this.changed = false;
-	}
-
-	startPainting() {
-		const render = () => {
-			this.changed && this.paint();
-			requestAnimationFrame(render);
-		};
-		render();
 	}
 
 	listenControls() {
@@ -422,14 +386,6 @@ class Pythagorea extends Game {
 		});
 		document.querySelector('#next').on('click', (e) => {
 			this.loadLevel(this.levelNum + 1);
-		});
-	}
-
-	listenClick() {
-		this.canvas.on('click', (e) => {
-			if ( this.dragging < 2 ) {
-				this.handleClick(e.subjectXY);
-			}
 		});
 	}
 

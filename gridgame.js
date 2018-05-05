@@ -157,6 +157,93 @@ class Game {
 
 }
 
+class CanvasGame extends Game {
+
+	constructor( canvas ) {
+		super();
+
+		this.canvas = canvas;
+		this.ctx = canvas.getContext('2d');
+
+		this.changed = true;
+	}
+
+	createGame() {
+	}
+
+	startPainting() {
+		const render = () => {
+			this.changed && this.paint();
+			requestAnimationFrame(render);
+		};
+		render();
+	}
+
+	paint() {
+		this.canvas.width = 1 * this.canvas.width;
+
+		this.drawStructure();
+		this.drawContent();
+		this.changed = false;
+	}
+
+	paint() {
+		this.canvas.width = 1 * this.canvas.width;
+
+		this.drawStructure();
+		this.drawContent();
+		this.changed = false;
+	}
+
+	drawStructure() {
+	}
+
+	drawContent() {
+	}
+
+	drawDot( coord, {radius = 3, color = '#000'} = {} ) {
+		this.ctx.fillStyle = color;
+
+		this.ctx.beginPath();
+		this.ctx.arc(coord.x, coord.y, radius, 0, 2*Math.PI);
+		this.ctx.closePath();
+		this.ctx.fill();
+	}
+
+	drawLine( from, to, {width = 2, color = '#000'} = {} ) {
+		this.ctx.lineWidth = width;
+		this.ctx.strokeStyle = color;
+
+		this.ctx.beginPath();
+		this.ctx.moveTo(from.x, from.y);
+		this.ctx.lineTo(to.x, to.y);
+		this.ctx.closePath();
+		this.ctx.stroke();
+	}
+
+	drawText( coord, text, {size = '20px', color = '#000'} = {} ) {
+		this.ctx.font = `${size} sans-serif`;
+		this.ctx.strokeStyle = color;
+		this.ctx.strokeText(text, coord.x, coord.y);
+	}
+
+	listenControls() {
+		this.listenClick();
+	}
+
+	listenClick() {
+		this.canvas.on('click', (e) => {
+			if ( this.dragging < 2 ) {
+				this.handleClick(e.subjectXY);
+			}
+		});
+	}
+
+	handleClick( coord ) {
+	}
+
+}
+
 class GridGame extends Game {
 
 	constructor( gridElement ) {

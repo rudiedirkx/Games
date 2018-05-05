@@ -13,6 +13,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>window.onerror = function(e) { alert(e); };</script>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <style>
 canvas {
 	background-color: lightblue;
@@ -28,10 +29,9 @@ canvas {
 <p>Strap length: <output id="strap-length"></output>m</p>
 
 <script>
-class BoxStrap {
-	constructor(canvas) {
-		this.canvas = canvas;
-		this.ctx = canvas.getContext('2d');
+class BoxStrap extends CanvasGame {
+	constructor( canvas ) {
+		super(canvas);
 
 		this.canvas.width = 500;
 		this.canvas.height = 300;
@@ -42,8 +42,9 @@ class BoxStrap {
 		this._straps = [50, 450];
 
 		this.boxPosition = 100;
+	}
 
-		this.changed = true;
+	setTime() {
 	}
 
 	boxRect() {
@@ -57,6 +58,8 @@ class BoxStrap {
 	drawContent() {
 		this.drawBox();
 		this.drawStraps();
+		this.drawFloor();
+		this.printStrapLength();
 	}
 
 	drawStraps() {
@@ -94,41 +97,6 @@ class BoxStrap {
 		const y = this.canvas.height - this._floor;
 		const style = {width: 3};
 		this.drawLine(new Coords2D(0, y), new Coords2D(this.canvas.width, y), style);
-	}
-
-	drawLine( from, to, {width = 2, color = '#000'} = {} ) {
-		this.ctx.lineWidth = width;
-		this.ctx.strokeStyle = color;
-
-		this.ctx.beginPath();
-		this.ctx.moveTo(from.x, from.y);
-		this.ctx.lineTo(to.x, to.y);
-		this.ctx.closePath();
-		this.ctx.stroke();
-	}
-
-	drawText( coord, text, {size = '20px', color = '#000'} = {} ) {
-		this.ctx.font = `${size} sans-serif`;
-		this.ctx.strokeStyle = color;
-		this.ctx.strokeText(text, coord.x, coord.y);
-	}
-
-	paint() {
-		this.canvas.width = 1 * this.canvas.width;
-
-		this.drawContent();
-		this.drawFloor();
-		this.printStrapLength();
-
-		this.changed = false;
-	}
-
-	startPainting() {
-		const render = () => {
-			this.changed && this.paint();
-			requestAnimationFrame(render);
-		};
-		render();
 	}
 
 	getStrapLength() {
