@@ -68,6 +68,10 @@ class Edge {
 		return Vertex.fromEdges(this, other);
 	}
 
+	get length() {
+		return Math.sqrt(Math.pow(this.from.x - this.to.x, 2) + Math.pow(this.from.y - this.to.y, 2));
+	}
+
 	get gradient() {
 		if ( this.from.x == this.to.x ) return Infinity;
 		return (this.from.y - this.to.y) / (this.to.x - this.from.x);
@@ -132,9 +136,10 @@ class Pythagorea extends Game {
 
 		this.levelNum = n;
 		this.level = Pythagorea.levels[n];
-		document.querySelector('#level-desc').textContent = this.level._desc;
 		this.level.init(this);
 
+		document.querySelector('#level-num').textContent = n + 1;
+		document.querySelector('#level-desc').textContent = this.level._desc;
 		document.querySelector('#prev').disabled = n <= 0;
 		document.querySelector('#next').disabled = n >= Pythagorea.levels.length-1;
 
@@ -149,6 +154,17 @@ class Pythagorea extends Game {
 		super.win();
 
 		this.level && this.level.win(this);
+	}
+
+	getScore() {
+		return {
+			...super.getScore(),
+			level: this.levelNum + 1,
+			moves: this.undoState.length,
+			score: Math.round(100 * this.edges.reduce(function(length, E) {
+				return length + (E.explicit == 1 ? E.length : 0);
+			}, 0)) / 100,
+		};
 	}
 
 	saveUndoState() {
@@ -290,7 +306,7 @@ class Pythagorea extends Game {
 	drawEdges() {
 		// console.time('drawEdges');
 
-		this.edges.forEach((E) => E.explicit && !this.alongStructure(E) && this.drawEdgeExtensions(E));
+		this.edges.forEach((E) => E.explicit == 1 && this.drawEdgeExtensions(E));
 		this.edges.forEach((E) => E.explicit && this.drawEdge(E, this.explicitToType(E.explicit)));
 
 		// console.timeEnd('drawEdges');
@@ -454,12 +470,16 @@ class Pythagorea extends Game {
 	}
 
 	handleDragEnd() {
+		this.startTime();
+
 		this.saveUndoState();
 		this.addEdge(this.draggingEdge);
 		this.winOrLose();
 	}
 
 	handleClick( coord ) {
+		this.startTime();
+
 		const V = this.findClosestVertex(coord);
 
 		if ( this.withinBounds(V) ) {
@@ -498,6 +518,8 @@ class Pythagorea extends Game {
 	setTime() {
 	}
 }
+
+Pythagorea.levels = [];
 
 Pythagorea.IMPLICIT = 0;
 Pythagorea.EXPLICIT = 1;
@@ -544,6 +566,14 @@ class PythagoreaLevel {
 		return !edges.some((E) => !game.hasEdge(E));
 	}
 
+	drawVertices( game, vertices ) {
+		vertices.forEach((V) => {
+			V.explicit = Pythagorea.WINNER;
+			game.addVertex(V);
+		});
+		game.changed = true;
+	}
+
 	drawEdges( game, edges ) {
 		edges.forEach((E) => {
 			E.from.explicit = Pythagorea.WINNER;
@@ -569,42 +599,3 @@ class PythagoreaLevel {
 		game.changed = true;
 	}
 }
-
-Pythagorea.levels = [
-	new PythagoreaLevel('Connect all the given nodes with each other.', function(game) {
-		this.vertices = [this.vertex(2, 2), this.vertex(4, 2), this.vertex(3, 4)];
-		this.vertices.forEach((V) => game.addVertex(V));
-		this.edges = this.createVerticesEdges(this.vertices);
-	}, function(game) {
-		return this.allEdgesExist(game, this.edges);
-	}, function(game) {
-		this.drawEdges(game, this.edges);
-	}),
-
-	new PythagoreaLevel('Create a square with the given side.', function(game) {
-		game.addEdge(this.edge(this.vertex(3, 0), this.vertex(3, 2)));
-	}, function(game) {
-		if ( this.allVerticesExist(game, this.winner = [this.vertex(3, 0), this.vertex(1, 0), this.vertex(1, 2), this.vertex(3, 2)]) ) {
-			return true;
-		}
-		if ( this.allVerticesExist(game, this.winner = [this.vertex(3, 0), this.vertex(5, 0), this.vertex(5, 2), this.vertex(3, 2)]) ) {
-			return true;
-		}
-	}, function(game) {
-		this.drawEdges(game, this.createVerticesEdges(this.winner));
-	}),
-
-	new PythagoreaLevel('Create the 3 squares (sides & corners) from these nodes.', function(game) {
-		game.addEdge(this.edge(this.vertex(3, 2), this.vertex(2, 4)));
-
-		this.vertices = [
-			[this.vertex(3, 2), this.vertex(1, 1), this.vertex(0, 3), this.vertex(2, 4)],
-			[this.vertex(3, 2), this.vertex(5, 3), this.vertex(4, 5), this.vertex(2, 4)],
-			[this.vertex(3, 2), this.vertex(3.5, 3.5), this.vertex(2, 4), this.vertex(1.5, 2.5)],
-		];
-	}, function(game) {
-		return this.allVerticesExist(game, this.flatten(this.vertices));
-	}, function(game) {
-		this.drawVerticesEdges(game, this.vertices);
-	}),
-];

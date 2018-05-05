@@ -10,7 +10,7 @@ return [
 			'ip' => ['null' => false],
 			'utc' => ['unsigned' => true],
 			'time' => ['unsigned' => true, 'null' => false],
-			'score' => ['type' => 'int'],
+			'score' => ['type' => 'float'],
 			'moves' => ['unsigned' => 'int'],
 			'more',
 		],

@@ -15,10 +15,19 @@ require __DIR__ . '/inc.bootstrap.php';
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('pythagorea.js') ?>"></script>
+<script src="<?= html_asset('pythagorea_levels.js') ?>"></script>
 <style>
 canvas {
 	background-color: #eee;
 	touch-action: none;
+}
+#level-num {
+	display: inline-block;
+	width: 1.2em;
+	text-align: center;
+}
+button:disabled {
+	opacity: 0.75;
 }
 </style>
 </head>
@@ -33,6 +42,7 @@ canvas {
 	<button id="undo">Undo</button>
 	|
 	<button id="prev">&lt;&lt;</button>
+	<strong id="level-num"></strong>
 	<button id="next">&gt;&gt;</button>
 </p>
 
