@@ -16,7 +16,7 @@ Traffic.CarShape = class CarShape {
 	rotate(angle) {
 		return new Traffic.CarShape(this.points.map((C) => C.rotate(angle)));
 	}
-}
+};
 
 Traffic.Square = class Square {
 	constructor(dirs, lights) {
@@ -35,7 +35,7 @@ Traffic.Square = class Square {
 	[Symbol.iterator]() {
 		return this.dirs[Symbol.iterator]();
 	}
-}
+};
 
 Traffic.World = class World {
 	constructor(map) {
@@ -57,7 +57,7 @@ Traffic.World = class World {
 		var ci = this.cars.indexOf(car);
 		this.cars.splice(ci, 1);
 	}
-}
+};
 
 Traffic.Car = class Car {
 	constructor(world, grid, direction, position) {
@@ -205,10 +205,11 @@ Traffic.Car = class Car {
 		// r = right
 		var left = this.constructor.goLeft(this.direction);
 		var turn = this.getOpposite(this.direction) == dir ? 'u' : ( left == dir ? 'l' : 'r' );
+		var d2;
 
 		switch ( turn ) {
 			case 'u':
-				var d2 = this.constructor.goLeft(this.direction);
+				d2 = this.constructor.goLeft(this.direction);
 				var d3 = this.constructor.goLeft(d2);
 				this.nextMoves.push('position');
 				this.nextMoves.push({direction: d2, position: 1});
@@ -218,7 +219,7 @@ Traffic.Car = class Car {
 				break;
 
 			case 'l':
-				var d2 = this.constructor.goLeft(this.direction);
+				d2 = this.constructor.goLeft(this.direction);
 				this.nextMoves.push('position');
 				this.nextMoves.push({direction: d2, position: 1});
 				this.nextMoves.push({direction: d2, position: 2});
@@ -226,7 +227,7 @@ Traffic.Car = class Car {
 				break;
 
 			case 'r':
-				var d2 = this.constructor.goRight(this.direction);
+				d2 = this.constructor.goRight(this.direction);
 				this.nextMoves.push({direction: d2, position: 2});
 				break;
 		}
@@ -260,7 +261,7 @@ Traffic.Car = class Car {
 		pos[sidewayAxis] = 1 + sidewayPosition;
 		return pos;
 	}
-}
+};
 
 Traffic.Drawer = class Drawer {
 	constructor(canvas, world) {

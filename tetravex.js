@@ -62,7 +62,7 @@ class Tetravex extends GridGame {
 	}
 
 	randomTile() {
-		return parseInt(Math.random() * 10);
+		return Math.floor(Math.random() * 10);
 	}
 
 	createMap( size ) {

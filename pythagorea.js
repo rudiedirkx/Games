@@ -1,3 +1,9 @@
+/**
+ * @property {int} x
+ * @property {int} y
+ * @property {int} explicit
+ * @property {Edge[]} edges
+ */
 class Vertex extends Coords2D {
 	constructor( x, y, explicit = 1 ) {
 		super(x, y);
@@ -14,14 +20,14 @@ class Vertex extends Coords2D {
 	}
 
 	static fromEdges( line1, line2, explicit = 1 ) {
-		var x1 = line1.from.x;
-		var y1 = line1.from.y;
-		var a1 = line1.to.x - line1.from.x;
+		const x1 = line1.from.x;
+		const y1 = line1.from.y;
+		const a1 = line1.to.x - line1.from.x;
 		var b1 = line1.to.y - line1.from.y;
-		var x2 = line2.from.x;
-		var y2 = line2.from.y;
-		var a2 = line2.to.x - line2.from.x;
-		var b2 = line2.to.y - line2.from.y;
+		const x2 = line2.from.x;
+		const y2 = line2.from.y;
+		const a2 = line2.to.x - line2.from.x;
+		const b2 = line2.to.y - line2.from.y;
 
 		if ( a2 * b1 == a1 * b2 ) {
 			return null;
@@ -32,9 +38,9 @@ class Vertex extends Coords2D {
 			b1 = 0.000000000001;
 		}
 
-		var y = (b1 * ( (a2*y2) + b2*(x1-x2) ) - a1*b2*y1) / ( b1 * a2 - a1 * b2 ) || 0;
+		const y = (b1 * ( (a2*y2) + b2*(x1-x2) ) - a1*b2*y1) / ( b1 * a2 - a1 * b2 ) || 0;
 
-		var x = b1 == 0 ? a1 : a1 / b1 * (y-y1) + x1;
+		const x = b1 == 0 ? a1 : a1 / b1 * (y-y1) + x1;
 
 		const V = new Vertex(x, y, explicit);
 		V.edges = [line1, line2];
@@ -42,6 +48,11 @@ class Vertex extends Coords2D {
 	}
 }
 
+/**
+ * @property {Vertex} from
+ * @property {Vertex} to
+ * @property {int} explicit
+ */
 class Edge {
 	constructor( from, to, explicit = 1 ) {
 		this.from = from;
@@ -111,7 +122,7 @@ class Pythagorea extends Game {
 
 	createGame() {
 		setTimeout(() => {
-			this.canvas.width = this.canvas.height = (this._size + 1) * (this._scale + 0);
+			this.canvas.width = this.canvas.height = (this._size + 1) * this._scale;
 			this.changed = true;
 		});
 	}
@@ -197,9 +208,6 @@ class Pythagorea extends Game {
 
 	addEdge( line ) {
 		if ( !this.hasEdge(line) || line.explicit == Pythagorea.WINNER ) {
-			// Make structure nodes explicit
-			const [from, to] = [line.from, line.to];
-
 			this.addVertex(new Vertex(line.from.x, line.from.y, line.explicit));
 			this.addVertex(new Vertex(line.to.x, line.to.y, line.explicit));
 
@@ -309,8 +317,6 @@ class Pythagorea extends Game {
 	}
 
 	drawEdgeExtensions( line ) {
-		const grad = line.gradient;
-
 		const intersections = this._sides.map((side) => side.intersect(line));
 
 		const unique = [];
@@ -370,7 +376,7 @@ class Pythagorea extends Game {
 	}
 
 	paint() {
-		this.canvas.width = this.canvas.width;
+		this.canvas.width = 1 * this.canvas.width;
 
 		this.drawStructure();
 		this.drawContent();

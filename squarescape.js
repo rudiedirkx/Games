@@ -171,7 +171,7 @@ class SquarescapeEditor extends GridGameEditor {
 
 	exportLevel() {
 		var map = [];
-		var start;
+		var start = null;
 
 		r.each(this.m_objGrid.rows, (tr, y) => {
 			var row = '';
