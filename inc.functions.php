@@ -4,7 +4,7 @@ define('THUMB_SIZE', 91);
 
 function html_asset( $src ) {
 	$local = is_int(strpos($_SERVER['HTTP_HOST'], 'home.'));
-	$mobile = is_int(strpos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
+	$mobile = is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
 	$buster = $local && !$mobile ? '' : '?_' . filemtime($src);
 	return $src . $buster;
 }
