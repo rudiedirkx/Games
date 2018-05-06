@@ -4,16 +4,6 @@ Coords2D.prototype.multiply = function( factor ) {
 
 class Laser extends CanvasGame {
 
-	createGame() {
-
-	}
-
-	reset() {
-		super.reset();
-
-
-	}
-
 	loadLevel( n ) {
 		this.reset();
 
@@ -70,25 +60,45 @@ class Laser extends CanvasGame {
 		this.drawMirrors();
 	}
 
-	drawLasers() {
-		const lights = this.createLights();
-
-		this.level.lasers.forEach((C) => {
-			let type = C[3];
+	trajectLasers() {
+		return this.level.lasers.map((C) => {
+			const type = C[3];
 			let dir = Coords2D.dir4Names.indexOf(C[2]);
-			let startLoc = this.laserStart(C);
-			let loc = startLoc;
-			while ( loc == startLoc || this.inside(loc) ) {
-				let nextLoc = loc.add(Coords2D.dir4Coords[dir]);
-				this.drawLaser(loc, nextLoc, type);
-
-				if ( loc != startLoc ) {
-					lights[loc.y][loc.x] |= type;
-				}
+			let loc = this.laserStart(C);
+			const path = [loc];
+			while ( path.length == 1 || this.inside(loc) ) {
+				const nextLoc = loc.add(Coords2D.dir4Coords[dir]);
+				path.push(nextLoc);
 
 				loc = nextLoc;
 			}
+			return {type, path};
 		});
+	}
+
+	trajectLights( lasers ) {
+		const lights = this.createLights();
+		lasers.forEach((laser) => {
+			laser.path.forEach((C) => {
+				if ( lights[C.y] && lights[C.y][C.x] != null ) {
+					lights[C.y][C.x] |= laser.type;
+				}
+			});
+		});
+		return lights;
+	}
+
+	getLaserOffset( type ) {
+		const typeOffset = type & 1 ? -3 : (type & 4 ? 3 : 0);
+		return new Coords2D(typeOffset, typeOffset);
+	}
+
+	drawLasers() {
+		const lasers = this.trajectLasers();
+console.log(lasers);
+
+		const lights = this.trajectLights(lasers);
+console.log(lights);
 
 		lights.forEach((row, y) => {
 			row.forEach((color, x) => {
@@ -98,13 +108,19 @@ class Laser extends CanvasGame {
 			});
 		});
 
-		console.log(lights);
+		lasers.forEach((laser) => {
+			for ( let i = 1; i < laser.path.length; i++ ) {
+				const from = laser.path[i-1];
+				const to = laser.path[i];
+				this.drawLaser(from, to, laser.type);
+			}
+		});
 	}
 
 	drawLaser( from, to, type ) {
-console.log('laser', from, to);
+		const typeOffset = this.getLaserOffset(type);
 		const half = new Coords2D(.5, .5);
-		const scale = (C) => this.scale(C.add(half)).add(new Coords2D(.5, .5));
+		const scale = (C) => this.scale(C.add(half)).add(new Coords2D(.5, .5)).add(typeOffset);
 		const style = {color: this.color(type), width: 3};
 		this.drawLine(scale(from), scale(to), style);
 	}
@@ -121,8 +137,13 @@ console.log('laser', from, to);
 		this.ctx.imageSmoothingEnabled = false;
 		for ( let y = 0; y < H; y++ ) {
 			for ( let x = 0; x < W; x++ ) {
-				let target = parseInt(this.level.map[y][x].trim() || 0);
-				this.drawSquare(new Coords2D(x, y), target);
+				let target = this.level.map[y][x].trim();
+				let loc = new Coords2D(x, y);
+				this.drawSquare(loc, parseInt(target || 0));
+
+				if ( target == 'x' ) {
+					this.drawBlock(loc);
+				}
 			}
 		}
 		this.ctx.imageSmoothingEnabled = true;
@@ -132,9 +153,19 @@ console.log('laser', from, to);
 			let moreDir = Coords2D.dir4Coords[ Coords2D.dir4Names.indexOf(C[2]) ].multiply(4);
 			let oppositeDir = Coords2D.dir4Coords[ (Coords2D.dir4Names.indexOf(C[2]) + 2) % 4 ];
 			let cell = Coords2D.fromArray(C).add(oppositeDir);
+
+			let typeOffset = this.getLaserOffset(C[3]);
+			let pos = this.scale(cell.add(new Coords2D(.5, .5))).add(moreDir).add(typeOffset);
+
 			let style = {radius: 4, color: this.color(C[3])};
-			this.drawDot(this.scale(cell.add(new Coords2D(.5, .5))).add(moreDir), style);
+			this.drawDot(pos, style);
 		});
+	}
+
+	drawBlock( coord ) {
+		const tl = this.scale(coord).add(new Coords2D(8, 8));
+		this.ctx.fillStyle = '#000';
+		this.ctx.fillRect(tl.x + 0.5, tl.y + 0.5, 24, 24);
 	}
 
 	drawSquare( coord, type ) {

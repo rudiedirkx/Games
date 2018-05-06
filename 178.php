@@ -21,10 +21,10 @@ canvas {
 	background: #aaa none;
 	background: repeating-linear-gradient(
 		120deg,
-		#888,
-		#888 10px,
-		#999 10px,
-		#999 20px
+		#666,
+		#666 10px,
+		#777 10px,
+		#777 20px
 	);
 	touch-action: none;
 
