@@ -8,6 +8,16 @@ Pythagorea.levels.push(new PythagoreaLevel('Connect all the given nodes with eac
 	this.drawEdges(game, this.winner);
 }));
 
+Pythagorea.levels.push(new PythagoreaLevel('Construct the point at equal distance from all given nodes.', function(game) {
+	const vertices = [this.vertex(2, 0), this.vertex(0, 2), this.vertex(4, 2)];
+	vertices.forEach((V) => game.addVertex(V));
+	this.winner = [this.vertex(2, 2)];
+}, function(game) {
+	return this.allVerticesExist(game, this.winner);
+}, function(game) {
+	this.drawVertices(game, this.winner);
+}));
+
 Pythagorea.levels.push(new PythagoreaLevel('Construct the halfway point between the given nodes.', function(game) {
 	game.addVertex(this.vertex(1, 2));
 	game.addVertex(this.vertex(3, 1));

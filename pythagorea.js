@@ -92,7 +92,7 @@ class Pythagorea extends CanvasGame {
 		this.dotProps = {
 			"explicit": ['#666', 3],
 			"initial": ['#000', 3],
-			"winner": ['orange', 3],
+			"winner": ['orange', 4],
 			"dragging": ['#f00', 3],
 		};
 
@@ -165,6 +165,7 @@ class Pythagorea extends CanvasGame {
 
 	undo() {
 		if ( !this.undoState.length ) return;
+		if ( this.m_bGameOver ) return this.loadLevel(this.levelNum);
 
 		const [vertices, edges] = this.undoState.pop();
 		this.vertices.length = vertices;
@@ -394,16 +395,22 @@ class Pythagorea extends CanvasGame {
 		this.draggingFrom = null;
 
 		this.canvas.on(['mousedown', 'touchstart'], (e) => {
+			if ( this.m_bGameOver ) return;
+
 			this.dragging = 1;
 			this.draggingFrom = this.findClosestVertex(e.subjectXY);
 		});
 		this.canvas.on(['mousemove', 'touchmove'], (e) => {
+			if ( this.m_bGameOver ) return;
+
 			if ( this.dragging >= 1 ) {
 				this.dragging = 2;
 				this.handleDragMove(e.subjectXY);
 			}
 		});
 		document.on(['mouseup', 'touchend'], (e) => {
+			if ( this.m_bGameOver ) return;
+
 			setTimeout(() => {
 				if ( this.dragging == 2 && this.draggingEdge && !this.hasEdge(this.draggingEdge) ) {
 					this.handleDragEnd();
@@ -434,6 +441,8 @@ class Pythagorea extends CanvasGame {
 	}
 
 	handleClick( coord ) {
+		if ( this.m_bGameOver ) return;
+
 		this.startTime();
 
 		const V = this.findClosestVertex(coord);
