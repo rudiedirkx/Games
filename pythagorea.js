@@ -80,15 +80,6 @@ class Edge {
 
 class Pythagorea extends CanvasGame {
 	createGame() {
-		const S = -1;
-		const E = this._size + 1;
-		this._sides = [
-			new Edge(new Coords2D(S, S), new Coords2D(E, S)),
-			new Edge(new Coords2D(E, S), new Coords2D(E, E)),
-			new Edge(new Coords2D(E, E), new Coords2D(S, E)),
-			new Edge(new Coords2D(S, E), new Coords2D(S, S)),
-		];
-
 		this.lineProps = {
 			"structure": ['#ccc', 1],
 			"explicit": ['#666', 2],
@@ -116,6 +107,15 @@ class Pythagorea extends CanvasGame {
 
 		this._size = 5;
 		this._scale = 50;
+
+		const S = -1;
+		const E = this._size + 1;
+		this._sides = [
+			new Edge(new Coords2D(S, S), new Coords2D(E, S)),
+			new Edge(new Coords2D(E, S), new Coords2D(E, E)),
+			new Edge(new Coords2D(E, E), new Coords2D(S, E)),
+			new Edge(new Coords2D(S, E), new Coords2D(S, S)),
+		];
 
 		this.vertices = this.createStructureVertices();
 		this.edges = this.createStructureEdges();
@@ -298,7 +298,7 @@ class Pythagorea extends CanvasGame {
 	drawEdges() {
 		// console.time('drawEdges');
 
-		this.edges.forEach((E) => E.explicit == 1 && this.drawEdgeExtensions(E));
+		this.edges.forEach((E) => E.explicit == 1 && !this.alongStructure(E) && this.drawEdgeExtensions(E));
 		this.edges.forEach((E) => E.explicit && this.drawEdge(E, this.explicitToType(E.explicit)));
 
 		// console.timeEnd('drawEdges');
