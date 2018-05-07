@@ -233,7 +233,7 @@ class CanvasGame extends Game {
 
 	listenClick() {
 		this.canvas.on('click', (e) => {
-			if ( this.dragging < 2 ) {
+			if ( this.dragging == null || this.dragging < 2 ) {
 				this.handleClick(e.subjectXY);
 			}
 		});

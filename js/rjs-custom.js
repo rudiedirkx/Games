@@ -1,5 +1,5 @@
 // https://home.hotblocks.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// aaf5c113e98223fcaf831e6a69058ad01225088c
+// c8016adefbdebaa7f8639ecb28532956b286c3da
 
 (function(W, D) {
 
@@ -223,10 +223,10 @@
 	}
 	r.extend(Coords2D, {
 		add: function(coords) {
-			return new Coords2D(this.x + coords.x, this.y + coords.y);
+			return new this.constructor(this.x + coords.x, this.y + coords.y);
 		},
 		subtract: function(coords) {
-			return new Coords2D(this.x - coords.x, this.y - coords.y);
+			return new this.constructor(this.x - coords.x, this.y - coords.y);
 		},
 		toCSS: function() {
 			return {
@@ -247,20 +247,20 @@
 			return [this.x, this.y];
 		},
 		copy: function() {
-			return new Coords2D(this.x, this.y);
+			return this.constructor.fromArray(this.toArray());
 		},
 		rotate: function(angle) {
 			var x = Math.cos(angle) * this.x - Math.sin(angle) * this.y;
 			var y = Math.sin(angle) * this.x + Math.cos(angle) * this.y;
-			return new Coords2D(x, y);
+			return new this.constructor(x, y);
 		},
 		round: function(decimals) {
 			if ( !decimals ) {
-				return new Coords2D(Math.round(this.x), Math.round(this.y));
+				return new this.constructor(Math.round(this.x), Math.round(this.y));
 			}
 
 			var scale = Math.pow(10, decimals);
-			return new Coords2D(
+			return new this.constructor(
 				Math.round(this.x * scale)/scale,
 				Math.round(this.y * scale)/scale
 			);

@@ -39,6 +39,14 @@ canvas {
 
 <canvas></canvas>
 
+<p>
+	<button id="undo">Undo</button>
+	|
+	<button id="prev">&lt;&lt;</button>
+	<strong id="level-num"></strong>
+	<button id="next">&gt;&gt;</button>
+</p>
+
 <script>
 Laser.levels = <?= json_encode($g_arrLevels) ?>;
 
