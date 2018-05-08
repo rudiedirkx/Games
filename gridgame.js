@@ -547,6 +547,7 @@ class GridGameEditor extends GridGame {
 				this.createdMapCell(cell);
 			}
 		}
+		this.createdMap();
 	}
 
 	createdMapCell( cell ) {

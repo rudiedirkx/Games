@@ -312,3 +312,26 @@ td.wall2 {
 	border-radius		: 99px;
 	background-color	: #000;
 }
+
+.laser.builder .inside tbody {
+	background			: repeating-linear-gradient(
+		120deg,
+		#666,
+		#666 10px,
+		#777 10px,
+		#777 20px
+	);
+	color				: white;
+}
+.laser.builder .inside td.edge {
+	background-color	: #fff;
+}
+.laser.builder .inside td.block:after {
+	content				: "";
+	display				: block;
+	width				: calc(var(--inside-cell) - 10px);
+	height				: calc(var(--inside-cell) - 10px);
+	margin				: 5px auto 0;
+	pointer-events		: none;
+	background-color	: #000;
+}

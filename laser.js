@@ -132,7 +132,7 @@ class Laser extends CanvasGame {
 		return true;
 	}
 
-	color( type, half = false ) {
+	static color( type, half = false ) {
 		const ins = half ? '8' : 'f';
 		return '#' + [type & 1 ? ins : '0', type & 2 ? ins : '0', type & 4 ? ins : '0'].join('');
 	}
@@ -291,7 +291,7 @@ class Laser extends CanvasGame {
 		const typeOffset = this.getLaserOffset(type);
 		const half = new Coords2D(.5, .5);
 		const scale = (C) => this.scale(C.add(half)).add(new Coords2D(.5, .5)).add(typeOffset);
-		const style = {color: this.color(type), width: 3};
+		const style = {color: this.constructor.color(type), width: 3};
 		this.drawLine(scale(from), scale(to), style);
 	}
 
@@ -364,7 +364,7 @@ class Laser extends CanvasGame {
 			let typeOffset = this.getLaserOffset(C[3]);
 			let pos = this.scale(cell.add(new Coords2D(.5, .5))).add(moreDir).add(typeOffset);
 
-			let style = {radius: 4, color: this.color(C[3])};
+			let style = {radius: 4, color: this.constructor.color(C[3])};
 			this.drawDot(pos, style);
 		});
 	}
@@ -377,14 +377,14 @@ class Laser extends CanvasGame {
 
 	drawSquare( coord, type ) {
 		const tl = this.scale(coord).add(new Coords2D(3, 3));
-		this.ctx.strokeStyle = this.color(type);
+		this.ctx.strokeStyle = this.constructor.color(type);
 		this.ctx.lineWidth = 3;
 		this.ctx.strokeRect(tl.x + 0.5, tl.y + 0.5, 34, 34);
 	}
 
 	drawLight( coord, type ) {
 		const tl = this.scale(coord).add(new Coords2D(5, 5));
-		this.ctx.fillStyle = this.color(type) + '7';
+		this.ctx.fillStyle = this.constructor.color(type) + '7';
 		this.ctx.fillRect(tl.x + 0.5, tl.y + 0.5, 30, 30);
 	}
 
@@ -441,6 +441,101 @@ class Laser extends CanvasGame {
 	}
 
 	setTime() {
+	}
+
+}
+
+class LaserEditor extends GridGameEditor {
+
+	createEditor() {
+		super.createEditor();
+		$('#level-sizes').hide();
+	}
+
+	createMap() {
+		return super.createMap(7, 7);
+	}
+
+	createdMap() {
+		this.m_objGrid.getElements('td').forEach((cell) => {
+			if ( this.isEdge(cell) ) {
+				cell.addClass('edge');
+			}
+		})
+	}
+
+	defaultCellType() {
+		return '0';
+	}
+
+	cellTypes() {
+		return {
+			"0": 'None',
+			"block": 'Block',
+			"1": 'Red',
+			"2": 'Green',
+			"3": 'Red+Green',
+			"4": 'Blue',
+			"5": 'Red+Blue',
+			"6": 'Green+Blue',
+			"7": 'Red+Green+Blue',
+		};
+	}
+
+	createCellTypeCell( type ) {
+		const color = type == '0' ? 'translarent' : Laser.color(parseInt(type)) + '8';
+		return '<td class="' + type + '" style="background-color: ' + color + '"></td>';
+	}
+
+	handleCellClick( cell ) {
+		var type = this.getType();
+		if ( this['setType_' + type] ) {
+			return this['setType_' + type](cell);
+		}
+
+		type = parseInt(type);
+		if ( isNaN(type) ) {
+			return alert('Invalid cell type?');
+		}
+
+		if ( type == 0 ) {
+			return this.setEmpty(cell);
+		}
+
+		if ( cell.hasClass('edge') ) {
+			return this.setEdge(cell, type);
+		}
+
+		return this.setTarget(cell, type);
+	}
+
+	setType_block( cell ) {
+		cell.toggleClass('block');
+	}
+
+	setEmpty( cell ) {
+		delete cell.dataset.type;
+		cell.style.backgroundColor = '';
+	}
+
+	setEdge( cell, type ) {
+		if ( ![1, 2, 4].includes(type) ) {
+			return alert('Lasers must be base colors (RGB).');
+		}
+
+		this.setTarget(cell, type);
+	}
+
+	setTarget( cell, type ) {
+		cell.dataset.type = type;
+		cell.style.backgroundColor = Laser.color(type) + '8';
+	}
+
+	isEdge( cell ) {
+		const C = this.getCoord(cell);
+		const W = this.m_objGrid.rows[0].cells.length;
+		const H = this.m_objGrid.rows.length;
+		return C.x == 0 || C.x == W - 1 || C.y == 0 || C.y == H - 1;
 	}
 
 }
