@@ -18,6 +18,9 @@ require __DIR__ . '/178_levels.php';
 <script src="<?= html_asset('laser.js') ?>"></script>
 <style>
 canvas {
+	touch-action: none;
+	user-select: none;
+
 	background: #aaa none;
 	background: repeating-linear-gradient(
 		120deg,
@@ -26,11 +29,18 @@ canvas {
 		#777 10px,
 		#777 20px
 	);
-	touch-action: none;
 
 	image-rendering: optimizeSpeed;
 	image-rendering: -webkit-optimize-contrast;
 	image-rendering: pixelated;
+}
+#level-num {
+	display: inline-block;
+	width: 1.2em;
+	text-align: center;
+}
+button:disabled {
+	opacity: 0.75;
 }
 </style>
 </head>
@@ -40,8 +50,6 @@ canvas {
 <canvas></canvas>
 
 <p>
-	<button id="undo">Undo</button>
-	|
 	<button id="prev">&lt;&lt;</button>
 	<strong id="level-num"></strong>
 	<button id="next">&gt;&gt;</button>

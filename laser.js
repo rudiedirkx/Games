@@ -15,6 +15,20 @@ class ReflectMirror extends Mirror {
 		const delta = this.bendLeftDirs.includes(inDirIndex) ? -1 : 1;
 		return [(inDirIndex + delta + 4) % 4];
 	}
+
+	polyPoints() {
+		if ( this.bendLeftDirs.includes(0) ) {
+			return [
+				new Coords2D(-1, -1),
+				new Coords2D(1, 1),
+			];
+		}
+
+		return [
+			new Coords2D(1, -1),
+			new Coords2D(-1, 1),
+		];
+	}
 }
 
 class SplitMirror extends Mirror {
@@ -28,8 +42,21 @@ class SplitMirror extends Mirror {
 
 		return [
 			(inDirIndex + 1) % 4,
-			(inDirIndex - 1) % 4,
+			(inDirIndex - 1 + 4) % 4,
 		];
+	}
+
+	polyPoints() {
+		const shift = 0.3;
+		const points = [
+			new Coords2D(-1, -shift),
+			new Coords2D(1, -shift),
+			new Coords2D(0, 1 - shift),
+		];
+		if ( this.inDirIndex == 0 ) {
+			return points;
+		}
+		return points.map((P) => P.rotate(Math.PI * 2 / 4 * this.inDirIndex));
 	}
 }
 
@@ -49,6 +76,11 @@ class Lasing {
 		this.dir = dirName;
 		return this;
 	}
+
+	isStart() {
+		this.start = true;
+		return this;
+	}
 }
 
 class Laser extends CanvasGame {
@@ -59,10 +91,10 @@ class Laser extends CanvasGame {
 		this.mirrorTypes = [
 			new ReflectMirror([0, 2]),
 			new ReflectMirror([1, 3]),
-			// new SplitMirror(0),
-			// new SplitMirror(1),
-			// new SplitMirror(2),
-			// new SplitMirror(3),
+			new SplitMirror(0),
+			new SplitMirror(1),
+			new SplitMirror(2),
+			new SplitMirror(3),
 		];
 	}
 
@@ -82,13 +114,12 @@ class Laser extends CanvasGame {
 		this.lasers = [];
 		this.lights = [];
 		this.mirrors = this.createMirrors();
+		this.recalculate();
 
 		this.changed = true;
 	}
 
 	haveWon() {
-		this.recalculate();
-
 		for ( let y = 0; y < this.level.map.length; y++ ) {
 			for ( let x = 0; x < this.level.map[y].length; x++ ) {
 				let target = parseInt(this.level.map[y][x].trim());
@@ -124,9 +155,7 @@ class Laser extends CanvasGame {
 
 	laserStart( lasing ) {
 		const oppositeDir = Coords2D.dir4Coords[ (Coords2D.dir4Names.indexOf(lasing.dir) + 2) % 4 ];
-		const start = lasing.add(oppositeDir);
-		start.start = true;
-		return start;
+		return lasing.add(oppositeDir).isStart();
 	}
 
 	createLights() {
@@ -170,18 +199,22 @@ class Laser extends CanvasGame {
 	}
 
 	_trajectLaser( lasing ) {
-		if ( lasing.start || this.penetrable(lasing.loc) ) {
-			const dirIndex = Coords2D.dir4Names.indexOf(lasing.dir);
+		if ( !lasing.start && !this.penetrable(lasing.loc) ) return null;
 
-			const mirror = this.getMirror(lasing.loc);
-			if ( mirror ) {
-				const dirIndexes = mirror.makeOuts(dirIndex);
+		const dirIndex = Coords2D.dir4Names.indexOf(lasing.dir);
+
+		const mirror = this.getMirror(lasing.loc);
+		if ( mirror && !lasing.start ) {
+			const dirIndexes = mirror.makeOuts(dirIndex);
+			if ( dirIndexes.length ) {
 				return dirIndexes.map((dirIndex) => lasing.add(Coords2D.dir4Coords[dirIndex]).newDir(Coords2D.dir4Names[dirIndex]));
 			}
 
-			const next = lasing.add(Coords2D.dir4Coords[dirIndex]);
-			return [next];
+			return null;
 		}
+
+		const next = lasing.add(Coords2D.dir4Coords[dirIndex]);
+		return [next];
 	}
 
 	_trajectLasers( lasers ) {
@@ -194,7 +227,7 @@ class Laser extends CanvasGame {
 				path.push(lasing[0].loc);
 
 				if ( lasing.length > 1 ) {
-					lasers.push(lasing[1]);
+					lasers.push(this._reverseOne(lasing[1]).isStart());
 				}
 			}
 
@@ -202,6 +235,11 @@ class Laser extends CanvasGame {
 		}
 
 		return output;
+	}
+
+	_reverseOne( lasing ) {
+		const backStep = Coords2D.dir4Coords[ (Coords2D.dir4Names.indexOf(lasing.dir) + 2) % 4 ];
+		return lasing.add(backStep);
 	}
 
 	trajectLasers() {
@@ -232,8 +270,6 @@ class Laser extends CanvasGame {
 	}
 
 	drawLasers() {
-		this.recalculate();
-
 		this.lights.forEach((row, y) => {
 			row.forEach((color, x) => {
 				if ( color > 0 ) {
@@ -260,6 +296,35 @@ class Laser extends CanvasGame {
 	}
 
 	drawMirrors() {
+		for ( let y = 0; y < this.mirrors.length; y++ ) {
+			for ( let x = 0; x < this.mirrors[y].length; x++ ) {
+				let mirror = this.mirrors[y][x];
+				if ( mirror >= 0 ) {
+					let points = this.mirrorTypes[mirror].polyPoints();
+					this.drawMirror(new Coords2D(x, y), points);
+				}
+			}
+		}
+	}
+
+	drawMirror( square, points ) {
+		const center = this.scale(square.add(new Coords2D(.5, .5)));
+
+		const scale = (C) => {
+			return C.multiply(10).add(center);
+		};
+
+		if ( points.length == 2 ) {
+			const style = {color: '#fff'};
+			this.drawLine(scale(points[0]), scale(points[1]), style);
+			return;
+		}
+
+		this.ctx.fillStyle = '#fff';
+		this.ctx.beginPath();
+		points.map(scale).forEach((P, i) => this.ctx[i ? 'lineTo' : 'moveTo'](P.x, P.y));
+		this.ctx.closePath();
+		this.ctx.fill();
 	}
 
 	drawBlocks() {
@@ -326,6 +391,7 @@ class Laser extends CanvasGame {
 	listenControls() {
 		this.listenActions();
 		this.listenClick();
+		this.listenWheel();
 	}
 
 	listenActions() {
@@ -337,15 +403,30 @@ class Laser extends CanvasGame {
 		});
 	}
 
+	listenWheel() {
+		this.canvas.on('wheel', (e) => {
+			this.handleWheel(e.subjectXY, e.originalEvent.deltaY < 0 ? -1 : 1);
+		});
+	}
+
+	handleWheel( coord, dir ) {
+		const square = this.getSquare(coord);
+		square && this.changeMirror(square, dir);
+	}
+
 	handleClick( coord ) {
 		const square = this.getSquare(coord);
+		square && this.changeMirror(square, 1);
+	}
+
+	changeMirror( square, delta ) {
+		const L = this.mirrorTypes.length + 1;
 		var mirror = this.mirrors[square.y][square.x];
-		mirror++;
-		if ( mirror >= this.mirrorTypes.length ) {
-			mirror = -1;
-		}
+		mirror = ((mirror + 1 + delta + L) % L) - 1;
 		this.mirrors[square.y][square.x] = mirror;
 		this.changed = true;
+
+		this.recalculate();
 
 		this.winOrLose();
 	}

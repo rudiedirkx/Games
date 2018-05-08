@@ -18,8 +18,9 @@ require __DIR__ . '/inc.bootstrap.php';
 <script src="<?= html_asset('pythagorea_levels.js') ?>"></script>
 <style>
 canvas {
-	background-color: #eee;
 	touch-action: none;
+	user-select: none;
+	background-color: #eee;
 }
 #level-num {
 	display: inline-block;
