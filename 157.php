@@ -27,12 +27,16 @@ for ( $i=0; $i<8; $i++ ) {
 }
 
 ?>
+<!doctype html>
 <html>
 
 <head>
+<meta charset="utf-8" />
 <title>Fortune's Tower</title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<style type="text/css">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>window.onerror = function(e) { alert(e); };</script>
+<script src="/js/mootools_1_11.js"></script>
+<style>
 span.card {
 	font-family			: 'courier new';
 	font-size			: 40px;
@@ -59,8 +63,14 @@ div.set span.card {
 	background-color	: gold;
 }
 </style>
-<script type="text/javascript">
-<!--//
+<script>
+function asyncAlert(msg, after) {
+	setTimeout(function() {
+		alert(msg);
+		after && setTimeout(after);
+	}, 50);
+}
+
 var ROWS = 8, COOKIENAME = '<?php echo S_NAME.'_balance'; ?>', g_iBalance = Cookie.get(COOKIENAME).toInt();
 var g_iBetBase = <?php echo max(1, min(10, isset($_GET['base'])?(int)$_GET['base']:1)); ?>, g_arrCards = <?php echo json_encode($arrCards); ?>, g_iMultiplier = 1, g_iRow = 0, g_bGateCard = true, g_bGameOver = false;
 function nextRow() {
@@ -152,20 +162,20 @@ function fillAndShowRow(r) {
 	});
 	if ( rowIsSet(r) ) {
 		$('r'+r).addClass('set');
-		alert('Set -> extra multiplier: X'+(r+1));
+		asyncAlert('Set -> extra multiplier: X'+(r+1));
 		addMultiplier(r+1);
 	}
 	else {
 		var bc = rowHasVPair(r);
 		if ( 0 <= bc ) {
 			if ( rowHasKnight(r) ) {
-				alert('Using knight...');
+				asyncAlert('Using knight...');
 				unburnRow(r-1);
 				unburnRow(r);
 			}
 			else if ( g_bGateCard ) {
 				g_bGateCard = false;
-				alert('Using gate card...');
+				asyncAlert('Using gate card...');
 				hideRow(0);
 				unburnRow(r-1);
 				unburnRow(r);
@@ -178,7 +188,7 @@ function fillAndShowRow(r) {
 						g_bGameOver = true;
 					}
 					else {
-						alert('Using knight...');
+						asyncAlert('Using knight...');
 						unburnRow(r-1);
 						unburnRow(r);
 					}
@@ -192,8 +202,7 @@ function fillAndShowRow(r) {
 	$('x_pays_y_x').innerHTML = iRowScore;
 	$('x_pays_y_y').innerHTML = g_iBetBase*g_iMultiplier*iRowScore;
 	if ( g_bGameOver ) {
-		alert('You lose');
-		document.location.reload();
+		asyncAlert('You lose', "document.location.reload()");
 		return false;
 	}
 	if ( ROWS-1 == r ) { // last row
@@ -254,11 +263,9 @@ function cashOut(jp) {
 	g_iBalance += iWins ? iWins : 0;
 	$('balance').innerHTML = g_iBalance;
 	Cookie.set(COOKIENAME, g_iBalance);
-	alert((jp?'Jackpot! ':'')+'You win: '+$('x_pays_y_y').innerHTML);
-	document.location.reload();
+	asyncAlert((jp ? 'Jackpot! ' : '') + 'You win: ' + $('x_pays_y_y').innerHTML, 'document.location.reload()');
 	return false;
 }
-//-->
 </script>
 </head>
 
@@ -289,11 +296,8 @@ for ( $iRow=0; $iRow<8; $iRow++ ) {
 
 ?><div style="position:absolute;left:5px;top:5px;font-size:24px;font-weight:bold;"><span id="multiplier">1</span>X</div><div style="width:60px;text-align:center;position:absolute;right:5px;top:5px;"><span style="font-weight:bold;" id="x_pays_y_x">0</span> pays<br /><span style="font-weight:bold;font-size:24px;" id="x_pays_y_y">0</span></div></div>
 
-<script type="text/javascript">
-<!--//
+<script>
 $('buttons').setAttribute('width', $('tower').offsetWidth);
-//initTower();
-//-->
 </script>
 </body>
 
