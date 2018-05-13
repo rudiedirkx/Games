@@ -56,10 +56,13 @@ button:disabled {
 </p>
 
 <script>
-Laser.levels = <?= json_encode($g_arrLevels) ?>;
-
 var objGame = new Laser(document.querySelector('canvas'));
 objGame.startPainting();
 objGame.listenControls();
+<? if ( isset($_POST['import']) ): ?>
+	Laser.levels = <?= json_encode([json_decode($_POST['import'])]) ?>;
+<? else: ?>
+	Laser.levels = <?= json_encode($g_arrLevels) ?>;
+<? endif ?>
 objGame.loadLevel(0);
 </script>

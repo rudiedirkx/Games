@@ -538,4 +538,66 @@ class LaserEditor extends GridGameEditor {
 		return C.x == 0 || C.x == W - 1 || C.y == 0 || C.y == H - 1;
 	}
 
+	exportLevel() {
+		const map = [];
+		for ( let y = 1; y < 6; y++ ) {
+			var row = '';
+			for ( let x = 1; x < 6; x++ ) {
+				let cell = this.getCell(new Coords2D(x, y));
+				if ( cell.hasClass('block') ) {
+					row += 'x';
+				}
+				else {
+					let type = cell.data('type');
+					row += isNaN(parseInt(type)) ? ' ' : type;
+				}
+			}
+			map.push(row);
+		}
+
+		const lasers = this.m_objGrid.getElements('.edge[data-type]').map((cell) => {
+			const type = parseInt(cell.data('type'));
+			var C = this.getCoord(cell);
+			var dir;
+			if ( C.y == 0 ) {
+				dir = 'd';
+			}
+			else if ( C.y == 6 ) {
+				dir = 'u';
+			}
+			else if ( C.x == 0 ) {
+				dir = 'r';
+			}
+			else if ( C.x == 6 ) {
+				dir = 'l';
+			}
+
+			C = C.add(Coords2D.dir4Coords[Coords2D.dir4Names.indexOf(dir)]).add(new Coords2D(-1, -1));
+			return C.toArray().concat([dir,  type]);
+		});
+
+		var level = {map, lasers};
+		this.validateLevel(level);
+		return level;
+	}
+
+	validateLevel( level ) {
+		// @todo
+	}
+
+	formatAsPHP( level ) {
+		var code = [];
+		code.push('\t[');
+		code.push("\t\t'map' => [");
+		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push("\t\t'lasers' => [");
+		r.each(level.lasers, laser => code.push("\t\t\t" + JSON.stringify(laser) + ","));
+		code.push("\t\t],");
+		code.push('\t],');
+		code.push('');
+		code.push('');
+		return code;
+	}
+
 }
