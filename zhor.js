@@ -43,7 +43,7 @@ class Zhor extends LeveledGridGame {
 		const path = [];
 		var current = start;
 		while ( current = this.getCell(this.getCoord(current).add(offset)) ) {
-			if ( !current.hasClass('path') ) {
+			if ( !current.is('.path, [data-source]') ) {
 				path.push(current);
 			}
 		}
