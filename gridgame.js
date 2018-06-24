@@ -82,7 +82,7 @@ class Game {
 
 		this.stopTime();
 		this.m_iStartTime = Date.now();
-		this.m_iTimer = setInterval(() => this.setTime(this.formatTime(this.getTime())), 200);
+		this.m_iTimer = setInterval(() => this.setTime(this.formatTime(this.getTime())), 50);
 	}
 
 	getTime() {
@@ -551,6 +551,9 @@ class GridGameEditor extends GridGame {
 	}
 
 	createdMapCell( cell ) {
+	}
+
+	createdMap() {
 	}
 
 	getType() {

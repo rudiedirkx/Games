@@ -335,3 +335,25 @@ td.wall2 {
 	pointer-events		: none;
 	background-color	: #000;
 }
+
+.zhor td.target {
+	background-color	: green;
+}
+.zhor td[data-source]:not(.path) {
+	background-color	: orange;
+	color 				: white;
+	font-weight			: bold;
+	cursor				: pointer;
+}
+.zhor td[data-source]:not(.path):after {
+	content				: attr(data-source);
+}
+.zhor td[data-source].selected {
+	background-color	: red;
+}
+.zhor td.path {
+	background-color	: orange;
+}
+.zhor td.path.target {
+	background-color	: darkorange;
+}

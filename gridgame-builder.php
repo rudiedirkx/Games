@@ -73,7 +73,7 @@ textarea {
 </p>
 
 <form method="post" action="<?= $gameName ?>.php">
-	<p><textarea name="import" id="export-code" rows="15"></textarea></p>
+	<p><textarea name="import" id="export-code" rows="10"></textarea></p>
 </form>
 
 <script>
@@ -140,8 +140,10 @@ $('#btn-export').on('click', function(e) {
 
 	exportLevel().then((level) => {
 		var code = objGame.formatAsPHP(level);
-		$('#export-code').value = code.join('\n');
-	})
+		var codeTA = $('#export-code');
+		codeTA.value = code.join('\n');
+		codeTA.select();
+	});
 });
 </script>
 </body>
