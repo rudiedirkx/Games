@@ -83,6 +83,24 @@ class Zhor extends LeveledGridGame {
 
 class ZhorEditor extends GridGameEditor {
 
+	createGame() {
+		document.on('wheel', (e) => {
+			var delta = e.originalEvent.deltaY > 0 ? 1 : -1;
+			var selected = this.getType();
+			var newSelected;
+			if ( isNaN(parseInt(selected)) ) {
+				newSelected = 1;
+			}
+			else {
+				newSelected = selected - -delta;
+				newSelected < 1 && (newSelected = 6);
+				newSelected > 6 && (newSelected = 1);
+			}
+
+			this.handleTypeClick(String(newSelected));
+		});
+	}
+
 	cellTypes() {
 		return {
 			"target": 'Target',
