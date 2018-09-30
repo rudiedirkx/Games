@@ -169,8 +169,8 @@ function rightClickBorder(o) {
 	}
 }
 
-function updateClue(o) {
-	o = $(o);
+function updateClue(id) {
+	var o = $('#' + id);
 	// Maybe there are no restrictions/demands
 	if ( o.innerHTML ) {
 		var iClue = parseInt(o.innerHTML), iBorders = 0;
