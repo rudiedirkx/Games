@@ -46,6 +46,7 @@ textarea,
 	font-family: monospace;
 	text-transform: uppercase;
 	font-size: 16px;
+	height: 24em;
 }
 #ta-output {
 	position: absolute;
