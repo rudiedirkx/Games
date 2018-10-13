@@ -1,60 +1,53 @@
 // Settings
-var imagedir = "images/"
+var imagedir = "images/";
 
 var passage;
-var countSecs;
 var i;
+var countdownTimer;
 var beginTijd;
+var clockTimer;
 var eindTijd;
 var raceTijd;
 var startok;
-var letzteRunde;
-var TotaleTijd;
-var rondes;
 var crash = false;
 
-function checkPassage() {
+function CheckPassage()
+{
+	console.log('CheckPassage');
+
 	passage++;
 }
 
-function getTime() {
-	return (new Date()).getTime();
+function getTime()
+{
+	return Date.now();
 }
 
 function Stop() {
+	console.log('Stop');
+
 	// Didnt pass any checkpoints yet, so wrong direction
 	if ( passage == 0 ) {
-//		$('stoplicht_etc').src="./images/wrong_dir.gif"
-		clearTimeout(HETlicht);
+		SetImage("wrong_dir");
+		ResetRound();
 	}
 	// Didnt pass all checkpoints yet!
 	else if ( passage < 4 ) {
-		$('stoplicht_etc').src = imagedir+"complete.gif";
+		SetImage("complete");
+		ResetRound();
 	}
 	// Got all passages
 	else if ( !crash ) {
 		passage = 0;
 
-		eindTijd = getTime()
-		raceTijd = (eindTijd - beginTijd)/1000
+		var racing = getTime() - beginTijd;
+		SetTime('lastlap', racing);
 
-		$('lastlap').value = raceTijd
+		if ( parseFloat($('bestlap').value) == 0 || parseFloat($('lastlap').value) <= parseFloat($('bestlap').value) ) {
+			SetTime('bestlap', racing);
+		}
 
-		if ( toFloat($('frm_lastlap').value) <= toFloat($('frm_hideme').value) ) {
-			$('bestlap').value = $('lastlap').value;
-			$('hideme').value = $('lastlap').value;
-			bestlap = $('hideme').value
-		}
-		if ( toFloat($('bestlap').value) <= 0 ) {
-			$('hideme').value = "";
-			$('bestlap').value = "";
-			$('lastlap').value = "";
-			bestlap = "";
-		}
-		countSecs=0
 		i=0
-		timerID=0
-		HETlicht=0
 		startok=0
 		beginTijd = 0
 		eindTijd = 0
@@ -62,61 +55,79 @@ function Stop() {
 	}
 }
 
-function ValseStartTest( )
+function ValseStartTest()
 {
+	console.log('ValseStartTest');
+
 	// Didnt have green lights yet, so false start!
 	if (startok==0)
 	{
 		// show false-start image
-		$('stoplicht_etc').src="./images/valse_start.gif"
+		SetImage("valse_start");
 		// reset
-		ResetRound( )
+		ResetRound()
 	}
 }
 
-function Wamba( )
+function Wamba()
 {
-	$('stoplicht_etc').src="./images/licht_rood.gif";
+	console.log('Wamba');
+
+	SetImage("licht_rood");
 	ResetRound();
-	setTimeout(Ampelgeel,2000);
+	countdownTimer = setTimeout(Ampelgeel,1000);
 }
 
-function Ampelgeel( )
+function Ampelgeel()
 {
-	$('stoplicht_etc').src="./images/licht_geel.gif";
-	setTimeout(Ampelgroen,2500);
+	console.log('Ampelgeel');
+
+	SetImage("licht_geel");
+	countdownTimer = setTimeout(Ampelgroen,1000);
 }
 
-function Ampelgroen( )
+function Ampelgroen()
 {
+	console.log('Ampelgroen');
+
 	startok = 1;
-	$('stoplicht_etc').src="./images/licht_groen.gif";
+	SetImage("licht_groen");
 	Start();
 }
 
-function Start( )
+function SetTime(id, time)
 {
-	nu = new Date();
-	if ( beginTijd == 0 )
-	{
-		beginTijd = nu.getTime();
+	time = Math.round(time / 1000 * 10) / 10;
+	$(id).value = time + (time == parseInt(time) ? '.0' : '');
+}
+
+function Clock()
+{
+	if ( beginTijd > 0 ) {
+		SetTime('thislap', getTime() - beginTijd);
 	}
-	countSecs += 0.1
-//	$('thislap').value = Math.round((nu.getTime() - beginTijd) / 1000, 1);
-	$('thislap').value = Math.round(countSecs*10)/10;
-	if ( !crash )
-	{
-		setTimeout(Start, 100);
-	}
+}
+
+function Start()
+{
+	console.log('Start');
+
+	beginTijd = getTime();
+
+	clearTimeout(clockTimer);
+	clockTimer = setInterval(Clock, 50);
 }
 
 function Out()
 {
+	console.log('Out');
+	return;
+
 	// If race was started, this is a crash
 	if ( 0 < beginTijd )
 	{
 		crash = true
-		$('stoplicht_etc').src="./images/crash.gif"
+		SetImage("crash");
 		ResetRound()
 	}
 	// If it didnt start yet, ignore it
@@ -130,20 +141,20 @@ function SetImage( image )
 	$('stoplicht_etc').src = imagepath
 }
 
-function ResetRound( )
+function ResetRound()
 {
-	$('thislap').value=""
+	console.log('ResetRound');
+
+	$('thislap').value = "0.0"
+
+	clearTimeout(countdownTimer);
+	clearTimeout(clockTimer);
+
 	passage=0
-	countSecs=0
 	i=0
 	beginTijd = 0
 	eindTijd = 0
 	raceTijd = 0
 	startok=0
-	letzteRunde=0
-	TotaleTijd=0
-	rondes=0
 	crash = false
-//	clearTimeout(timerID)
-//	clearTimeout(HETlicht)
 }
