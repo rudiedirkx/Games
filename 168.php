@@ -4,17 +4,7 @@
 require __DIR__ . '/inc.bootstrap.php';
 
 $colors = ['red', 'green', 'blue', 'yellow'];
-
-// header('Content-type: text/plain');
-
 $size = 10;
-$map = [];
-
-for ($y=0; $y < $size; $y++) {
-	for ($x=0; $x < $size; $x++) {
-		$map[$y][$x] = array_rand($colors);
-	}
-}
 
 ?>
 <!doctype html>
@@ -26,84 +16,88 @@ for ($y=0; $y < $size; $y++) {
 	<style>
 	td {
 		padding: 0;
-	}
-	td > a {
-		display: block;
 		width: 30px;
 		height: 30px;
+		background-color: var(--color, #eee);
 	}
 	</style>
 </head>
 
 <body>
-<?php
 
-echo '<table>';
-foreach ($map as $y => $row) {
-	echo '<tr>';
-	foreach ($row as $x => $color) {
-		echo '<td data-color="' . $colors[$color] . '" bgcolor="' . $colors[$color] . '"><a href="#"></a></td>';
-	}
-	echo '</tr>';
-}
-echo '</table>';
+<table><?= str_repeat('<tr>' . str_repeat('<td></td>', $size) . '</tr>', $size) ?></table>
 
-?>
-<p>Turns: <code id="turns">0</code> | <a id="restart" href="#">restart</a></p>
+<p>
+	Turns: <code id="turns">0</code> |
+	<a id="restart" href="#">restart</a> |
+	<a id="start" href="#">new game</a>
+</p>
 
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
-var cell1 = document.querySelector('td');
+var COLORS = <?= json_encode($colors) ?>;
+
+var cell1 = $('td');
 var turns = 0;
 var start = Date.now();
 
-document.querySelector('table').addEventListener('click', function(e) {
-	if (e.target.nodeName == 'A') {
-		e.preventDefault();
-		var cell = e.target.parentNode;
-		turns++;
+$('table').on('click', 'td', function(e) {
+	var cell = this;
 
-		document.querySelector('#turns').textContent = turns;
+	turns++;
+	$('#turns').textContent = turns;
 
-		// alert(cell.bgColor);
-		var color = cell.bgColor;
+	var color = getColor(cell);
 
-		// Find all adjacent `color` cells
-		var collection = [];
-		addAdjacents(collection, cell1, color);
-		// alert(collection.length);
-		for (var i=0; i<collection.length; i++) {
-			var ncell = collection[i];
-			ncell.bgColor = color;
-		}
+	var collection = [];
+	addAdjacents(collection, cell1, color);
+	collection.forEach(cell => setColor(cell, color));
 
-		if (collection.length == <?= $size * $size ?>) {
+	if (collection.length == <?= $size * $size ?>) {
+		setTimeout(function() {
+			alert('You win!, in ' + turns + ' turns.');
 			setTimeout(function() {
-				alert('You win!, in ' + turns + ' turns.');
-				setTimeout(function() {
-					location.reload();
-				}, 600);
-			}, 50);
+				startGame();
+			}, 600);
+		}, 50);
 
-			Game.saveScore({
-				time: Math.round((Date.now() - start) / 1000),
-				moves: turns,
-				level: <?= $size ?>,
-			});
-		}
+		Game.saveScore({
+			time: Math.round((Date.now() - start) / 1000),
+			moves: turns,
+			level: <?= $size ?>,
+		});
 	}
 });
 
-document.querySelector('#restart').addEventListener('click', function(e) {
+$('#restart').addEventListener('click', function(e) {
 	e.preventDefault();
 
-	[].forEach.call(document.querySelectorAll('td'), function(cell) {
-		cell.bgColor = cell.dataset.color;
-	});
+	$$('td').forEach(cell => setColor(cell, cell.dataset.color));
 
-	document.querySelector('#turns').textContent = String(turns = 0);
+	$('#turns').textContent = String(turns = 0);
 });
+
+$('#start').addEventListener('click', function(e) {
+	e.preventDefault();
+
+	startGame();
+});
+
+function startGame() {
+	$$('td').forEach(cell => {
+		cell.dataset.color = setColor(cell, COLORS[parseInt(Math.random() * COLORS.length)]);
+	});
+	$('#turns').textContent = String(turns = 0);
+}
+
+function getColor(cell) {
+	return cell.style.getPropertyValue('--color');
+}
+
+function setColor(cell, color) {
+	return cell.style.setProperty('--color', color), color;
+}
 
 function addAdjacents(collection, cell, color) {
 	var x = cell.cellIndex;
@@ -117,7 +111,7 @@ function addAdjacents(collection, cell, color) {
 		var dir = dirs[i];
 		if (grid.rows[y + dir[1]] && grid.rows[y + dir[1]].cells[x + dir[0]]) {
 			var adj = grid.rows[y + dir[1]].cells[x + dir[0]];
-			if (adj.bgColor == cell.bgColor || adj.bgColor == color) {
+			if (getColor(adj) == getColor(cell) || getColor(adj) == color) {
 				if (collection.indexOf(adj) == -1) {
 					addAdjacents(collection, adj, color);
 				}
@@ -125,4 +119,6 @@ function addAdjacents(collection, cell, color) {
 		}
 	}
 }
+
+setTimeout(startGame);
 </script>
