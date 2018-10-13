@@ -241,14 +241,14 @@ var _LEVEL = 1;
 
 		var cons = JSON.parse(JSON.stringify(connectors));
 
-		var first = Connector.fromString(cons[0]);
-		delete cons[0];
+		var first = Connector.fromString(cons.shift());
 
 		var slither = [first];
 
 		var last = first, next;
 		while ( true ) {
-			next = last.findNextIn(cons);
+			var mustHave = slither.length == 1 ? 2 : 1;
+			next = last.findNextIn(cons, mustHave);
 
 			// No next => end of slither => win or lose
 			if ( !next ) {

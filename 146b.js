@@ -93,13 +93,13 @@ r.extend(Connector, {
 		var cons = cons1.concat(cons2);
 		return cons;
 	},
-	findNextIn: function(cons) {
+	findNextIn: function(cons, mustHave) {
 		var neighbors = this.getNeighborStrings();
 		var nexts = cons.intersect(neighbors);
-		if ( nexts.length ) {
+		if ( nexts.length == mustHave ) {
 			var next = nexts[0];
 			var nextIndex = cons.indexOf(next);
-			delete cons[nextIndex];
+			cons.splice(nextIndex, 1);
 			return Connector.fromString(next);
 		}
 	},
