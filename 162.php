@@ -1,11 +1,16 @@
+<?php
+
+require __DIR__ . '/inc.bootstrap.php';
+
+?>
 <!DOCTYPE>
-<html manifest="162.manifest">
+<html>
 
 <head>
-<title>Game # 162</title>
-<script src="/js/mootools_1_11.js"></script>
-<link rel="stylesheet" href="162.css" />
-<script src="162.js"></script>
+<title>Marbles</title>
+<script src="<?= html_asset('js/mootools_1_11.js') ?>"></script>
+<link rel="stylesheet" href="<?= html_asset('162.css') ?>" />
+<script src="<?= html_asset('162.js') ?>"></script>
 <script>var level = <?php echo isset($_GET['level']) ? (int)$_GET['level'] : 1; ?>;</script>
 </head>
 

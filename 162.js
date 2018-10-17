@@ -1,6 +1,6 @@
 
 var width = 8, height = 6, types = 8;
-var colors = function(){ return level+2 };
+var colors = function(){ return level+1; };
 
 Function.extend({
 	repeat: function(n, args) {
@@ -63,9 +63,10 @@ function blockClicked(block) {
 		var ec = Sizzle('.column:empty'), i = ec.length;
 		while ( i-- ) ec[i].remove();
 		if ( 1 == $('frame').childNodes.length ) {
-			alert('Congratz');
-			document.location.reload();
-//			document.location = '?level=' + (level+1);
+			setTimeout(function() {
+				alert('Congratz');
+				document.location.reload();
+			}, 60);
 			return true;
 		}
 		resetNumbers();
