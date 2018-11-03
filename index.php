@@ -125,10 +125,10 @@ $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 ?>
 <!doctype html>
 <html lang="en">
-<!-- { server: <?= $_SERVER['SERVER_ADDR'] ?> } -->
 
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#333" />
 <meta charset="utf-8" />
 <title><?= strtoupper($_SERVER['HTTP_HOST']) ?></title>
 <style>
