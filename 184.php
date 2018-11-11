@@ -134,38 +134,33 @@ class Block3xSolver {
 
 		console.time('runAll');
 
-		const finish = result => {
-			console.timeEnd('runAll');
-			console.log('Runs', runs);
-			return result;
-		};
-
-		// @todo Make number of moves variable
-
-		let runs = 0;
-		for ( let i1 = 0; i1 < switches.length; i1++ ) {
-			const move1 = switches[i1];
-
-			for ( let i2 = 0; i2 < switches.length; i2++ ) {
-				const move2 = switches[i2];
-
-				for ( let i3 = 0; i3 < switches.length; i3++ ) {
-					const move3 = switches[i3];
-					const run = [move1, move2, move3];
-
-					const ran = this.runOne(run);
-					if ( ran != RUN_INCOMPLETE ) {
-						runs++;
-
-						if ( ran == RUN_WIN ) {
-							return finish(run);
-						}
-					}
-				}
-			}
+		const moveNames = [];
+		var code = ['let runs = 0;'];
+		for ( let m = 1; m <= moves; m++ ) {
+			code.push(`for ( let i${m} = 0; i${m} < switches.length; i${m}++ ) {`);
+			code.push(`	const move${m} = switches[i${m}];`);
+			moveNames.push(`move${m}`);
 		}
+		code.push(`const run = [${moveNames.join(', ')}];`);
+		code.push(`const ran = solver.runOne(run);`);
+		code.push(`if ( ran != RUN_INCOMPLETE ) {`);
+		code.push(`	runs++;`);
+		code.push(`	if ( ran == RUN_WIN ) {`);
+		code.push(`		return [runs, run];`);
+		code.push(`	}`);
+		code.push(`}`);
+		for ( let m = 1; m <= moves; m++ ) {
+			code.push('}');
+		}
+		code.push(`return [runs, null];`);
 
-		return finish();
+		const fn = new Function('solver', 'switches', code.join('\n'));
+
+		const [runs, run] = fn(this, switches);
+
+		console.timeEnd('runAll');
+		console.log('Runs', runs);
+		return run;
 	}
 
 	copyGrid() {
@@ -313,7 +308,7 @@ class Block3xUI {
 
 		var html = this.makeHtml(grid);
 
-		html += ' Moves: <input type="number" value="3" min="1" disabled /> <button>Solve</button>';
+		html += ' Moves: <input type="number" value="3" min="1" /> <button>Solve</button>';
 
 		this.input.setHTML(html);
 
