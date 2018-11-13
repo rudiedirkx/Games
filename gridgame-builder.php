@@ -98,6 +98,7 @@ function exportLevel() {
 		}
 		catch ( ex ) {
 			alert(ex);
+			throw ex;
 		}
 	});
 }

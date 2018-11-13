@@ -505,7 +505,13 @@ class GridGameEditor extends GridGame {
 
 	createEditor() {
 		this.createMap(12, 12);
+		this.fixMapSize();
 		this.createCellTypes();
+	}
+
+	fixMapSize() {
+		const td = this.m_objGrid.closest('td');
+		td.style.minWidth = parseInt(parseFloat(getComputedStyle(td).width) + 5) + 'px';
 	}
 
 	cellTypes() {

@@ -114,9 +114,8 @@ class F1RacerEditor extends GridGameEditor {
 		this.m_fnPathingResolver = null;
 	}
 
-	createEditor() {
-		this.createMap(20, 10);
-		this.createCellTypes();
+	createMap() {
+		super.createMap(20, 10);
 	}
 
 	cellTypes() {
@@ -179,7 +178,7 @@ console.log('Got manual resolution!', cell, this.m_fnPathingResolver);
 	}
 
 	getNextTrackCell( track ) {
-		var DELAY = 100;
+		var DELAY = 50;
 
 		return new Promise((resolve) => {
 			var current = track[track.length - 1];
@@ -239,6 +238,8 @@ console.log('Got manual resolution!', cell, this.m_fnPathingResolver);
 
 	exportLevel() {
 		var start = this.getStart();
+		if ( !start ) return alert('Need START cell');
+
 		return this.resolveTrack(new Elements([start])).then((track) => {
 			this.m_objGrid
 				.getElements('.done, .choose-path, .choosing-path')

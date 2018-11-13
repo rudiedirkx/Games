@@ -38,7 +38,7 @@ table.inside {
 	width				: var(--inside-cell);
 	height				: var(--inside-cell);
 	line-height			: var(--inside-cell);
-	border				: solid 1px #eee;
+	border				: solid 1px #ddd;
 	text-align			: center;
 }
 #building-blocks td:nth-child(2) {

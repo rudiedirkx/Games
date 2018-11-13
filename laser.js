@@ -453,7 +453,7 @@ class LaserEditor extends GridGameEditor {
 	}
 
 	createMap() {
-		return super.createMap(7, 7);
+		super.createMap(7, 7);
 	}
 
 	createdMap() {
