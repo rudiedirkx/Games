@@ -1,9 +1,13 @@
 <?php
 // MINESWEEPER
 
+require_once __DIR__ . '/inc.minesweeper.php';
 require __DIR__ . '/inc.bootstrap.php';
 
 session_start();
+
+isset($minesweeper) or $minesweeper = new MinesweeperMaker();
+isset($title) or $title = 'MINESWEEPER';
 
 if ( isset($_GET['dump']) ) {
 	header('Content-type: text/plain; charset=utf-8');
@@ -56,7 +60,6 @@ if ( isset($_POST['fetch_map'], $_POST['field']) ) {
 	}
 
 	$arrLevel = $_FIELDS[ $_POST['field'] ];
-	// $_SESSION[S_NAME]['sessions'][SESSION]['map'] = create_map($arrLevel['sides'][0], $arrLevel['sides'][1], $arrLevel['mines']);
 	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = array();
 	$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = 0;
 	$_SESSION[S_NAME]['sessions'][SESSION]['field'] = $_POST['field'];
@@ -84,7 +87,7 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	// Create map & start timer
 	if ( !$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] ) {
 		$arrLevel = $_FIELDS[ $_SESSION[S_NAME]['sessions'][SESSION]['field'] ];
-		$_SESSION[S_NAME]['sessions'][SESSION]['map'] = create_map(
+		$_SESSION[S_NAME]['sessions'][SESSION]['map'] = $minesweeper->create_map(
 			$arrLevel['sides'][0],
 			$arrLevel['sides'][1],
 			$arrLevel['mines'],
@@ -122,7 +125,7 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	else if ( 0 === $f ) {
 		$arrUpdates[] = array($f_x, $f_y, $f);
 		// Find surrounders, surrounders' surrounders, etc
-		click_on_surrounders($arrUpdates, $f_x, $f_y);
+		$minesweeper->click_on_surrounders($arrUpdates, $f_x, $f_y);
 	}
 
 	// OPEN SINGLE cell
@@ -165,7 +168,7 @@ if ( $_SERVER['REQUEST_METHOD'] != 'GET' ) {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MINESWEEPER</title>
+<title><?= $title ?></title>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('102.js') ?>"></script>
 <link rel="stylesheet" href="<?= html_asset('102.css') ?>" />
@@ -283,62 +286,3 @@ $('#ms_tbody')
 
 </html>
 <?php
-
-function create_map( $f_width, $f_height, $f_m, $f_x = null, $f_y = null ) {
-	$arrMap = array_fill(0, $f_height, array_fill(0, $f_width, 0));
-
-	$iMines = 0;
-	while ( $iMines < $f_m ) {
-		$x = rand(0, $f_width-1);
-		$y = rand(0, $f_height-1);
-		if ( 'm' !== $arrMap[$y][$x] ) {
-			$arrMap[$y][$x] = 'm';
-			surrounders_plus_one($arrMap, $x, $y);
-			$iMines++;
-		}
-	}
-
-	// I clicked something and that must be a 0
-	if ( $f_x !== null && $f_y !== null && isset($arrMap[$f_y][$f_x]) ) {
-		$tile = $arrMap[$f_y][$f_x];
-		if ( $tile !== 0 ) {
-			return create_map($f_width, $f_height, $f_m, $f_x, $f_y);
-		}
-	}
-
-	return $arrMap;
-}
-
-function surrounders() {
-	return array(
-		array(0, -1),
-		array(1, -1),
-		array(1, 0),
-		array(1, 1),
-		array(0, 1),
-		array(-1, 1),
-		array(-1, 0),
-		array(-1, -1),
-	);
-}
-
-function surrounders_plus_one(&$f_map, $f_x, $f_y) {
-	foreach ( surrounders() AS $d ) {
-		if ( isset($f_map[$f_y+$d[0]][$f_x+$d[1]]) && 'm' !== $f_map[$f_y+$d[0]][$f_x+$d[1]] ) {
-			$f_map[$f_y+$d[0]][$f_x+$d[1]]++;
-		}
-	}
-}
-
-function click_on_surrounders(&$arrUpdates, $f_x, $f_y) {
-	foreach ( surrounders() AS $d ) {
-		if ( isset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]]) ) {
-			$f = $_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]];
-			$arrUpdates[] = array($f_x+$d[1], $f_y+$d[0], $f);
-			unset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y+$d[0]][$f_x+$d[1]]);
-			if ( 0 === $f ) {
-				click_on_surrounders($arrUpdates, $f_x+$d[1], $f_y+$d[0]);
-			}
-		}
-	}
-}
