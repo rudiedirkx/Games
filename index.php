@@ -97,8 +97,9 @@ $g_arrGames = array(
 	['178B',			'Laser - Editor',								'Create your own Laser level'],
 	['179',				'Pythagorea',									'As seen on and stolen from the Play store'],
 	['181',				'ZHOR',											'As seen on and stolen from the Play store'],
-	['181B',			'ZHOR',											'Create your own ZHOR level'],
+	['181B',			'ZHOR - Editor',								'Create your own ZHOR level'],
 	['183',				'Fallout Hacking Helper',						'Cheat with Fallout hacking'],
+	['184',				'BLOCK 3x Solver',								'Because BLOCK 3x is too hard...'],
 );
 
 $g_iHeight = ceil(count($g_arrGames)/$g_iWidth);

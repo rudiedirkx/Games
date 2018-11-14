@@ -22,6 +22,14 @@ class Zhor extends LeveledGridGame {
 	}
 
 	createdMap( rv ) {
+		/*if ( !$('#solve') ) {
+			document.el('p', {id: 'solve'}).setHTML('<a href="#">Solve</a>').appendTo($('#level-header').parentNode);
+			$('#solve > a').on('click', e => {
+				e.preventDefault();
+
+				ZhorSolver.solveFromPage();
+			});
+		}*/
 	}
 
 	listenControls() {
@@ -204,3 +212,50 @@ class ZhorEditor extends GridGameEditor {
 	}
 
 }
+
+class ZhorSolver {
+
+	static createGrid(table) {
+		return table.getElements('tr').map(tr => {
+			return tr.getElements('td').map(td => {
+				return td.hasClass('target') ? -1 : (parseInt(td.dataset.source) || 0);
+			});
+		});
+	}
+
+	static solveFromPage() {
+		const grid = this.createGrid($('#grid'));
+		console.log('grid', grid);
+		const solver = new this(grid);
+		console.log(solver);
+	}
+
+	constructor(grid) {
+		this.grid = grid;
+		this.H = this.grid.length;
+		this.W = this.grid[0].length;
+		this.moves = this.makeMoves();
+	}
+
+	makeMoves() {
+		// @todo Make every N move every way it has room to
+		// - 7 Ns
+		// - 4 directions each
+		// - 7! = 5040 orders of 7
+		// - moves = 4^7 * 5040 = 8.8M ?
+
+		return [];
+	}
+
+}
+
+/*(function() {
+	const solver = new ZhorSolver([
+		[0,0,0,0,0],
+		[0,0,1,0,0],
+		[0,1,0,-1,0],
+		[0,0,0,0,0],
+		[0,0,0,0,0],
+	]);
+	console.log(solver);
+})();*/
