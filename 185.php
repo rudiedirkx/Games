@@ -18,9 +18,7 @@ require __DIR__ . '/inc.bootstrap.php';
 table {
 	border-collapse: collapse;
 	display: inline-block;
-}
-table + table {
-	margin-left: .5em;
+	margin-right: .5em;
 }
 td {
 	width: 30px;
@@ -245,7 +243,7 @@ function solve(width, height, objects) {
 		const solver = new TetrisSolver(width, height, objects);
 		console.log(solver);
 		console.time('solve');
-		const shapes = solver.tryRandoms(50000).then(([iterations, placements]) => {
+		const shapes = solver.tryRandoms(99999).then(([iterations, placements]) => {
 			console.timeEnd('solve');
 			console.log('solution in', iterations, 'iterations:', placements);
 			if ( placements) {
