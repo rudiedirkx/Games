@@ -23,7 +23,7 @@ if (isset($_POST['cheat'])) {
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>PICROSS <?= $levelName ?></title>
-	<link rel="stylesheet" href="119.css" />
+	<link rel="stylesheet" href="<?= html_asset('119.css') ?>" />
 </head>
 
 <body>
