@@ -26,10 +26,20 @@ canvas {
 
 <canvas></canvas>
 
-<div id="cars"></div>
+<div id="cars">
+	<button id="all">Move all</button>
+	<button id="auto">Start/stop</button>
+	<button id="add">+car</button>
+	<input id="speed" type="range" min="20" max="500" value="50" />
+</div>
 
 <script>
 "use strict";
+
+var $all = document.querySelector('#all');
+var $auto = document.querySelector('#auto');
+var $add = document.querySelector('#add');
+var $speed = document.querySelector('#speed');
 
 var world;
 
@@ -43,24 +53,32 @@ window.onload = function() {
 			new Traffic.Square('rdl', 'd'),
 			new Traffic.Square('rdl', 'd'),
 			new Traffic.Square('dl'),
+			new Traffic.Square('dr'),
+			new Traffic.Square('ld'),
 		],
 		[
 			new Traffic.Square('urd'),
 			new Traffic.Square('urdl', 'rl'),
 			new Traffic.Square('udl'),
-			new Traffic.Square('u'),
+			new Traffic.Square('ur'),
+			new Traffic.Square('lur'),
+			new Traffic.Square('lud'),
 		],
 		[
 			new Traffic.Square('ud'),
 			new Traffic.Square('ud'),
 			new Traffic.Square('urd', 'urd'),
-			new Traffic.Square('dl'),
+			new Traffic.Square('dlr'),
+			new Traffic.Square('ld'),
+			new Traffic.Square('ud'),
 		],
 		[
 			new Traffic.Square('url', 'ur'),
 			new Traffic.Square('url'),
 			new Traffic.Square('url'),
 			new Traffic.Square('ul'),
+			new Traffic.Square('ur'),
+			new Traffic.Square('lu'),
 		],
 	]);
 
@@ -92,28 +110,32 @@ window.onload = function() {
 		world.change = true;
 	}
 
-	addCarButton('All', function(e) {
+	$all.focus();
+	$all.onclick = function(e) {
 		moveAllCars();
-	}).autofocus = 1;
+	};
 
-	var timer = 0;
-	addCarButton('Start/stop', function(e) {
-		if ( timer ) {
-			clearInterval(timer);
-			timer = 0;
-		}
-		else {
-			timer = setInterval(() => moveAllCars(), 40);
-			moveAllCars();
-		}
-	});//.click();
+	var moving = false;
+	function keepMoving() {
+		moving && moveAllCars();
 
-	world.cars.forEach(function(car, i) {
-		addCarButton('Car ' + (i+1), (e) => {
-			car.move();
-			world.change = true;
-		});
-	});
+		setTimeout(keepMoving, $speed.value);
+	}
+	keepMoving();
+	$auto.onclick = function(e) {
+		moving = !moving;
+	};
+
+	$add.onclick = function(e) {
+		world.addCar(new Coords2D(0, 0), 'l', 0);
+	};
+
+	// world.cars.forEach(function(car, i) {
+	// 	addCarButton('Car ' + (i+1), (e) => {
+	// 		car.move();
+	// 		world.change = true;
+	// 	});
+	// });
 
 
 
