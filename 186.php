@@ -44,6 +44,11 @@ td[data-color="off"] {
 
 <table class="inside" id="grid"></table>
 
+<p>
+	<button id="restart">Restart</button>
+	<button id="newgame">New game</button>
+</p>
+
 <script>
 objGame = new Ohhi($('#grid'));
 objGame.createMap(<?= $_GET['size'] ?? '6' ?>);

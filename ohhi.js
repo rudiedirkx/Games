@@ -177,6 +177,15 @@ class Ohhi extends GridGame {
 
 	listenControls() {
 		this.listenCellClick();
+
+		$('#restart').on('click', e => {
+			this.m_objGrid.getElements('td[data-color]:not([data-initial])').attr('data-color', null);
+		});
+
+		$('#newgame').on('click', e => {
+			const size = this.m_objGrid.getElements('tr').length;
+			this.createMap(size);
+		});
 	}
 
 	createStats() {
