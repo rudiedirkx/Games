@@ -13,7 +13,7 @@ $build->hide();
 <meta charset="utf-8" />
 <title>0h h1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- <script>window.onerror = function(e) { alert(e); };</script> -->
+<script>window.onerror = function(e) { alert(e); };</script>
 <style>
 table {
 	border-spacing: 3px;
@@ -25,12 +25,16 @@ td {
 	width: 30px;
 	height: 30px;
 	background-color: #eee;
+	text-align: center;
+	vertical-align: middle;
 }
 td[data-color="on"] {
 	background-color: green;
+	color: lightseagreen;
 }
 td[data-color="off"] {
 	background-color: gold;
+	color: orange;
 }
 </style>
 </head>
@@ -220,7 +224,7 @@ class OhhiGrid {
 			foreach ($cells as $col => $value) {
 				$class = $value === null ? '' : ' data-color="' . ($value ? 'on' : 'off') . '" data-initial';
 				$html .= '<td' . $class . '>';
-				$html .= '';
+				$html .= $value === null ? '' : 'x';
 				$html .= '</td>';
 			}
 			$html .= '</tr>';
