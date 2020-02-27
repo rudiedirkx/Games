@@ -2,9 +2,17 @@
 
 define('THUMB_SIZE', 91);
 
+function is_local() {
+	return is_int(strpos($_SERVER['HTTP_HOST'], '.home'));
+}
+
+function is_mobile() {
+	return is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
+}
+
 function html_asset( $src ) {
-	$local = is_int(strpos($_SERVER['HTTP_HOST'], '.home'));
-	$mobile = is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
+	$local = is_local();
+	$mobile = is_mobile();
 	$buster = $local && !$mobile ? '' : '?_' . filemtime($src);
 	return $src . $buster;
 }
