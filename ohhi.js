@@ -2,6 +2,8 @@ class Ohhi extends GridGame {
 
 	constructor( gridElement ) {
 		super(gridElement);
+
+		this.checker = 0;
 	}
 
 	handleCellClick( cell ) {
@@ -17,6 +19,26 @@ class Ohhi extends GridGame {
 		else {
 			cell.dataset.color = 'on';
 		}
+
+		clearTimeout(this.checker);
+		this.checker = setTimeout(() => this.checkValid(), 500);
+	}
+
+	checkValid() {
+		console.log('checkValid');
+		const unset = this.m_objGrid.getElements('td:not([data-color])');
+		if ( unset.length > 0 ) {
+			return;
+		}
+
+		const grid = this.m_objGrid.getElements('tr').map(tr => {
+			return tr.getElements('td').map(td => td.dataset.color === 'on');
+		});
+		if ( !this.isValidGrid(grid) ) {
+			return;
+		}
+
+		alert('You win!');
 	}
 
 	createMap( size ) {
@@ -66,7 +88,8 @@ class Ohhi extends GridGame {
 				}
 
 				if ( row == size - 1 ) {
-					const line = grid.map(cells => cells[col]);
+					// const line = grid.map(cells => cells[col]);
+					const line = this.getLineCol(grid, col);
 					if ( !this.isValidLineDistribution(line) ) {
 						// console.log('restart col/grid at', col);
 						row = -1;
@@ -76,7 +99,8 @@ class Ohhi extends GridGame {
 				}
 
 				if ( row == size - 1 && col == size - 1 ) {
-					const rows = grid.map(cells => cells.join(''));
+					// const rows = grid.map(cells => cells.join(''));
+					const rows = this.getLineRows(grid);
 					if ( rows.unique().length != rows.length ) {
 						// console.log('restart grid (rows)');
 						row = -1;
@@ -84,7 +108,8 @@ class Ohhi extends GridGame {
 						break;
 					}
 
-					const cols = grid.map((x, col) => grid.map(row => row[col]).join(''));
+					// const cols = grid.map((x, col) => grid.map(row => row[col]).join(''));
+					const cols = this.getLineCols(grid);
 					if ( cols.unique().length != cols.length ) {
 						// console.log('restart grid (cols)');
 						row = -1;
@@ -95,7 +120,8 @@ class Ohhi extends GridGame {
 			}
 
 			if ( row != -1 ) {
-				const line = grid[row];
+				// const line = grid[row];
+				const line = this.getLineRow(grid, row);
 				if ( !this.isValidLineDistribution(line) ) {
 					// console.log('restart row at', row);
 					this.restartRow(grid[row]);
@@ -106,10 +132,11 @@ class Ohhi extends GridGame {
 
 		console.timeEnd('createMap');
 
-		// this.debugGrid(grid);
+		console.log('valid grid', this.isValidGrid(grid));
 
-		// @todo Hide 60 % of values
+		// this.m_objGrid.setHTML(this.createMapHtml(grid));
 
+		// Hide 60 % of values
 		const playableGrid = grid.map(cells => cells.map(value => Math.random() > 0.6 ? value : null))
 		this.m_objGrid.setHTML(this.createMapHtml(playableGrid));
 	}
@@ -126,8 +153,57 @@ class Ohhi extends GridGame {
 		grid.forEach(cells => cells.fill(null));
 	}
 
+	isValidGrid(grid) {
+		for ( let i = 0; i < grid.length; i++ ) {
+			if ( !this.isValidLineDistribution(this.getLineRow(grid, i)) ) {
+				return false;
+			}
+
+			if ( !this.isValidLineDistribution(this.getLineCol(grid, i)) ) {
+				return false;
+			}
+		}
+
+		const rows = this.getLineRows(grid);
+		if ( rows.unique().length != rows.length ) {
+			return false;
+		}
+
+		const cols = this.getLineCols(grid);
+		if ( cols.unique().length != cols.length ) {
+			return false;
+		}
+
+		return true;
+	}
+
 	isValidLineDistribution(line) {
-		return line.map(n => Number(n)).join('').replace(/0/g, '').length == line.length / 2;
+		// return line.map(n => Number(n)).join('').replace(/0/g, '').length == line.length / 2;
+		if ( line.replace(/0/g, '').length != line.length / 2 ) {
+			return false;
+		}
+
+		if ( line.match(/(000|111)/) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	getLineRow(grid, y) {
+		return grid[y].map(val => Number(val)).join('');
+	}
+
+	getLineRows(grid) {
+		return grid.map((x, i) => this.getLineRow(grid, i));
+	}
+
+	getLineCol(grid, x) {
+		return grid.map(cells => cells[x]).map(val => Number(val)).join('');
+	}
+
+	getLineCols(grid) {
+		return grid.map((x, i) => this.getLineCol(grid, i));
 	}
 
 	getOneAsNum(grid, x, y) {
