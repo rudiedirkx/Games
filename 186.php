@@ -47,6 +47,7 @@ td[data-color="off"] {
 <p>
 	<button id="restart">Restart</button>
 	<button id="newgame">New game</button>
+	<span id="sizes"></span>
 </p>
 
 <script>

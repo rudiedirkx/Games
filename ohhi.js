@@ -41,6 +41,22 @@ class Ohhi extends GridGame {
 		alert('You win!');
 	}
 
+	createGame() {
+		this.createSizes();
+	}
+
+	createSizes() {
+		const sizes = [4, 6, 8, 10];
+
+		const parent = $('#sizes');
+		parent.append('Size: ');
+		sizes.forEach(size => {
+			const el = document.el('a', {href: '#'}).data('size', size).setText(size);
+			parent.append(el);
+			parent.append(' ');
+		});
+	}
+
 	createMap( size ) {
 		const grid = (new Array(size)).fill(0).map(row => (new Array(size)).fill(null));
 
@@ -136,13 +152,16 @@ class Ohhi extends GridGame {
 
 		// this.m_objGrid.setHTML(this.createMapHtml(grid));
 
-		// Hide 60 % of values
-		const playableGrid = grid.map(cells => cells.map(value => Math.random() > 0.6 ? value : null))
+		const playableGrid = this.hideCellsPlayable(grid);
 		this.m_objGrid.setHTML(this.createMapHtml(playableGrid));
 	}
 
 	debugGrid(grid) {
 		console.log(grid.map(row => row.map(val => val === null ? '_' : Number(val)).join(' ')).join("\n"));
+	}
+
+	hideCellsPlayable(grid) {
+		return grid.map(cells => cells.map(value => Math.random() > 0.6 ? value : null));
 	}
 
 	restartRow(cells) {
@@ -260,6 +279,13 @@ class Ohhi extends GridGame {
 
 		$('#newgame').on('click', e => {
 			const size = this.m_objGrid.getElements('tr').length;
+			this.createMap(size);
+		});
+
+		$('#sizes').on('click', 'a[data-size]', e => {
+			e.preventDefault();
+
+			const size = Number(e.target.data('size'));
 			this.createMap(size);
 		});
 	}
