@@ -261,7 +261,7 @@ class Ohhi extends GridGame {
 			for ( let col = 0; col < size; col++ ) {
 				const n = grid[row][col];
 				const attr = n === null ? '' : ` data-initial data-color="${n ? 'on' : 'off'}"`;
-				html += `<td${attr}></td>`;
+				html += `<td${attr}>${n===null?'':'x'}</td>`;
 			}
 			html += '</tr>';
 		}
@@ -299,6 +299,8 @@ class Ohhi extends GridGame {
 		for (let found of solver.findMustBes()) {
 			this.m_objGrid.rows[found.y].cells[found.x].dataset.color = found.color ? 'on' : 'off';
 		}
+
+		setTimeout(() => this.checkValid(), 50);
 	}
 
 	createStats() {
@@ -389,12 +391,48 @@ class OhhiSolver {
 				}
 			}
 		}
+
+		for ( let y = 0; y < this.size; y++ ) {
+			const line = this.getLineRow(y);
+			const no0 = line.replace(/[0_]/g, '').length;
+			const no1 = line.replace(/[1_]/g, '').length;
+			if (no0 == this.size / 2 && no1 < no0) {
+				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(i, y, 0) : null).filter(v => v != null);
+				yield* founds;
+			}
+			if (no1 == this.size / 2 && no0 < no1) {
+				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(i, y, 1) : null).filter(v => v != null);
+				yield* founds;
+			}
+		}
+
+		for ( let x = 0; x < this.size; x++ ) {
+			const line = this.getLineCol(x);
+			const no0 = line.replace(/[0_]/g, '').length;
+			const no1 = line.replace(/[1_]/g, '').length;
+			if (no0 == this.size / 2 && no1 < no0) {
+				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(x, i, 0) : null).filter(v => v != null);
+				yield* founds;
+			}
+			if (no1 == this.size / 2 && no0 < no1) {
+				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(x, i, 1) : null).filter(v => v != null);
+				yield* founds;
+			}
+		}
 	}
 
 	coordWithColor(x, y, color) {
 		const C = new Coords2D(x, y);
 		C.color = color;
 		return C;
+	}
+
+	getLineRow(y) {
+		return this.grid[y].map(val => val ?? '_').join('');
+	}
+
+	getLineCol(x) {
+		return this.grid.map(cells => cells[x]).map(val => val ?? '_').join('');
 	}
 
 }
