@@ -288,6 +288,17 @@ class Ohhi extends GridGame {
 			const size = Number(e.target.data('size'));
 			this.createMap(size);
 		});
+
+		$('#cheat').on('click', e => {
+			this.cheatOneRound();
+		});
+	}
+
+	cheatOneRound() {
+		const solver = OhhiSolver.fromDom(this.m_objGrid);
+		for (let found of solver.findMustBes()) {
+			this.m_objGrid.rows[found.y].cells[found.x].dataset.color = found.color ? 'on' : 'off';
+		}
 	}
 
 	createStats() {
@@ -297,6 +308,93 @@ class Ohhi extends GridGame {
 	}
 
 	setMoves( moves ) {
+	}
+
+}
+
+class OhhiSolver {
+
+	static fromDom(table) {
+		const map = {"on": 1, "off": 0};
+		const grid = table.getElements('tr').map(tr => {
+			return tr.getElements('td').map(td => map[td.dataset.color] ?? null);
+		});
+		return new this(grid);
+	}
+
+	constructor(grid) {
+		this.size = grid.length;
+		this.grid = grid;
+
+		this.threeStarts = this.grid.map((cells, y) => cells.map((val, x) => new Coords2D(x, y))).flat(1);
+	}
+
+	findMustBe() {
+		for (let end of this.findMustBes()) {
+			return end;
+		}
+	}
+
+	*findMustBes() {
+		const seen = [];
+		const haveSeen = (x, y) => {
+			const C = `${x}-${y}`;
+			if (!seen.includes(C)) {
+				seen.push(C);
+				return false;
+			}
+			return true;
+		};
+
+		for ( let C of this.threeStarts ) {
+			const s = this.grid[C.y][C.x];
+
+			if (C.x <= this.size - 3) {
+				const r1 = this.grid[C.y][C.x+1];
+				const r2 = this.grid[C.y][C.x+2];
+				if (r1 != null && s == null && r1 == r2) {
+					if (!haveSeen(C.x, C.y)) {
+						yield this.coordWithColor(C.x, C.y, Number(!r1));
+					}
+				}
+				if (s != null && s == r2 && r1 == null) {
+					if (!haveSeen(C.x+1, C.y)) {
+						yield this.coordWithColor(C.x+1, C.y, Number(!s));
+					}
+				}
+				if (r1 != null && s == r1 && r2 == null) {
+					if (!haveSeen(C.x+2, C.y)) {
+						yield this.coordWithColor(C.x+2, C.y, Number(!r1));
+					}
+				}
+			}
+
+			if (C.y <= this.size - 3) {
+				const b1 = this.grid[C.y+1][C.x];
+				const b2 = this.grid[C.y+2][C.x];
+				if (b1 != null && s == null && b1 == b2) {
+					if (!haveSeen(C.x, C.y)) {
+						yield this.coordWithColor(C.x, C.y, Number(!b1));
+					}
+				}
+				if (s != null && s == b2 && b1 == null) {
+					if (!haveSeen(C.x, C.y+1)) {
+						yield this.coordWithColor(C.x, C.y+1, Number(!s));
+					}
+				}
+				if (b1 != null && s == b1 && b2 == null) {
+					if (!haveSeen(C.x, C.y+2)) {
+						yield this.coordWithColor(C.x, C.y+2, Number(!b1));
+					}
+				}
+			}
+		}
+	}
+
+	coordWithColor(x, y, color) {
+		const C = new Coords2D(x, y);
+		C.color = color;
+		return C;
 	}
 
 }
