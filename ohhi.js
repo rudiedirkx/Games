@@ -41,6 +41,35 @@ class Ohhi extends GridGame {
 		alert('You win!');
 	}
 
+	createFromExport(chars) {
+		const size = Math.sqrt(chars.length);
+		if (Math.ceil(size) != Math.floor(size)) {
+			return false;
+		}
+
+		const grid = [];
+		for ( let i = 0; i < chars.length; i++ ) {
+			const C = chars[i];
+			if (!grid[0] || grid[grid.length-1].length == size) {
+				grid.push([]);
+			}
+			grid[grid.length-1].push(C === '_' ? null : (parseInt(C) & 1) == 1);
+		}
+
+		this.m_objGrid.setHTML(this.createMapHtml(grid, false));
+		const cells = this.m_objGrid.getElements('td');
+		for ( let i = 0; i < chars.length; i++ ) {
+			const val = parseInt(chars[i]);
+console.log(val);
+			if (!isNaN(val) && (val & 2) == 2) {
+console.log(cells[i]);
+				cells[i].dataset.initial = '';
+			}
+		}
+
+		return true;
+	}
+
 	createGame() {
 		this.createSizes();
 	}
@@ -251,8 +280,10 @@ class Ohhi extends GridGame {
 		return Math.random() > 0.5;
 	}
 
-	createMapHtml( grid ) {
+	createMapHtml(grid, initial = true) {
 		const size = grid.length;
+
+		initial = initial ? ' data-initial' : '';
 
 		var html = '';
 		html += '<table>';
@@ -260,8 +291,8 @@ class Ohhi extends GridGame {
 			html += '<tr>';
 			for ( let col = 0; col < size; col++ ) {
 				const n = grid[row][col];
-				const attr = n === null ? '' : ` data-initial data-color="${n ? 'on' : 'off'}"`;
-				html += `<td${attr}>${n===null?'':'x'}</td>`;
+				const attr = n === null ? '' : `${initial} data-color="${n ? 'on' : 'off'}"`;
+				html += `<td${attr}><span>x</span></td>`;
 			}
 			html += '</tr>';
 		}
@@ -292,6 +323,17 @@ class Ohhi extends GridGame {
 		$('#cheat').on('click', e => {
 			this.cheatOneRound();
 		});
+
+		$('#export').on('click', e => {
+			location.hash = this.exportCurrent();
+		});
+	}
+
+	exportCurrent() {
+		const cells = this.m_objGrid.getElements('td').map(td => td.dataset);
+		const chars = cells.map(D => D.color == null ? '_' : Number(D.color == 'on') + (D.initial == null ? 0 : 2));
+console.log(chars);
+		return chars.join('');
 	}
 
 	cheatOneRound() {

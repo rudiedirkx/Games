@@ -33,6 +33,9 @@ td[data-color="off"] {
 	background-color: gold;
 	color: orange;
 }
+td:not([data-initial]) span {
+	display: none;
+}
 </style>
 <!-- <script>window.onerror = function(e) { alert(e); };</script> -->
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
@@ -48,12 +51,15 @@ td[data-color="off"] {
 	<button id="restart">Restart</button>
 	<button id="newgame">New game</button>
 	<span id="sizes"></span>
+</p>
+<p>
 	<button id="cheat">Cheat once</button>
+	<button id="export">Export to URL</button>
 </p>
 
 <script>
 objGame = new Ohhi($('#grid'));
-objGame.createMap(<?= $_GET['size'] ?? '6' ?>);
+objGame.createFromExport(location.hash.substr(1)) || objGame.createMap(<?= $_GET['size'] ?? '6' ?>);
 objGame.listenControls();
 </script>
 </body>
