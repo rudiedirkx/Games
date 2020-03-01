@@ -355,7 +355,7 @@ class OhhiSolver {
 	static fromDom(table) {
 		const map = {"on": 1, "off": 0};
 		const grid = table.getElements('tr').map(tr => {
-			return tr.getElements('td').map(td => map[td.dataset.color] ?? null);
+			return tr.getElements('td').map(td => map[td.dataset.color] == null ? null : map[td.dataset.color]);
 		});
 		return new this(grid);
 	}
@@ -508,11 +508,11 @@ console.log('found col match', x);
 	}
 
 	getLineRow(y) {
-		return this.grid[y].map(val => val ?? '_').join('');
+		return this.grid[y].map(val => val == null ? '_' : val).join('');
 	}
 
 	getLineCol(x) {
-		return this.grid.map(cells => cells[x]).map(val => val ?? '_').join('');
+		return this.grid.map(cells => cells[x]).map(val => val == null ? '_' : val).join('');
 	}
 
 	getLineRows() {
