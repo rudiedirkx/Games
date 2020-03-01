@@ -43,7 +43,7 @@ class Ohhi extends GridGame {
 
 	createFromExport(chars) {
 		const size = Math.sqrt(chars.length);
-		if (Math.ceil(size) != Math.floor(size)) {
+		if (!chars.match(/[_0123]+/) || Math.ceil(size) != Math.floor(size)) {
 			return false;
 		}
 
