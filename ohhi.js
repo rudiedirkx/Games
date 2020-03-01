@@ -25,7 +25,6 @@ class Ohhi extends GridGame {
 	}
 
 	checkValid() {
-		console.log('checkValid');
 		const unset = this.m_objGrid.getElements('td:not([data-color])');
 		if ( unset.length > 0 ) {
 			return;
@@ -60,9 +59,7 @@ class Ohhi extends GridGame {
 		const cells = this.m_objGrid.getElements('td');
 		for ( let i = 0; i < chars.length; i++ ) {
 			const val = parseInt(chars[i]);
-console.log(val);
 			if (!isNaN(val) && (val & 2) == 2) {
-console.log(cells[i]);
 				cells[i].dataset.initial = '';
 			}
 		}
@@ -176,8 +173,6 @@ console.log(cells[i]);
 		}
 
 		console.timeEnd('createMap');
-
-		console.log('valid grid', this.isValidGrid(grid));
 
 		// this.m_objGrid.setHTML(this.createMapHtml(grid));
 
@@ -332,7 +327,6 @@ console.log(cells[i]);
 	exportCurrent() {
 		const cells = this.m_objGrid.getElements('td').map(td => td.dataset);
 		const chars = cells.map(D => D.color == null ? '_' : Number(D.color == 'on') + (D.initial == null ? 0 : 2));
-console.log(chars);
 		return chars.join('');
 	}
 
@@ -434,8 +428,11 @@ class OhhiSolver {
 			}
 		}
 
+		const rows = this.getLineRows();
+		const cols = this.getLineCols();
+
 		for ( let y = 0; y < this.size; y++ ) {
-			const line = this.getLineRow(y);
+			const line = rows[y];
 			const no0 = line.replace(/[0_]/g, '').length;
 			const no1 = line.replace(/[1_]/g, '').length;
 			if (no0 == this.size / 2 && no1 < no0) {
@@ -449,7 +446,7 @@ class OhhiSolver {
 		}
 
 		for ( let x = 0; x < this.size; x++ ) {
-			const line = this.getLineCol(x);
+			const line = cols[x];
 			const no0 = line.replace(/[0_]/g, '').length;
 			const no1 = line.replace(/[1_]/g, '').length;
 			if (no0 == this.size / 2 && no1 < no0) {
@@ -459,6 +456,47 @@ class OhhiSolver {
 			if (no1 == this.size / 2 && no0 < no1) {
 				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(x, i, 1) : null).filter(v => v != null);
 				yield* founds;
+			}
+		}
+
+		if (seen.length) {
+			// Repeat previous tactics first
+			return;
+		}
+
+		for ( let y = 0; y < rows.length; y++ ) {
+			const line = rows[y];
+			if (line.replace(/[01]/g, '').length == 2) {
+				const re = new RegExp('^' + line.replace(/_/g, '([01])') + '$');
+				for ( let y2 = 0; y2 < rows.length; y2++ ) {
+					const match = rows[y2].match(re);
+					if (match) {
+console.log('found row match', y);
+						const x1 = line.indexOf('_');
+						const x2 = line.indexOf('_', x1+1);
+						yield this.coordWithColor(x1, y, Number(!Number(match[1])));
+						yield this.coordWithColor(x2, y, Number(!Number(match[2])));
+						break;
+					}
+				}
+			}
+		}
+
+		for ( let x = 0; x < cols.length; x++ ) {
+			const line = cols[x];
+			if (line.replace(/[01]/g, '').length == 2) {
+				const re = new RegExp('^' + line.replace(/_/g, '([01])') + '$');
+				for ( let x2 = 0; x2 < cols.length; x2++ ) {
+					const match = cols[x2].match(re);
+					if (match) {
+console.log('found col match', x);
+						const y1 = line.indexOf('_');
+						const y2 = line.indexOf('_', y1+1);
+						yield this.coordWithColor(x, y1, Number(!Number(match[1])));
+						yield this.coordWithColor(x, y2, Number(!Number(match[2])));
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -475,6 +513,14 @@ class OhhiSolver {
 
 	getLineCol(x) {
 		return this.grid.map(cells => cells[x]).map(val => val ?? '_').join('');
+	}
+
+	getLineRows() {
+		return this.grid.map((x, i) => this.getLineRow(i));
+	}
+
+	getLineCols() {
+		return this.grid.map((x, i) => this.getLineCol(i));
 	}
 
 }

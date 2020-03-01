@@ -53,7 +53,7 @@ td:not([data-initial]) span {
 	<span id="sizes"></span>
 </p>
 <p>
-	<button id="cheat">Cheat once</button>
+	<button id="cheat">Cheat</button>
 	<button id="export">Export to URL</button>
 </p>
 
