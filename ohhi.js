@@ -85,8 +85,12 @@ class Ohhi extends GridGame {
 		});
 	}
 
-	createMap( size ) {
-		const grid = (new Array(size)).fill(0).map(row => (new Array(size)).fill(null));
+	createEmptyGrid(size) {
+		return (new Array(size)).fill(0).map(row => (new Array(size)).fill(null));
+	}
+
+	createMap(size) {
+		const grid = this.createEmptyGrid(size);
 
 		console.time('createMap');
 
@@ -176,7 +180,7 @@ class Ohhi extends GridGame {
 
 		console.timeEnd('createMap');
 
-		// this.m_objGrid.setHTML(this.createMapHtml(grid));
+		// this.printGrid(grid);
 
 		console.time('make playable');
 		var playableGrid;
@@ -185,11 +189,15 @@ class Ohhi extends GridGame {
 		}
 		console.timeEnd('make playable');
 
-		this.m_objGrid.setHTML(this.createMapHtml(playableGrid));
+		this.printGrid(playableGrid);
 	}
 
 	debugGrid(grid) {
 		console.log(grid.map(row => row.map(val => val === null ? '_' : Number(val)).join(' ')).join("\n"));
+	}
+
+	printGrid(grid) {
+		this.m_objGrid.setHTML(this.createMapHtml(grid));
 	}
 
 	isPlayable(grid) {
