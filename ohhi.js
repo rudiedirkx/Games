@@ -54,7 +54,7 @@ class Ohhi extends GridGame {
 			if (!grid[0] || grid[grid.length-1].length == size) {
 				grid.push([]);
 			}
-			grid[grid.length-1].push(C === '_' ? null : (parseInt(C) & 1) == 1);
+			grid[grid.length-1].push(C === '_' ? null : Number((parseInt(C) & 1) == 1));
 		}
 
 		this.m_objGrid.setHTML(this.createMapHtml(grid, false));
@@ -108,7 +108,7 @@ class Ohhi extends GridGame {
 						break;
 					}
 					else {
-						grid[row][col] = false;
+						grid[row][col] = 0;
 					}
 				}
 				else if ( p2row == '00' ) {
@@ -120,15 +120,15 @@ class Ohhi extends GridGame {
 						break;
 					}
 					else {
-						grid[row][col] = true;
+						grid[row][col] = 1;
 					}
 				}
 				else {
 					if ( p2col == '11' ) {
-						grid[row][col] = false;
+						grid[row][col] = 0;
 					}
 					else if ( p2col == '00' ) {
-						grid[row][col] = true;
+						grid[row][col] = 1;
 					}
 					else {
 						grid[row][col] = this.makeOneRandom();
@@ -204,9 +204,7 @@ class Ohhi extends GridGame {
 		const solver = new OhhiSolver(grid);
 		while (true) {
 			const founds = Array.from(solver.findMustBes());
-			for (let found of founds) {
-				solver.grid[found.y][found.x] = Number(found.color);
-			}
+			solver.updateGrid(founds);
 
 			if (!founds.length) {
 				return solver.isPlayable();
@@ -304,7 +302,7 @@ class Ohhi extends GridGame {
 	}
 
 	makeOneRandom() {
-		return Math.random() > 0.5;
+		return Number(Math.random() > 0.5);
 	}
 
 	createMapHtml(grid, initial = true) {
@@ -401,6 +399,16 @@ class OhhiSolver {
 		this.grid = grid.map(cells => cells.map(val => val == null ? null : Number(val)));
 
 		this.threeStarts = this.constructor.makeCoords(this.grid);
+
+		this.seen = [];
+	}
+
+	updateGrid(founds) {
+		this.seen.length = 0;
+
+		for (let found of founds) {
+			this.grid[found.y][found.x] = Number(found.color);
+		}
 	}
 
 	getUnknowns() {
@@ -417,17 +425,16 @@ class OhhiSolver {
 		}
 	}
 
-	*findMustBes() {
-		const seen = [];
-		const haveSeen = (x, y) => {
-			const C = `${x}-${y}`;
-			if (!seen.includes(C)) {
-				seen.push(C);
-				return false;
-			}
-			return true;
-		};
+	haveSeen(x, y) {
+		const C = `${x}-${y}`;
+		if (!this.seen.includes(C)) {
+			this.seen.push(C);
+			return false;
+		}
+		return true;
+	}
 
+	*findFromAdjacentThrees() {
 		for ( let C of this.threeStarts ) {
 			const s = this.grid[C.y][C.x];
 
@@ -435,19 +442,13 @@ class OhhiSolver {
 				const r1 = this.grid[C.y][C.x+1];
 				const r2 = this.grid[C.y][C.x+2];
 				if (r1 != null && s == null && r1 == r2) {
-					if (!haveSeen(C.x, C.y)) {
-						yield this.coordWithColor(C.x, C.y, Number(!r1));
-					}
+					yield this.coordWithColor(C.x, C.y, !r1);
 				}
 				if (s != null && s == r2 && r1 == null) {
-					if (!haveSeen(C.x+1, C.y)) {
-						yield this.coordWithColor(C.x+1, C.y, Number(!s));
-					}
+					yield this.coordWithColor(C.x+1, C.y, !s);
 				}
 				if (r1 != null && s == r1 && r2 == null) {
-					if (!haveSeen(C.x+2, C.y)) {
-						yield this.coordWithColor(C.x+2, C.y, Number(!r1));
-					}
+					yield this.coordWithColor(C.x+2, C.y, !r1);
 				}
 			}
 
@@ -455,37 +456,37 @@ class OhhiSolver {
 				const b1 = this.grid[C.y+1][C.x];
 				const b2 = this.grid[C.y+2][C.x];
 				if (b1 != null && s == null && b1 == b2) {
-					if (!haveSeen(C.x, C.y)) {
-						yield this.coordWithColor(C.x, C.y, Number(!b1));
-					}
+					yield this.coordWithColor(C.x, C.y, !b1);
 				}
 				if (s != null && s == b2 && b1 == null) {
-					if (!haveSeen(C.x, C.y+1)) {
-						yield this.coordWithColor(C.x, C.y+1, Number(!s));
-					}
+					yield this.coordWithColor(C.x, C.y+1, !s);
 				}
 				if (b1 != null && s == b1 && b2 == null) {
-					if (!haveSeen(C.x, C.y+2)) {
-						yield this.coordWithColor(C.x, C.y+2, Number(!b1));
-					}
+					yield this.coordWithColor(C.x, C.y+2, !b1);
 				}
 			}
 		}
+	}
 
+	*findFromFulls() {
 		const rows = this.getLineRows();
 		const cols = this.getLineCols();
+
+		const makeFounds = (line, x, y, color) => {
+			return Array.from(line)
+				.map((v, i) => v == '_' ? this.coordWithColor(x ?? i, y ?? i, color) : null)
+				.filter(v => v != null);
+		};
 
 		for ( let y = 0; y < this.size; y++ ) {
 			const line = rows[y];
 			const no0 = line.replace(/[0_]/g, '').length;
 			const no1 = line.replace(/[1_]/g, '').length;
 			if (no0 == this.size / 2 && no1 < no0) {
-				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(i, y, 0) : null).filter(v => v != null);
-				yield* founds;
+				yield* makeFounds(line, null, y, false);
 			}
 			if (no1 == this.size / 2 && no0 < no1) {
-				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(i, y, 1) : null).filter(v => v != null);
-				yield* founds;
+				yield* makeFounds(line, null, y, true);
 			}
 		}
 
@@ -494,33 +495,17 @@ class OhhiSolver {
 			const no0 = line.replace(/[0_]/g, '').length;
 			const no1 = line.replace(/[1_]/g, '').length;
 			if (no0 == this.size / 2 && no1 < no0) {
-				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(x, i, 0) : null).filter(v => v != null);
-				yield* founds;
+				yield* makeFounds(line, x, null, false);
 			}
 			if (no1 == this.size / 2 && no0 < no1) {
-				const founds = Array.from(line).map((v, i) => v == '_' ? this.coordWithColor(x, i, 1) : null).filter(v => v != null);
-				yield* founds;
+				yield* makeFounds(line, x, null, true);
 			}
 		}
+	}
 
-		if (seen.length) {
-			// Repeat previous tactics first
-			return;
-		}
-
-		// for ( let y = 0; y < rows.length; y++ ) {
-		// 	const line = rows[y];
-		// 	if (line.replace(/[01]/g, '').length == 3 && line.match(/__/)) {
-		// 		console.log('three open in row', y, line);
-		// 		const m = line.match(/([01]?)__+([01]?)/);
-		// 		console.log(m);
-		// 	}
-		// }
-
-		if (seen.length) {
-			// Repeat previous tactics first
-			return;
-		}
+	*findFromUniqueLines() {
+		const rows = this.getLineRows();
+		const cols = this.getLineCols();
 
 		for ( let y = 0; y < rows.length; y++ ) {
 			const line = rows[y];
@@ -557,9 +542,51 @@ class OhhiSolver {
 		}
 	}
 
+	*findFromThreeOpens() {
+		return;
+
+		const rows = this.getLineRows();
+		const cols = this.getLineCols();
+
+		for ( let y = 0; y < rows.length; y++ ) {
+			const line = rows[y];
+			if (line.replace(/[01]/g, '').length == 3 && line.match(/__/)) {
+				console.log('three open in row', y, line);
+				const m = line.match(/([01]?)__+([01]?)/);
+				console.log(m);
+			}
+		}
+	}
+
+	*findMustBes() {
+		for (let found of this.findFromAdjacentThrees()) {
+			if (!this.haveSeen(found.x, found.y)) {
+				yield found;
+			}
+		}
+
+		for (let found of this.findFromFulls()) {
+			if (!this.haveSeen(found.x, found.y)) {
+				yield found;
+			}
+		}
+
+		for (let found of this.findFromThreeOpens()) {
+			if (!this.haveSeen(found.x, found.y)) {
+				yield found;
+			}
+		}
+
+		for (let found of this.findFromUniqueLines()) {
+			if (!this.haveSeen(found.x, found.y)) {
+				yield found;
+			}
+		}
+	}
+
 	coordWithColor(x, y, color) {
 		const C = new Coords2D(x, y);
-		C.color = color;
+		C.color = Number(color);
 		return C;
 	}
 
