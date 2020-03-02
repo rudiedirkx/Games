@@ -508,6 +508,20 @@ class OhhiSolver {
 			return;
 		}
 
+		// for ( let y = 0; y < rows.length; y++ ) {
+		// 	const line = rows[y];
+		// 	if (line.replace(/[01]/g, '').length == 3 && line.match(/__/)) {
+		// 		console.log('three open in row', y, line);
+		// 		const m = line.match(/([01]?)__+([01]?)/);
+		// 		console.log(m);
+		// 	}
+		// }
+
+		if (seen.length) {
+			// Repeat previous tactics first
+			return;
+		}
+
 		for ( let y = 0; y < rows.length; y++ ) {
 			const line = rows[y];
 			if (line.replace(/[01]/g, '').length == 2) {
