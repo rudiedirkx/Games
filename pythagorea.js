@@ -105,7 +105,7 @@ class Pythagorea extends CanvasGame {
 	reset() {
 		super.reset();
 
-		this._size = 5;
+		this._size = 6;
 		this._scale = 50;
 
 		const S = -1;
@@ -126,14 +126,14 @@ class Pythagorea extends CanvasGame {
 	loadLevel( n ) {
 		this.reset();
 
-		this.levelNum = n;
-		this.level = Pythagorea.levels[n];
+		this.levelNum = n == null || isNaN(n) || !Pythagorea.levels[n] ? 0 : n;
+		this.level = Pythagorea.levels[this.levelNum];
 		this.level.init(this);
 
-		document.querySelector('#level-num').textContent = n + 1;
+		document.querySelector('#level-num').textContent = this.levelNum + 1;
 		document.querySelector('#level-desc').textContent = this.level._desc;
-		document.querySelector('#prev').disabled = n <= 0;
-		document.querySelector('#next').disabled = n >= Pythagorea.levels.length-1;
+		document.querySelector('#prev').disabled = this.levelNum <= 0;
+		document.querySelector('#next').disabled = this.levelNum >= Pythagorea.levels.length-1;
 
 		this.changed = true;
 	}

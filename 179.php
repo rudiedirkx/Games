@@ -51,5 +51,5 @@ button:disabled {
 var objGame = new Pythagorea(document.querySelector('canvas'));
 objGame.startPainting();
 objGame.listenControls();
-objGame.loadLevel(0);
+objGame.loadLevel(parseInt(location.hash.substr(1)) - 1);
 </script>

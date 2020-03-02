@@ -53,3 +53,66 @@ Pythagorea.levels.push(new PythagoreaLevel('Create all the possible squares from
 }, function(game) {
 	this.winner.forEach((Es) => this.drawEdges(game, Es));
 }));
+
+Pythagorea.levels.push(new PythagoreaLevel('Connect the three points to make an isosceles triangle.', function(game) {
+	game.addVertex(this.vertex(3, 0));
+	game.addVertex(this.vertex(1, 5));
+	game.addVertex(this.vertex(5, 5));
+
+	this.winner = this.createVerticesEdges([this.vertex(3, 0), this.vertex(1, 5), this.vertex(5, 5)]);
+}, function(game) {
+	return this.allEdgesExist(game, this.winner);
+}, function(game) {
+	this.drawEdges(game, this.winner);
+}));
+
+Pythagorea.levels.push(new PythagoreaLevel('Connect three of the given points to make an isosceles triangle.', function(game) {
+	var a, b, c;
+	game.addVertex(a = this.vertex(1, 2));
+	game.addVertex(b = this.vertex(5, 2));
+	game.addVertex(this.vertex(2, 5));
+	game.addVertex(c = this.vertex(3, 5));
+
+	this.winner = this.createVerticesEdges([a, b, c]);
+}, function(game) {
+	return this.allEdgesExist(game, this.winner);
+}, function(game) {
+	this.drawEdges(game, this.winner);
+}));
+
+Pythagorea.levels.push(new PythagoreaLevel('Connect three of the given points to make an isosceles triangle.', function(game) {
+	this.size = 6;
+
+	var a, b, c;
+	game.addVertex(this.vertex(0, 2));
+	game.addVertex(a = this.vertex(0, 3));
+	game.addVertex(b = this.vertex(2, 6));
+	game.addVertex(this.vertex(5, 3));
+	game.addVertex(c = this.vertex(5, 4));
+	game.addVertex(this.vertex(6, 2));
+	game.addVertex(this.vertex(6, 5));
+
+	this.winner = this.createVerticesEdges([a, b, c]);
+}, function(game) {
+	return this.allEdgesExist(game, this.winner);
+}, function(game) {
+	this.drawEdges(game, this.winner);
+}));
+
+Pythagorea.levels.push(new PythagoreaLevel('Connect three of the given points to make an isosceles triangle.', function(game) {
+	this.size = 6;
+
+	var a, b, c;
+	game.addVertex(a = this.vertex(2, 0));
+	game.addVertex(this.vertex(1, 2));
+	game.addVertex(b = this.vertex(3, 4));
+	game.addVertex(this.vertex(3, 5));
+	game.addVertex(c = this.vertex(6, 1));
+	game.addVertex(this.vertex(6, 2));
+
+	this.winner = this.createVerticesEdges([a, b, c]);
+}, function(game) {
+	return this.allEdgesExist(game, this.winner);
+}, function(game) {
+	this.drawEdges(game, this.winner);
+}));
