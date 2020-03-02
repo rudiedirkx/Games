@@ -89,7 +89,7 @@ class Ohhi extends GridGame {
 		return (new Array(size)).fill(0).map(row => (new Array(size)).fill(null));
 	}
 
-	createMap(size) {
+	async createMap(size) {
 		const grid = this.createEmptyGrid(size);
 
 		console.time('createMap');
@@ -190,6 +190,8 @@ class Ohhi extends GridGame {
 		console.timeEnd('make playable');
 
 		this.printGrid(playableGrid);
+
+		return grid;
 	}
 
 	debugGrid(grid) {
@@ -326,6 +328,26 @@ class Ohhi extends GridGame {
 		return html;
 	}
 
+	startLoading(el) {
+		if (this.isLoading()) return false;
+		console.log('start loading', el);
+
+		const loader = document.el('img', {"class": 'loader', "src": '/images/loading.gif'});
+		el.append(loader);
+
+		return true;
+	}
+
+	isLoading() {
+		return $('img.loader');
+	}
+
+	stopLoading() {
+		console.log('stop loading');
+
+		$$('img.loader').invoke('remove');
+	}
+
 	listenControls() {
 		this.listenCellClick();
 
@@ -335,14 +357,14 @@ class Ohhi extends GridGame {
 
 		$('#newgame').on('click', e => {
 			const size = this.m_objGrid.getElements('tr').length;
-			requestIdleCallback(() => this.createMap(size));
+			this.startLoading(e.target) && requestIdleCallback(() => this.createMap(size).then(this.stopLoading()));
 		});
 
 		$('#sizes').on('click', 'a[data-size]', e => {
 			e.preventDefault();
 
 			const size = Number(e.target.data('size'));
-			requestIdleCallback(() => this.createMap(size));
+			this.startLoading(e.target) && requestIdleCallback(() => this.createMap(size).then(this.stopLoading()));
 		});
 
 		$('#cheat').on('click', e => {
@@ -416,7 +438,7 @@ class OhhiSolver {
 	}
 
 	isPlayable() {
-		return this.getUnknowns() == 0;
+		return this.getUnknowns() <= 6;
 	}
 
 	findMustBe() {

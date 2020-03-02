@@ -12,6 +12,11 @@ require __DIR__ . '/inc.bootstrap.php';
 <title>0h h1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
+img.loader {
+	margin-left: .5em;
+	height: 1.4em;
+}
+
 table {
 	border-spacing: 3px;
 	border: solid 1px #999;
