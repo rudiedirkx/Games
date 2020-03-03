@@ -2,14 +2,17 @@
 
 class Ohhi extends GridGame {
 
-	constructor( gridElement ) {
-		super(gridElement);
+	reset() {
+		super.reset();
 
+		this.size = 0;
 		this.checker = 0;
 	}
 
 	handleCellClick( cell ) {
 		if ( cell.dataset.initial != null ) return;
+
+		this.startTime();
 
 		const curColor = cell.dataset.color;
 		if (curColor === 'on') {
@@ -23,23 +26,30 @@ class Ohhi extends GridGame {
 		}
 
 		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.checkValid(), 500);
+		this.checker = setTimeout(() => this.winOrLose(), 500);
 	}
 
-	checkValid() {
+	getScore() {
+		return {
+			...super.getScore(),
+			level: this.size,
+		};
+	}
+
+	haveWon() {
 		const unset = this.m_objGrid.getElements('td:not([data-color])');
 		if ( unset.length > 0 ) {
-			return;
+			return false;
 		}
 
 		const grid = this.m_objGrid.getElements('tr').map(tr => {
 			return tr.getElements('td').map(td => td.dataset.color === 'on');
 		});
 		if ( !this.isValidGrid(grid) ) {
-			return;
+			return false;
 		}
 
-		alert('You win!');
+		return true;
 	}
 
 	createFromExport(chars) {
@@ -90,6 +100,9 @@ class Ohhi extends GridGame {
 	}
 
 	async createMap(size) {
+		this.reset();
+
+		this.size = size;
 		const grid = this.createEmptyGrid(size);
 
 		console.time('createMap');
@@ -383,12 +396,14 @@ class Ohhi extends GridGame {
 	}
 
 	cheatOneRound() {
+		this.m_bCheating = true;
+
 		const solver = OhhiSolver.fromDom(this.m_objGrid);
 		for (let found of solver.findMustBes()) {
 			this.m_objGrid.rows[found.y].cells[found.x].dataset.color = found.color ? 'on' : 'off';
 		}
 
-		setTimeout(() => this.checkValid(), 50);
+		setTimeout(() => this.winOrLose(), 50);
 	}
 
 	createStats() {
@@ -438,7 +453,7 @@ class OhhiSolver {
 	}
 
 	isPlayable() {
-		return this.getUnknowns() <= 6;
+		return this.getUnknowns() <= Math.min(this.size - 2, 6);
 	}
 
 	findMustBe() {

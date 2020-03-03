@@ -20,6 +20,7 @@ img.loader {
 table {
 	border-spacing: 3px;
 	border: solid 1px #999;
+	user-select: none;
 }
 td {
 	border: 0;

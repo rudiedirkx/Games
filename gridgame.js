@@ -47,6 +47,7 @@ class Game {
 
 	reset() {
 		this.m_bGameOver = false;
+		this.m_bCheating = false;
 
 		this.stopTime();
 		this.m_iStartTime = 0;
@@ -122,7 +123,9 @@ class Game {
 		this.stopTime();
 		this.m_bGameOver = true;
 
-		this.constructor.saveScore(this.getScore());
+		if ( !this.m_bCheating ) {
+			this.constructor.saveScore(this.getScore());
+		}
 
 		setTimeout(function() {
 			alert('You WIN :-)');
