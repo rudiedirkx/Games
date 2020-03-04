@@ -43,7 +43,7 @@ td:not([data-initial]) span {
 	display: none;
 }
 </style>
-<!-- <script>window.onerror = function(e) { alert(e); };</script> -->
+<? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('ohhi.js') ?>"></script>

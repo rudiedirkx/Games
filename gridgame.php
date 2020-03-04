@@ -24,9 +24,7 @@ if ( isset($_REQUEST['load_map']) ) {
 <meta charset="utf-8" />
 <title><?= $title ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<? if (is_mobile()): ?>
-	<script>window.onerror = function(e) { alert(e); };</script>
-<? endif ?>
+<? include 'tpl.onerror.php' ?>
 <link rel="stylesheet" href="<?= html_asset('gridgame.css') ?>" />
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
