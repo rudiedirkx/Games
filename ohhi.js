@@ -511,7 +511,7 @@ class OhhiSolver {
 
 		const makeFounds = (line, x, y, color) => {
 			return Array.from(line)
-				.map((v, i) => v == '_' ? this.coordWithColor(x ?? i, y ?? i, color) : null)
+				.map((v, i) => v == '_' ? this.coordWithColor(x == null ? i : x, y == null ? i : y, color) : null)
 				.filter(v => v != null);
 		};
 
