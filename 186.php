@@ -57,6 +57,7 @@ td:not([data-initial]) span {
 	<button id="restart">Restart</button>
 	<button id="newgame">New game</button>
 	<span id="sizes"></span>
+	<button id="build">Build</button>
 </p>
 <p>
 	<button id="cheat">Cheat</button>

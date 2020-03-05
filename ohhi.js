@@ -380,6 +380,13 @@ class Ohhi extends GridGame {
 			this.startLoading(e.target) && requestIdleCallback(() => this.createMap(size).then(this.stopLoading()));
 		});
 
+		$('#build').on('click', e => {
+			const size = prompt('What size?', '8');
+			if (size && !isNaN(parseInt(size))) {
+				this.printGrid(this.createEmptyGrid(parseInt(size)));
+			}
+		});
+
 		$('#cheat').on('click', e => {
 			this.cheatOneRound();
 		});
