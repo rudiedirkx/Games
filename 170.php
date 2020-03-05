@@ -39,7 +39,7 @@ canvas {
 	outline: solid 1px black;
 }
 </style>
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 </head>
 
 <body>

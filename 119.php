@@ -24,6 +24,7 @@ if (isset($_POST['cheat'])) {
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>PICROSS <?= $levelName ?></title>
 	<link rel="stylesheet" href="<?= html_asset('119.css') ?>" />
+	<? include 'tpl.onerror.php' ?>
 </head>
 
 <body>
@@ -75,11 +76,6 @@ if (isset($_POST['cheat'])) {
 	</p>
 
 	<script src="119.js"></script>
-	<script>
-	window.onerror = function(e) {
-		alert(e);
-	};
-	</script>
 	<script>
 	g119.solution = '<?= hashMap($map) ?>';
 

@@ -11,7 +11,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <meta charset="utf-8" />
 <title>BOX STRAP LENGTH</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <style>

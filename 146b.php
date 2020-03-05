@@ -41,7 +41,7 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 		pointer-events: none;
 	}
 	</style>
-	<script>window.onerror = function(e) { alert(e); };</script>
+	<? include 'tpl.onerror.php' ?>
 </head>
 
 <body>

@@ -3,7 +3,19 @@
 
 // header('Content-type: text/plain');
 
-echo '<meta name="viewport" content="width=device-width, initial-scale=1" />';
+?>
+<title>Filling</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+table {
+	border-spacing: 1px;
+}
+td {
+	padding: 10px;
+	text-align: center;
+}
+</style>
+<?php
 
 $builder = new FillingBuilder(7, 7);
 $builder->build();

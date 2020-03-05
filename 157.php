@@ -34,7 +34,7 @@ for ( $i=0; $i<8; $i++ ) {
 <meta charset="utf-8" />
 <title>Fortune's Tower</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 <script src="/js/mootools_1_11.js"></script>
 <style>
 span.card {

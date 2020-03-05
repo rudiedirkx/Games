@@ -12,7 +12,7 @@ $gameName = (int) basename($_SERVER['PHP_SELF']);
 <meta charset="utf-8" />
 <title><?= $title ?> - EDITOR</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 <link rel="stylesheet" href="<?= html_asset('gridgame.css') ?>" />
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>

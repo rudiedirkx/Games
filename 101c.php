@@ -101,7 +101,7 @@ else if ( !empty($_GET['stand']) ) {
 <meta charset="utf-8" />
 <title>Blackjack v2 | <?php echo $objGame->decks; ?> decks</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 </head>
 
 <body>

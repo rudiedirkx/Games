@@ -4,7 +4,19 @@
 $width = 7;
 $height = 7;
 
-echo '<meta name="viewport" content="width=device-width, initial-scale=1" />';
+?>
+<title>Rectangles</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+table {
+	border-spacing: 1px;
+}
+td {
+	padding: 10px;
+	text-align: center;
+}
+</style>
+<?php
 
 $_time = microtime(1);
 $grid = Rectangles::create($width, $height);
@@ -21,7 +33,7 @@ class Rectangles {
 		$allLabels = array_merge(range('a', 'z'), range(0, 9), range('A', 'Z'));
 		$usedLabels = [];
 
-		echo '<br><table cellpadding="10" cellspacing="1">';
+		echo '<br><table>';
 		foreach ($grid as $y => $row) {
 			echo '<tr>';
 			foreach ($row as $x => $cell) {

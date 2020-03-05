@@ -31,6 +31,7 @@ canvas {
 	outline: solid 1px black;
 }
 </style>
+<? include 'tpl.onerror.php' ?>
 </head>
 
 <body>
@@ -51,13 +52,6 @@ canvas {
 
 <canvas width="800" height="500"></canvas>
 
-<script>
-window.onerror = function(e) {
-	alert(e);
-};
-
-window.Promise || document.write(unescape('%3Cscript%20src%3D%22https%3A//rawgit.com/taylorhakes/promise-polyfill/master/promise.js%22%3E%3C/script%3E'));
-</script>
 <script src="170.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');

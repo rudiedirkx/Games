@@ -70,7 +70,7 @@ while ( $iDiscovered < $x*$y ) {
 <meta charset="utf-8" />
 <title>MAZE</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 <style>
 body {
 	margin-right: 40px;

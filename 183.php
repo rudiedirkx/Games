@@ -11,7 +11,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <meta charset="utf-8" />
 <title>Fallout Hacking Helper</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 <style>
 tr.possible .likeness {
 	background-color: #afa;

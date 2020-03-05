@@ -9,7 +9,7 @@
 <meta charset="utf-8" />
 <title>Guess my number from 1-100</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 <style>
 * {
 	font-size: 19px;

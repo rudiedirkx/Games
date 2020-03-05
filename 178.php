@@ -12,7 +12,7 @@ require __DIR__ . '/178_levels.php';
 <meta charset="utf-8" />
 <title>LASER</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<script>window.onerror = function(e) { alert(e); };</script>
+<? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('laser.js') ?>"></script>
