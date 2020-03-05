@@ -12,7 +12,10 @@ table {
 	border-spacing: 1px;
 }
 td {
-	padding: 10px;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	vertical-align: middle;
 	text-align: center;
 }
 </style>
@@ -22,35 +25,42 @@ $_time = microtime(1);
 $grid = Rectangles::create($width, $height);
 $_time = microtime(1) - $_time;
 // print_r($grid);
-Rectangles::debugTable($grid);
+$grid and Rectangles::debugTable($grid);
 var_dump(round($_time * 1000, 3));
 
 class Rectangles {
 
+	static public $colors = ['#f00', '#ff0', '#0c0', '#0cc', '#00c', 'pink', 'purple'];
+	static public $colored = [];
+
+	static function randColor($group) {
+		return self::$colored[$group] ?? (self::$colored[$group] = sprintf('#%06X', rand(0, 0xFFFFFF)));
+	}
+
+	static function color($group) {
+		return self::$colors[ $group % count(self::$colors) ];
+	}
+
 	static function debugTable($grid) {
-		$colors = ['#f00', '#ff0', '#0c0', '#0cc', '#00c', 'pink', 'purple'];
-
-		$allLabels = array_merge(range('a', 'z'), range(0, 9), range('A', 'Z'));
-		$usedLabels = [];
-
-		echo '<br><table>';
+		echo "\n<!-- " . json_encode($grid) . " -->\n";
+		echo '<table>';
 		foreach ($grid as $y => $row) {
 			echo '<tr>';
 			foreach ($row as $x => $cell) {
 				list($group, $size) = $cell;
-				$color = $group == -1 ? '#000' : $colors[ $group % count($colors) ];
-				// $label = isset($usedLabels[$group]) ? $usedLabels[$group] : ($usedLabels[$group] = $allLabels[count($usedLabels)]);
-				$label = $group;
-				echo '<td bgcolor="' . $color . '">' . $label . '</td>';
+				$color = $cell == -1 ? '#000' : self::randColor($group);
+				echo '<td bgcolor="' . $color . '">' . $group . '</td>';
 			}
 			echo '</tr>';
 		}
-		echo '</table>';
+		echo "</table>\n";
+		echo "<br>\n\n";
 	}
 
 	static public function create($width, $height) {
-		for ($i=0; $i < 5000; $i++) {
+		for ($attempts=1; $attempts < 5000; $attempts++) {
 			if ($grid = self::_create($width, $height)) {
+var_dump($attempts);
 				return $grid;
 			}
 		}
@@ -64,6 +74,7 @@ class Rectangles {
 		while ($next = self::next($grid)) {
 			$leftX = self::leftX($grid, $next);
 			$leftY = self::leftY($grid, $next);
+// var_dump($leftX, $leftY);
 
 			$sizeX = self::length($leftX);
 			$sizeY = self::length($leftY, $sizeX);
@@ -77,10 +88,11 @@ class Rectangles {
 					$grid[ $y + $next[1] ][ $x + $next[0] ] = [$group, $sizeX * $sizeY, $dir];
 				}
 			}
-// self::table($grid);
-
+// self::debugTable($grid);
+// echo "\n\n";
 			$group++;
 		}
+// ksort($sizes);
 // print_r($sizes);
 
 		// Max number of 1's
@@ -90,7 +102,7 @@ class Rectangles {
 
 		// No neighboring N's
 		if (!self::validateUniqueNeighbors($grid)) {
-			// return;
+			return;
 		}
 
 		return $grid;
@@ -102,7 +114,6 @@ class Rectangles {
 				foreach (self::neighbors($grid, $x, $y) as list($nx, $ny)) {
 					list($ngroup, $nsize, $ndir) = $grid[$ny][$nx];
 					if ($nsize == $size && $ngroup != $group && $ndir == $dir) {
-var_dump($group, $ngroup);
 						return false;
 					}
 				}

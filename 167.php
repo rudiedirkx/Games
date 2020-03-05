@@ -11,7 +11,10 @@ table {
 	border-spacing: 1px;
 }
 td {
-	padding: 10px;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	vertical-align: middle;
 	text-align: center;
 }
 </style>
