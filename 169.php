@@ -1,32 +1,87 @@
 <?php
 // RECTANGLES
 
-$width = 7;
-$height = 7;
+require __DIR__ . '/inc.bootstrap.php';
+
+$size = $_GET['size'] ?? 7;
 
 ?>
 <title>Rectangles</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
 table {
-	border-spacing: 1px;
+	/*border-spacing: 1px;*/
+	border-collapse: collapse;
+	user-select: none;
 }
 td {
 	width: 36px;
 	height: 36px;
 	padding: 0;
+	border: solid 1px #aaa;
 	vertical-align: middle;
 	text-align: center;
+}
+td[data-size] {
+	background-color: #eee;
 }
 </style>
 <?php
 
 $_time = microtime(1);
-$grid = Rectangles::create($width, $height);
+$grid = Rectangles::create($size, $size);
 $_time = microtime(1) - $_time;
 // print_r($grid);
-$grid and Rectangles::debugTable($grid);
-var_dump(round($_time * 1000, 3));
+if ($grid) {
+	// Rectangles::debugTable($grid);
+	Rectangles::playTable($grid);
+}
+// var_dump(round($_time * 1000, 3));
+
+?>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script>
+var draggingStart = null;
+var draggingEnd = null;
+
+$('table').on('mousedown', 'td', function(e) {
+	draggingStart = this;
+	// console.log(draggingStart);
+});
+$('table').on('mousemove', 'td', function(e) {
+	if (!draggingStart) return;
+
+	draggingEnd = this;
+	// console.log(draggingEnd);
+});
+$('table').on('mouseup', 'td', function(e) {
+	draggingEnd = this;
+	console.log(draggingStart, draggingEnd);
+	if (draggingStart == draggingEnd) {
+		draggingStart.attr('style', null);
+		draggingStart = draggingEnd = null;
+	}
+	else {
+		// make rectangle
+		var [x1, x2] = [draggingStart.cellIndex, draggingEnd.cellIndex];
+		x1 > x2 && ([x1, x2] = [x2, x1]);
+		var [y1, y2] = [draggingStart.parentNode.rowIndex, draggingEnd.parentNode.rowIndex];
+		y1 > y2 && ([y1, y2] = [y2, y1]);
+
+		const color = '#' + (Math.random()*0xFFFFFF<<0).toString(16);
+		const grid = draggingStart.parentNode.parentNode;
+		for ( let y = y1; y <= y2; y++ ) {
+			for ( let x = x1; x <= x2; x++ ) {
+				grid.rows[y].cells[x].attr('style', `background-color: ${color}`);
+			}
+		}
+	}
+});
+document.on('mouseup', function(e) {
+	draggingStart = draggingEnd = null;
+});
+</script>
+<?php
 
 class Rectangles {
 
@@ -41,6 +96,34 @@ class Rectangles {
 		return self::$colors[ $group % count(self::$colors) ];
 	}
 
+	static function playTable($grid) {
+		$coords = [];
+		foreach ($grid as $y => $row) {
+			foreach ($row as $x => $cell) {
+				[$group, $size] = $cell;
+				$coords[$group][] = [$x, $y];
+			}
+		}
+// print_r($coords);
+		$shows = array_map(function($coords) {
+			return $coords[array_rand($coords)];
+		}, $coords);
+// print_r($shows);
+
+		echo '<table>';
+		foreach ($grid as $y => $row) {
+			echo '<tr>';
+			foreach ($row as $x => $cell) {
+				[$group, $size] = $cell;
+				$label = $shows[$group] == [$x, $y] ? $size : '';
+				$data = $label ? ' data-size="' . $label . '"' : '';
+				echo '<td' . $data . '>' . $label . '</td>';
+			}
+			echo '</tr>';
+		}
+		echo "</table>\n";
+	}
+
 	static function debugTable($grid) {
 		echo "\n<!-- " . json_encode($grid) . " -->\n";
 		echo '<table>';
@@ -49,7 +132,7 @@ class Rectangles {
 			foreach ($row as $x => $cell) {
 				list($group, $size) = $cell;
 				$color = $cell == -1 ? '#000' : self::randColor($group);
-				echo '<td bgcolor="' . $color . '">' . $group . '</td>';
+				echo '<td style="background: ' . $color . '">' . $group . '</td>';
 			}
 			echo '</tr>';
 		}
@@ -58,9 +141,9 @@ class Rectangles {
 	}
 
 	static public function create($width, $height) {
-		for ($attempts=1; $attempts < 5000; $attempts++) {
+		for ($attempts=1; $attempts < 95000; $attempts++) {
 			if ($grid = self::_create($width, $height)) {
-var_dump($attempts);
+// var_dump($attempts);
 				return $grid;
 			}
 		}
@@ -77,10 +160,17 @@ var_dump($attempts);
 // var_dump($leftX, $leftY);
 
 			$sizeX = self::length($leftX);
+			if ($sizeX === false) {
+				return;
+			}
 			$sizeY = self::length($leftY, $sizeX);
+			if ($sizeY === false) {
+				return;
+			}
 // var_dump($sizeX, $sizeY);
 
-			@$sizes[ $sizeX * $sizeY ]++;
+			isset($sizes[$sizeX * $sizeY]) or $sizes[$sizeX * $sizeY] = 0;
+			$sizes[$sizeX * $sizeY]++;
 
 			$dir = $sizeX > $sizeY ? 'hor' : ($sizeX < $sizeY ? 'ver' : 'square');
 			for ($y = 0; $y < $sizeY; $y++) {
@@ -95,8 +185,8 @@ var_dump($attempts);
 // ksort($sizes);
 // print_r($sizes);
 
-		// Max number of 1's
-		if (isset($sizes[1]) && $sizes[1] > $width * $height / 10) {
+		// No 1's
+		if (isset($sizes[1]) && $sizes[1] > 0) {
 			return;
 		}
 
@@ -109,6 +199,8 @@ var_dump($attempts);
 	}
 
 	static public function validateUniqueNeighbors($grid) {
+		return true;
+
 		foreach ($grid as $y => $cols) {
 			foreach ($cols as $x => list($group, $size, $dir)) {
 				foreach (self::neighbors($grid, $x, $y) as list($nx, $ny)) {
@@ -160,9 +252,14 @@ var_dump($attempts);
 	}
 
 	static public function length($max, $other = 0) {
-		$length = rand(1, min(5, $max));
+		if ($other == 1 && $max == 1) {
+			return false;
+		}
 
-		if ($other * $length > 10) {
+		$min = $other == 1 && $max > 1 ? 2 : 1;
+		$length = rand($min, min(5, $max));
+
+		if ($other * $length > 15) {
 			return self::length($max, $other);
 		}
 
