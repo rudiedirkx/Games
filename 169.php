@@ -39,24 +39,33 @@ if ($grid) {
 // var_dump(round($_time * 1000, 3));
 
 ?>
+<? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script>
 var draggingStart = null;
 var draggingEnd = null;
 
-$('table').on('mousedown', 'td', function(e) {
-	draggingStart = this;
+$('table').on(['xmousedown', 'touchstart'], function(e) {
+	e.preventDefault();
+
+	draggingStart = e.target;
 	// console.log(draggingStart);
 });
-$('table').on('mousemove', 'td', function(e) {
+$('table').on(['xmousemove', 'touchmove'], function(e) {
 	if (!draggingStart) return;
 
-	draggingEnd = this;
+	e.preventDefault();
+
+	draggingEnd = document.elementFromPoint(e.pageX, e.pageY);
 	// console.log(draggingEnd);
 });
-$('table').on('mouseup', 'td', function(e) {
-	draggingEnd = this;
-	console.log(draggingStart, draggingEnd);
+$('table').on(['xmouseup', 'touchend'], function(e) {
+	e.preventDefault();
+
+	draggingEnd || (draggingEnd = e.target);
+	// draggingEnd = document.elementFromPoint(e.pageX, e.pageY);
+	// console.log(draggingStart, draggingEnd);
+	// alert(draggingStart.cellIndex + ' - ' + draggingEnd.cellIndex);
 	if (draggingStart == draggingEnd) {
 		draggingStart.attr('style', null);
 		draggingStart = draggingEnd = null;
@@ -77,7 +86,7 @@ $('table').on('mouseup', 'td', function(e) {
 		}
 	}
 });
-document.on('mouseup', function(e) {
+document.on(['mouseup', 'touchend'], function(e) {
 	draggingStart = draggingEnd = null;
 });
 </script>
@@ -259,7 +268,7 @@ class Rectangles {
 		$min = $other == 1 && $max > 1 ? 2 : 1;
 		$length = rand($min, min(5, $max));
 
-		if ($other * $length > 15) {
+		if ($other * $length > 12) {
 			return self::length($max, $other);
 		}
 
