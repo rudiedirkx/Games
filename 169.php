@@ -199,7 +199,7 @@ class Rectangles {
 	}
 
 	static public function validateUniqueNeighbors($grid) {
-		return true;
+		// return true;
 
 		foreach ($grid as $y => $cols) {
 			foreach ($cols as $x => list($group, $size, $dir)) {
