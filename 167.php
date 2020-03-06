@@ -24,9 +24,9 @@ $builder = new FillingBuilder(7, 7);
 $builder->build();
 $builder->printTable();
 
-echo '<pre>';
-var_dump($builder->time);
-print_r($builder->errors);
+// echo '<pre>';
+// var_dump($builder->time);
+// print_r($builder->errors);
 
 class FillingBuilder {
 
@@ -37,7 +37,6 @@ class FillingBuilder {
 	protected $height;
 
 	protected $map;
-	protected $groupIndex;
 	protected $groups;
 	protected $colors;
 	public $errors;
@@ -60,7 +59,6 @@ class FillingBuilder {
 
 	protected function reset() {
 		$this->map = array_fill(0, $this->height, array_fill(0, $this->width, -1));
-		$this->groupIndex = 0;
 		$this->groups = [];
 		$this->colors = [];
 		$this->errors = [];
@@ -69,7 +67,10 @@ class FillingBuilder {
 	public function build() {
 		$start = microtime(1);
 
-		// for ($i=0; $i < 100; $i++) {
+		for ($i = 0; $i < 1000; $i++) {
+// echo "$i ";
+			$this->reset();
+
 			while ($loc = $this->findEmptyLocation()) {
 				$this->createNewGroup($loc);
 			}
@@ -77,10 +78,8 @@ class FillingBuilder {
 			if ($this->checkIntegrity()) {
 				return;
 			}
-var_dump(count($this->errors));
-
-// 			$this->reset();
-		// }
+		}
+// var_dump(count($this->errors));
 
 		$this->time = microtime(1) - $start;
 	}
@@ -106,7 +105,7 @@ var_dump(count($this->errors));
 			shuffle($this->directions);
 			foreach ($this->directions as $direction) {
 
-			$this->log("direction: {$direction[0]}, {$direction[1]}");
+				$this->log("direction: {$direction[0]}, {$direction[1]}");
 
 				if ($this->getCell($location, $direction) === -1) {
 					$location[0] += $direction[0];
@@ -217,9 +216,11 @@ var_dump(count($this->errors));
 		echo "<table>\n";
 		foreach ($this->map as $y => $row) {
 			echo "<tr>\n";
-			foreach ($row as $x => $cell) {
-				echo '<td bgcolor="#' . $this->getGroupColor($cell) . '">';
-				echo str_pad($cell, 2, '0', STR_PAD_LEFT);
+			foreach ($row as $x => $groupIndex) {
+				$group = $this->groups[$groupIndex];
+
+				echo '<td bgcolor="#' . $this->getGroupColor($groupIndex) . '">';
+				echo count($group);
 				echo "</td>\n";
 			}
 			echo "</tr>\n";
