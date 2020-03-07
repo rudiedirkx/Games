@@ -1,16 +1,26 @@
 <?php
 // FILLING
 
-// header('Content-type: text/plain');
+require __DIR__ . '/inc.bootstrap.php';
+
+$size = $_GET['size'] ?? 7;
 
 ?>
+<!doctype html>
+<html>
+
+<head>
+<meta charset="utf-8" />
 <title>Filling</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
 table {
-	border-spacing: 1px;
+	border-collapse: collapse;
+	user-select: none;
+	margin-bottom: 1em;
 }
 td {
+	border: solid 1px #999;
 	width: 36px;
 	height: 36px;
 	padding: 0;
@@ -18,15 +28,55 @@ td {
 	text-align: center;
 }
 </style>
+<style id="colors"></style>
+<? include 'tpl.onerror.php' ?>
+</head>
+
+<body>
 <?php
 
-$builder = new FillingBuilder(7, 7);
-$builder->build();
-$builder->printTable();
+$builder = new FillingBuilder($size, $size);
+$builder->build() or die('Random build failed. Try again.');
+$builder->printTableDebug();
+$builder->printTablePlayable();
 
-// echo '<pre>';
-// var_dump($builder->time);
-// print_r($builder->errors);
+?>
+
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script>
+var fromCell = null;
+var winTimer;
+const $table = $$('table').last();
+
+function winCheck() {
+	const wrongs = $table.getElements('td')
+		.filter(td => td.textContent)
+		.filter(td => td.textContent != $table.getElements(`td[bgcolor="${td.bgColor}"]`).length);
+	if (wrongs.length == 0) {
+		alert("You win!");
+	}
+}
+
+$table.on('click', 'td', function(e) {
+	if (this.textContent) {
+		fromCell = e.target;
+	}
+	else if (fromCell && this.bgColor == fromCell.bgColor) {
+		this.bgColor = '';
+	}
+	else if (fromCell) {
+		this.bgColor = fromCell.bgColor;
+	}
+
+	clearTimeout(winTimer);
+	winTimer = setTimeout(winCheck, 500);
+});
+</script>
+</body>
+
+</html>
+<?php
 
 class FillingBuilder {
 
@@ -67,7 +117,7 @@ class FillingBuilder {
 	public function build() {
 		$start = microtime(1);
 
-		for ($i = 0; $i < 1000; $i++) {
+		for ($i = 0; $i < 5000; $i++) {
 // echo "$i ";
 			$this->reset();
 
@@ -76,17 +126,17 @@ class FillingBuilder {
 			}
 
 			if ($this->checkIntegrity()) {
-				return;
+				$this->time = microtime(1) - $start;
+				return true;
 			}
 		}
-// var_dump(count($this->errors));
 
-		$this->time = microtime(1) - $start;
+		return false;
 	}
 
 	protected function createNewGroup( array $location = null ) {
 		$location or $location = $this->findEmptyLocation();
-		$size = rand(1, 9);
+		$size = rand(2, 9);
 
 		$groupIndex = count($this->groups);
 
@@ -128,13 +178,15 @@ class FillingBuilder {
 
 		foreach ($this->groups as $groupIndex => $group) {
 			$size = count($group);
+			if ($size == 1) {
+				return false;
+			}
+
 			foreach ($group as $location) {
 				list($locations, $indexes, $sizes) = $this->getNeighborsExcept($location, $groupIndex);
 
 				if (($i = array_search($size, $sizes)) !== false) {
-					// if (!$verbose) {
-					// 	return false;
-					// }
+					return false;
 
 					$this->errors[] = [ $groupIndex, $indexes[$i] ];
 					break;
@@ -212,7 +264,30 @@ class FillingBuilder {
 		}
 	}
 
-	public function printTable() {
+	public function printTablePlayable() {
+		$shows = array_map(function($group) {
+			return implode('-', $group[array_rand($group)]);
+		}, $this->groups);
+
+		echo "<table>\n";
+		foreach ($this->map as $y => $row) {
+			echo "<tr>\n";
+			foreach ($row as $x => $groupIndex) {
+				$group = $this->groups[$groupIndex];
+
+				$show = count($group) > 1 && in_array("$x-$y", $shows);
+				$bgcolor = $show ? ' bgcolor="#' . $this->getGroupColor($groupIndex) . '"' : '';
+
+				echo '<td' . $bgcolor . '>';
+				echo $show ? count($group) : '';
+				echo "</td>\n";
+			}
+			echo "</tr>\n";
+		}
+		echo "</table>\n";
+	}
+
+	public function printTableDebug() {
 		echo "<table>\n";
 		foreach ($this->map as $y => $row) {
 			echo "<tr>\n";

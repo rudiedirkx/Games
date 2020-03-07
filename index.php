@@ -80,7 +80,7 @@ $g_arrGames = array(
 	['164B',			'Machinarium I - Editor',						'Create your own Machinarium I level'],
 	['165',				'Machinarium II',								'Stole another fun game from Machinarium'],
 	['165B',			'Machinarium II - Editor',						'Create your own Machinarium II level'],
-	['167',				'Filling *WIP*',								'Trying to make separate areas by size...'],
+	['167',				'Filling',										'Trying to make separate areas by size...'],
 	['168',				'Flood',										'Flood the board by propagating a color. You start at the top left'],
 	['169',				'Rectangles',									''],
 	['170',				'Mahjong',										'Mahjong Solitaire in CANVAS'],
