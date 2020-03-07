@@ -27,12 +27,12 @@ td {
 	vertical-align: middle;
 	text-align: center;
 }
-td[data-size] {
+td:not(:empty) {
 	background-color: #eee;
 }
-td[data-size]::after {
+/*td[data-size]::after {
 	content: attr(data-size);
-}
+}*/
 </style>
 <? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
@@ -46,13 +46,19 @@ $_time = microtime(1);
 $grid = Rectangles::create($size, $size);
 $_time = microtime(1) - $_time;
 // print_r($grid);
-if ($grid) {
-	// Rectangles::debugTable($grid);
-	Rectangles::playTable($grid);
+if (!$grid) {
+	exit("Failed\n");
 }
+
+// Rectangles::debugTable($grid);
+Rectangles::playTable($grid);
 // var_dump(round($_time * 1000, 3));
 
 ?>
+<p>
+	<button id="edit">Edit</button>
+</p>
+
 <script>
 var draggingStart = null;
 var draggingEnd = null;
@@ -102,6 +108,17 @@ document.on(['mouseup', 'touchend'], function(e) {
 	draggingStart = draggingEnd = null;
 });
 
+var editable = false;
+$('#edit').on('click', e => {
+	if (editable = !editable) {
+		$$('td').attr('contenteditable', '').setText('')[0].focus();
+	}
+	else {
+		$$('td').attr('contenteditable', null);
+		console.log(RectanglesSolver.fromDom($('table')));
+	}
+});
+
 setTimeout(() => console.log(RectanglesSolver.fromDom($('table'))), 100);
 
 class RectanglesSolver {
@@ -114,7 +131,7 @@ class RectanglesSolver {
 	}
 
 	static domToValue(td) {
-		const value = td.data('size');
+		const value = td.textContent;
 		if ( value ) {
 			return parseInt(value);
 		}
@@ -262,7 +279,7 @@ class Rectangles {
 				[$group, $size] = $cell;
 				$label = $shows[$group] == [$x, $y] ? $size : '';
 				$data = $label ? ' data-size="' . $label . '"' : '';
-				echo '<td' . $data . '>' . '</td>';
+				echo '<td>' . $label . '</td>';
 			}
 			echo '</tr>';
 		}
