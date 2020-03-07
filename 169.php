@@ -30,6 +30,9 @@ td {
 td[data-size] {
 	background-color: #eee;
 }
+td[data-size]::after {
+	content: attr(data-size);
+}
 </style>
 <? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
@@ -111,8 +114,9 @@ class RectanglesSolver {
 	}
 
 	static domToValue(td) {
-		if ( td.textContent ) {
-			return parseInt(td.textContent);
+		const value = td.data('size');
+		if ( value ) {
+			return parseInt(value);
 		}
 
 		if ( td.style.backgroundColor ) {
@@ -258,7 +262,7 @@ class Rectangles {
 				[$group, $size] = $cell;
 				$label = $shows[$group] == [$x, $y] ? $size : '';
 				$data = $label ? ' data-size="' . $label . '"' : '';
-				echo '<td' . $data . '>' . $label . '</td>';
+				echo '<td' . $data . '>' . '</td>';
 			}
 			echo '</tr>';
 		}
