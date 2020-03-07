@@ -6,6 +6,11 @@ require __DIR__ . '/inc.bootstrap.php';
 $size = $_GET['size'] ?? 7;
 
 ?>
+<!doctype html>
+<html>
+
+<head>
+<meta charset="utf-8" />
 <title>Rectangles</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
@@ -26,6 +31,12 @@ td[data-size] {
 	background-color: #eee;
 }
 </style>
+<? include 'tpl.onerror.php' ?>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+</head>
+
+<body>
 <?php
 
 $_time = microtime(1);
@@ -39,19 +50,17 @@ if ($grid) {
 // var_dump(round($_time * 1000, 3));
 
 ?>
-<? include 'tpl.onerror.php' ?>
-<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script>
 var draggingStart = null;
 var draggingEnd = null;
 
-$('table').on(['xmousedown', 'touchstart'], function(e) {
+$('table').on(['mousedown', 'touchstart'], function(e) {
 	e.preventDefault();
 
 	draggingStart = e.target;
 	// console.log(draggingStart);
 });
-$('table').on(['xmousemove', 'touchmove'], function(e) {
+$('table').on(['mousemove', 'touchmove'], function(e) {
 	if (!draggingStart) return;
 
 	e.preventDefault();
@@ -59,7 +68,7 @@ $('table').on(['xmousemove', 'touchmove'], function(e) {
 	draggingEnd = document.elementFromPoint(e.pageX, e.pageY);
 	// console.log(draggingEnd);
 });
-$('table').on(['xmouseup', 'touchend'], function(e) {
+$('table').on(['mouseup', 'touchend'], function(e) {
 	e.preventDefault();
 
 	draggingEnd || (draggingEnd = e.target);
@@ -77,7 +86,7 @@ $('table').on(['xmouseup', 'touchend'], function(e) {
 		var [y1, y2] = [draggingStart.parentNode.rowIndex, draggingEnd.parentNode.rowIndex];
 		y1 > y2 && ([y1, y2] = [y2, y1]);
 
-		const color = '#' + (Math.random()*0xFFFFFF<<0).toString(16);
+		const color = '#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6);
 		const grid = draggingStart.parentNode.parentNode;
 		for ( let y = y1; y <= y2; y++ ) {
 			for ( let x = x1; x <= x2; x++ ) {
@@ -89,6 +98,129 @@ $('table').on(['xmouseup', 'touchend'], function(e) {
 document.on(['mouseup', 'touchend'], function(e) {
 	draggingStart = draggingEnd = null;
 });
+
+setTimeout(() => console.log(RectanglesSolver.fromDom($('table'))), 100);
+
+class RectanglesSolver {
+
+	static fromDom(table) {
+		const grid = table.getElements('tr').map(tr => {
+			return tr.getElements('td').map(td => this.domToValue(td));
+		});
+		return new this(grid);
+	}
+
+	static domToValue(td) {
+		if ( td.textContent ) {
+			return parseInt(td.textContent);
+		}
+
+		if ( td.style.backgroundColor ) {
+			return -1;
+		}
+
+		return 0;
+	}
+
+	constructor(grid) {
+		this.grid = grid;
+		this.starts = this.makeStarts();
+		this.shapes = this.makeShapes();
+		this.possibles = this.makeAllPossibles();
+	}
+
+	makeStarts() {
+		const coords = [];
+		for ( let y = 0; y < this.grid.length; y++ ) {
+			for ( let x = 0; x < this.grid[0].length; x++ ) {
+				const A = this.grid[y][x];
+				if ( A > 0 ) {
+					coords.push(new Coords2D(x, y));
+				}
+			}
+		}
+
+		return coords;
+	}
+
+	makeShapes() {
+		const shapes = {};
+		for ( let A = 2; A <= 12; A++ ) {
+			shapes[A] = [];
+			for ( let w = 1; w <= A; w++ ) {
+				if ( A % w == 0 ) {
+					shapes[A].push(new RectanglesSolverShape(w, A/w));
+				}
+			}
+		}
+
+		return shapes;
+	}
+
+	makeAllPossibles() {
+		return this.starts.map(C => this.makePossiblesFor(C));
+	}
+
+	makePossiblesFor(C) {
+		const A = this.grid[C.y][C.x];
+
+		const possibles = [];
+		this.shapes[A].forEach(shape => {
+			const dx = shape.width;
+			const dy = shape.height;
+			for ( let y = C.y; y >= 0 && y > C.y - dy; y-- ) {
+				for ( let x = C.x; x >= 0 && x > C.x - dx; x-- ) {
+					if ( x + dx <= this.grid[0].length && y + dy <= this.grid.length ) {
+						const start = new Coords2D(x, y);
+						const area = new RectanglesSolverArea(start, shape);
+						if ( this.freeArea(area, C) ) {
+							possibles.push(area);
+						}
+					}
+				}
+			}
+		});
+
+// console.log(A, possibles);
+		return possibles;
+	}
+
+	freeArea(area, forC) {
+		const C = area.topleft;
+		const shape = area.shape;
+
+		for ( let y = C.y; y < C.y + shape.height; y++ ) {
+			for ( let x = C.x; x < C.x + shape.width; x++ ) {
+// console.log('check', x, y);
+				const self = forC.x == x && forC.y == y;
+				if ( this.grid[y][x] != 0 && !self ) {
+// console.log('INVALID', this.grid[y][x], self);
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+}
+
+class RectanglesSolverShape {
+
+	constructor(width, height) {
+		this.width = width;
+		this.height = height;
+	}
+
+}
+
+class RectanglesSolverArea {
+
+	constructor(topleft, shape) {
+		this.topleft = topleft;
+		this.shape = shape;
+	}
+
+}
 </script>
 <?php
 
