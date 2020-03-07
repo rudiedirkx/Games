@@ -34,9 +34,8 @@ td:not(:empty) {
 	content: attr(data-size);
 }*/
 </style>
+<style id="colors"></style>
 <? include 'tpl.onerror.php' ?>
-<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
-<script src="<?= html_asset('gridgame.js') ?>"></script>
 </head>
 
 <body>
@@ -59,9 +58,20 @@ Rectangles::playTable($grid);
 	<button id="edit">Edit</button>
 </p>
 
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
 var draggingStart = null;
 var draggingEnd = null;
+var colors = [];
+
+function registerNewColor() {
+	colors.push('#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6));
+	$('#colors').setText(colors.map((color, i) => {
+		return `td[data-color="${i}"] { background-color: ${color}; }`;
+	}).join("\n"));
+	return colors.length - 1;
+}
 
 $('table').on(['mousedown', 'touchstart'], function(e) {
 	e.preventDefault();
@@ -95,11 +105,11 @@ $('table').on(['mouseup', 'touchend'], function(e) {
 		var [y1, y2] = [draggingStart.parentNode.rowIndex, draggingEnd.parentNode.rowIndex];
 		y1 > y2 && ([y1, y2] = [y2, y1]);
 
-		const color = '#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6);
+		const color = registerNewColor();
 		const grid = draggingStart.parentNode.parentNode;
 		for ( let y = y1; y <= y2; y++ ) {
 			for ( let x = x1; x <= x2; x++ ) {
-				grid.rows[y].cells[x].attr('style', `background-color: ${color}`);
+				grid.rows[y].cells[x].data('color', color);
 			}
 		}
 	}
@@ -136,7 +146,7 @@ class RectanglesSolver {
 			return parseInt(value);
 		}
 
-		if ( td.style.backgroundColor ) {
+		if ( td.data('color') ) {
 			return -1;
 		}
 
