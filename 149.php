@@ -1,10 +1,7 @@
 <?php
 
-session_start();
+require __DIR__ . '/inc.bootstrap.php';
 
-define('S_NAME', '149_shifter');
-
-// correct image
 $g_arrMap = array(
 	24, 5, 15, 11, 20,
 	9, 14, 25, 4, 10,
@@ -13,47 +10,10 @@ $g_arrMap = array(
 	7, 17, 6, 16, 21
 );
 
-$arrEmpties = array(
-	7 => true,
-	10 => true,
-	11 => true,
-	17 => true,
-	18 => true,
-	20 => true,
-);
+$arrEmpties = [7, 10, 11, 17, 18, 20];
 
-if ( isset($_POST['map']) ) {
-	$arrMap = array_map('intval', explode(',', $_POST['map']));
-
-//	exit( $arrMap === $g_arrMap ? 'Yes' : 'No' );
-
-	$iOk = 0;
-	foreach ( $g_arrMap AS $k => $iPad ) {
-		if ( !isset($arrMap[$k]) ) {
-			exit('NO');
-		}
-		else if ( $iPad === $arrMap[$k] ) {
-			$iOk++;
-		}
-		else if ( !isset($arrEmpties[$arrMap[$k]]) || !isset($arrEmpties[$iPad]) ) {
-			exit('NO');
-		}
-	}
-	if ( !isset($_SESSION[S_NAME]['start_time']) ) {
-		$_SESSION[S_NAME]['start_time'] = 0;
-	}
-	$iTime = time()-(int)$_SESSION[S_NAME]['start_time'];
-	exit('YES:'.$iTime);
-}
-
-
-// shuffle
 shuffle($g_arrMap);
-
-// break down into 2D array
-$g_arrMap = array_chunk($g_arrMap, 5);
-
-$_SESSION[S_NAME]['start_time'] = time();
+$arrMap = array_chunk($g_arrMap, 5);
 
 ?>
 <html>
@@ -82,49 +42,7 @@ div.dot img {
 	height				: 16px;
 }
 </style>
-<script type="text/javascript" src="/js/general_1_2_6.js"></script>
-<script type="text/javascript" src="/js/ajax_1_2_1.js"></script>
-<script type="text/javascript">
-<!--//
-var SHIFTER = {
-	check : function() {
-		new Ajax('', {
-			params		: 'map=' + SHIFTER.export(),
-			onComplete	: function(a) {
-				var t = a.responseText;
-				alert('YES' == t.split(':')[0] ? 'Game over! Congratulations! ('+t.split(':')[1]+' sec)' : 'Not yet... But keep trying!');
-			}
-		});
-		return false;
-	},
-
-	rotate : function(o) {
-		var c = o.getAttribute('pads').split(','), srcs = [$('pad_'+c[3]).src, $('pad_'+c[0]).src, $('pad_'+c[1]).src, $('pad_'+c[2]).src]
-		foreach ( c, function(k, v) {
-			$('pad_'+v).src = srcs[k];
-		});
-		return false;
-	},
-
-	export : function() {
-		var pads = $('padtable').getElementsByTagName('img'), o = [];
-		foreach(pads, function(k, v) {
-			var x = v.src.split('_'), x = x[x.length-1], x = x.split('.')[0];
-			o.push(x);
-		});
-		return o.join(',');
-	}
-};
-
-addEventHandler(window, 'load', function() {
-	foreach ( $('dots').getElementsByTagName('img'), function(k, dot) {
-		dot.onclick = function() {
-			return SHIFTER.rotate(this);
-		}
-	});
-});
-//-->
-</script>
+<? include 'tpl.onerror.php' ?>
 </head>
 
 <body>
@@ -133,11 +51,9 @@ addEventHandler(window, 'load', function() {
 <?php
 
 $n = 0;
-foreach ( $g_arrMap AS $arrLine )
-{
+foreach ( $arrMap AS $arrLine ) {
 	echo '<tr>';
-	foreach ( $arrLine AS $iImage )
-	{
+	foreach ( $arrLine AS $iImage ) {
 		$n++;
 		echo '<th><img id="pad_'.$n.'" src="/images/149_'.(int)$iImage.'.bmp" width="83" height="83" /></th>';
 	}
@@ -146,14 +62,6 @@ foreach ( $g_arrMap AS $arrLine )
 
 ?>
 </table>
-
-<p>
-	<div>
-		<div><a href="#" onclick="return SHIFTER.check();">check</a></div>
-		<div><a href="#" onclick="$('exportresult').innerHTML = SHIFTER.export();return false;">export</a></div>
-	</div>
-	<div id="exportresult"></div>
-</p>
 
 <div id="dots">
 	<div class="dot" style=" left:75px; top:75px;"><img pads="1,2,7,6" src="/images/149_dot.gif" /></div>
@@ -174,6 +82,28 @@ foreach ( $g_arrMap AS $arrLine )
 	<div class="dot" style="left:324px;top:324px;"><img pads="19,20,25,24" src="/images/149_dot.gif" /></div>
 </div>
 </div>
+
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script>
+function rotate(o) {
+	const c = o.attr('pads').split(',');
+	const srcs = [
+		$('#pad_'+c[3]).src,
+		$('#pad_'+c[0]).src,
+		$('#pad_'+c[1]).src,
+		$('#pad_'+c[2]).src,
+	]
+
+	c.forEach(function(v, k) {
+		$('#pad_'+v).src = srcs[k];
+	});
+}
+
+$('#dots').on('click', 'img', function(e) {
+	return rotate(this);
+});
+</script>
 </body>
 
 </html>
