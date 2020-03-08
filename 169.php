@@ -56,6 +56,7 @@ Rectangles::playTable($grid);
 ?>
 <p>
 	<button id="edit">Edit</button>
+	<button id="export">Export to URL</button>
 </p>
 
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
@@ -129,6 +130,16 @@ $('#edit').on('click', e => {
 		console.log(RectanglesSolver.fromDom($('table')));
 	}
 });
+
+$('#export').on('click', e => {
+	const chars = $$('td').map(td => td.textContent ? String.fromCharCode(96 + parseInt(td.textContent)) : '_');
+	location.hash = chars.join('');
+});
+
+if (location.hash && location.hash.substr(1).match(/^[_a-z]+$/)) {
+	const chars = location.hash.substr(1);
+	$$('td').forEach((el, i) => el.textContent = chars[i] == '_' ? '' : (chars[i].charCodeAt(0) - 96));
+}
 
 setTimeout(() => console.log(RectanglesSolver.fromDom($('table'))), 100);
 
