@@ -26,6 +26,7 @@ td {
 	padding: 0;
 	vertical-align: middle;
 	text-align: center;
+	font-weight: bold;
 }
 </style>
 <style id="colors"></style>
@@ -50,12 +51,35 @@ var winTimer;
 const $table = $$('table').last();
 
 function winCheck() {
-	const wrongs = $table.getElements('td')
-		.filter(td => td.textContent)
-		.filter(td => td.textContent != $table.getElements(`td[bgcolor="${td.bgColor}"]`).length);
+	const starts = $table.getElements('td').filter(td => td.textContent != '');
+	const groups = starts.map(cell => {
+		const group = [];
+		extendGroup(group, cell);
+		return group;
+	});
+
+	const wrongs = groups.filter((group, i) => group.length != parseInt(starts[i].textContent));
 	if (wrongs.length == 0) {
 		alert("You win!");
 	}
+}
+
+function extendGroup(group, cell, groupColor) {
+	if (!cell || group.includes(cell)) return;
+	groupColor || (groupColor = cell.bgColor);
+	if (!groupColor || cell.bgColor !== groupColor) return;
+
+	group.push(cell);
+	// cell.textContent += 'x';
+
+	const grid = cell.parentNode.parentNode;
+	const x = cell.cellIndex;
+	const y = cell.parentNode.rowIndex;
+
+	extendGroup(group, grid.rows[y-1] && grid.rows[y-1].cells[x], groupColor);
+	extendGroup(group, grid.rows[y+1] && grid.rows[y+1].cells[x], groupColor);
+	extendGroup(group, grid.rows[y].cells[x-1], groupColor);
+	extendGroup(group, grid.rows[y].cells[x+1], groupColor);
 }
 
 $table.on('click', 'td', function(e) {
