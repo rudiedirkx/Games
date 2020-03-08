@@ -120,6 +120,7 @@ document.on(['mouseup', 'touchend'], function(e) {
 
 var editable = false;
 $('#edit').on('click', e => {
+	$$('td').data('color', null);
 	if (editable = !editable) {
 		$$('td').attr('contenteditable', '').setText('')[0].focus();
 	}
