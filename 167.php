@@ -37,7 +37,7 @@ td {
 
 $builder = new FillingBuilder($size, $size);
 $builder->build() or die('Random build failed. Try again.');
-$builder->printTableDebug();
+// $builder->printTableDebug();
 $builder->printTablePlayable();
 
 ?>
@@ -88,7 +88,8 @@ class FillingBuilder {
 
 	protected $map;
 	protected $groups;
-	protected $colors;
+	protected $groupColors;
+	protected $sizeColors;
 	public $errors;
 
 	public $log = [];
@@ -110,7 +111,8 @@ class FillingBuilder {
 	protected function reset() {
 		$this->map = array_fill(0, $this->height, array_fill(0, $this->width, -1));
 		$this->groups = [];
-		$this->colors = [];
+		$this->groupColors = [];
+		$this->sizeColors = [];
 		$this->errors = [];
 	}
 
@@ -247,11 +249,19 @@ class FillingBuilder {
 	}
 
 	protected function getGroupColor( $groupIndex ) {
-		if (!isset($this->colors[$groupIndex])) {
-			$this->colors[$groupIndex] = substr('00000' . dechex(rand(0, pow(256, 3) - 1)), -6);
+		if (!isset($this->groupColors[$groupIndex])) {
+			$this->groupColors[$groupIndex] = substr('00000' . dechex(rand(0, pow(256, 3) - 1)), -6);
 		}
 
-		return $this->colors[$groupIndex];
+		return $this->groupColors[$groupIndex];
+	}
+
+	protected function getSizeColor( $size ) {
+		if (!isset($this->sizeColors[$size])) {
+			$this->sizeColors[$size] = substr('00000' . dechex(rand(0, pow(256, 3) - 1)), -6);
+		}
+
+		return $this->sizeColors[$size];
 	}
 
 	public function printText() {
@@ -274,12 +284,13 @@ class FillingBuilder {
 			echo "<tr>\n";
 			foreach ($row as $x => $groupIndex) {
 				$group = $this->groups[$groupIndex];
+				$size = count($group);
 
 				$show = count($group) > 1 && in_array("$x-$y", $shows);
-				$bgcolor = $show ? ' bgcolor="#' . $this->getGroupColor($groupIndex) . '"' : '';
+				$bgcolor = $show ? ' bgcolor="#' . $this->getSizeColor($size) . '"' : '';
 
 				echo '<td' . $bgcolor . '>';
-				echo $show ? count($group) : '';
+				echo $show ? $size : '';
 				echo "</td>\n";
 			}
 			echo "</tr>\n";
