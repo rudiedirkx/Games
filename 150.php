@@ -1,158 +1,106 @@
 <?php
 
-session_start();
+require __DIR__ . '/inc.bootstrap.php';
 
-define('S_NAME', '150_switchboard');
+$g_arrGrid = [
+	['20', '12', '10', '20', '11', '20', '13'],
+	['12', '12', '00', '00', '11', '12', '23'],
+	['23', '00', '23', '13', '00', '23', '22'],
+	['01', '20', '20', '00', '12', '13', '23'],
+	['01', '23', '12', '13', '01', '22', '20'],
+	['21', '00', '12', '12', '22', '00', '21'],
+	['01', '22', '21', '23', '20', '11', '22'],
+];
 
 ?>
+<!doctype html>
 <html>
 
 <head>
 <title>Switch Board</title>
 <style>
-table#switchboard th {
-	width				: 50px;
-	height				: 50px;
+table {
+	border-collapse: collapse;
 }
-table#switchboard img {
-	border				: 0;
-	width				: 50px;
-	height				: 50px;
+table th {
+	width: 50px;
+	height: 50px;
+}
+table img {
+	border: 0;
+	width: 50px;
+	height: 50px;
+	display: block;
 }
 </style>
-<script type="text/javascript" src="/js/general_1_2_6.js"></script>
-<script type="text/javascript" src="/js/ajax_1_2_1.js"></script>
-<script type="text/javascript">
-<!--//
-var SWITCHBOARD = {
-	types : [
+</head>
+
+<body>
+<table id="switchboard" border="0" cellpadding="0" cellspacing="0">
+	<thead>
+		<tr>
+			<? foreach ($g_arrGrid[0] as $cell): ?>
+				<th><button class="switch-col">o</button></th>
+			<? endforeach ?>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody id="switchboard_tbody">
+		<? foreach ($g_arrGrid as $row): ?>
+			<tr>
+				<? foreach ($row as $cell): ?>
+					<td><img data-type="<?= $cell[0] ?>" data-rotation="<?= $cell[1] ?>" /></td>
+				<? endforeach ?>
+				<th><button class="switch-row">o</button></th>
+			</tr>
+		<? endforeach ?>
+	</tbody>
+</table>
+
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script>
+const SWITCHBOARD = {
+	types: [
 		['150_0_0', '150_0_1', '150_0_2', '150_0_3'],
 		['150_1_0', '150_1_1', '150_1_2', '150_1_3'],
 		['150_2_0', '150_2_1', '150_2_2', '150_2_3']
 	],
 
-	switchCol : function(c) {
-		var r = $('switchboard_tbody').rows, s = [];
-		foreach ( r, function(k, v) {
-			s.push(v.cells[c].getElementsByTagName('img')[0]);
-		});
-		return SWITCHBOARD.switchFromSource(s);
+	switchCol(index) {
+		const s = $$(`#switchboard_tbody tr > td:nth-child(${index+1}) > img`);
+		SWITCHBOARD.switchFromSource(s);
 	},
 
-	switchRow : function(r) {
-		var s = r.getElementsByTagName('img');
-		return SWITCHBOARD.switchFromSource(s);
+	switchRow(index) {
+		const s = $$(`#switchboard_tbody tr:nth-child(${index+1}) > td > img`);
+		SWITCHBOARD.switchFromSource(s);
 	},
 
-	switchFromSource : function(s) {
-		foreach ( s, function(k, v) {
-			var t = parseInt(v.getAttribute('type')), r = parseInt(v.getAttribute('rotation'))+1;
-			if ( 3 < r ) {
-				r = 0;
-			}
-			v.setAttribute('rotation', r);
+	switchFromSource(s) {
+		s.forEach((v, k) => {
+			const t = parseInt(v.data('type'));
+			const r = (parseInt(v.data('rotation')) + 1) % 4;
+			v.data('rotation', r);
 			v.src = '/images/' + SWITCHBOARD.types[t][r] + '.bmp';
 		});
-		return false;
 	}
 
 };
-addEventHandler(window, 'load', function() {
-	foreach ( $('switchboard').getElementsByTagName('img'), function(k, v) {
-		v.src = '/images/' + SWITCHBOARD.types[parseInt(v.getAttribute('type'))][parseInt(v.getAttribute('rotation'))] + '.bmp';
-	});
-});
-//-->
-</script>
-</head>
 
-<body>
-<table id="switchboard" border="0" cellpadding="0" cellspacing="0">
-<thead>
-<tr>
-	<th><a href="#" onclick="return SWITCHBOARD.switchCol(this.parentNode.cellIndex);">O</a></th>
-	<th><a href="#" onclick="return SWITCHBOARD.switchCol(this.parentNode.cellIndex);">O</a></th>
-	<th><a href="#" onclick="return SWITCHBOARD.switchCol(this.parentNode.cellIndex);">O</a></th>
-	<th><a href="#" onclick="return SWITCHBOARD.switchCol(this.parentNode.cellIndex);">O</a></th>
-	<th><a href="#" onclick="return SWITCHBOARD.switchCol(this.parentNode.cellIndex);">O</a></th>
-	<th><a href="#" onclick="return SWITCHBOARD.switchCol(this.parentNode.cellIndex);">O</a></th>
-	<th><a href="#" onclick="return SWITCHBOARD.switchCol(this.parentNode.cellIndex);">O</a></th>
-	<th></th>
-</tr>
-</thead>
-<tbody id="switchboard_tbody">
-<tr>
-	<td><img type="2" rotation="0" /></td>
-	<td><img type="1" rotation="2" /></td>
-	<td><img type="1" rotation="0" /></td>
-	<td><img type="2" rotation="0" /></td>
-	<td><img type="1" rotation="1" /></td>
-	<td><img type="2" rotation="0" /></td>
-	<td><img type="1" rotation="3" /></td>
-	<th><a href="#" onclick="return SWITCHBOARD.switchRow(this.parentNode.parentNode);">O</a></th>
-</tr>
-<tr>
-	<td><img type=1"" rotation="2" /></td>
-	<td><img type=1"" rotation="2" /></td>
-	<td><img type=0"" rotation="0" /></td>
-	<td><img type=0"" rotation="0" /></td>
-	<td><img type=1"" rotation="1" /></td>
-	<td><img type=1"" rotation="2" /></td>
-	<td><img type=2"" rotation="3" /></td>
-	<th><a href="#" onclick="return SWITCHBOARD.switchRow(this.parentNode.parentNode);">O</a></th>
-</tr>
-<tr>
-	<td><img type="2" rotation="3" /></td>
-	<td><img type="0" rotation="0" /></td>
-	<td><img type="2" rotation="3" /></td>
-	<td><img type="1" rotation="3" /></td>
-	<td><img type="0" rotation="0" /></td>
-	<td><img type="2" rotation="3" /></td>
-	<td><img type="2" rotation="2" /></td>
-	<th><a href="#" onclick="return SWITCHBOARD.switchRow(this.parentNode.parentNode);">O</a></th>
-</tr>
-<tr>
-	<td><img type="0" rotation="1" /></td>
-	<td><img type="2" rotation="0" /></td>
-	<td><img type="2" rotation="0" /></td>
-	<td><img type="0" rotation="0" /></td>
-	<td><img type="1" rotation="2" /></td>
-	<td><img type="1" rotation="3" /></td>
-	<td><img type="2" rotation="3" /></td>
-	<th bgcolor="gold"><a href="#" onclick="return SWITCHBOARD.switchRow(this.parentNode.parentNode);">O</a></th>
-</tr>
-<tr>
-	<td><img type="0" rotation="1" /></td>
-	<td><img type="2" rotation="3" /></td>
-	<td><img type="1" rotation="2" /></td>
-	<td><img type="1" rotation="3" /></td>
-	<td><img type="0" rotation="1" /></td>
-	<td><img type="2" rotation="2" /></td>
-	<td><img type="2" rotation="0" /></td>
-	<th><a href="#" onclick="return SWITCHBOARD.switchRow(this.parentNode.parentNode);">O</a></th>
-</tr>
-<tr>
-	<td><img type="2" rotation="1" /></td>
-	<td><img type="0" rotation="0" /></td>
-	<td><img type="1" rotation="2" /></td>
-	<td><img type="1" rotation="2" /></td>
-	<td><img type="2" rotation="2" /></td>
-	<td><img type="0" rotation="0" /></td>
-	<td><img type="2" rotation="1" /></td>
-	<th><a href="#" onclick="return SWITCHBOARD.switchRow(this.parentNode.parentNode);">O</a></th>
-</tr>
-<tr>
-	<td><img type="0" rotation="1" /></td>
-	<td><img type="2" rotation="2" /></td>
-	<td><img type="2" rotation="1" /></td>
-	<td><img type="2" rotation="3" /></td>
-	<td><img type="2" rotation="0" /></td>
-	<td><img type="1" rotation="1" /></td>
-	<td><img type="2" rotation="2" /></td>
-	<th><a href="#" onclick="return SWITCHBOARD.switchRow(this.parentNode.parentNode);">O</a></th>
-</tr>
-</tbody>
-</table>
+$$('#switchboard img').forEach(function(v, k) {
+	v.src = '/images/' + SWITCHBOARD.types[v.data('type')][v.data('rotation')] + '.bmp';
+});
+
+$$('.switch-col').on('click', function(e) {
+	e.preventDefault();
+	SWITCHBOARD.switchCol(this.closest('tr > *').cellIndex);
+});
+$$('.switch-row').on('click', function(e) {
+	e.preventDefault();
+	SWITCHBOARD.switchRow(this.closest('tr').sectionRowIndex);
+});
+</script>
 </body>
 
 </html>

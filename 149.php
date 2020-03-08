@@ -16,6 +16,7 @@ shuffle($g_arrMap);
 $arrMap = array_chunk($g_arrMap, 5);
 
 ?>
+<!doctype html>
 <html>
 
 <head>
