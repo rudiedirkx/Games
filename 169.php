@@ -65,6 +65,7 @@ Rectangles::playTable($grid);
 var draggingStart = null;
 var draggingEnd = null;
 var colors = [];
+var winTimer;
 
 function registerNewColor() {
 	colors.push('#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6));
@@ -72,6 +73,33 @@ function registerNewColor() {
 		return `td[data-color="${i}"] { background-color: ${color}; }`;
 	}).join("\n"));
 	return colors.length - 1;
+}
+function isGoalCell(td) {
+	return td.textContent != '';
+}
+
+function winCheck() {
+	if ($$('td:not([data-color]').length) return;
+
+	const colors = $$('td[data-color]').map(td => td.data('color')).unique();
+	const errors = colors.map(color => {
+		const cells = $$(`td[data-color="${color}"]`);
+		const colorCells = cells.filter(isGoalCell);
+		if (colorCells.length != 1) return 1;
+
+		const tl = cells.first();
+		const br = cells.last();
+		const A = (br.cellIndex - tl.cellIndex + 1) * (br.parentNode.rowIndex - tl.parentNode.rowIndex + 1);
+		if (A != parseInt(colorCells[0].textContent)) return 2;
+		if (A != cells.length) return 3;
+
+		return 0;
+	});
+
+	const goals = $$('td').filter(isGoalCell);
+	if (errors.join('') === '0'.repeat(goals.length)) {
+		alert("You win!");
+	}
 }
 
 $('table').on(['mousedown', 'touchstart'], function(e) {
@@ -86,15 +114,11 @@ $('table').on(['mousemove', 'touchmove'], function(e) {
 	e.preventDefault();
 
 	draggingEnd = document.elementFromPoint(e.pageX, e.pageY);
-	// console.log(draggingEnd);
 });
 $('table').on(['mouseup', 'touchend'], function(e) {
 	e.preventDefault();
 
 	draggingEnd || (draggingEnd = e.target);
-	// draggingEnd = document.elementFromPoint(e.pageX, e.pageY);
-	// console.log(draggingStart, draggingEnd);
-	// alert(draggingStart.cellIndex + ' - ' + draggingEnd.cellIndex);
 	if (draggingStart == draggingEnd) {
 		draggingStart.attr('style', null);
 		draggingStart = draggingEnd = null;
@@ -113,6 +137,9 @@ $('table').on(['mouseup', 'touchend'], function(e) {
 				grid.rows[y].cells[x].data('color', color);
 			}
 		}
+
+		clearTimeout(winTimer);
+		winTimer = setTimeout(winCheck, 500);
 	}
 });
 document.on(['mouseup', 'touchend'], function(e) {
