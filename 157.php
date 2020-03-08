@@ -1,6 +1,8 @@
 <?php
 // Fortune's Tower
 
+require __DIR__ . '/inc.bootstrap.php';
+
 /**
  * TODO:
  * - gatecard checken (misschien maakt ie een nieuwe verticale combi)		v
