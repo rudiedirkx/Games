@@ -148,7 +148,11 @@ class FillingBuilder {
 			$this->reset();
 
 			while ($loc = $this->findEmptyLocation()) {
-				$this->createNewGroup($loc);
+				$groupOk = $this->createNewGroup($loc);
+// $this->printTableDebug();
+				if (!$groupOk) {
+					continue 2;
+				}
 			}
 
 			if ($this->checkIntegrity()) {
@@ -193,13 +197,20 @@ class FillingBuilder {
 			$this->log("cul de sac");
 
 			break;
-
 		}
 
 		$this->groups[] = $group;
+
+		if (count($group) == 1) {
+			return false;
+		}
+
+		return true;
 	}
 
 	protected function checkIntegrity() {
+		// return true;
+
 		$this->errors = [];
 
 		foreach ($this->groups as $groupIndex => $group) {
@@ -273,8 +284,12 @@ class FillingBuilder {
 	}
 
 	protected function getGroupColor( $groupIndex ) {
+		if ($groupIndex == -1) {
+			return '';
+		}
+
 		if (!isset($this->groupColors[$groupIndex])) {
-			$this->groupColors[$groupIndex] = substr('00000' . dechex(rand(0, pow(256, 3) - 1)), -6);
+			$this->groupColors[$groupIndex] = '#' . substr('00000' . dechex(rand(0, pow(256, 3) - 1)), -6);
 		}
 
 		return $this->groupColors[$groupIndex];
@@ -282,7 +297,7 @@ class FillingBuilder {
 
 	protected function getSizeColor( $size ) {
 		if (!isset($this->sizeColors[$size])) {
-			$this->sizeColors[$size] = substr('00000' . dechex(rand(0, pow(256, 3) - 1)), -6);
+			$this->sizeColors[$size] = '#' . substr('00000' . dechex(rand(0, pow(256, 3) - 1)), -6);
 		}
 
 		return $this->sizeColors[$size];
@@ -311,7 +326,7 @@ class FillingBuilder {
 				$size = count($group);
 
 				$show = count($group) > 1 && in_array("$x-$y", $shows);
-				$bgcolor = $show ? ' bgcolor="#' . $this->getSizeColor($size) . '"' : '';
+				$bgcolor = $show ? ' bgcolor="' . $this->getSizeColor($size) . '"' : '';
 
 				echo '<td' . $bgcolor . '>';
 				echo $show ? $size : '';
@@ -327,10 +342,10 @@ class FillingBuilder {
 		foreach ($this->map as $y => $row) {
 			echo "<tr>\n";
 			foreach ($row as $x => $groupIndex) {
-				$group = $this->groups[$groupIndex];
+				$group = $this->groups[$groupIndex] ?? [];
 
-				echo '<td bgcolor="#' . $this->getGroupColor($groupIndex) . '">';
-				echo count($group);
+				echo '<td bgcolor="' . $this->getGroupColor($groupIndex) . '">';
+				echo count($group) ?: '';
 				echo "</td>\n";
 			}
 			echo "</tr>\n";
