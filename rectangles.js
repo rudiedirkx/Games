@@ -379,23 +379,21 @@ class Rectangles extends GridGame {
 		this.m_bCheating = true;
 
 		const solver = RectanglesSolver.fromDom(this.m_objGrid);
-console.log(solver);
-		solver.possibles.forEach((possibles, i) => {
-			if (possibles.length == 1) {
-				const tlCoord = solver.starts[i];
-				const tlCell = this.m_objGrid.rows[tlCoord.y].cells[tlCoord.x];
-				if (!tlCell.data('color')) {
-					const br = new Coords2D(
-						possibles[0].topleft.x + possibles[0].shape.width - 1,
-						possibles[0].topleft.y + possibles[0].shape.height - 1
-					);
-					this.colorArea(possibles[0].topleft, br);
-				}
-				else {
-					console.warn('Double find =(');
-				}
+		const singles = [...solver.getAllSingles()];
+		for (let possible of singles) {
+			const tlCoord = possible.owner;
+			const tlCell = this.m_objGrid.rows[tlCoord.y].cells[tlCoord.x];
+			if (!tlCell.data('color')) {
+				const br = new Coords2D(
+					possible.topleft.x + possible.shape.width - 1,
+					possible.topleft.y + possible.shape.height - 1
+				);
+				this.colorArea(possible.topleft, br);
 			}
-		});
+			else {
+				throw new Error('Double find! Save this one!');
+			}
+		}
 	}
 
 	toggleEditable() {
@@ -456,23 +454,48 @@ class RectanglesSolver {
 
 	constructor(grid) {
 		this.grid = grid;
-		this.starts = this.makeStarts();
+		[this.coords, this.starts] = this.makeCoords();
 		this.shapes = this.makeShapes();
 		this.possibles = this.makeAllPossibles();
 	}
 
-	makeStarts() {
-		const coords = [];
+	getSinglesFromOwner() {
+		return this.possibles.filter(possibles => possibles.length == 1).map(possibles => possibles[0]);
+	}
+
+	getSinglesFromCoord() {
+		const allPossibles = this.possibles.flat(1);
+
+		return this.coords.map(C => {
+			return this.grid[C.y][C.x] == 0 ? allPossibles.filter(P => P.contains(C)) : [];
+		}).filter(possibles => possibles.length == 1).map(possibles => possibles[0]).unique();
+	}
+
+	*getAllSingles() {
+		const fromOwner = this.getSinglesFromOwner();
+		yield* fromOwner;
+
+		if (fromOwner.length == 0) {
+			const fromCoord = this.getSinglesFromCoord();
+			yield* fromCoord;
+		}
+	}
+
+	makeCoords() {
+		const all = [];
+		const starts = [];
 		for ( let y = 0; y < this.grid.length; y++ ) {
 			for ( let x = 0; x < this.grid[0].length; x++ ) {
+				all.push(new Coords2D(x, y));
+
 				const A = this.grid[y][x];
 				if ( A > 0 ) {
-					coords.push(new Coords2D(x, y));
+					starts.push(new Coords2D(x, y));
 				}
 			}
 		}
 
-		return coords;
+		return [all, starts];
 	}
 
 	makeShapes() {
@@ -505,7 +528,7 @@ class RectanglesSolver {
 				for ( let x = C.x; x >= 0 && x > C.x - dx; x-- ) {
 					if ( x + dx <= this.grid[0].length && y + dy <= this.grid.length ) {
 						const start = new Coords2D(x, y);
-						const area = new RectanglesSolverArea(start, shape);
+						const area = new RectanglesSolverArea(start, shape, C);
 						if ( this.freeArea(area, C) ) {
 							possibles.push(area);
 						}
@@ -541,17 +564,22 @@ class RectanglesSolverShape {
 		this.height = height;
 	}
 
-	toCoords2D() {
-		return new Coords2D(this.width, this.height);
-	}
-
 }
 
 class RectanglesSolverArea {
 
-	constructor(topleft, shape) {
+	constructor(topleft, shape, owner) {
 		this.topleft = topleft;
 		this.shape = shape;
+		this.owner = owner;
+	}
+
+	contains(C) {
+		return true &&
+			C.x >= this.topleft.x &&
+			C.y >= this.topleft.y &&
+			C.x <= this.topleft.x + this.shape.width - 1 &&
+			C.y <= this.topleft.y + this.shape.height - 1;
 	}
 
 }
