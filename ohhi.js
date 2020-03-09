@@ -343,7 +343,6 @@ class Ohhi extends GridGame {
 
 	startLoading(el) {
 		if (this.isLoading()) return false;
-		console.log('start loading', el);
 
 		const loader = document.el('img', {"class": 'loader', "src": '/images/loading.gif'});
 		el.append(loader);
@@ -356,8 +355,6 @@ class Ohhi extends GridGame {
 	}
 
 	stopLoading() {
-		console.log('stop loading');
-
 		$$('img.loader').invoke('remove');
 	}
 

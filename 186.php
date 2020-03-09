@@ -3,6 +3,8 @@
 
 require __DIR__ . '/inc.bootstrap.php';
 
+$size = $_GET['size'] ?? 6;
+
 ?>
 <!doctype html>
 <html>
@@ -66,7 +68,7 @@ td:not([data-initial]) span {
 
 <script>
 objGame = new Ohhi($('#grid'));
-objGame.createFromExport(location.hash.substr(1)) || objGame.createMap(<?= $_GET['size'] ?? '6' ?>);
+objGame.createFromExport(location.hash.substr(1)) || objGame.createMap(<?= $size ?>);
 objGame.listenControls();
 </script>
 </body>
