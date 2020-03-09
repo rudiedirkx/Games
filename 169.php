@@ -165,7 +165,11 @@ $('#export').on('click', e => {
 
 if (location.hash && location.hash.substr(1).match(/^[_a-z]+$/)) {
 	const chars = location.hash.substr(1);
-	$$('td').forEach((el, i) => el.textContent = chars[i] == '_' ? '' : (chars[i].charCodeAt(0) - 96));
+	const size = Math.sqrt(chars.length);
+	if (size == parseInt(size)) {
+		$('table').setHTML(`<tr>${'<td></td>'.repeat(size)}</tr>`.repeat(size));
+		$$('td').forEach((el, i) => el.textContent = chars[i] == '_' ? '' : (chars[i].charCodeAt(0) - 96));
+	}
 }
 
 setTimeout(() => console.log(RectanglesSolver.fromDom($('table'))), 100);
