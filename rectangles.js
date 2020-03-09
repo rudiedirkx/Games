@@ -38,16 +38,19 @@ class Rectangles extends GridGame {
 		var [y1, y2] = [start.parentNode.rowIndex, end.parentNode.rowIndex];
 		y1 > y2 && ([y1, y2] = [y2, y1]);
 
-		const color = this.registerNewColor();
-		const grid = start.parentNode.parentNode;
-		for ( let y = y1; y <= y2; y++ ) {
-			for ( let x = x1; x <= x2; x++ ) {
-				grid.rows[y].cells[x].data('color', color);
-			}
-		}
+		this.colorArea(new Coords2D(x1, y1), new Coords2D(x2, y2));
 
 		clearTimeout(this.checker);
 		this.checker = setTimeout(() => this.winOrLose(), 500);
+	}
+
+	colorArea(tl, br) {
+		const color = this.registerNewColor();
+		for ( let y = tl.y; y <= br.y; y++ ) {
+			for ( let x = tl.x; x <= br.x; x++ ) {
+				this.m_objGrid.rows[y].cells[x].data('color', color);
+			}
+		}
 	}
 
 	registerNewColor() {
@@ -287,6 +290,7 @@ class Rectangles extends GridGame {
 
 	printGrid(grid) {
 		this.m_objGrid.setHTML(this.createMapHtml(grid));
+		// setTimeout(() => console.log(RectanglesSolver.fromDom(this.m_objGrid)), 100);
 	}
 
 	createMapHtml(grid) {
@@ -354,8 +358,8 @@ class Rectangles extends GridGame {
 		});
 
 		$('#newgame').on('click', e => {
-			const size = this.m_objGrid.getElements('tr').length;
-			requestIdleCallback(() => this.createMap(size));
+			const size = prompt('Size:', this.m_objGrid.getElements('tr').length);
+			size && !isNaN(parseInt(size)) && requestIdleCallback(() => this.createMap(parseInt(size)));
 		});
 
 		$('#edit').on('click', e => {
@@ -364,6 +368,33 @@ class Rectangles extends GridGame {
 
 		$('#export').on('click', e => {
 			location.hash = this.exportCurrent();
+		});
+
+		$('#cheat').on('click', e => {
+			this.cheatOneRound();
+		});
+	}
+
+	cheatOneRound() {
+		this.m_bCheating = true;
+
+		const solver = RectanglesSolver.fromDom(this.m_objGrid);
+console.log(solver);
+		solver.possibles.forEach((possibles, i) => {
+			if (possibles.length == 1) {
+				const tlCoord = solver.starts[i];
+				const tlCell = this.m_objGrid.rows[tlCoord.y].cells[tlCoord.x];
+				if (!tlCell.data('color')) {
+					const br = new Coords2D(
+						possibles[0].topleft.x + possibles[0].shape.width - 1,
+						possibles[0].topleft.y + possibles[0].shape.height - 1
+					);
+					this.colorArea(possibles[0].topleft, br);
+				}
+				else {
+					console.warn('Double find =(');
+				}
+			}
 		});
 	}
 
@@ -375,7 +406,7 @@ class Rectangles extends GridGame {
 		}
 		else {
 			this.m_objGrid.getElements('td').attr('contenteditable', null);
-			console.log(RectanglesSolver.fromDom($('table')));
+			// console.log(RectanglesSolver.fromDom($('table')));
 		}
 	}
 
@@ -508,6 +539,10 @@ class RectanglesSolverShape {
 	constructor(width, height) {
 		this.width = width;
 		this.height = height;
+	}
+
+	toCoords2D() {
+		return new Coords2D(this.width, this.height);
 	}
 
 }

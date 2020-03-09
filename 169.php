@@ -48,13 +48,14 @@ td:not(:empty) {
 	<button id="edit">Edit</button>
 	<button id="export">Export to URL</button>
 </p>
+<p>
+	<button id="cheat">Cheat</button>
+</p>
 
 <script>
 objGame = new Rectangles($('#grid'));
 objGame.createFromExport(location.hash.substr(1)) || objGame.createMap(<?= $size ?>);
 objGame.listenControls();
-
-setTimeout(() => console.log(RectanglesSolver.fromDom($('table'))), 100);
 </script>
 </body>
 
