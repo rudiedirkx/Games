@@ -14,51 +14,65 @@ class Rectangles extends GridGame {
 
 		this.size = 0;
 		this.checker = 0;
+		this.draggingColor = null;
 		this.colors = [];
 		this.editable = false;
 	}
 
 	handleCellDragStart(start) {
-		// ...
+		this.draggingColor = this.registerNewColor();
 	}
 
 	handleCellDragMove(start, end) {
-		// ...
+		this.m_objGrid.getElements(`td[data-color="${this.draggingColor}"]`).data('color', null);
+		this.m_objGrid.getElements(`td[data-provisional-color="${this.draggingColor}"]`).data('provisional-color', null);
+		this.colorArea(...this.getCornerCoords(start, end), {provisional: true, color: this.draggingColor});
 	}
 
 	handleCellDragEnd(start, end) {
-		if (start == end) {
+		if (!end) {
 			start.data('color', null);
 			start = end = null;
 			return;
 		}
 
-		var [x1, x2] = [start.cellIndex, end.cellIndex];
-		x1 > x2 && ([x1, x2] = [x2, x1]);
-		var [y1, y2] = [start.parentNode.rowIndex, end.parentNode.rowIndex];
-		y1 > y2 && ([y1, y2] = [y2, y1]);
-
-		this.colorArea(new Coords2D(x1, y1), new Coords2D(x2, y2));
+		this.colorArea(...this.getCornerCoords(start, end), {color: this.draggingColor});
 
 		clearTimeout(this.checker);
 		this.checker = setTimeout(() => this.winOrLose(), 500);
 	}
 
-	colorArea(tl, br) {
-		const color = this.registerNewColor();
+	getCornerCoords(start, end) {
+		var [x1, x2] = [start.cellIndex, end.cellIndex];
+		x1 > x2 && ([x1, x2] = [x2, x1]);
+		var [y1, y2] = [start.parentNode.rowIndex, end.parentNode.rowIndex];
+		y1 > y2 && ([y1, y2] = [y2, y1]);
+
+		return [new Coords2D(x1, y1), new Coords2D(x2, y2)];
+	}
+
+	colorArea(tl, br, options = {provisional: false, color: null}) {
+		if (br.x == tl.x && br.y == tl.y) return;
+
+		const color = options.color == null ? this.registerNewColor() : options.color;
+		const attrAdd = options.provisional ? 'provisional-color' : 'color';
 		for ( let y = tl.y; y <= br.y; y++ ) {
 			for ( let x = tl.x; x <= br.x; x++ ) {
-				this.m_objGrid.rows[y].cells[x].data('color', color);
+				this.m_objGrid.rows[y].cells[x].data('provisional-color', null).data(attrAdd, color);
 			}
 		}
 	}
 
 	registerNewColor() {
 		this.colors.push('#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6));
-		$('#colors').setText(this.colors.map((color, i) => {
-			return `td[data-color="${i}"] { background-color: ${color}; }`;
-		}).join("\n"));
+		this.updateColorsStyle();
 		return this.colors.length - 1;
+	}
+
+	updateColorsStyle() {
+		$('#colors').setText(this.colors.map((color, i) => {
+			return `td[data-color="${i}"], td[data-provisional-color="${i}"] { background-color: ${color}; }`;
+		}).join("\n"));
 	}
 
 	getScore() {
@@ -332,15 +346,18 @@ class Rectangles extends GridGame {
 
 			e.preventDefault();
 
-			draggingEnd = document.elementFromPoint(e.pageX, e.pageY);
-			this.handleCellDragMove(draggingStart, draggingEnd);
+			const el = document.elementFromPoint(e.pageX, e.pageY);
+			if (el != draggingEnd) {
+				draggingEnd = el;
+				this.handleCellDragMove(draggingStart, draggingEnd);
+			}
 		});
 		this.m_objGrid.on(['mouseup', 'touchend'], e => {
 			if (!draggingStart) return;
 
 			e.preventDefault();
 
-			draggingEnd || (draggingEnd = e.target);
+			// draggingEnd || (draggingEnd = e.target);
 			this.handleCellDragEnd(draggingStart, draggingEnd);
 		});
 
@@ -354,7 +371,8 @@ class Rectangles extends GridGame {
 
 		$('#restart').on('click', e => {
 			this.colors.length = 0;
-			this.m_objGrid.getElements('td').data('color', null);
+			this.draggingColor = null;
+			this.m_objGrid.getElements('td').data('provisional-color', null).data('color', null);
 		});
 
 		$('#newgame').on('click', e => {
