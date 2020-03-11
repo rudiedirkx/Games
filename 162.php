@@ -7,15 +7,50 @@ require __DIR__ . '/inc.bootstrap.php';
 <html>
 
 <head>
+<meta charset="utf-8" />
 <title>Marbles</title>
-<script src="<?= html_asset('js/mootools_1_11.js') ?>"></script>
-<link rel="stylesheet" href="<?= html_asset('162.css') ?>" />
-<script src="<?= html_asset('162.js') ?>"></script>
-<script>var level = <?php echo isset($_GET['level']) ? (int)$_GET['level'] : 1; ?>;</script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+#frame {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: flex-start;
+	max-width: 480px;
+}
+#frame .column {
+	flex: 0 1 60px;
+}
+#frame div.block {
+	outline: solid 1px #555;
+	height: 0;
+	padding-top: 100%;
+	cursor: pointer;
+}
+div[data-t="1"] { background-color: red; }
+div[data-t="2"] { background-color: green; }
+div[data-t="3"] { background-color: blue; }
+div[data-t="4"] { background-color: money; }
+</style>
+<? include 'tpl.onerror.php' ?>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('marbles.js') ?>"></script>
 </head>
 
 <body>
-	<div id="frame"></div>
+<div id="frame"></div>
+
+<p>
+	<button id="newgame">New game</button>
+</p>
+
+<script>
+window.level = <?= $_GET['level'] ?? 1 ?>;
+
+$('#frame').on('click', '.block', blockClicked);
+fillFrame();
+
+$('#newgame').on('click', e => fillFrame());
+</script>
 </body>
 
 </html>
