@@ -1,4 +1,5 @@
 <?php
+// MARBLES
 
 require __DIR__ . '/inc.bootstrap.php';
 
@@ -45,12 +46,9 @@ div[data-t="4"] { background-color: money; }
 </p>
 
 <script>
-window.level = <?= $_GET['level'] ?? 1 ?>;
-
-$('#frame').on('click', '.block', blockClicked);
-fillFrame();
-
-$('#newgame').on('click', e => fillFrame());
+objGame = new Marbles($('#frame'));
+objGame.createMap(<?= $_GET['level'] ?? 1 ?>);
+objGame.listenControls();
 </script>
 </body>
 
