@@ -3,6 +3,7 @@ window.level = 1;
 const width = 8;
 const height = 6;
 var winChecker;
+var start = Date.now();
 
 const colors = () => window.level + 1;
 
@@ -11,6 +12,8 @@ function randomBlock() {
 }
 
 function fillFrame() {
+	start = Date.now();
+
 	const $frame = $('#frame').empty();
 
 	for ( let x = 0; x < width; x++ ) {
@@ -60,6 +63,12 @@ function blockClicked() {
 
 function checkWin() {
 	if ($('#frame').childElementCount == 0) {
-		alert('You win!');
+		const time = Math.ceil((Date.now() - start) / 1000);
+		Game.saveScore({
+			time,
+			level: window.level,
+		});
+
+		setTimeout(() => alert('You win!'), 50);
 	}
 }

@@ -33,6 +33,7 @@ div[data-t="4"] { background-color: money; }
 </style>
 <? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('marbles.js') ?>"></script>
 </head>
 

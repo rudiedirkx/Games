@@ -397,6 +397,7 @@ class Rectangles extends GridGame {
 		this.m_bCheating = true;
 
 		const solver = RectanglesSolver.fromDom(this.m_objGrid);
+console.log(solver);
 		const singles = [...solver.getAllSingles()];
 		for (let possible of singles) {
 			const tlCoord = possible.owner;
@@ -453,6 +454,7 @@ class RectanglesSolver {
 			return new this(grid);
 		}
 		catch (ex) {
+			console.error(ex);
 			return {};
 		}
 	}
