@@ -52,7 +52,7 @@ class Game {
 		this.stopTime();
 		this.m_iStartTime = 0;
 		this.m_iTimer = 0;
-		this.setTime('-');
+		this.setTime('0:00');
 	}
 
 	statTypes() {
