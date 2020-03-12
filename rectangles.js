@@ -20,6 +20,8 @@ class Rectangles extends GridGame {
 	}
 
 	handleCellDragStart(start) {
+		this.startTime();
+
 		this.draggingColor = this.registerNewColor();
 	}
 

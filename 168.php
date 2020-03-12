@@ -89,6 +89,8 @@ function startGame() {
 		cell.dataset.color = setColor(cell, COLORS[parseInt(Math.random() * COLORS.length)]);
 	});
 	$('#turns').textContent = String(turns = 0);
+
+	start = Date.now();
 }
 
 function getColor(cell) {
