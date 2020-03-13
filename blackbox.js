@@ -41,6 +41,13 @@ class Blackbox extends GridGame {
 		super.win();
 	}
 
+	getScore() {
+		return {
+			...super.getScore(),
+			level: this.constructor.SIZE << 8 | this.atoms,
+		};
+	}
+
 	randomColor() {
 		return '#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6);
 	}
