@@ -152,7 +152,9 @@ class Blackbox extends GridGame {
 
 	handleInsideClick(cell) {
 		cell.toggleClass('hilite');
+	}
 
+	startWinCheck() {
 		clearTimeout(this.checker);
 		this.checker = setTimeout(() => this.winOrLose(), 500);
 	}
@@ -166,9 +168,11 @@ class Blackbox extends GridGame {
 
 		if (cell.data('side')) {
 			this.handleSideClick(cell);
+			this.startWinCheck();
 		}
 		else if (cell.hasClass('grid')) {
 			this.handleInsideClick(cell);
+			this.startWinCheck();
 		}
 	}
 
