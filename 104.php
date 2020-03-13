@@ -233,7 +233,11 @@ Blackbox.prototype = {
 
 		$.post('?', 'check=1' + a.join('')).on('done', (e, rsp) => {
 			if ( rsp.success ) {
-				Game.saveScore({time: this.getTime(), moves: this.m_iBeams});
+				Game.saveScore({
+					level: <?= $SIDES ?> << 8 | <?= $ATOMS ?>,
+					time: this.getTime(),
+					moves: this.m_iBeams,
+				});
 			}
 
 			alert(rsp.error || rsp.success);

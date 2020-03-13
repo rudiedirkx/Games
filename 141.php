@@ -528,7 +528,11 @@ Blackbox.prototype = {
 			this.m_GameOver = true;
 
 			// Save score
-			Game.saveScore({time: iPlaytime, moves: this.m_iBeams});
+			Game.saveScore({
+				level: this.m_sides << 8 | this.m_iAtoms,
+				time: iPlaytime,
+				moves: this.m_iBeams,
+			});
 
 			// Alert to user
 			setTimeout(() => {
