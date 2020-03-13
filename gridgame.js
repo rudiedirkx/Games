@@ -127,9 +127,11 @@ class Game {
 			this.constructor.saveScore(this.getScore());
 		}
 
-		setTimeout(function() {
-			alert('You WIN :-)');
-		}, this.ALERT_DELAY);
+		setTimeout(() => alert(this.getWinText()), this.ALERT_DELAY);
+	}
+
+	getWinText() {
+		return 'You WIN :-)';
 	}
 
 	lose() {

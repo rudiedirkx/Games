@@ -41,6 +41,14 @@ class Blackbox extends GridGame {
 		super.win();
 	}
 
+	getWinText() {
+		return 'You WIN :-)\n\nYour score: ' + this.getNumericalScore();
+	}
+
+	getNumericalScore() {
+		return Math.max(0, 2000 - this.getTime() * 5 - this.m_iMoves * 30);
+	}
+
 	getScore() {
 		return {
 			...super.getScore(),
@@ -170,6 +178,25 @@ class Blackbox extends GridGame {
 		$('#newgame').on('click', e => {
 			this.createMap();
 		});
+
+		$('#reveal').on('click', e => {
+			this.m_bGameOver = this.m_bCheating = true;
+			this.stopTime();
+			this.m_objGrid.addClass('show-atoms');
+		});
+	}
+
+	setTime(time) {
+		super.setTime(time);
+
+		$('#stats-score').setText(this.getNumericalScore());
+	}
+
+	statTypes() {
+		return {
+			...super.statTypes(),
+			score: 'Score',
+		};
 	}
 
 	createGame() {

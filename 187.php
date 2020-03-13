@@ -27,6 +27,7 @@ require __DIR__ . '/inc.bootstrap.php';
 </p>
 <p style="text-align: center">
 	<button id="newgame">New game</button>
+	<button id="reveal">Show atoms</button>
 </p>
 
 <script>
