@@ -140,7 +140,7 @@ else if ( isset($_POST['check']) ) {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BLACKBOX PHP</title>
-<link rel="stylesheet" href="blackbox.css" />
+<link rel="stylesheet" href="<?= html_asset('blackbox.css') ?>" />
 <style>
 </style>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>

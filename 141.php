@@ -58,7 +58,7 @@ else if ( isset($_GET['image']) ) {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BLACKBOX JS</title>
-<link rel="stylesheet" href="blackbox.css" />
+<link rel="stylesheet" href="<?= html_asset('blackbox.css') ?>" />
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>
