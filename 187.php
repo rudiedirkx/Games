@@ -18,14 +18,16 @@ require __DIR__ . '/inc.bootstrap.php';
 <script src="<?= html_asset('blackbox.js') ?>"></script>
 </head>
 
-<body>
+<body style="padding: 8px">
 
-<table id="blackbox"></table>
+<table id="blackbox" style="margin: 0; width: auto; height: auto"></table>
 
-<p style="text-align: center">
+<p>
 	<span id="stats"></span>
 </p>
-<p style="text-align: center">
+<p>
+	Size: <select id="board-size"></select>
+	Atoms: <select id="board-atoms"></select>
 	<button id="newgame">New game</button>
 	<button id="reveal">Show atoms</button>
 </p>

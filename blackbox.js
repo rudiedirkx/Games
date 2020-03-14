@@ -1,12 +1,8 @@
 class Blackbox extends GridGame {
 
-	static SIZE = 8;
-	static SIDES = ['top', 'right', 'bottom', 'left'];
-
 	reset() {
 		super.reset();
 
-		this.atoms = 5;
 		this.checker = 0;
 	}
 
@@ -22,7 +18,7 @@ class Blackbox extends GridGame {
 
 		const coords = this.makeAllCoords();
 		coords.sort(() => Math.random() > 0.5 ? 1 : -1);
-		coords.slice(0, this.atoms).forEach(C => this.m_objGrid.rows[C.y].cells[C.x].addClass('atom'));
+		coords.slice(0, Blackbox.ATOMS).forEach(C => this.m_objGrid.rows[C.y].cells[C.x].addClass('atom'));
 
 		// this.m_objGrid.addClass('show-atoms');
 	}
@@ -52,7 +48,7 @@ class Blackbox extends GridGame {
 	getScore() {
 		return {
 			...super.getScore(),
-			level: this.constructor.SIZE << 8 | this.atoms,
+			level: Blackbox.SIZE << 8 | Blackbox.ATOMS,
 		};
 	}
 
@@ -130,7 +126,7 @@ class Blackbox extends GridGame {
 
 		let cur = new BlackboxMove(
 			cell,
-			(this.constructor.SIDES.indexOf(cell.data('side')) + 2) % 4
+			(Blackbox.SIDES.indexOf(cell.data('side')) + 2) % 4
 		);
 		for ( let i = 0; i < 200; i++ ) {
 			cur = this.getNextMove(cur);
@@ -188,6 +184,17 @@ class Blackbox extends GridGame {
 			this.stopTime();
 			this.m_objGrid.addClass('show-atoms');
 		});
+
+		$('#board-size').on('change', e => {
+			Blackbox.SIZE = parseInt(e.subject.value);
+			this.createBoard();
+			this.createMap();
+		});
+		$('#board-atoms').on('change', e => {
+			Blackbox.ATOMS = parseInt(e.subject.value);
+			this.createBoard();
+			this.createMap();
+		});
 	}
 
 	setTime(time) {
@@ -206,7 +213,13 @@ class Blackbox extends GridGame {
 	createGame() {
 		this.createStats();
 
+		this.createConfigDropdowns();
 		this.createBoard();
+	}
+
+	createConfigDropdowns() {
+		$('#board-size').setHTML('<option>6<option>7<option>8<option>9<option>10');
+		$('#board-atoms').setHTML('<option>4<option>5<option>6<option>7<option>8');
 	}
 
 	createBoard() {
@@ -217,11 +230,13 @@ class Blackbox extends GridGame {
 		const bottom = '<td data-side="bottom"></td>';
 		const inside = '<td class="grid"></td>';
 		const html = '' +
-			`<tr>${corner}${top.repeat(this.constructor.SIZE)}${corner}</tr>\n` +
-			`<tr>${left}${inside.repeat(this.constructor.SIZE)}${right}</tr>\n`.repeat(this.constructor.SIZE) +
-			`<tr>${corner}${bottom.repeat(this.constructor.SIZE)}${corner}</tr>\n`;
-
+			`<tr>${corner}${top.repeat(Blackbox.SIZE)}${corner}</tr>\n` +
+			`<tr>${left}${inside.repeat(Blackbox.SIZE)}${right}</tr>\n`.repeat(Blackbox.SIZE) +
+			`<tr>${corner}${bottom.repeat(Blackbox.SIZE)}${corner}</tr>\n`;
 		$('table').setHTML(html);
+
+		$('#board-size').value = Blackbox.SIZE;
+		$('#board-atoms').value = Blackbox.ATOMS;
 	}
 
 	getStatsDelimiter() {
@@ -229,6 +244,10 @@ class Blackbox extends GridGame {
 	}
 
 }
+
+Blackbox.SIZE = 8;
+Blackbox.ATOMS = 5;
+Blackbox.SIDES = ['top', 'right', 'bottom', 'left'];
 
 class BlackboxMove {
 
