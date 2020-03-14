@@ -1,6 +1,8 @@
 <?php
 // BLACKJACK
 
+require __DIR__ . '/inc.bootstrap.php';
+
 // Todo //
 // 1. Insurance					v done 2007-02-05 09:15
 // 2. Double down				v done 2007-02-07 05:00
