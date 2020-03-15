@@ -30,7 +30,7 @@ require __DIR__ . '/inc.bootstrap.php';
 div[data-t="1"] { background-color: red; }
 div[data-t="2"] { background-color: green; }
 div[data-t="3"] { background-color: blue; }
-div[data-t="4"] { background-color: money; }
+div[data-t="4"] { background-color: gold; }
 </style>
 <? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
@@ -43,6 +43,7 @@ div[data-t="4"] { background-color: money; }
 
 <p>
 	<button id="newgame">New game</button>
+	Colors: <select id="map-level"><option value="1">2<option value="2">3<option value="3">4</select>
 </p>
 
 <script>

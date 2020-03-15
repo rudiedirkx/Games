@@ -13,6 +13,7 @@ class Marbles extends GridGame {
 		this.reset();
 
 		this.level = level;
+		$('#map-level').value = level;
 
 		this.startTime();
 
@@ -76,6 +77,8 @@ class Marbles extends GridGame {
 		this.listenCellClick();
 
 		$('#newgame').on('click', e => this.createMap(this.level));
+
+		$('#map-level').on('change', e => this.createMap(parseInt(e.subject.value)));
 	}
 
 	listenCellClick() {
