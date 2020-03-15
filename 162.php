@@ -42,6 +42,7 @@ div[data-t="4"] { background-color: gold; }
 <div id="frame"></div>
 
 <p>
+	<button id="restart">Restart</button>
 	<button id="newgame">New game</button>
 	Colors: <select id="map-level"><option value="1">2<option value="2">3<option value="3">4</select>
 </p>

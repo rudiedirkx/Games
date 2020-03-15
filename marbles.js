@@ -17,17 +17,37 @@ class Marbles extends GridGame {
 
 		this.startTime();
 
-		this.m_objGrid.empty();
+		const grid = this.makeRandomGrid();
+		this.fillGrid(grid);
+	}
+
+	makeRandomGrid() {
+		const grid = [];
 		for ( let x = 0; x < this.width; x++ ) {
-			const col = document.el('div', {"class": 'column'}).data('x', x).inject(this.m_objGrid);
+			grid.push([]);
 			for ( let y = 0; y < this.height; y++ ) {
-				col.append(document.el('div', {"class": 'block'}).data('y', y).data('t', this._random()));
+				grid[x].push(this._random());
 			}
 		}
+
+		return grid;
 	}
 
 	_random() {
 		return 1 + parseInt(Math.random() * (this.level + 1));
+	}
+
+	fillGrid(grid) {
+		this.m_objGrid.empty();
+
+		for ( let x = 0; x < grid.length; x++ ) {
+			const col = document.el('div', {"class": 'column'}).inject(this.m_objGrid);
+			for ( let y = 0; y < grid[x].length; y++ ) {
+				col.append(document.el('div', {"class": 'block'}).data('t', grid[x][y]));
+			}
+		}
+
+		this.m_objGrid.data('original', JSON.stringify(grid));
 	}
 
 	extendNeighbours(source, neighbours) {
@@ -75,6 +95,11 @@ class Marbles extends GridGame {
 
 	listenControls() {
 		this.listenCellClick();
+
+		$('#restart').on('click', e => {
+			const grid = JSON.parse(this.m_objGrid.data('original'));
+			this.fillGrid(grid);
+		});
 
 		$('#newgame').on('click', e => this.createMap(this.level));
 
