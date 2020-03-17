@@ -9,7 +9,7 @@ class Blackbox extends GridGame {
 	resetMap() {
 		this.m_objGrid.removeClass('show-atoms');
 		this.m_objGrid.getElements('td[data-side]').attr('style', null);
-		this.m_objGrid.getElements('td.grid').removeClass('atom').removeClass('hilite');
+		this.m_objGrid.getElements('td.grid').removeClass('atom').removeClass('hilite').removeClass('impossible');
 	}
 
 	createMap() {
@@ -147,7 +147,7 @@ class Blackbox extends GridGame {
 	}
 
 	handleInsideClick(cell) {
-		cell.toggleClass('hilite');
+		cell.removeClass('impossible').toggleClass('hilite');
 	}
 
 	startWinCheck() {
@@ -175,6 +175,8 @@ class Blackbox extends GridGame {
 	listenControls() {
 		this.listenCellClick();
 
+		this.listenContextDrag();
+
 		$('#newgame').on('click', e => {
 			this.createMap();
 		});
@@ -194,6 +196,14 @@ class Blackbox extends GridGame {
 			Blackbox.ATOMS = parseInt(e.subject.value);
 			this.createBoard();
 			this.createMap();
+		});
+	}
+
+	listenContextDrag() {
+		this.m_objGrid.on('contextmenu', '#' + this.m_objGrid.idOrRnd() + ' td', (e) => {
+			e.preventDefault();
+
+			e.subject.removeClass('hilite').toggleClass('impossible');
 		});
 	}
 
