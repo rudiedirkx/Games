@@ -4,6 +4,7 @@ class Blackbox extends GridGame {
 		super.reset();
 
 		this.checker = 0;
+		this.beams = [];
 	}
 
 	resetMap() {
@@ -50,6 +51,22 @@ class Blackbox extends GridGame {
 			...super.getScore(),
 			level: Blackbox.SIZE << 8 | Blackbox.ATOMS,
 		};
+	}
+
+	addBeam(move) {
+		const beam = new BlackboxBeam(move);
+		this.beams.push(beam);
+		return beam;
+	}
+
+	drawBeam(beam) {
+		if (beam.path.last() === false) return;
+
+		for (let move of beam.path) {
+			if (move && move.loc.hasClass('grid')) {
+				move.loc.addClass('beam');
+			}
+		}
 	}
 
 	randomColor() {
@@ -128,8 +145,10 @@ class Blackbox extends GridGame {
 			cell,
 			(Blackbox.SIDES.indexOf(cell.data('side')) + 2) % 4
 		);
+		const beam = this.addBeam(cur);
 		for ( let i = 0; i < 200; i++ ) {
 			cur = this.getNextMove(cur);
+			beam.add(cur);
 
 			if (cur === false) {
 				this.finishMoveAbsorbed(cell);
@@ -258,6 +277,18 @@ class Blackbox extends GridGame {
 Blackbox.SIZE = 8;
 Blackbox.ATOMS = 5;
 Blackbox.SIDES = ['top', 'right', 'bottom', 'left'];
+
+class BlackboxBeam {
+
+	constructor(start) {
+		this.path = [start];
+	}
+
+	add(move) {
+		this.path.push(move);
+	}
+
+}
 
 class BlackboxMove {
 
