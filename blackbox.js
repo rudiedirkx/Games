@@ -10,7 +10,7 @@ class Blackbox extends GridGame {
 	resetMap() {
 		this.m_objGrid.removeClass('show-atoms');
 		this.m_objGrid.getElements('td[data-side]').attr('style', null);
-		this.m_objGrid.getElements('td.grid').removeClass('atom').removeClass('hilite').removeClass('impossible');
+		this.m_objGrid.getElements('td.grid').removeClass('atom').removeClass('hilite').removeClass('impossible').removeClass('beam');
 	}
 
 	createMap() {
@@ -60,13 +60,35 @@ class Blackbox extends GridGame {
 	}
 
 	drawBeam(beam) {
-		if (beam.path.last() === false) return;
+		if (this.beamAbsorbedOrReflected(beam)) return;
+		if (this.beamCorners(beam) < Blackbox.DRAW_CORNERS) return;
 
 		for (let move of beam.path) {
-			if (move && move.loc.hasClass('grid')) {
+			if (move.loc.hasClass('grid')) {
 				move.loc.addClass('beam');
 			}
 		}
+	}
+
+	beamAbsorbedOrReflected(beam) {
+		const last = beam.path.last();
+		return last === false || last === true;
+	}
+
+	beamCorners(beam) {
+		let corners = 0;
+		let lastLoc;
+		for (let move of beam.path) {
+			if (move) {
+				if (move.loc == lastLoc) {
+					corners++;
+				}
+
+				lastLoc = move.loc;
+			}
+		}
+
+		return corners;
 	}
 
 	randomColor() {
@@ -126,8 +148,10 @@ class Blackbox extends GridGame {
 		return this.getNext(cell, (dir + 1) % 4);
 	}
 
-	finishMove(start, end) {
+	finishMove(start, end, beam) {
 		start.style.backgroundColor = end.style.backgroundColor = this.randomColor();
+
+		// this.drawBeam(beam);
 	}
 
 	finishMoveAbsorbed(start) {
@@ -159,7 +183,7 @@ class Blackbox extends GridGame {
 				break;
 			}
 			if (cur.loc.data('side')) {
-				this.finishMove(cell, cur.loc);
+				this.finishMove(cell, cur.loc, beam);
 				break;
 			}
 		}
@@ -277,6 +301,7 @@ class Blackbox extends GridGame {
 Blackbox.SIZE = 8;
 Blackbox.ATOMS = 5;
 Blackbox.SIDES = ['top', 'right', 'bottom', 'left'];
+Blackbox.DRAW_CORNERS = 2;
 
 class BlackboxBeam {
 
