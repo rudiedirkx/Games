@@ -92,8 +92,10 @@ class Zhor extends LeveledGridGame {
 class ZhorEditor extends GridGameEditor {
 
 	createGame() {
-		document.on('wheel', (e) => {
-			var delta = e.originalEvent.deltaY > 0 ? 1 : -1;
+		$('#building-blocks').on('wheel', (e) => {
+			e.preventDefault();
+
+			var delta = e.deltaY > 0 ? 1 : -1;
 			var selected = this.getType();
 			var newSelected;
 			if ( isNaN(parseInt(selected)) ) {

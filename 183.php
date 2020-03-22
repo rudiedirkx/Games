@@ -228,7 +228,7 @@ class FalloutHackingHelper {
 
 	tableListen() {
 		this.table.on('keypress', 'input', e => {
-			if (e.originalEvent.key == 'Enter') {
+			if (e.keyName == 'Enter') {
 				const tr = e.target.closest('tr');
 				if ( tr.getElement('.likeness input').value ) {
 					this.handleAdd(tr);

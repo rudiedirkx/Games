@@ -371,7 +371,7 @@ $('#blackbox')
 	// Check for game over
 	.on('click', function(e) {
 		if ( objBlackbox.m_bGameOver ) {
-			e.originalEvent.stopImmediatePropagation();
+			e.stopImmediatePropagation();
 			objBlackbox.reset();
 		}
 	})

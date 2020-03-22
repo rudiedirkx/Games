@@ -405,7 +405,7 @@ class Laser extends CanvasGame {
 
 	listenWheel() {
 		this.canvas.on('wheel', (e) => {
-			this.handleWheel(e.subjectXY, e.originalEvent.deltaY < 0 ? -1 : 1);
+			this.handleWheel(e.subjectXY, e.deltaY < 0 ? -1 : 1);
 		});
 	}
 
