@@ -34,6 +34,7 @@ class Blackbox extends GridGame {
 
 	win() {
 		this.m_objGrid.addClass('show-atoms');
+		this.drawBeams();
 
 		super.win();
 	}
@@ -57,6 +58,10 @@ class Blackbox extends GridGame {
 		const beam = new BlackboxBeam(move);
 		this.beams.push(beam);
 		return beam;
+	}
+
+	drawBeams() {
+		this.beams.forEach(beam => this.drawBeam(beam));
 	}
 
 	drawBeam(beam) {
