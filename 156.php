@@ -127,6 +127,10 @@ body {
 	</tr>
 </table>
 
+<p>
+	<button id="restart">Restart</button>
+</p>
+
 <script>
 var objGame = new Tetravex($('#solution'), $('#available'));
 objGame.startGame(3);

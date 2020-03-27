@@ -1,10 +1,18 @@
+"use strict";
+
 class Tetravex extends GridGame {
 
 	constructor(solution, available) {
 		super(solution);
 
 		this.m_objSource = available;
+	}
+
+	reset() {
+		super.reset();
+
 		this.m_iSize = 0;
+		this.currentGame = null;
 	}
 
 	getScore() {
@@ -33,16 +41,23 @@ class Tetravex extends GridGame {
 		this.m_iSize = size;
 		$('#size-selector').value = size;
 
-		const grid = this.createMap(size);
-		this.fillTable(size, this.m_objSource, grid);
-		this.fillTable(size, this.m_objGrid);
+		this.currentGame = this.createMap(size);
+		this.fillTable(this.m_objSource, this.currentGame);
+		this.fillTable(this.m_objGrid);
 	}
 
-	restartGame() {
+	newGame() {
 		this.startGame(this.m_iSize);
 	}
 
-	fillTable( size, table, grid ) {
+	restartGame() {
+		this.fillTable(this.m_objSource, this.currentGame);
+		this.fillTable(this.m_objGrid);
+	}
+
+	fillTable( table, grid ) {
+		const size = this.m_iSize;
+
 		var html = '';
 		for (var y = 0; y < size; y++) {
 			html += '<tr>';
@@ -125,7 +140,31 @@ class Tetravex extends GridGame {
 	shift( direction ) {
 		this.unselect();
 
-		// @todo
+		const deltaC1 = this.dir4Coords[this.dir4Names.indexOf(direction[0])];
+		const deltaC2 = this.dir4Coords[(this.dir4Names.indexOf(direction[0]) + 2) % 4]
+
+		var targets;
+		if ( deltaC1.x == 0 ) {
+			const y = deltaC1.y == -1 ? 0 : this.m_iSize - 1;
+			targets = [...this.m_objGrid.rows[y].cells];
+		}
+		else {
+			const x = deltaC1.x == -1 ? 0 : this.m_iSize - 1;
+			targets = [...this.m_objGrid.rows].map(row => row.cells[x]);
+		}
+
+		const notEmpty = targets.some(cell => this.getTile(cell));
+		if ( notEmpty ) return;
+
+		for (var i = 1; i < this.m_iSize; i++) {
+			targets = targets.map(target => {
+				const source = this.getCell(this.getCoord(target).add(deltaC2));
+				this.moveTo(source, target, false);
+				return source;
+			});
+		}
+
+		this.setMoves(this.m_iMoves + 1);
 	}
 
 	tilesMatch( sourceTile, dirNum, neighborTile ) {
@@ -148,16 +187,14 @@ class Tetravex extends GridGame {
 		});
 	}
 
-	moveTo( sourceCell, targetCell ) {
-		if ( !this.validMove(sourceCell, targetCell) ) return;
-
+	moveTo( sourceCell, targetCell, isMove ) {
 		const targetImg = targetCell.firstElementChild;
 		const sourceImg = sourceCell.firstElementChild;
 
 		targetCell.append(sourceImg);
 		sourceCell.append(targetImg);
 
-		this.setMoves(this.m_iMoves + 1);
+		isMove && this.setMoves(this.m_iMoves + 1);
 		this.winOrLose();
 
 		this.unselect();
@@ -172,10 +209,12 @@ class Tetravex extends GridGame {
 		this.listenCellClick();
 		this.listenCellClick(this.m_objSource);
 		this.listenGlobalDirection();
+
+		$('#restart').on('click', e => this.restartGame());
 	}
 
 	handleCellClick( cell ) {
-		if ( this.m_bGameOver ) return this.restartGame();
+		if ( this.m_bGameOver ) return this.newGame();
 
 		var selected = this.getSelected();
 		if ( this.getTile(cell) ) {
@@ -184,7 +223,7 @@ class Tetravex extends GridGame {
 		}
 		else if ( selected ) {
 			this.startTime();
-			this.moveTo(selected, cell);
+			this.validMove(selected, cell) && this.moveTo(selected, cell, true);
 		}
 	}
 
