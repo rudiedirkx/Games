@@ -11,4 +11,34 @@ $g_arrLevels = [
 			'f eee ',
 		],
 	],
+	[
+		'map' => [
+			'a  jjj',
+			'a  i h',
+			'zz igh',
+			'bbb gh',
+			'  d ff',
+			'ccdee ',
+		],
+	],
+	[
+		'map' => [
+			'      ',
+			'      ',
+			' zzc  ',
+			' aac b',
+			' d c b',
+			' dee b',
+		],
+	],
+	[
+		'map' => [
+			'a  b  ',
+			'a  b  ',
+			'azzb  ',
+			'  ceee',
+			'  c  d',
+			'  fffd',
+		],
+	],
 ];
