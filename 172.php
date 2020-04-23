@@ -6,7 +6,9 @@
 <html>
 
 <head>
+<meta charset="utf-8" />
 <title>Word</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
 html {
 	font-family: sans-serif;
@@ -15,6 +17,9 @@ html {
 html.waiting {
 	background-color: black;
 	-webkit-transition: background-color 2s linear;
+}
+body {
+	margin-left: 20px;
 }
 #word {
 	position: relative;
@@ -80,7 +85,29 @@ html.waiting {
 NodeList.prototype.forEach = Array.prototype.forEach;
 HTMLCollection.prototype.indexOf = Array.prototype.indexOf;
 
-var words = ['randomness', 'simplicity', 'inconspicuous', 'careless', 'multitude', 'shiny'];
+const words = [
+	'randomness',
+	'simplicity',
+	'inconspicuous',
+	'careless',
+	'multitude',
+	'shiny',
+	'nightshade',
+	'forever',
+	'cannibalism',
+	'scrutinize',
+	'professor',
+	'subscriptions',
+	'impossible',
+	'assignment',
+	'delicacies',
+	'yesterday',
+	'upcoming',
+	'opportunity',
+	'celebrity',
+	'business',
+	'disabled',
+];
 
 var $word, wordIndex = -1, moves = 0, moving = -1;
 
