@@ -124,7 +124,7 @@ g119.difficulty = function(sourceGrid, fromCells) {
 	}
 
 	var leftover = height * width - newWhite - newBlack;
-	difficulty += Math.ceil(leftover / 4);
+	difficulty += Math.ceil(Math.max(0, leftover - 8) / 1);
 
 	return difficulty;
 };

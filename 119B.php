@@ -83,7 +83,7 @@ require __DIR__ . '/inc.bootstrap.php';
 			else {
 				document.querySelector('#play').click();
 			}
-		}, 100);
+		}, 10);
 	}
 	document.querySelector('#random').addEventListener('click', function(e) {
 		randomAttempt = 0;
