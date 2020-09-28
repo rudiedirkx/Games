@@ -180,7 +180,7 @@ console.log('tiles', tiles);
 			var board = new mahjong.Board;
 			tiles.map(board.addTile.bind(board));
 	<? else: ?>
-		var src = '/images/mahjong/' + mapSelect.value;
+		var src = location.origin + '/images/mahjong/' + mapSelect.value;
 		mahjong.pixels(src).then(function(pixels) {
 console.log('pixels', pixels);
 			return mahjong.tiles(pixels);
@@ -188,6 +188,9 @@ console.log('pixels', pixels);
 			board.level = parseInt(mapSelect.value.replace(/[^\d]+/g, '')) || 0;
 	<? endif; ?>
 console.log('board', board);
+// console.log('img', performance.getEntriesByName(src)[0].decodedBodySize);
+// console.log('json1', JSON.stringify(board.allTiles.map(tile => [tile.x, tile.y, tile.level])).length);
+// console.log('json2', JSON.stringify(board.levels.map((_, L) => board.allTiles.filter(T => T.level==L).map(T => [T.x, T.y]))).length);
 		canvas.board = board;
 
 		board.assignValues();
