@@ -68,6 +68,8 @@ class Blackbox extends GridGame {
 		if (this.beamAbsorbedOrReflected(beam)) return;
 		if (this.beamCorners(beam) < Blackbox.DRAW_CORNERS) return;
 
+		// @todo Use classes lt, lr, lb, ll instead of beam
+
 		for (let move of beam.path) {
 			if (move.loc.hasClass('grid')) {
 				move.loc.addClass('beam');
@@ -306,7 +308,7 @@ class Blackbox extends GridGame {
 Blackbox.SIZE = 8;
 Blackbox.ATOMS = 5;
 Blackbox.SIDES = ['top', 'right', 'bottom', 'left'];
-Blackbox.DRAW_CORNERS = 2;
+Blackbox.DRAW_CORNERS = 1;
 
 class BlackboxBeam {
 

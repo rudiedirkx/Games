@@ -88,6 +88,48 @@ td.grid,
 td[data-side] {
 	cursor: pointer;
 }
+td.grid.lt,
+td.grid.lr,
+td.grid.lb,
+td.grid.ll {
+	overflow: hidden;
+	position: relative;
+}
+td.grid.lt::after,
+td.grid.lb::after,
+td.grid.ll::before,
+td.grid.lr::before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background: black;
+}
+td.grid.lt::after,
+td.grid.lb::after {
+	height: 100%;
+	width: 2px;
+	left: calc(50% - 1px);
+}
+td.grid.lb:not(.lt)::after {
+	top: 50%;
+}
+td.grid.lt:not(.lb)::after {
+	top: -50%;
+}
+td.grid.ll::before,
+td.grid.lr::before {
+	height: 2px;
+	width: 100%;
+	top: calc(50% - 1px);
+}
+td.grid.lr:not(.ll)::before {
+	left: 50%;
+}
+td.grid.ll:not(.lr)::before {
+	left: -50%;
+}
 td.sd,
 td[data-side="top"] {
 	border-bottom: solid 1px #000;
