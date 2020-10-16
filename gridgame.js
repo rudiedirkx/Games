@@ -34,6 +34,26 @@ Coords2D.dir4Names = [
 	'd',
 	'l',
 ];
+Coords2D.dir8Coords = [
+	new Coords2D(-1, -1),
+	new Coords2D( 0, -1),
+	new Coords2D( 1, -1),
+	new Coords2D( 1,  0),
+	new Coords2D( 1,  1),
+	new Coords2D( 0,  1),
+	new Coords2D(-1,  1),
+	new Coords2D(-1,  0),
+];
+Coords2D.dir8Names = [
+	'nw',
+	'n',
+	'ne',
+	'e',
+	'se',
+	's',
+	'sw',
+	'w',
+];
 
 class Game {
 
@@ -262,6 +282,8 @@ class GridGame extends Game {
 
 		this.dir4Coords = Coords2D.dir4Coords;
 		this.dir4Names = Coords2D.dir4Names;
+		this.dir8Coords = Coords2D.dir8Coords;
+		this.dir8Names = Coords2D.dir8Names;
 
 		this.reset();
 	}

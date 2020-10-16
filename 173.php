@@ -1,6 +1,8 @@
 <?php
 // MAMONO
 
+require __DIR__ . '/inc.bootstrap.php';
+
 ?>
 <!doctype html>
 <html>
@@ -10,38 +12,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mamono sweeper</title>
 <style>
-html, body {
+* {
 	margin: 0;
 	padding: 0;
-	width: 100%;
+	box-sizing: border-box;
+}
+html, body {
 	height: 100%;
+	width: 100%;
+	overflow: hidden;
 }
 html {
 	background: black;
 	font-family: sans-serif;
 	font-size: 14px;
-	line-height: 1.2;
 	color: white;
-}
+	user-select: none;
 
-body {
-	padding: .3em;
-	padding-top: 2.1em;
-	padding-top: calc(.3em + 2 * .3em + 1.2em);
-	min-width: -webkit-fit-content;
-	min-width: -moz-fit-content;
-	min-width: fit-content;
+	--stats-height: 30px;
 }
 
 #stats {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	min-width: 100%;
-	padding: .3em;
+	height: var(--stats-height);
+	line-height: var(--stats-height);
 	background-color: black;
-	box-shadow: 0 0 10px white;
 }
 .happening #stats {
 	font-weight: bold;
@@ -55,12 +49,22 @@ body {
 	margin-left: 10px;
 }
 
+#ms {
+	height: calc(100% - var(--stats-height));
+	width: 100vw;
+	overflow: auto;
+}
+#ms .padding {
+	padding: 50px;
+	width: fit-content;
+}
 table {
 	border-spacing: 0;
-	border: 0;
 	font-size: inherit;
-	border: solid 1px lightgreen;
-	border-width: 0 1px 1px 0;
+	border: solid 0 black;
+	border-width: 0 5px 5px 3px;
+	width: calc(var(--w) * 23px);
+	height: calc(var(--h) * 23px);
 }
 td {
 	border: solid 1px black;
@@ -76,31 +80,31 @@ td {
 	line-height: 1;
 	cursor: pointer;
 }
-td.monster { background: none center center no-repeat; }
-td.monster-1 { background-image: url(/images/mamono/slime.png); }
-td.monster-2 { background-image: url(/images/mamono/goblin.png); }
-td.monster-3 { background-image: url(/images/mamono/lizard.png); }
-td.monster-4 { background-image: url(/images/mamono/golem.png); }
-td.monster-5 { background-image: url(/images/mamono/dragon.png); }
-td.monster-6 { background-image: url(/images/mamono/demon.png); }
-td.monster-7 { background-image: url(/images/mamono/ninja.png); }
-td.monster-8 { background-image: url(/images/mamono/dragon_zombie.png); }
-td.monster-9 { background-image: url(/images/mamono/satan.png); }
+td[data-monster] { background: none center center no-repeat; }
+td[data-monster="1"] { background-image: url(/images/mamono/slime.png); }
+td[data-monster="2"] { background-image: url(/images/mamono/goblin.png); }
+td[data-monster="3"] { background-image: url(/images/mamono/lizard.png); }
+td[data-monster="4"] { background-image: url(/images/mamono/golem.png); }
+td[data-monster="5"] { background-image: url(/images/mamono/dragon.png); }
+td[data-monster="6"] { background-image: url(/images/mamono/demon.png); }
+td[data-monster="7"] { background-image: url(/images/mamono/ninja.png); }
+td[data-monster="8"] { background-image: url(/images/mamono/dragon_zombie.png); }
+td[data-monster="9"] { background-image: url(/images/mamono/satan.png); }
 
 td.closed {
 	background: none green;
 }
-td.monster.show-adjacents {
+td[data-monster].show-adjacents {
 	background: none black;
 	color: red;
 }
-
 td.closed span,
-td.monster:not(.show-adjacents) span {
+td[data-monster]:not(.show-adjacents) span {
 	visibility: hidden;
 }
 
-span.adjacents {
+span.adjacents,
+span.empty {
 	pointer-events: none;
 	display: block;
 	width: 22px;
@@ -110,9 +114,10 @@ span.adjacents {
 
 img.preload { visibility: hidden; position: absolute; }
 </style>
+<? include 'tpl.onerror.php' ?>
 </head>
 
-<body onload="init()">
+<body xonload="init()">
 
 <div id="stats">
 	<strong>HP</strong> <span id="hp">?</span>
@@ -121,14 +126,25 @@ img.preload { visibility: hidden; position: absolute; }
 	<strong>NX</strong> <span id="nx">?</span>
 </div>
 
-<table id="ms"></table>
+<div id="ms">
+	<div class="padding">
+		<table></table>
+	</div>
+</div>
 
-<script>
-var w = 50, h = 25, nextLevels = [10, 80, 112, 198], _adj = [[-1,-1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
+<script type="disabled">
+var w = 50;
+var h = 25;
+var numMonsters = [52, 46, 40, 36, 30, 24, 18, 13, 1];
+var nextLevels = [10, 90, 202, 400, 1072];
+var _adj = [[-1,-1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
 
 var $tbl, $stats, $hp, $lv, $nx, grid, monsters, happenId;
 
-var hp = 20, level = 1, exp = 0, nextLevel = nextLevels[0];
+var hp = 30;
+var level = 0;
+var exp = 0;
+var nextLevel = nextLevels[0];
 
 function init() {
 	// $stats = document.querySelector('#stats');
@@ -136,12 +152,11 @@ function init() {
 	$lv = document.querySelector('#lv');
 	$nx = document.querySelector('#nx');
 	$ex = document.querySelector('#ex');
-	$tbl = document.querySelector('#ms');
+	$tbl = document.querySelector('#ms table');
 
-	// Max exp = 52 + 92 + 160 + 304 + 480 + 768 + 1152 + 1664 + 256
-	monsters = _monsters([52, 46, 40, 36, 30, 24, 18, 13, 1]);
-	grid = _build(monsters);
-
+	monsters = _monsters(numMonsters);
+	_build(monsters);
+	level = 1;
 	_update();
 
 	$tbl.onclick = function(e) {
@@ -185,10 +200,27 @@ function toggleMonster(td) {
 }
 
 function clickClosed(td) {
+console.log(td);
+// 	if ( level == 0 ) {
+// 		const y = td.parentNode.rowIndex;
+// 		const x = td.cellIndex;
+
+// // debugger;
+// 		const i = y * h + x;
+// 		while (!monsters || monsters[i] != -1) {
+// 			monsters = _monsters(numMonsters);
+// 		}
+// 		_build(monsters);
+
+// 		level = 1;
+// 		_update();
+// 	}
+
 	// console.log('clickClosed');
 	td.classList.remove('closed');
 	td.dataset.title && (td.title = td.dataset.title);
 
+// debugger;
 	if ( td.monster ) {
 		var pexp = Math.pow(2, td.monster-1);
 		exp += pexp;
@@ -198,14 +230,8 @@ function clickClosed(td) {
 		if ( nextLevel <= 0 ) {
 			happening();
 
-			// How much for the next level?
-			// 1 = 10
-			// 2 = 80
-			// 3 = 112
-			// 4 = 198
-
 			level++;
-			nextLevel += /*nextLevels[level-1] ? nextLevels[level-1] :*/ 10 * Math.ceil(Math.pow(1.8, level));
+			nextLevel = nextLevels[level] + nextLevel;
 		}
 	}
 
@@ -225,17 +251,17 @@ function clickClosed(td) {
 		// 2 -> 7 >= 20
 		// 3 -> 4 = 4
 
-		var diff = td.monster - level;
-		// var hit = Math.factorial(diff) * 2;
-		var hit = Math.pow(2, diff);
-		hp -= hit;
-		_update();
-		if ( hp <= 0 ) {
+		// var diff = td.monster - level;
+		// // var hit = Math.factorial(diff) * 2;
+		// var hit = Math.pow(2, diff);
+		// hp -= hit;
+		// _update();
+		// if ( hp <= 0 ) {
 			setTimeout(function() {
 				alert('You dead!');
-				location.reload();
+				// location.reload();
 			}, 100);
-		}
+		// }
 	}
 
 	// Open neighbours
@@ -247,13 +273,16 @@ function clickClosed(td) {
 }
 
 function openAdjacents(td) {
-	var x = td.cellIndex, y = td.parentNode.sectionRowIndex;
+	var x = td.cellIndex;
+	var y = td.parentNode.rowIndex;
+// debugger;
 	_adj.forEach(function(d) {
-		var mx = x+d[0], my = y+d[1];
+		var mx = x+d[0];
+		var my = y+d[1];
 		if ( grid[my] && grid[my][mx] ) {
-			var td = grid[my][mx];
-			if ( td.classList.contains('closed') ) {
-				clickClosed(td);
+			var nb = grid[my][mx];
+			if ( nb.classList.contains('closed') ) {
+				clickClosed(nb);
 			}
 		}
 	});
@@ -263,12 +292,12 @@ function _monsters(source) {
 	var indivs = [];
 	source.forEach(function(num, lvl) {
 		for ( var i=0; i<num; i++ ) {
-			indivs.push(lvl);
+			indivs.push(lvl + 1);
 		}
 	});
 	var R = w*h - indivs.length;
 	for ( var i=0; i<R; i++ ) {
-		indivs.push(-1);
+		indivs.push(0);
 	}
 	indivs.sort(function() {
 		return 0.5 - Math.random();
@@ -277,37 +306,46 @@ function _monsters(source) {
 }
 
 function _build(monsters) {
-	var tr, td;
-	var grid = [], line, mi = 0;
-	for ( var y=0; y<h; y++ ) {
-		tr = $tbl.insertRow($tbl.rows.length);
-		line = [];
-		for ( var x=0; x<w; x++ ) {
-			var m = monsters[mi];
+console.log(monsters);
+	$tbl.innerHTML = '';
+	grid = [];
 
-			td = tr.insertCell(tr.cells.length);
+	var tr, td;
+	var line, mi = 0;
+	for ( var y=0; y<h; y++ ) {
+		tr = $tbl.insertRow();
+		grid.push(line = []);
+
+		for ( var x=0; x<w; x++ ) {
+			td = tr.insertCell();
 			line.push(td);
-			td.monster = m+1;
-			td.className = 'closed';
+
+			var m = monsters[mi] || 0;
+
+			td.monster = m;
 			td.adjacents = 0;
-			td.innerHTML = '';
 			td.dataset.title = td.monster ? 'Monster ' + td.monster : '';
 
 			if ( td.monster ) {
-				td.className += ' monster monster-' + td.monster;
+				td.className = 'closed monster monster-' + td.monster;
 				td.innerHTML = '<span class="adjacents">0</span>';
+			}
+			else {
+				td.className = 'closed';
+				td.innerHTML = '<span class="empty"></span>';
 			}
 
 			mi++;
 		}
-		grid.push(line);
 	}
 
+// debugger;
 	grid.forEach(function(line, y) {
 		line.forEach(function(td, x) {
 			if ( td.monster ) {
 				_adj.forEach(function(d) {
-					var mx = x+d[0], my = y+d[1];
+					var mx = x+d[0];
+					var my = y+d[1];
 					try {
 						grid[my][mx].adjacents += td.monster;
 						// if ( grid[my][mx] && !grid[my][mx].monster ) {
@@ -319,8 +357,6 @@ function _build(monsters) {
 			}
 		})
 	})
-
-	return grid;
 }
 
 Math.factorial = function(n) {
@@ -332,16 +368,24 @@ Math.factorial = function(n) {
 };
 </script>
 
-<img class="preload" src="slime.png" />
-<img class="preload" src="goblin.png" />
-<img class="preload" src="lizard.png" />
-<img class="preload" src="golem.png" />
-<img class="preload" src="dragon.png" />
-<img class="preload" src="demon.png" />
-<img class="preload" src="ninja.png" />
-<img class="preload" src="dragon_zombie.png" />
-<img class="preload" src="satan.png" />
+<img class="preload" src="/images/mamono/slime.png" />
+<img class="preload" src="/images/mamono/goblin.png" />
+<img class="preload" src="/images/mamono/lizard.png" />
+<img class="preload" src="/images/mamono/golem.png" />
+<img class="preload" src="/images/mamono/dragon.png" />
+<img class="preload" src="/images/mamono/demon.png" />
+<img class="preload" src="/images/mamono/ninja.png" />
+<img class="preload" src="/images/mamono/dragon_zombie.png" />
+<img class="preload" src="/images/mamono/satan.png" />
 
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script src="<?= html_asset('mamono.js') ?>"></script>
+<script>
+objGame = new Mamono($('#ms table'));
+objGame.createMap('normal');
+objGame.listenControls();
+</script>
 </body>
 
 </html>
