@@ -13,6 +13,19 @@ class Mamono extends GridGame {
 			monsters: [33, 27, 22, 13, 6],
 			levelUps: [0, 10, 50, 167, 271],
 		},
+		extreme: {
+			size: [22, 22],
+			hp: 10,
+			monsters: [25, 25, 25, 25, 25],
+			levelUps: [0, 10, 50, 175, 375],
+		},
+		blind: {
+			size: [22, 22],
+			level: 0,
+			hp: 0,
+			monsters: [33, 27, 22, 13, 6],
+			levelUps: [],
+		},
 		huge: {
 			size: [48, 27],
 			hp: 30,
@@ -57,13 +70,26 @@ class Mamono extends GridGame {
 		$('#stats-nxt').setText(specs.levelUps[this.level]);
 	}
 
+	createSizeSelect(selected) {
+		const el = $('#select-size');
+		el.empty();
+		el.setHTML(Object.keys(this.constructor.SIZES).map(size => {
+			const sel = selected == size ? ' selected' : '';
+			return `<option${sel}>${size}`;
+		}).join(''));
+	}
+
 	createMap(size) {
 		this.size = size;
 
+		this.createSizeSelect(size);
+
 		this.reset();
-		this.showStats();
 
 		const specs = this.getSpecs();
+		specs.level != null && (this.level = specs.level);
+
+		this.showStats();
 
 		this.m_objGrid.empty();
 		this.m_objGrid.style.setProperty('--w', specs.size[0]);
@@ -146,6 +172,13 @@ class Mamono extends GridGame {
 
 	listenControls() {
 		this.listenCellClick();
+		this.listenSizeSelect();
+	}
+
+	listenSizeSelect() {
+		$('#select-size').on('change', e => {
+			this.createMap(e.target.value);
+		});
 	}
 
 	handleCellClick(cell) {
@@ -167,6 +200,11 @@ class Mamono extends GridGame {
 		}
 
 		this.showStats();
+		this.winOrLose();
+	}
+
+	haveWon() {
+		return this.m_objGrid.getElements('.closed').length == 0;
 	}
 
 	getMonster(C, grid = null) {
@@ -208,6 +246,7 @@ class Mamono extends GridGame {
 			this.exp += exp;
 			if (up) {
 				this.level++;
+				this.happening();
 			}
 
 			adj == 0 && this.openAdjacentCells(C);
@@ -216,6 +255,11 @@ class Mamono extends GridGame {
 
 		cell.innerHTML = '<span>' + (adj || '') + '</span>';
 		adj == 0 && this.openAdjacentCells(C);
+	}
+
+	happening() {
+		document.body.addClass('happening');
+		setTimeout(() => document.body.removeClass('happening'), 5000);
 	}
 
 	openAdjacentCells(C) {
