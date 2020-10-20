@@ -27,7 +27,7 @@ class Mamono extends GridGame {
 			levelUps: [],
 		},
 		huge: {
-			size: [48, 27],
+			size: [36, 36],
 			hp: 30,
 			monsters: [52, 46, 40, 36, 30, 24, 18, 13, 1],
 			levelUps: [0, 10, 90, 202, 400, 1072],
@@ -107,17 +107,12 @@ class Mamono extends GridGame {
 	initMap(firstCell) {
 		const specs = this.getSpecs(this.size);
 		const monsters = this.makeMonsters(specs.monsters);
-// console.log(monsters);
 		this.fillMonsters(monsters, specs.size[0] * specs.size[1]);
-// console.log(monsters);
 
 		const C = this.getCoord(firstCell);
 		var grid;
-// debugger;
 		while (!grid || grid[C.y][C.x] != 0 || this.getAdjacentCount(C, grid) > 1) {
 			grid = this.makeGrid(monsters, specs.size);
-// console.log(grid);
-// console.log(grid[C.y][C.x], this.getAdjacentCount(C, grid));
 		}
 
 		this.grid = grid;
@@ -126,7 +121,6 @@ class Mamono extends GridGame {
 
 	fillMap() {
 		const monsters = [].concat(...this.grid);
-// console.log(monsters);
 		const cells = this.m_objGrid.getElements('td');
 		cells.forEach((cell, i) => {
 			const m = monsters[i];
@@ -226,12 +220,10 @@ class Mamono extends GridGame {
 
 	openCell(cell) {
 		if (!cell.hasClass('closed')) return;
-// console.log(cell);
 
 		cell.removeClass('closed');
 		const C = this.getCoord(cell);
 		const adj = this.getAdjacentCount(C);
-// console.log(adj);
 
 		if (cell.data('monster')) {
 			cell.innerHTML = '<span>' + (adj || '0') + '</span>';
