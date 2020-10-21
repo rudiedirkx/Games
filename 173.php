@@ -44,7 +44,7 @@ html {
 	--stats-height: 30px;
 }
 body.happening {
-	animation: happening 0.8s 3;
+	animation: happening 0.5s 2;
 }
 
 #stats-bar {
