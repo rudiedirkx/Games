@@ -89,7 +89,7 @@ class Game {
 		var delim = this.getStatsDelimiter();
 		var html = '';
 		r.each(this.statTypes(), (label, key) => {
-			html += label + ': <span id="stats-' + key + '"></span>' + delim;
+			html += '<span class="stat-' + key + '"><span class="label">' + label + ':</span> <span class="value" id="stats-' + key + '"></span></span>' + delim;
 		});
 		$('#stats').setHTML(html);
 	}

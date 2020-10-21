@@ -54,6 +54,9 @@ body.happening {
 	font-family: monospace;
 	text-transform: uppercase;
 }
+#stats-bar .stat-time .label {
+	display: none;
+}
 
 #ms {
 	height: calc(100% - var(--stats-height));
@@ -84,8 +87,12 @@ td {
 	text-align: center;
 	padding: 0;
 	line-height: 1;
+}
+td.closed,
+td[data-monster]:not(.closed) {
 	cursor: pointer;
 }
+
 td[data-monster] { background: none center center no-repeat; }
 <? foreach ($monsters as $m => $img): ?>
 	td[data-monster="<?= $m+1 ?>"] { background-image: url(/images/mamono/<?= $img ?>.png); }
