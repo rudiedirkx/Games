@@ -30,7 +30,7 @@ class Mamono extends GridGame {
 			size: [36, 36],
 			hp: 30,
 			monsters: [52, 46, 40, 36, 30, 24, 18, 13, 1],
-			levelUps: [0, 10, 90, 202, 400, 1072],
+			levelUps: [0, 10, 90, 202, 400, 1072, 1840, 2992, 4656],
 		},
 	};
 
