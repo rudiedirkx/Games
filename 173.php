@@ -46,6 +46,27 @@ html {
 body.happening {
 	animation: happening 0.5s 2;
 }
+body,
+body[data-size="huge"] {
+	--bg: green;
+	--border: lightgreen;
+}
+body[data-size="easy"] {
+	--bg: #959900;
+	--border: #bbc200;
+}
+body[data-size="normal"] {
+	--bg: #422900;
+	--border: #7a4b00;
+}
+body[data-size="extreme"] {
+	--bg: #2b00bb;
+	--border: #4f1aff;
+}
+body[data-size="blind"] {
+	--bg: #454545;
+	--border: #6b6b6b;
+}
 
 #stats-bar {
 	height: var(--stats-height);
@@ -77,8 +98,8 @@ table {
 }
 td {
 	border: solid 1px black;
-	border-top-color: lightgreen;
-	border-left-color: lightgreen;
+	border-top-color: var(--border);
+	border-left-color: var(--border);
 	width: 22px;
 	height: 22px;
 	background: black;
@@ -99,7 +120,7 @@ td[data-monster] { background: none center center no-repeat; }
 <? endforeach ?>
 
 td.closed {
-	background: none green;
+	background: none var(--bg);
 }
 td[data-monster].show-adjacents {
 	background: none black;

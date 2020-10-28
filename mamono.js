@@ -80,11 +80,12 @@ class Mamono extends GridGame {
 	}
 
 	createMap(size) {
-		this.size = size;
-
 		this.createSizeSelect(size);
 
 		this.reset();
+		this.size = size;
+
+		document.body.data('size', size);
 
 		const specs = this.getSpecs();
 		specs.level != null && (this.level = specs.level);
