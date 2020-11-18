@@ -56,7 +56,7 @@ canvas {
 
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
-<script src="<?= html_asset('170.js') ?>"></script>
+<script src="<?= html_asset('mahjong.js') ?>"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
 var shuffleButton = document.querySelector('button.shuffle');

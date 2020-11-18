@@ -52,7 +52,7 @@ canvas {
 
 <canvas width="800" height="500"></canvas>
 
-<script src="170.js"></script>
+<script src="mahjong.js"></script>
 <script>
 var mapSelect = document.querySelector('select.map');
 var rememberButton = document.querySelector('button.remember');

@@ -22,7 +22,7 @@ canvas.pointing { cursor: pointer; }
 
 <script src="//home.hotblocks.nl/tests/three/three-82.js"></script>
 <script src="//home.hotblocks.nl/tests/three/Rudie.Three.js"></script>
-<script src="170.js"></script>
+<script src="mahjong.js"></script>
 <script>
 var renderer = new THREE.WebGLRenderer({antialias: true});
 renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
