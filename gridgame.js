@@ -69,6 +69,7 @@ class Game {
 		this.m_bGameOver = false;
 		this.m_bCheating = false;
 
+		this.checker = 0;
 		this.stopTime();
 		this.m_iStartTime = 0;
 		this.m_iTimer = 0;
@@ -178,6 +179,11 @@ class Game {
 		else if ( this.haveLost() ) {
 			this.lose();
 		}
+	}
+
+	startWinCheck() {
+		clearTimeout(this.checker);
+		this.checker = setTimeout(() => this.winOrLose(), 500);
 	}
 
 }
@@ -331,6 +337,10 @@ class GridGame extends Game {
 
 	getCell( coord ) {
 		return this.m_objGrid.rows[coord.y] && this.m_objGrid.rows[coord.y].cells[coord.x];
+	}
+
+	getNextCell( coord, dir ) {
+		return this.m_objGrid.rows[coord.y + dir.y] && this.m_objGrid.rows[coord.y + dir.y].cells[coord.x + dir.x];
 	}
 
 	getCoord( cell ) {

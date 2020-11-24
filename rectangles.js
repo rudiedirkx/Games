@@ -13,7 +13,6 @@ class Rectangles extends GridGame {
 		];
 
 		this.size = 0;
-		this.checker = 0;
 		this.draggingColor = null;
 		this.colors = [];
 		this.editable = false;
@@ -40,8 +39,7 @@ class Rectangles extends GridGame {
 
 		this.colorArea(...this.getCornerCoords(start, end), {color: this.draggingColor});
 
-		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), 500);
+		this.startWinCheck();
 	}
 
 	getCornerCoords(start, end) {

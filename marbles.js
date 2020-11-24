@@ -6,7 +6,6 @@ class Marbles extends GridGame {
 		this.width = 8;
 		this.height = 6;
 		this.level = 0;
-		this.checker = 0;
 	}
 
 	createMap( level ) {
@@ -78,8 +77,7 @@ class Marbles extends GridGame {
 		neighbours.invoke('remove');
 		$$('.column:empty').invoke('remove');
 
-		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), 200);
+		this.startWinCheck();
 	}
 
 	haveWon() {

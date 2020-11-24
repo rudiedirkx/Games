@@ -23,7 +23,6 @@ class Filling extends GridGame {
 		this.size = 0;
 		this.colors = [];
 		this.draggingColor = null;
-		this.checker = 0;
 	}
 
 	handleCellDragStart(start) {
@@ -42,8 +41,7 @@ class Filling extends GridGame {
 			return;
 		}
 
-		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), 500);
+		this.startWinCheck();
 	}
 
 	registerNewColor() {

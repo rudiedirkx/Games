@@ -3,7 +3,6 @@ class Blackbox extends GridGame {
 	reset() {
 		super.reset();
 
-		this.checker = 0;
 		this.beams = [];
 	}
 
@@ -198,11 +197,6 @@ class Blackbox extends GridGame {
 
 	handleInsideClick(cell) {
 		cell.removeClass('impossible').toggleClass('hilite');
-	}
-
-	startWinCheck() {
-		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), 500);
 	}
 
 	handleCellClick(cell) {

@@ -7,7 +7,6 @@ class Flood extends GridGame {
 
 		this.size = 0;
 		this.cell1 = null;
-		this.checker = 0;
 	}
 
 	createMap( size ) {
@@ -72,8 +71,7 @@ class Flood extends GridGame {
 
 		neighbours.forEach(cell => cell.dataset.color = color);
 
-		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), 100);
+		this.startWinCheck();
 	}
 
 	haveWon() {

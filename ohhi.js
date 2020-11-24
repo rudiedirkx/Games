@@ -6,7 +6,6 @@ class Ohhi extends GridGame {
 		super.reset();
 
 		this.size = 0;
-		this.checker = 0;
 	}
 
 	handleCellClick( cell ) {
@@ -25,8 +24,7 @@ class Ohhi extends GridGame {
 			cell.dataset.color = 'on';
 		}
 
-		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), 500);
+		this.startWinCheck();
 	}
 
 	getScore() {
