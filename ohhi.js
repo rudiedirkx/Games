@@ -404,8 +404,6 @@ class Ohhi extends GridGame {
 		for (let found of solver.findMustBes()) {
 			this.m_objGrid.rows[found.y].cells[found.x].dataset.color = found.color ? 'on' : 'off';
 		}
-
-		setTimeout(() => this.winOrLose(), 50);
 	}
 
 	createStats() {
@@ -455,7 +453,7 @@ class OhhiSolver {
 	}
 
 	isPlayable() {
-		return this.getUnknowns() <= Math.min(this.size - 2, 6);
+		return this.getUnknowns() == 0;
 	}
 
 	findMustBe() {
