@@ -151,6 +151,8 @@ console.log(pxGrid);
 		// for ( let x = 10; x < pxGrid.width-9; x += 10 ) {
 		// 	console.log(x);
 		// }
+
+		// Use https://github.com/antimatter15/ocrad.js for numbers?
 	}
 
 	getRowColors(pxGrid, x) {

@@ -20,6 +20,23 @@ $grid = [
 	' 33 ',
 	'x1  ',
 ];
+$grid = [
+	'2 3  ',
+	'4    ',
+	'  55x',
+	'xx  1',
+	'  2  ',
+];
+$grid = [
+	'     7 x',
+	' x  7 7 ',
+	'   33   ',
+	'4       ',
+	' 885 x 5',
+	'    xx 5',
+	'3    4 7',
+	'4    3  ',
+];
 
 ?>
 <!doctype html>
@@ -86,7 +103,7 @@ objGame.createEmpty();
 objGame.listenControls();
 setTimeout(function() {
 	objGame.createMap(<?= json_encode($grid) ?>);
-}, 500);
+}, 300);
 </script>
 </body>
 
