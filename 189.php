@@ -95,6 +95,7 @@ td.active span {
 
 <p>
 	<button id="cheat">Cheat</button>
+	<button id="new">New game</button>
 </p>
 
 <script>

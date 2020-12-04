@@ -35,6 +35,42 @@ class Ohno extends GridGame {
 		}
 	}
 
+	createRandom(size) {
+		size || (size = this.size);
+
+		const RED_CHANCE = 0.3;
+		const RED_MAX = 0.6;
+
+		let attempts = 0;
+		while (true) {
+			this.createEmpty(size);
+			attempts++;
+			this.m_objGrid.getElements('td').forEach(td => td.className = Math.random() > RED_CHANCE ? 'active' : 'closed');
+			var recount = false;
+			const starts = this.m_objGrid.getElements('td.active');
+			let neighbors = starts.map(td => {
+				const neighbors = this.allActiveNeighbors(td).length;
+				if (neighbors == 0) {
+					recount = true;
+					td.className = 'closed';
+				}
+				else {
+					td.firstElementChild.setText(neighbors);
+				}
+				return neighbors;
+			});
+			if (recount) {
+				neighbors = starts.map(td => this.allActiveNeighbors(td).length);
+			}
+console.log(neighbors);
+			const closed = this.m_objGrid.getElements('.closed').length;
+			if (Math.max(...neighbors) <= 9 && closed/size/size < RED_MAX) {
+				break;
+			}
+		}
+console.log(`in ${attempts} attempts`);
+	}
+
 	createEmpty(size) {
 		size || (size = this.size);
 		const grid = Array.from(Array(size)).map(x => ' '.repeat(size));
@@ -45,6 +81,8 @@ class Ohno extends GridGame {
 		this.listenImageDrop();
 
 		this.listenCellClick();
+
+		$('#new').on('click', e => this.createRandom());
 
 		$('#cheat').on('click', e => this.cheatOneRound());
 	}
