@@ -47,6 +47,9 @@ $grid = [
 <title>0h n0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
+body, table {
+	font-family: sans-serif;
+}
 img.loader {
 	margin-left: .5em;
 	height: 1.4em;
