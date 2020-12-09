@@ -71,7 +71,7 @@ td.grid {
 	font-size: 13px;
 }
 td.beam::after {
-	content: "x";
+	content: "\00B7";
 }
 .show-atoms td.atom::after {
 	content: "†";

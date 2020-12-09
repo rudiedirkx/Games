@@ -302,7 +302,7 @@ class Blackbox extends GridGame {
 Blackbox.SIZE = 8;
 Blackbox.ATOMS = 5;
 Blackbox.SIDES = ['top', 'right', 'bottom', 'left'];
-Blackbox.DRAW_CORNERS = 1;
+Blackbox.DRAW_CORNERS = 2;
 
 class BlackboxBeam {
 
