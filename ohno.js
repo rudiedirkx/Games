@@ -62,7 +62,7 @@ class Ohno extends GridGame {
 			if (recount) {
 				neighbors = starts.map(td => this.allActiveNeighbors(td).length);
 			}
-console.log(neighbors);
+// console.log(neighbors);
 			const closed = this.m_objGrid.getElements('.closed').length;
 			if (Math.max(...neighbors) <= 9 && closed/size/size < RED_MAX) {
 				break;
@@ -103,7 +103,10 @@ console.log(`in ${attempts} attempts`);
 	}
 
 	handleCellClick(cell) {
-		if (cell.data('closed') || cell.data('required')) return;
+		if (cell.data('closed')) return;
+		if (cell.data('required')) {
+			return this.cheatOneRoundFromStart(cell);
+		}
 
 		if (cell.hasClass('active')) {
 			cell.removeClass('active');
@@ -150,11 +153,26 @@ console.log(`in ${attempts} attempts`);
 		return cell && (cell.data('required') || cell.hasClass('active'));
 	}
 
+	cheatOneRoundFromStart(cell) {
+		this.m_bCheating = true;
+
+		const C = this.getCoord(cell);
+		const solver = OhnoSolver.fromDom(this.m_objGrid);
+		solver.findKnownsFromSpacesStarting(C);
+		solver.findKnownsFromEnoughStarting(C);
+		solver.findKnownsFromTooFarStarting(C);
+		this.cheatFromSolver(solver);
+	}
+
 	cheatOneRound() {
 		this.m_bCheating = true;
 
 		const solver = OhnoSolver.fromDom(this.m_objGrid);
 		solver.findKnowns();
+		this.cheatFromSolver(solver);
+	}
+
+	cheatFromSolver(solver) {
 console.log(solver);
 		solver.updatesActive.forEach(C => this.getCell(C).addClass('active'));
 		solver.updatesClosed.forEach(C => this.getCell(C).addClass('closed'));
@@ -341,7 +359,7 @@ class OhnoSolver {
 	setActive(C) {
 		const curr = this.grid[C.y][C.x];
 		if (curr === null) {
-			console.log('SET ACTIVE', C);
+// console.log('SET ACTIVE', C);
 			this.grid[C.y][C.x] = 'o';
 			this.updatesActive.push(C);
 		}
@@ -350,7 +368,7 @@ class OhnoSolver {
 	setClosed(C) {
 		const curr = this.grid[C.y] && this.grid[C.y][C.x];
 		if (curr === null) {
-			console.log('SET CLOSED', C);
+// console.log('SET CLOSED', C);
 			this.grid[C.y][C.x] = 'x';
 			this.updatesClosed.push(C);
 		}
@@ -369,7 +387,6 @@ class OhnoSolver {
 	updateFromEnough(C, neighbors) {
 		neighbors.forEach((L, d) => {
 			const D = Coords2D.dir4Coords[d];
-			console.log(Coords2D.dir4Names[d], D);
 			const next = (L.length ? L[L.length-1] : C).add(D);
 			this.setClosed(next);
 		});
@@ -381,7 +398,6 @@ class OhnoSolver {
 		const lengths = neighbors.map(L => L.length);
 		const total = neighbors.flat(1).length;
 		if (total == required) {
-// console.log(C, 'fill all', lengths);
 			return this.updateFromSpacesAll(C, neighbors);
 		}
 
@@ -400,9 +416,32 @@ class OhnoSolver {
 		const lengths = neighbors.map(L => L.length);
 		const total = neighbors.flat(1).length;
 		if (total == required) {
-console.log(C, 'enough', lengths);
+// console.log(C, 'enough', lengths);
 			return this.updateFromEnough(C, neighbors);
 		}
+	}
+
+	findKnownsFromTooFarStarting(C) {
+		const required = this.grid[C.y][C.x];
+// console.log(required);
+		const neighbors = this.allActiveNeighbors(C);
+// console.log(neighbors);
+		neighbors.forEach((L, d) => {
+			const D = Coords2D.dir4Coords[d];
+			const next = (L.length ? L[L.length-1] : C).add(D);
+			const val = this.grid[next.y] && this.grid[next.y][next.x];
+// console.log(next, val);
+			if (val === null) {
+				this.grid[next.y][next.x] = 'o';
+				const neighbors2 = this.allActiveNeighbors(C);
+				const total2 = neighbors2.flat(1).length;
+// console.log(total2);
+				this.grid[next.y][next.x] = null;
+				if (total2 > required) {
+					this.setClosed(next);
+				}
+			}
+		});
 	}
 
 	findKnownsFromSpaces() {
@@ -413,9 +452,14 @@ console.log(C, 'enough', lengths);
 		this.requireds.forEach(C => this.findKnownsFromEnoughStarting(C));
 	}
 
+	findKnownsFromTooFar() {
+		this.requireds.forEach(C => this.findKnownsFromTooFarStarting(C));
+	}
+
 	findKnowns() {
 		this.findKnownsFromSpaces();
 		this.findKnownsFromEnough();
+		this.findKnownsFromTooFar();
 	}
 
 }
