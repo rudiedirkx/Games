@@ -254,8 +254,8 @@ class CanvasGame extends Game {
 
 	drawText( coord, text, {size = '20px', color = '#000'} = {} ) {
 		this.ctx.font = `${size} sans-serif`;
-		this.ctx.strokeStyle = color;
-		this.ctx.strokeText(text, coord.x, coord.y);
+		this.ctx.fillStyle = color;
+		this.ctx.fillText(text, coord.x, coord.y);
 	}
 
 	listenControls() {

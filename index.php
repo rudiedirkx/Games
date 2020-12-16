@@ -105,6 +105,7 @@ $g_arrGames = array(
 	['185',				'Tetris Solver',								'Because Tetris grids are boring, but necessary'],
 	['186',				'0h h1',										'From Android'],
 	['189',				'0h n0',										'From Android'],
+	['190',				'Bridges',										'From Android'],
 );
 
 $g_iHeight = ceil(count($g_arrGames)/$g_iWidth);
