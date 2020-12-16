@@ -45,7 +45,7 @@ if (isset($_POST['cheat'])) {
 			<? for ($y = 0; $y < count($map['hor']); $y++): ?>
 				<tr>
 					<? for ($x = 0; $x < count($map['ver']); $x++): ?>
-						<td><a href="#"></a></td>
+						<td><a></a></td>
 					<? endfor ?>
 					<th class="meta hor" data-hints="<?= implode(',', $map['hor'][$y]) ?>">
 						<span><?= implode('</span> <span>', $map['hor'][$y]) ?></span>
