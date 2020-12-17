@@ -18,6 +18,9 @@ r.extend(Coords2D, {
 		y == a && (y = b);
 		return new Coords2D(x, y);
 	},
+	multiply: function(factor) {
+		return new this.constructor(this.x * factor, this.y * factor);
+	}
 });
 Coords2D.jsonReplacer = function() {
 	return (k, v) => v instanceof Coords2D ? v.toArray() : v;
@@ -218,14 +221,6 @@ class CanvasGame extends Game {
 		this.changed = false;
 	}
 
-	paint() {
-		this.canvas.width = 1 * this.canvas.width;
-
-		this.drawStructure();
-		this.drawContent();
-		this.changed = false;
-	}
-
 	drawStructure() {
 	}
 
@@ -233,12 +228,17 @@ class CanvasGame extends Game {
 	}
 
 	drawDot( coord, {radius = 3, color = '#000'} = {} ) {
-		this.ctx.fillStyle = color;
+		this.drawCircle(coord, radius, {color, fill: true});
+	}
+
+	drawCircle( coord, radius, {width = 2, color = '#000', fill = false} = {} ) {
+		fill ? this.ctx.fillStyle = color : this.ctx.strokeStyle = color;
+		this.ctx.lineWidth = width;
 
 		this.ctx.beginPath();
 		this.ctx.arc(coord.x, coord.y, radius, 0, 2*Math.PI);
 		this.ctx.closePath();
-		this.ctx.fill();
+		fill ? this.ctx.fill() : this.ctx.stroke();
 	}
 
 	drawLine( from, to, {width = 2, color = '#000'} = {} ) {
