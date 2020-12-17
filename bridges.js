@@ -143,26 +143,31 @@ class Bridges extends CanvasGame {
 
 	listenDrag() {
 		this.dragging = null;
+		var location;
 
-		this.canvas.on('mousedown', (e) => {
-			const crossing = this.getCrossing(e.subjectXY);
+		this.canvas.on(['mousedown', 'touchstart'], (e) => {
+			e.preventDefault();
+
+			location = e.subjectXY;
+			const crossing = this.getCrossing(location);
 			if (crossing && this.getRequirement(crossing)) {
 				this.dragging = crossing;
 				this.changed = true;
 			}
 		});
-		this.canvas.on('mousemove', (e) => {
+		this.canvas.on(['mousemove', 'touchmove'], (e) => {
 			if (this.dragging) {
-				const crossing = this.getCrossing(e.subjectXY);
+				location = e.subjectXY;
+				const crossing = this.getCrossing(location);
 				if (crossing && !crossing.equal(this.dragging)) {
 					this.bridging = new Bridge(this.dragging, crossing);
 				}
 				this.changed = true;
 			}
 		});
-		document.on('mouseup', (e) => {
+		document.on(['mouseup', 'touchend'], (e) => {
 			if (this.dragging) {
-				const crossing = this.getCrossing(e.subjectXY);
+				const crossing = this.getCrossing(location);
 				if (crossing && this.getRequirement(crossing)) {
 					this.attemptBridge(this.dragging, crossing);
 				}
