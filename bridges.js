@@ -134,6 +134,8 @@ class Bridges extends CanvasGame {
 			}
 		}
 
+		// @todo Check single cluster (see demo=3 top left)
+
 		return true;
 	}
 
@@ -180,7 +182,6 @@ class Bridges extends CanvasGame {
 
 	addBridge(bridge) {
 		const existsIndex = this.bridges.findIndex(B => B.equal(bridge));
-console.log('addBridge', existsIndex);
 		if (existsIndex == -1) {
 			this.bridges.push(bridge);
 		}
@@ -194,7 +195,6 @@ console.log('addBridge', existsIndex);
 
 	replaceBridge(bridge) {
 		const existsIndex = this.bridges.findIndex(B => B.equal(bridge));
-console.log('replaceBridge', existsIndex);
 		if (existsIndex == -1) {
 			this.bridges.push(bridge);
 		}
@@ -272,6 +272,7 @@ console.log('replaceBridge', existsIndex);
 
 		const solver = BridgesSolver.fromState(this.grid, this.bridges);
 		solver.findKnownsFromDirectionsStarting(C);
+		solver.findKnownsFromOnlyUndoneStarting(C);
 		this.cheatFromSolver(solver);
 	}
 
@@ -325,15 +326,25 @@ class BridgesSolver {
 	}
 
 	requireBridge(bridge) {
-		this.updates.push(bridge);
-
 		const existsIndex = this.bridges.findIndex(B => B.equal(bridge));
 		if (existsIndex == -1) {
 			this.bridges.push(bridge);
+			this.updates.push(bridge);
 		}
-		else {
+		else if (bridge.strength > this.bridges[existsIndex].strength) {
 			this.bridges[existsIndex] = bridge;
+			this.updates.push(bridge);
 		}
+	}
+
+	addBridgeStrength(bridge) {
+		const existsIndex = this.bridges.findIndex(B => B.equal(bridge));
+		if (existsIndex == -1) {
+			return this.requireBridge(bridge);
+		}
+
+		bridge.strength = 2;
+		this.requireBridge(bridge);
 	}
 
 	isBridgeFor(C, T) {
@@ -369,16 +380,44 @@ class BridgesSolver {
 		return targets;
 	}
 
-	findKnownsFromDirectionsStarting(C) {
-		let required = this.grid[C.y][C.x];
+	getConnectionsUsed(C) {
+		const bridges = this.bridges.filter(B => B.from.equal(C) || B.to.equal(C));
+		const used = bridges.reduce((total, B) => total + B.strength, 0);
+		return used;
+	}
+
+	getBridgeStrength(from, to) {
+		const bridge = new Bridge(from, to);
+		const exists = this.bridges.find(B => B.equal(bridge));
+		return exists ? exists.strength : 0;
+	}
+
+	collateRequiredAndAvailable(C) {
+		const required = this.grid[C.y][C.x];
 		const targets = this.getTargetsFrom(C);
-console.log(targets);
+
+		let used = 0;
+		const available = [];
+		targets.forEach(T => {
+			if (this.getConnectionsUsed(T) == this.grid[T.y][T.x]) {
+				used += this.getBridgeStrength(C, T);
+			}
+			else {
+				available.push(T);
+			}
+		});
+
+		return [required - used, available];
+	}
+
+	findKnownsFromDirectionsStarting(C) {
+		const [required, targets] = this.collateRequiredAndAvailable(C);
+console.log(required, targets);
 		const targetRequireds = targets.map(C => this.grid[C.y][C.x]).sort().map(n => Math.min(2, n));
 		const ones = targetRequireds.filter(n => n == 1).length;
 		const twos = targetRequireds.filter(n => n == 2).length;
 
 		if (twos * 2 + ones == required) {
-			console.log('all');
 			targets.forEach(T => {
 				this.requireBridge(new Bridge(C, T, this.grid[T.y][T.x] > 1 ? 2 : 1));
 			});
@@ -386,7 +425,6 @@ console.log(targets);
 		}
 
 		if (Math.ceil((required - ones) / 2) == twos) {
-			console.log('twos');
 			targets.forEach(T => {
 				if (this.grid[T.y][T.x] >= 2) {
 					this.requireBridge(new Bridge(C, T));
@@ -394,28 +432,54 @@ console.log(targets);
 			});
 			return;
 		}
+	}
 
-// 		let needTargets = 0;
-// 		while (required > 0) {
-// 			required -= targetRequireds.pop();
-// 			needTargets++;
-// 		}
-// console.log(`${needTargets} / ${targets.length}`);
+	findKnownsFromOnlyUndoneStarting(C) {
+		const required = this.grid[C.y][C.x];
+		const bridges = this.bridges.filter(B => B.from.equal(C) || B.to.equal(C));
+		const used = bridges.reduce((total, B) => total + B.strength, 0);
+// console.log(required, used);
+		if (required == used) return;
 
-// 		if (needTargets == targets.length) {
-// 			targets.forEach(T => this.requireBridge(new Bridge(C, T)));
-// 		}
+		const targets = this.getTargetsFrom(C);
+		const targetsLeft = targets.map(T => {
+			return Math.min(this.grid[T.y][T.x] - this.getConnectionsUsed(T), 2 - this.getBridgeStrength(T, C));
+		});
+// console.log(targets, targetsLeft);
+
+		const targetsLeftTotal = targetsLeft.reduce((total, n) => total + n, 0);
+		if (targetsLeftTotal == required - used) {
+			targetsLeft.forEach((n, i) => {
+				n > 0 && this.addBridgeStrength(new Bridge(C, targets[i], n));
+			});
+			return;
+		}
+
+		const targetsLeftDirs = targetsLeft.filter(n => n > 0);
+// console.log(targetsLeftDirs);
+		if (targetsLeftDirs.length == 1) {
+			targetsLeft.forEach((n, i) => {
+				n > 0 && this.addBridgeStrength(new Bridge(C, targets[i], required - used));
+			});
+		}
 	}
 
 	findKnownsFromDirections() {
 		this.requireds.forEach(C => this.findKnownsFromDirectionsStarting(C));
 	}
 
+	findKnownsFromOnlyUndone() {
+		this.requireds.forEach(C => this.findKnownsFromOnlyUndoneStarting(C));
+	}
+
 	findKnowns() {
 		this.findKnownsFromDirections();
+		this.findKnownsFromOnlyUndone();
+
 		// FromEnding (if C can only go 1 direction)
 		// FromOnlyUndone (C can only go in directions of undone T)
 		// FromReached (T can only be reached from 1 undone C)
+		// ... To connect 2 parts of the map (see demo=1 top)
 	}
 
 }
