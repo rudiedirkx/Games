@@ -140,6 +140,7 @@ class Bridges extends CanvasGame {
 	}
 
 	getCrossing(C) {
+		C = C.multiply(this.canvas.width / this.canvas.offsetWidth);
 		const crossing = new Coords2D(
 			Math.round((C.x - this.OFFSET) / this.SQUARE),
 			Math.round((C.y - this.OFFSET) / this.SQUARE)
@@ -148,7 +149,7 @@ class Bridges extends CanvasGame {
 	}
 
 	getRequirement(C) {
-		return this.grid[C.y][C.x];
+		return this.grid[C.y] && this.grid[C.y][C.x] || 0;
 	}
 
 	getConnections(C) {

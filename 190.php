@@ -68,6 +68,7 @@ $grids = [
 <style>
 canvas {
 	background-color: #eee;
+	max-width: 100%;
 }
 </style>
 <? include 'tpl.onerror.php' ?>
