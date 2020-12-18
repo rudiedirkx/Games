@@ -5,15 +5,15 @@ require __DIR__ . '/inc.bootstrap.php';
 
 $grids = [
 	[
-		' 1 2 1',
-		'',
-		'2  6 4',
-		'',
-		' 3 5',
+		'1 2  3',
+		' 1 2',
 		'3 2  3',
-		'   1',
-		'2 3  3',
-		' 3 2',
+		' 2 4',
+		'     3',
+		'5  5',
+		' 1   3',
+		'2',
+		' 2 4 2',
 	],
 	[
 		' 3 2 1',
@@ -84,6 +84,13 @@ canvas {
 <p>
 	<button id="cheat">Cheat</button>
 	<button id="new">New game</button>
+</p>
+
+<p>
+	<? foreach ($grids as $i => $grid): ?>
+		<? if ($i): ?> | <? endif ?>
+		<a href="?demo=<?= $i ?>"><?= $i ?></a>
+	<? endforeach ?>
 </p>
 
 <script>

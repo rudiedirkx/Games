@@ -413,7 +413,6 @@ class BridgesSolver {
 
 	findKnownsFromDirectionsStarting(C) {
 		const [required, targets] = this.collateRequiredAndAvailable(C);
-console.log(required, targets);
 		const targetRequireds = targets.map(C => this.grid[C.y][C.x]).sort().map(n => Math.min(2, n));
 		const ones = targetRequireds.filter(n => n == 1).length;
 		const twos = targetRequireds.filter(n => n == 2).length;
@@ -439,14 +438,12 @@ console.log(required, targets);
 		const required = this.grid[C.y][C.x];
 		const bridges = this.bridges.filter(B => B.from.equal(C) || B.to.equal(C));
 		const used = bridges.reduce((total, B) => total + B.strength, 0);
-// console.log(required, used);
 		if (required == used) return;
 
 		const targets = this.getTargetsFrom(C);
 		const targetsLeft = targets.map(T => {
 			return Math.min(this.grid[T.y][T.x] - this.getConnectionsUsed(T), 2 - this.getBridgeStrength(T, C));
 		});
-// console.log(targets, targetsLeft);
 
 		const targetsLeftTotal = targetsLeft.reduce((total, n) => total + n, 0);
 		if (targetsLeftTotal == required - used) {
@@ -457,11 +454,16 @@ console.log(required, targets);
 		}
 
 		const targetsLeftDirs = targetsLeft.filter(n => n > 0);
-// console.log(targetsLeftDirs);
 		if (targetsLeftDirs.length == 1) {
 			targetsLeft.forEach((n, i) => {
 				n > 0 && this.addBridgeStrength(new Bridge(C, targets[i], required - used));
 			});
+			return;
+		}
+
+		const maxLeft = Math.max(...targetsLeft);
+		if (maxLeft > targetsLeftTotal - maxLeft && required - used >= maxLeft) {
+			this.requireBridge(new Bridge(C, targets[targetsLeft.indexOf(maxLeft)]));
 		}
 	}
 
