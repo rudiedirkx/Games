@@ -138,9 +138,7 @@ class Bridges extends CanvasGame {
 			}
 		}
 
-		// @todo Check single cluster (see demo=3 top left)
-
-		return true;
+		return this.getClusters().length == 1;
 	}
 
 	getClusters() {
