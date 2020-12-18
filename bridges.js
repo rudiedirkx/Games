@@ -1,13 +1,13 @@
 class Bridge {
 
-	constructor(from, to) {
+	constructor(from, to, strength = 1) {
 		if (from.x > to.x || (from.x == to.x && from.y > to.y)) {
 			[from, to] = [to, from];
 		}
 
 		this.from = from;
 		this.to = to;
-		this.strength = 1;
+		this.strength = strength;
 	}
 
 	equal(bridge) {
@@ -125,6 +125,18 @@ class Bridges extends CanvasGame {
 		});
 	}
 
+	haveWon() {
+		for ( let y = 0; y < this.height; y++ ) {
+			for ( let x = 0; x < this.width; x++ ) {
+				if (this.grid[y][x] && this.grid[y][x] != this.getConnections(new Coords2D(x, y))) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	getCrossing(C) {
 		const crossing = new Coords2D(
 			Math.round((C.x - this.OFFSET) / this.SQUARE),
@@ -162,10 +174,13 @@ class Bridges extends CanvasGame {
 		// @todo Not across another bridge
 
 		this.addBridge(bridge);
+
+		this.startWinCheck();
 	}
 
 	addBridge(bridge) {
 		const existsIndex = this.bridges.findIndex(B => B.equal(bridge));
+console.log('addBridge', existsIndex);
 		if (existsIndex == -1) {
 			this.bridges.push(bridge);
 		}
@@ -174,6 +189,17 @@ class Bridges extends CanvasGame {
 		}
 		else {
 			this.bridges.splice(existsIndex, 1);
+		}
+	}
+
+	replaceBridge(bridge) {
+		const existsIndex = this.bridges.findIndex(B => B.equal(bridge));
+console.log('replaceBridge', existsIndex);
+		if (existsIndex == -1) {
+			this.bridges.push(bridge);
+		}
+		else {
+			this.bridges[existsIndex] = bridge;
 		}
 	}
 
@@ -187,10 +213,12 @@ class Bridges extends CanvasGame {
 
 	listenControls() {
 		this.listenDrag();
+		// this.listenClick();
+
+		$('#cheat').on('click', e => this.cheatOneRound());
 	}
 
 	listenDrag() {
-		this.dragging = null;
 		var location;
 
 		this.canvas.on(['mousedown', 'touchstart'], (e) => {
@@ -216,8 +244,13 @@ class Bridges extends CanvasGame {
 		document.on(['mouseup', 'touchend'], (e) => {
 			if (this.dragging) {
 				const crossing = this.getCrossing(location);
-				if (crossing && this.getRequirement(crossing)) {
-					this.attemptBridge(this.dragging, crossing);
+				if (crossing) {
+					if (crossing.equal(this.dragging)) {
+						this.handleClick(location);
+					}
+					else if (this.getRequirement(crossing)) {
+						this.attemptBridge(this.dragging, crossing);
+					}
 				}
 				this.changed = true;
 			}
@@ -227,8 +260,162 @@ class Bridges extends CanvasGame {
 		});
 	}
 
+	handleClick(C) {
+		const crossing = this.getCrossing(C);
+		if (crossing && this.getRequirement(crossing)) {
+			this.cheatOneRoundFromStart(crossing);
+		}
+	}
+
+	cheatOneRoundFromStart(C) {
+		this.m_bCheating = true;
+
+		const solver = BridgesSolver.fromState(this.grid, this.bridges);
+		solver.findKnownsFromDirectionsStarting(C);
+		this.cheatFromSolver(solver);
+	}
+
+	cheatOneRound() {
+		this.m_bCheating = true;
+
+		const solver = BridgesSolver.fromState(this.grid, this.bridges);
+		solver.findKnowns();
+		this.cheatFromSolver(solver);
+	}
+
+	cheatFromSolver(solver) {
+console.log(solver);
+		solver.updates.forEach(B => this.replaceBridge(B));
+
+		this.changed = true;
+	}
+
 	setTime() {}
 
 	setMoves() {}
+
+}
+
+class BridgesSolver {
+
+	static fromState(grid, bridges) {
+		return new this(grid, bridges);
+	}
+
+	constructor(grid, bridges) {
+		this.width = grid[0].length;
+		this.height = grid.length;
+		this.grid = grid;
+		this.bridges = bridges;
+
+		this.requireds = this.makeRequireds();
+		this.updates = [];
+	}
+
+	makeRequireds() {
+		const coords = [];
+		for ( let y = 0; y < this.height; y++ ) {
+			for ( let x = 0; x < this.width; x++ ) {
+				if (this.grid[y][x]) {
+					coords.push(new Coords2D(x, y));
+				}
+			}
+		}
+		return coords;
+	}
+
+	requireBridge(bridge) {
+		this.updates.push(bridge);
+
+		const existsIndex = this.bridges.findIndex(B => B.equal(bridge));
+		if (existsIndex == -1) {
+			this.bridges.push(bridge);
+		}
+		else {
+			this.bridges[existsIndex] = bridge;
+		}
+	}
+
+	isBridgeFor(C, T) {
+		return this.bridges.some(B => {
+			if (!B.from.equal(T) && !B.to.equal(T)) {
+				if (B.from.x == C.x && B.from.y < C.y && B.to.y > C.y) return true;
+				if (B.from.y == C.y && B.from.x < C.x && B.to.x > C.x) return true;
+			}
+		});
+	}
+
+	getTargetFromToward(C, D) {
+		let curr = C.add(D);
+		while (this.grid[curr.y] && this.grid[curr.y][curr.x] != null) {
+			if (this.isBridgeFor(curr, C)) {
+				return null;
+			}
+			else if (this.grid[curr.y][curr.x]) {
+				return curr;
+			}
+			curr = curr.add(D);
+		}
+	}
+
+	getTargetsFrom(C) {
+		const targets = [];
+		Coords2D.dir4Coords.forEach(D => {
+			const T = this.getTargetFromToward(C, D);
+			if (T) {
+				targets.push(T);
+			}
+		});
+		return targets;
+	}
+
+	findKnownsFromDirectionsStarting(C) {
+		let required = this.grid[C.y][C.x];
+		const targets = this.getTargetsFrom(C);
+console.log(targets);
+		const targetRequireds = targets.map(C => this.grid[C.y][C.x]).sort().map(n => Math.min(2, n));
+		const ones = targetRequireds.filter(n => n == 1).length;
+		const twos = targetRequireds.filter(n => n == 2).length;
+
+		if (twos * 2 + ones == required) {
+			console.log('all');
+			targets.forEach(T => {
+				this.requireBridge(new Bridge(C, T, this.grid[T.y][T.x] > 1 ? 2 : 1));
+			});
+			return;
+		}
+
+		if (Math.ceil((required - ones) / 2) == twos) {
+			console.log('twos');
+			targets.forEach(T => {
+				if (this.grid[T.y][T.x] >= 2) {
+					this.requireBridge(new Bridge(C, T));
+				}
+			});
+			return;
+		}
+
+// 		let needTargets = 0;
+// 		while (required > 0) {
+// 			required -= targetRequireds.pop();
+// 			needTargets++;
+// 		}
+// console.log(`${needTargets} / ${targets.length}`);
+
+// 		if (needTargets == targets.length) {
+// 			targets.forEach(T => this.requireBridge(new Bridge(C, T)));
+// 		}
+	}
+
+	findKnownsFromDirections() {
+		this.requireds.forEach(C => this.findKnownsFromDirectionsStarting(C));
+	}
+
+	findKnowns() {
+		this.findKnownsFromDirections();
+		// FromEnding (if C can only go 1 direction)
+		// FromOnlyUndone (C can only go in directions of undone T)
+		// FromReached (T can only be reached from 1 undone C)
+	}
 
 }

@@ -3,16 +3,44 @@
 
 require __DIR__ . '/inc.bootstrap.php';
 
-$grid = [
-	' 1 2 1',
-	'',
-	'2  6 4',
-	'',
-	' 3 5',
-	'3 2  3',
-	'   1',
-	'2 3  3',
-	' 3 2',
+$grids = [
+	[
+		' 1 2 1',
+		'',
+		'2  6 4',
+		'',
+		' 3 5',
+		'3 2  3',
+		'   1',
+		'2 3  3',
+		' 3 2',
+	],
+	[
+		' 3 2 1',
+		'  2    2',
+		'1  2 4',
+		' 2',
+		'4 6  4 4',
+		'   3  2',
+		'3   3  5',
+		'  2',
+		'4  3 1 4',
+		' 3  6 1',
+		'1    2 3',
+		' 1  3 1',
+	],
+	[
+		'  1',
+		'',
+		'6 4',
+		'',
+		'  3',
+		'     1  ',
+		'',
+		'   6 5 1',
+		'',
+		'     3',
+	],
 ];
 
 ?>
@@ -39,6 +67,7 @@ canvas {
 <canvas></canvas>
 
 <p>
+	<button id="cheat">Cheat</button>
 	<button id="new">New game</button>
 </p>
 
@@ -47,7 +76,7 @@ objGame = new Bridges($('canvas'));
 objGame.startPainting();
 objGame.listenControls();
 setTimeout(function() {
-	objGame.createMap(<?= json_encode($grid) ?>);
+	objGame.createMap(<?= json_encode($grids[$_GET['demo'] ?? 0]) ?>);
 });
 </script>
 </body>
