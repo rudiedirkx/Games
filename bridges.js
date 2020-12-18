@@ -30,6 +30,7 @@ class Bridges extends CanvasGame {
 		this.CIRCLE = 22;
 		this.TEXT = 40;
 		this.STRUCTURE = '#999';
+		// this.BRIDGE = ['limegreen'/*, 'orange', 'hotpink', 'cyan'*/];
 
 		this.dragging = null;
 		this.bridging = null;
@@ -114,12 +115,15 @@ class Bridges extends CanvasGame {
 	}
 
 	drawBridges() {
+		// const clusters = this.mapClusters(this.getClusters());
 		this.bridges.forEach(B => {
+			// const bridgeColor = this.BRIDGE[ clusters[B.from.join()] % this.BRIDGE.length ];
+			const bridgeColor = 'limegreen';
 			if (B.strength == 1) {
-				this.drawLine(this.scale(B.from), this.scale(B.to), {width: 5, color: 'green'});
+				this.drawLine(this.scale(B.from), this.scale(B.to), {width: 5, color: bridgeColor});
 			}
 			else {
-				this.drawLine(this.scale(B.from), this.scale(B.to), {width: 12, color: 'green'});
+				this.drawLine(this.scale(B.from), this.scale(B.to), {width: 12, color: bridgeColor});
 				this.drawLine(this.scale(B.from), this.scale(B.to), {width: 4, color: '#eee'});
 			}
 		});
@@ -137,6 +141,40 @@ class Bridges extends CanvasGame {
 		// @todo Check single cluster (see demo=3 top left)
 
 		return true;
+	}
+
+	getClusters() {
+		var coords = this.bridges.reduce((L, B) => {
+			return L.push(B.from.join(), B.to.join()), L;
+		}, []).unique();
+
+		const clusters = [];
+		while (coords.length) {
+			const start = coords.pop();
+			const cluster = [];
+			this.expandClusterFrom(cluster, start);
+			coords = coords.filter(C => !cluster.includes(C));
+			clusters.push(cluster);
+		}
+
+		return clusters;
+	}
+
+	expandClusterFrom(cluster, C) {
+		cluster.push(C);
+
+		this.bridges.forEach(B => {
+			const from = B.from.join();
+			const to = B.to.join();
+			if (from == C && !cluster.includes(to)) this.expandClusterFrom(cluster, to);
+			if (to == C && !cluster.includes(from)) this.expandClusterFrom(cluster, from);
+		});
+	}
+
+	mapClusters(clusters) {
+		const map = {};
+		clusters.forEach((L, i) => L.forEach(C => map[C] = i));
+		return map;
 	}
 
 	getCrossing(C) {
@@ -262,6 +300,8 @@ class Bridges extends CanvasGame {
 	}
 
 	handleClick(C) {
+		if (!this.clickCheat) return;
+
 		const crossing = this.getCrossing(C);
 		if (crossing && this.getRequirement(crossing)) {
 			this.cheatOneRoundFromStart(crossing);

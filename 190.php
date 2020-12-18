@@ -95,6 +95,7 @@ canvas {
 
 <script>
 objGame = new Bridges($('canvas'));
+objGame.clickCheat = <?= json_encode(is_local()) ?>;
 objGame.startPainting();
 objGame.listenControls();
 setTimeout(function() {
