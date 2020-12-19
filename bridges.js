@@ -310,6 +310,7 @@ class Bridges extends CanvasGame {
 		this.m_bCheating = true;
 
 		const solver = BridgesSolver.fromState(this.grid, this.bridges);
+		solver.findKnownsFromSamesStarting(C);
 		solver.findKnownsFromDirectionsStarting(C);
 		solver.findKnownsFromOnlyUndoneStarting(C);
 		this.cheatFromSolver(solver);
@@ -449,6 +450,16 @@ class BridgesSolver {
 		return [required - used, available];
 	}
 
+	findKnownsFromSamesStarting(C) {
+		const required = this.grid[C.y][C.x];
+		if (required > 2) return;
+
+		const targets = this.getTargetsFrom(C).filter(C => this.grid[C.y][C.x] != required);
+		if (targets.length == 1) {
+			this.requireBridge(new Bridge(C, targets[0]));
+		}
+	}
+
 	findKnownsFromDirectionsStarting(C) {
 		const [required, targets] = this.collateRequiredAndAvailable(C);
 		const targetRequireds = targets.map(C => this.grid[C.y][C.x]).sort().map(n => Math.min(2, n));
@@ -505,6 +516,10 @@ class BridgesSolver {
 		}
 	}
 
+	findKnownsFromSames() {
+		this.requireds.forEach(C => this.findKnownsFromSamesStarting(C));
+	}
+
 	findKnownsFromDirections() {
 		this.requireds.forEach(C => this.findKnownsFromDirectionsStarting(C));
 	}
@@ -514,6 +529,7 @@ class BridgesSolver {
 	}
 
 	findKnowns() {
+		this.findKnownsFromSames();
 		this.findKnownsFromDirections();
 		this.findKnownsFromOnlyUndone();
 
