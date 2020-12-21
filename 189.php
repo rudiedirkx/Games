@@ -110,6 +110,9 @@ td.active span {
 	<button id="cheat">Cheat</button>
 	<button id="new">New game</button>
 </p>
+<p>
+	Analyze: <input type="file" />
+</p>
 
 <script>
 objGame = new Ohno($('#grid'));
@@ -117,7 +120,7 @@ objGame.createEmpty();
 objGame.listenControls();
 setTimeout(function() {
 	objGame.createMap(<?= json_encode($grid) ?>);
-}, 300);
+}, 100);
 </script>
 </body>
 

@@ -2,15 +2,23 @@
 
 class Ohno extends GridGame {
 
+	constructor(...args) {
+		super(...args);
+
+		this.WHITE = '';
+		this.BLACK = '';
+		this.GRAY = 'g';
+		this.RED = 'r';
+		this.BLUE = 'b';
+
+		this.OUTSIDE = [100, 10, 100, 10];
+		this.MIN_GROUPS = 11;
+	}
+
 	reset() {
 		super.reset();
 
 		this.size = 7;
-
-		this.WHITE = 'w';
-		this.GRAY = 'g';
-		this.RED = 'r';
-		this.BLUE = 'b';
 	}
 
 	createMap(grid) {
@@ -186,22 +194,46 @@ console.log(solver);
 		// 	});
 		// });
 
+		$('input[type="file"]').on('change', e => {
+			const file = e.target.files[0];
+			this.fileToBoard(file);
+		});
+
 		document.on('dragover', e => {
 			e.preventDefault();
 		});
 		document.on('drop', e => {
 			e.preventDefault();
 			const file = e.data.files[0];
-// console.log(file);
-			this.fileToPixels(file).then(pxGrid => this.pixelsToGrid(pxGrid));
+			this.fileToBoard(file);
 		});
+	}
+
+	async fileToBoard(file) {
+		console.time('fileToPixels');
+		const pxGrid = await this.fileToPixels(file);
+		console.timeEnd('fileToPixels');
+
+		console.time('pixelsToGrid');
+		const grid = this.pixelsToGrid(pxGrid);
+		console.timeEnd('pixelsToGrid');
+// console.log(grid);
+
+		this.createEmpty(grid.length);
+		const cells = this.m_objGrid.getElements('td');
+		grid.forEach((row, y) => row.forEach((color, x) => {
+			const i = y * grid[0].length + x;
+			if (color == this.RED)			cells[i].addClass('closed');
+			else if (color == this.BLUE)	cells[i].addClass('active');
+		}));
 	}
 
 	fileToPixels(file) {
 		return new Promise(resolve => {
 			const img = document.createElement('img');
+			// img.style.maxWidth = '100%';
 			img.src = URL.createObjectURL(file);
-document.body.append(img);
+// document.body.append(img);
 // console.log(img);
 			img.onload = e => {
 				const width = img.width;
@@ -221,33 +253,114 @@ document.body.append(img);
 	}
 
 	pixelsToGrid(pxGrid) {
-console.log(pxGrid);
-		this.getRowColors(pxGrid, 40);
+// console.log(pxGrid);
 
-		// for ( let x = 10; x < pxGrid.width-9; x += 10 ) {
-		// 	console.log(x);
-		// }
+		var x, centersVer, offCenterVer;
+		var y, centersHor, offCenterHor;
+
+		for ( x = this.OUTSIDE[3]; x <= pxGrid.width - this.OUTSIDE[1]; x += 10 ) {
+			const groups = this.groupColors(this.getRowColors(pxGrid, x));
+			if (groups.length >= this.MIN_GROUPS) {
+				centersVer = this.getGroupCenters(groups, this.OUTSIDE[0]);
+				const distance = this.getAvgCellDistance(centersVer);
+// console.log(x, groups, centersVer, distance);
+				break;
+			}
+		}
+
+		for ( y = this.OUTSIDE[0]; y <= pxGrid.height - this.OUTSIDE[2]; y += 10 ) {
+			const groups = this.groupColors(this.getColumnColors(pxGrid, y));
+			if (groups.length >= this.MIN_GROUPS) {
+				centersHor = this.getGroupCenters(groups, this.OUTSIDE[3]);
+				const distance = this.getAvgCellDistance(centersHor);
+// console.log(y, groups, centersHor, distance);
+				break;
+			}
+		}
+
+		if (centersHor.length != centersVer.length) {
+			alert(`Can't find cells: width = ${centersHor.length}, height = ${centersVer.length}`);
+		}
+
+		offCenterVer = parseInt((centersVer[0] - y) / 2);
+		offCenterHor = parseInt((centersHor[0] - x) / 2);
 
 		// Use https://github.com/antimatter15/ocrad.js for numbers?
+
+		const grid = [];
+		for ( let y = 0; y < centersVer.length; y++ ) {
+			const row = [];
+			grid.push(row);
+			for ( let x = 0; x < centersHor.length; x++ ) {
+				const color = this.getNormalColor(this.getPixelColor(pxGrid, centersHor[x] - offCenterHor, centersVer[y] - offCenterVer));
+				row.push(color);
+			}
+		}
+
+		return grid;
+	}
+
+	getAvgCellDistance(centers) {
+		var total = 0;
+		var amount = 0;
+		for ( let i = 1; i < centers.length; i++ ) {
+			total += centers[i] - centers[i-1];
+			amount++;
+		}
+		return Math.round(total / amount);
+	}
+
+	getGroupCenters(groups, offset) {
+		const centers = [];
+		for ( let i = 0; i < groups.length; i++ ) {
+			const [color, size] = groups[i];
+			if (color) {
+				centers.push(offset + parseInt(size/2));
+			}
+
+			offset += size;
+		}
+		return centers;
+	}
+
+	groupColors(colors) {
+		const groups = [];
+		var last = null;
+		for ( let i = 0; i < colors.length; i++ ) {
+			if (last != colors[i]) {
+				groups.push([colors[i], 0]);
+				last = colors[i];
+			}
+			groups[groups.length-1][1]++;
+		}
+		return groups;
 	}
 
 	getRowColors(pxGrid, x) {
 		const normalColors = [];
-		for ( let y = 0; y < pxGrid.height; y++ ) {
+		for ( let y = this.OUTSIDE[0]; y < pxGrid.height - this.OUTSIDE[2]; y++ ) {
 			normalColors.push(this.getNormalColor(this.getPixelColor(pxGrid, x, y)));
 		}
-		console.log(normalColors.join(' '));
+		return normalColors;
+	}
+
+	getColumnColors(pxGrid, y) {
+		const normalColors = [];
+		for ( let x = this.OUTSIDE[3]; x < pxGrid.width - this.OUTSIDE[1]; x++ ) {
+			normalColors.push(this.getNormalColor(this.getPixelColor(pxGrid, x, y)));
+		}
+		return normalColors;
 	}
 
 	getPixelColor(pxGrid, x, y) {
 		const pi = y*pxGrid.width + x;
 		const data = pxGrid.pixels.slice(pi*4, pi*4+3);
 		return data;
-		// return data[0] + ',' + data[1] + ',' + data[2];
 	}
 
 	getNormalColor(rgb) {
 		if (this.isWhite(rgb)) return this.WHITE;
+		if (this.isBlack(rgb)) return this.BLACK;
 		if (this.isGray(rgb)) return this.GRAY;
 		if (this.isRed(rgb)) return this.RED;
 		if (this.isBlue(rgb)) return this.BLUE;
@@ -258,12 +371,16 @@ console.log(pxGrid);
 		return this.isAlmost(rgb, [255,255,255]);
 	}
 
+	isBlack(rgb) {
+		return this.isAlmost(rgb, [0,0,0]);
+	}
+
 	isGray(rgb) {
 		return this.isAlmost(rgb, [238,238,238]);
 	}
 
 	isRed(rgb) {
-		return this.isAlmost(rgb, [255,56,75]);
+		return this.isAlmost(rgb, [255,56,75]) || this.isAlmost(rgb, [203,45,60]);
 	}
 
 	isBlue(rgb) {
