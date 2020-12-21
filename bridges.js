@@ -21,11 +21,12 @@ class Bridges extends CanvasGame {
 	reset() {
 		super.reset();
 
+		this.editing = false;
 		this.grid = [];
 		this.width = 0;
 		this.height = 0;
 
-		this.OFFSET = 30;
+		this.OFFSET = 40;
 		this.SQUARE = 50;
 		this.CIRCLE = 22;
 		this.TEXT = 40;
@@ -115,7 +116,7 @@ class Bridges extends CanvasGame {
 	}
 
 	drawBridges() {
-		// const clusters = this.mapClusters(this.getClusters());
+		// const clusters = this.mapClusters(this.constructor.getClusters());
 		this.bridges.forEach(B => {
 			// const bridgeColor = this.BRIDGE[ clusters[B.from.join()] % this.BRIDGE.length ];
 			const bridgeColor = 'limegreen';
@@ -132,17 +133,17 @@ class Bridges extends CanvasGame {
 	haveWon() {
 		for ( let y = 0; y < this.height; y++ ) {
 			for ( let x = 0; x < this.width; x++ ) {
-				if (this.grid[y][x] && this.grid[y][x] != this.getConnections(new Coords2D(x, y))) {
+				if (this.grid[y][x] && !this.isComplete(new Coords2D(x, y))) {
 					return false;
 				}
 			}
 		}
 
-		return this.getClusters().length == 1;
+		return this.constructor.getClusters(this.bridges).length == 1;
 	}
 
-	getClusters() {
-		var coords = this.bridges.reduce((L, B) => {
+	static getClusters(bridges) {
+		var coords = bridges.reduce((L, B) => {
 			return L.push(B.from.join(), B.to.join()), L;
 		}, []).unique();
 
@@ -150,7 +151,7 @@ class Bridges extends CanvasGame {
 		while (coords.length) {
 			const start = coords.pop();
 			const cluster = [];
-			this.expandClusterFrom(cluster, start);
+			this.expandClusterFrom(bridges, cluster, start);
 			coords = coords.filter(C => !cluster.includes(C));
 			clusters.push(cluster);
 		}
@@ -158,14 +159,14 @@ class Bridges extends CanvasGame {
 		return clusters;
 	}
 
-	expandClusterFrom(cluster, C) {
+	static expandClusterFrom(bridges, cluster, C) {
 		cluster.push(C);
 
-		this.bridges.forEach(B => {
+		bridges.forEach(B => {
 			const from = B.from.join();
 			const to = B.to.join();
-			if (from == C && !cluster.includes(to)) this.expandClusterFrom(cluster, to);
-			if (to == C && !cluster.includes(from)) this.expandClusterFrom(cluster, from);
+			if (from == C && !cluster.includes(to)) this.expandClusterFrom(bridges, cluster, to);
+			if (to == C && !cluster.includes(from)) this.expandClusterFrom(bridges, cluster, from);
 		});
 	}
 
@@ -185,11 +186,15 @@ class Bridges extends CanvasGame {
 	}
 
 	getRequirement(C) {
-		return this.grid[C.y] && this.grid[C.y][C.x] || 0;
+		return this.grid[C.y] && this.grid[C.y][C.x];
 	}
 
 	getConnections(C) {
 		return this.bridges.reduce((T, B) => B.from.equal(C) || B.to.equal(C) ? T + B.strength : T, 0);
+	}
+
+	isComplete(C) {
+		return this.getConnections(C) == this.grid[C.y][C.x];
 	}
 
 	attemptBridge(from, to) {
@@ -251,8 +256,26 @@ class Bridges extends CanvasGame {
 	listenControls() {
 		this.listenDrag();
 		// this.listenClick();
+		this.listenWheel();
 
 		$('#cheat').on('click', e => this.cheatOneRound());
+
+		$('#restart').on('click', e => {
+			this.bridges.length = 0;
+			this.changed = true;
+		});
+
+		$('#edit').on('click', e => {
+			this.editing = !this.editing;
+			document.body.toggleClass('editing', this.editing);
+			this.bridges.length = 0;
+			this.changed = true;
+		});
+
+		$('#clear').on('click', e => {
+			this.grid = this.grid.map(L => L.fill(0));
+			this.changed = true;
+		});
 	}
 
 	listenDrag() {
@@ -297,6 +320,23 @@ class Bridges extends CanvasGame {
 		});
 	}
 
+	listenWheel() {
+		this.canvas.on('wheel', e => {
+			if (this.editing) {
+				e.preventDefault();
+				this.handleWheel(e.subjectXY, e.deltaY > 0 ? -1 : 1);
+			}
+		});
+	}
+
+	handleWheel(C, delta) {
+		const crossing = this.getCrossing(C);
+		if (!crossing || this.getRequirement(crossing) == null) return;
+
+		this.grid[crossing.y][crossing.x] += delta;
+		this.changed = true;
+	}
+
 	handleClick(C) {
 		if (!this.clickCheat) return;
 
@@ -313,6 +353,7 @@ class Bridges extends CanvasGame {
 		solver.findKnownsFromSamesStarting(C);
 		solver.findKnownsFromDirectionsStarting(C);
 		solver.findKnownsFromOnlyUndoneStarting(C);
+		solver.findKnownsFromClustersStarting(C);
 		this.cheatFromSolver(solver);
 	}
 
@@ -516,6 +557,12 @@ class BridgesSolver {
 		}
 	}
 
+	findKnownsFromClustersStarting(C) {
+		if (this.grid[C.y][C.x] == this.getConnectionsUsed(C)) return;
+
+		console.log('findKnownsFromClusters', C);
+	}
+
 	findKnownsFromSames() {
 		this.requireds.forEach(C => this.findKnownsFromSamesStarting(C));
 	}
@@ -528,15 +575,20 @@ class BridgesSolver {
 		this.requireds.forEach(C => this.findKnownsFromOnlyUndoneStarting(C));
 	}
 
+	findKnownsFromClusters() {
+		if (!this.updates.length) {
+			this.requireds.forEach(C => this.findKnownsFromClustersStarting(C));
+		}
+	}
+
 	findKnowns() {
 		this.findKnownsFromSames();
 		this.findKnownsFromDirections();
 		this.findKnownsFromOnlyUndone();
+		this.findKnownsFromClusters();
 
-		// FromEnding (if C can only go 1 direction)
-		// FromOnlyUndone (C can only go in directions of undone T)
-		// FromReached (T can only be reached from 1 undone C)
-		// ... To connect 2 parts of the map (see demo=1 top)
+		// ... To connect clusters (see demo=2 top left)
+		// ... To make sure a separate cluster isn't 'completed' (see demo=1 top, demo=6)
 	}
 
 }
