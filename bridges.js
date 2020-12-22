@@ -31,7 +31,7 @@ class Bridges extends CanvasGame {
 		this.CIRCLE = 22;
 		this.TEXT = 40;
 		this.STRUCTURE = '#999';
-		// this.BRIDGE = ['limegreen'/*, 'orange', 'hotpink', 'cyan'*/];
+		this.BRIDGE = ['limegreen', 'orange', 'hotpink', 'cyan'];
 
 		this.dragging = null;
 		this.bridging = null;
@@ -116,10 +116,10 @@ class Bridges extends CanvasGame {
 	}
 
 	drawBridges() {
-		// const clusters = this.mapClusters(this.constructor.getClusters());
+		const doColors = this.BRIDGE.length > 1;
+		const clusters = doColors ? this.mapClusters(this.constructor.getClusters(this.bridges)) : {};
 		this.bridges.forEach(B => {
-			// const bridgeColor = this.BRIDGE[ clusters[B.from.join()] % this.BRIDGE.length ];
-			const bridgeColor = 'limegreen';
+			const bridgeColor = doColors ? this.BRIDGE[ clusters[B.from.join()] % this.BRIDGE.length ] : this.BRIDGE[0];
 			if (B.strength == 1) {
 				this.drawLine(this.scale(B.from), this.scale(B.to), {width: 5, color: bridgeColor});
 			}
