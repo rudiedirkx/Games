@@ -211,13 +211,15 @@ console.log(solver);
 
 	async fileToBoard(file) {
 		console.time('fileToPixels');
-		const pxGrid = await this.fileToPixels(file);
+		const imageData = await this.fileToPixels(file);
 		console.timeEnd('fileToPixels');
+console.log(imageData);
 
 		console.time('pixelsToGrid');
-		const grid = this.pixelsToGrid(pxGrid);
+		const grid = this.pixelsToGrid(imageData);
 		console.timeEnd('pixelsToGrid');
-// console.log(grid);
+console.log(grid);
+		if (!grid) return;
 
 		this.createEmpty(grid.length);
 		const cells = this.m_objGrid.getElements('td');
@@ -231,35 +233,35 @@ console.log(solver);
 	fileToPixels(file) {
 		return new Promise(resolve => {
 			const img = document.createElement('img');
-			// img.style.maxWidth = '100%';
 			img.src = URL.createObjectURL(file);
-// document.body.append(img);
-// console.log(img);
 			img.onload = e => {
 				const width = img.width;
 				const height = img.height;
 				const canvas = document.createElement('canvas');
 				canvas.width = width;
 				canvas.height = height;
-// console.log(canvas);
 
 				const ctx = canvas.getContext('2d');
 				ctx.drawImage(img, 0, 0);
-				const pixels = ctx.getImageData(0, 0, width, height).data;
-// console.log(pixels);
-				resolve({pixels, width, height});
+				const data = ctx.getImageData(
+					this.OUTSIDE[3],
+					this.OUTSIDE[0],
+					width - this.OUTSIDE[1] - this.OUTSIDE[3],
+					height - this.OUTSIDE[2] - this.OUTSIDE[0]
+				);
+				resolve(data);
 			};
 		});
 	}
 
-	pixelsToGrid(pxGrid) {
-// console.log(pxGrid);
+	pixelsToGrid(imageData) {
+// console.log(imageData);
 
 		var x, centersVer, offCenterVer;
 		var y, centersHor, offCenterHor;
 
-		for ( x = this.OUTSIDE[3]; x <= pxGrid.width - this.OUTSIDE[1]; x += 10 ) {
-			const groups = this.groupColors(this.getRowColors(pxGrid, x));
+		for ( x = 0; x <= imageData.width; x += 10 ) {
+			const groups = this.groupColors(this.getRowColors(imageData, x));
 			if (groups.length >= this.MIN_GROUPS) {
 				centersVer = this.getGroupCenters(groups, this.OUTSIDE[0]);
 				const distance = this.getAvgCellDistance(centersVer);
@@ -268,8 +270,8 @@ console.log(solver);
 			}
 		}
 
-		for ( y = this.OUTSIDE[0]; y <= pxGrid.height - this.OUTSIDE[2]; y += 10 ) {
-			const groups = this.groupColors(this.getColumnColors(pxGrid, y));
+		for ( y = 0; y <= imageData.height; y += 10 ) {
+			const groups = this.groupColors(this.getColumnColors(imageData, y));
 			if (groups.length >= this.MIN_GROUPS) {
 				centersHor = this.getGroupCenters(groups, this.OUTSIDE[3]);
 				const distance = this.getAvgCellDistance(centersHor);
@@ -279,7 +281,7 @@ console.log(solver);
 		}
 
 		if (centersHor.length != centersVer.length) {
-			alert(`Can't find cells: width = ${centersHor.length}, height = ${centersVer.length}`);
+			return alert(`Can't find cells: width = ${centersHor.length}, height = ${centersVer.length}`);
 		}
 
 		offCenterVer = parseInt((centersVer[0] - y) / 2);
@@ -292,7 +294,7 @@ console.log(solver);
 			const row = [];
 			grid.push(row);
 			for ( let x = 0; x < centersHor.length; x++ ) {
-				const color = this.getNormalColor(this.getPixelColor(pxGrid, centersHor[x] - offCenterHor, centersVer[y] - offCenterVer));
+				const color = this.getNormalColor(this.getPixelColor(imageData, centersHor[x] - offCenterHor, centersVer[y] - offCenterVer));
 				row.push(color);
 			}
 		}
@@ -336,25 +338,25 @@ console.log(solver);
 		return groups;
 	}
 
-	getRowColors(pxGrid, x) {
+	getRowColors(imageData, x) {
 		const normalColors = [];
-		for ( let y = this.OUTSIDE[0]; y < pxGrid.height - this.OUTSIDE[2]; y++ ) {
-			normalColors.push(this.getNormalColor(this.getPixelColor(pxGrid, x, y)));
+		for ( let y = this.OUTSIDE[0]; y < imageData.height - this.OUTSIDE[2]; y++ ) {
+			normalColors.push(this.getNormalColor(this.getPixelColor(imageData, x, y)));
 		}
 		return normalColors;
 	}
 
-	getColumnColors(pxGrid, y) {
+	getColumnColors(imageData, y) {
 		const normalColors = [];
-		for ( let x = this.OUTSIDE[3]; x < pxGrid.width - this.OUTSIDE[1]; x++ ) {
-			normalColors.push(this.getNormalColor(this.getPixelColor(pxGrid, x, y)));
+		for ( let x = this.OUTSIDE[3]; x < imageData.width - this.OUTSIDE[1]; x++ ) {
+			normalColors.push(this.getNormalColor(this.getPixelColor(imageData, x, y)));
 		}
 		return normalColors;
 	}
 
-	getPixelColor(pxGrid, x, y) {
-		const pi = y*pxGrid.width + x;
-		const data = pxGrid.pixels.slice(pi*4, pi*4+3);
+	getPixelColor(imageData, x, y) {
+		const pi = y*imageData.width + x;
+		const data = imageData.data.slice(pi*4, pi*4+3);
 		return data;
 	}
 
