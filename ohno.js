@@ -1,6 +1,60 @@
 "use strict";
 
-class Ohno extends GridGame {
+const OhnoMixin = {
+
+	isActive(v) {
+		return v === Ohno.ACTIVE_STRUCTURE || v === Ohno.ACTIVE_USER || this.isNumber(v);
+	},
+
+	isClosed(v) {
+		return v === Ohno.CLOSED_STRUCTURE || v === Ohno.CLOSED_USER;
+	},
+
+	isNumber(v) {
+		return v > 0 && v < 100;
+	},
+
+	allActiveNeighbors(C) {
+		return Coords2D.dir4Coords.map(D => this.neighborsToward(C, D, 'isActiveNeighbor'));
+	},
+
+	allPotentialNeighbors(C) {
+		return Coords2D.dir4Coords.map(D => this.neighborsToward(C, D, 'isPotentialNeighbor'));
+	},
+
+	neighborsToward(C, D, matcher = 'isActiveNeighbor') {
+		var curr = C;
+		var next;
+
+		const list = [];
+		while (this[matcher](next = curr.add(D))) {
+			list.push(next);
+			curr = next;
+		}
+
+		return list;
+	},
+
+	isActiveNeighbor(C) {
+		return this.grid[C.y] && this.isActive(this.grid[C.y][C.x]);
+	},
+
+	isPotentialNeighbor(C) {
+		return this.grid[C.y] && (this.grid[C.y][C.x] === 0 || this.isActive(this.grid[C.y][C.x]));
+	},
+
+};
+
+class Ohno extends CanvasGame {
+
+	static CLOSED_STRUCTURE = 101;
+	static CLOSED_USER = 102;
+	static ACTIVE_STRUCTURE = 111;
+	static ACTIVE_USER = 112;
+
+	static OFFSET = 20;
+	static CIRCLE = 40;
+	static MARGIN = 10;
 
 	constructor(...args) {
 		super(...args);
@@ -19,28 +73,92 @@ class Ohno extends GridGame {
 		super.reset();
 
 		this.size = 7;
+		this.grid = [];
 	}
 
-	createMap(grid) {
-		this.size = grid.length;
+	drawStructure() {
+	}
 
-		this.m_objGrid.empty();
+	drawContent() {
+		this.drawGrid();
+	}
+
+	drawGrid() {
+		this.ctx.textAlign = 'center';
+
 		for ( let y = 0; y < this.size; y++ ) {
-			const tr = this.m_objGrid.insertRow();
 			for ( let x = 0; x < this.size; x++ ) {
-				const t = grid[y][x];
-				const td = tr.insertCell();
-				const cell = document.createElement('span');
-				td.append(cell);
-				if (t == 'x') {
-					td.data('closed', '1');
+				const v = this.grid[y][x];
+
+				const centerC = this.scale(new Coords2D(x, y));
+				const color = this.isActive(v) ? '#86c5da' : (this.isClosed(v) ? 'red' : '#cccc');
+				this.drawDot(centerC, {radius: Ohno.CIRCLE/2, color});
+
+				if (this.isNumber(v)) {
+					const textC = centerC.add(new Coords2D(0, Ohno.CIRCLE*0.8/3));
+					this.drawText(textC, v, {color: 'white', size: (Ohno.CIRCLE*0.8) + 'px'});
 				}
-				else if (!isNaN(parseInt(t))) {
-					td.data('required', t);
-					cell.setText(t);
+				else if (v === Ohno.CLOSED_STRUCTURE) {
+					const from = centerC.add(new Coords2D(
+						(Ohno.CIRCLE/2 - 1) * Math.sin(Math.PI*3/4),
+						(Ohno.CIRCLE/2 - 1) * Math.cos(Math.PI*3/4)
+					));
+					const to = centerC.add(new Coords2D(
+						(Ohno.CIRCLE/2 - 1) * Math.sin(Math.PI/-4),
+						(Ohno.CIRCLE/2 - 1) * Math.cos(Math.PI/-4)
+					));
+					this.drawLine(from, to, {width: 3, color: '#a00'});
 				}
 			}
 		}
+	}
+
+	scale(source) {
+		if (source instanceof Coords2D) {
+			return new Coords2D(this.scale(source.x), this.scale(source.y));
+		}
+
+		return Ohno.OFFSET + source * (Ohno.CIRCLE + Ohno.MARGIN) + Ohno.CIRCLE/2;
+	}
+
+	unscale(source) {
+		if (source instanceof Coords2D) {
+			const C = new Coords2D(this.unscale(source.x), this.unscale(source.y));
+			return this.scale(C).distance(source) < Ohno.CIRCLE/2 - 3 ? C : null;
+		}
+
+		return Math.round((source - Ohno.OFFSET - Ohno.CIRCLE/2) / (Ohno.MARGIN + Ohno.CIRCLE));
+	}
+
+	getState(C) {
+		return C && this.grid[C.y] && this.grid[C.y][C.x];
+	}
+
+	loadGrid(grid) {
+		this.size = grid.length;
+		this.grid = grid;
+
+		this.canvas.width = this.canvas.height = Ohno.OFFSET + Ohno.CIRCLE * this.size + Ohno.MARGIN * (this.size - 1) + Ohno.OFFSET;
+		this.changed = true;
+	}
+
+	importMap(size, source) {
+		const grid = [];
+		for ( let y = 0; y < size; y++ ) {
+			const row = new Uint8Array(size);
+			grid.push(row);
+			for ( let x = 0; x < size; x++ ) {
+				const t = source[y*size+x];
+				if (t == 'x') {
+					row[x] = Ohno.CLOSED_STRUCTURE;
+				}
+				else if (!isNaN(parseInt(t))) {
+					row[x] = parseInt(t);
+				}
+			}
+		}
+
+		this.loadGrid(grid);
 	}
 
 	createRandom(size) {
@@ -95,77 +213,67 @@ console.log(`in ${attempts} attempts`);
 	}
 
 	createEmpty(size) {
-		size || (size = this.size);
-		const grid = Array.from(Array(size)).map(x => ' '.repeat(size));
-		return this.createMap(grid);
+		return this.importMap(size || this.size, '');
 	}
 
 	listenControls() {
 		this.listenImageDrop();
 
-		this.listenCellClick();
+		this.listenClick();
+		this.canvas.on('mousedown', (e) => {
+			e.preventDefault();
+		});
 
 		$('#new').on('click', e => this.createRandom());
 
 		$('#cheat').on('click', e => this.cheatOneRound());
 	}
 
-	handleCellClick(cell) {
-		if (cell.data('closed')) return;
-		if (cell.data('required')) {
-			return this.cheatOneRoundFromStart(cell);
+	handleClick(coord) {
+		const C = this.unscale(coord);
+		const v = this.getState(C);
+		if (v == null) return;
+
+		if (this.isNumber(v)) {
+			if (this.clickCheat) {
+				this.cheatOneRoundFromStart(C);
+			}
+			return;
 		}
 
-		if (cell.hasClass('active')) {
-			cell.removeClass('active');
-			cell.addClass('closed');
+		if (v === 0) {
+			this.grid[C.y][C.x] = Ohno.ACTIVE_USER;
 		}
-		else if (cell.hasClass('closed')) {
-			cell.removeClass('closed');
+		else if (v === Ohno.ACTIVE_USER) {
+			this.grid[C.y][C.x] = Ohno.CLOSED_USER;
 		}
-		else {
-			cell.addClass('active');
+		else if (v === Ohno.CLOSED_USER) {
+			this.grid[C.y][C.x] = 0;
 		}
+
+		this.changed = true;
 
 		this.startWinCheck();
 	}
 
 	haveWon() {
-		const cells = this.m_objGrid.getElements('td');
-		const empty = cells.filter(cell => !cell.data('closed') && !cell.data('required') && !cell.matches('.active, .closed'));
-		if (empty.length) return false;
+		const starts = [];
+		for ( let y = 0; y < this.size; y++ ) {
+			for ( let x = 0; x < this.size; x++ ) {
+				const v = this.grid[y][x];
+				if (v === 0) return false;
 
-		const starts = cells.filter(cell => cell.data('required'));
-		return starts.every(cell => this.allActiveNeighbors(cell).length == parseInt(cell.data('required')));
-	}
-
-	allActiveNeighbors(cell, flatten = true) {
-		const dirs = this.dir4Coords.map(C => this.activeNeighborsToward(cell, C));
-		return flatten ? dirs.flat(1) : dirs;
-	}
-
-	activeNeighborsToward(cell, dir) {
-		var curr = cell;
-		var next;
-
-		const list = [];
-		while (this.isActiveNeighbor(next = this.getNextCell(this.getCoord(curr), dir))) {
-			list.push(next);
-			curr = next;
+				if (this.isNumber(v)) starts.push(new Coords2D(x, y));
+			}
 		}
 
-		return list;
+		return starts.every(C => this.allActiveNeighbors(C).flat(1).length == this.grid[C.y][C.x]);
 	}
 
-	isActiveNeighbor(cell) {
-		return cell && (cell.data('required') || cell.hasClass('active'));
-	}
-
-	cheatOneRoundFromStart(cell) {
+	cheatOneRoundFromStart(C) {
 		this.m_bCheating = true;
 
-		const C = this.getCoord(cell);
-		const solver = OhnoSolver.fromDom(this.m_objGrid);
+		const solver = OhnoSolver.fromGrid(this.grid);
 		solver.findKnownsFromSpacesStarting(C);
 		solver.findKnownsFromEnoughStarting(C);
 		solver.findKnownsFromTooFarStarting(C);
@@ -175,15 +283,16 @@ console.log(`in ${attempts} attempts`);
 	cheatOneRound() {
 		this.m_bCheating = true;
 
-		const solver = OhnoSolver.fromDom(this.m_objGrid);
+		const solver = OhnoSolver.fromGrid(this.grid);
 		solver.findKnowns();
 		this.cheatFromSolver(solver);
 	}
 
 	cheatFromSolver(solver) {
 console.log(solver);
-		solver.updatesActive.forEach(C => this.getCell(C).addClass('active'));
-		solver.updatesClosed.forEach(C => this.getCell(C).addClass('closed'));
+		solver.updatesActive.forEach(C => this.grid[C.y][C.x] = Ohno.ACTIVE_USER);
+		solver.updatesClosed.forEach(C => this.grid[C.y][C.x] = Ohno.CLOSED_USER);
+		this.changed = true;
 	}
 
 	listenImageDrop() {
@@ -221,13 +330,7 @@ console.log(imageData);
 console.log(grid);
 		if (!grid) return;
 
-		this.createEmpty(grid.length);
-		const cells = this.m_objGrid.getElements('td');
-		grid.forEach((row, y) => row.forEach((color, x) => {
-			const i = y * grid[0].length + x;
-			if (color == this.RED)			cells[i].addClass('closed');
-			else if (color == this.BLUE)	cells[i].addClass('active');
-		}));
+		this.loadGrid(grid);
 	}
 
 	fileToPixels(file) {
@@ -291,11 +394,11 @@ console.log(grid);
 
 		const grid = [];
 		for ( let y = 0; y < centersVer.length; y++ ) {
-			const row = [];
+			const row = new Uint8Array(centersHor.length);
 			grid.push(row);
 			for ( let x = 0; x < centersHor.length; x++ ) {
 				const color = this.getNormalColor(this.getPixelColor(imageData, centersHor[x] - offCenterHor, centersVer[y] - offCenterVer));
-				row.push(color);
+				row[x] = color == 'r' ? Ohno.CLOSED_STRUCTURE : (color == 'b' ? Ohno.ACTIVE_STRUCTURE : 0);
 			}
 		}
 
@@ -411,26 +514,8 @@ console.log(grid);
 
 class OhnoSolver {
 
-	static fromDom(table) {
-		const grid = table.getElements('tr').map(tr => {
-			return tr.getElements('td').map(td => {
-				if (td.hasClass('closed') || td.data('closed')) {
-					return 'x';
-				}
-				else if (td.data('required')) {
-					return parseInt(td.data('required'));
-				}
-				else if (td.hasClass('active')) {
-					return 'o';
-				}
-				return null;
-			});
-		});
-		return new this(grid);
-	}
-
-	static makeCoords(grid) {
-		return grid.map((cells, y) => cells.map((val, x) => new Coords2D(x, y))).flat(1);
+	static fromGrid(grid) {
+		return new OhnoSolver(grid.map(row => row.slice(0)));
 	}
 
 	constructor(grid) {
@@ -443,41 +528,20 @@ class OhnoSolver {
 	}
 
 	makeRequireds() {
-		return this.constructor.makeCoords(this.grid).filter(C => !isNaN(parseInt(this.grid[C.y][C.x])));
-	}
-
-	allPotentialNeighbors(C) {
-		return Coords2D.dir4Coords.map(D => this.potentialNeighborsToward(C, D, 'isPotentialNeighbor'));
-	}
-
-	allActiveNeighbors(C) {
-		return Coords2D.dir4Coords.map(D => this.potentialNeighborsToward(C, D, 'isActiveNeighbor'));
-	}
-
-	potentialNeighborsToward(C, D, matcher = 'isPotentialNeighbor') {
-		var curr = C;
-		var next;
-
-		const list = [];
-		while (this[matcher](next = curr.add(D))) {
-			list.push(next);
-			curr = next;
+		const coords = [];
+		for ( let y = 0; y < this.size; y++ ) {
+			for ( let x = 0; x < this.size; x++ ) {
+				if (this.isNumber(this.grid[y][x])) {
+					coords.push(new Coords2D(x, y));
+				}
+			}
 		}
-
-		return list;
-	}
-
-	isPotentialNeighbor(C) {
-		return this.grid[C.y] && (typeof this.grid[C.y][C.x] == 'number' || this.grid[C.y][C.x] === 'o' || this.grid[C.y][C.x] === null);
-	}
-
-	isActiveNeighbor(C) {
-		return this.grid[C.y] && (typeof this.grid[C.y][C.x] == 'number' || this.grid[C.y][C.x] === 'o');
+		return coords;
 	}
 
 	setActive(C) {
 		const curr = this.grid[C.y][C.x];
-		if (curr === null) {
+		if (curr === 0) {
 // console.log('SET ACTIVE', C);
 			this.grid[C.y][C.x] = 'o';
 			this.updatesActive.push(C);
@@ -486,7 +550,7 @@ class OhnoSolver {
 
 	setClosed(C) {
 		const curr = this.grid[C.y] && this.grid[C.y][C.x];
-		if (curr === null) {
+		if (curr === 0) {
 // console.log('SET CLOSED', C);
 			this.grid[C.y][C.x] = 'x';
 			this.updatesClosed.push(C);
@@ -542,20 +606,20 @@ class OhnoSolver {
 
 	findKnownsFromTooFarStarting(C) {
 		const required = this.grid[C.y][C.x];
-// console.log(required);
+console.log(required);
 		const neighbors = this.allActiveNeighbors(C);
-// console.log(neighbors);
+console.log(neighbors);
 		neighbors.forEach((L, d) => {
 			const D = Coords2D.dir4Coords[d];
 			const next = (L.length ? L[L.length-1] : C).add(D);
 			const val = this.grid[next.y] && this.grid[next.y][next.x];
-// console.log(next, val);
-			if (val === null) {
-				this.grid[next.y][next.x] = 'o';
+console.log(next, val);
+			if (val === 0) {
+				this.grid[next.y][next.x] = Ohno.ACTIVE_USER;
 				const neighbors2 = this.allActiveNeighbors(C);
 				const total2 = neighbors2.flat(1).length;
-// console.log(total2);
-				this.grid[next.y][next.x] = null;
+console.log(total2);
+				this.grid[next.y][next.x] = 0;
 				if (total2 > required) {
 					this.setClosed(next);
 				}
@@ -582,3 +646,6 @@ class OhnoSolver {
 	}
 
 }
+
+Object.assign(Ohno.prototype, OhnoMixin);
+Object.assign(OhnoSolver.prototype, OhnoMixin);

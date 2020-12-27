@@ -1,3 +1,5 @@
+"use strict";
+
 class Bridge {
 
 	constructor(from, to, strength = 1) {

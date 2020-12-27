@@ -252,8 +252,8 @@ class CanvasGame extends Game {
 		this.ctx.stroke();
 	}
 
-	drawText( coord, text, {size = '20px', color = '#000'} = {} ) {
-		this.ctx.font = `${size} sans-serif`;
+	drawText( coord, text, {size = '20px', color = '#000', style = ''} = {} ) {
+		this.ctx.font = `${style} ${size} sans-serif`;
 		this.ctx.fillStyle = color;
 		this.ctx.fillText(text, coord.x, coord.y);
 	}

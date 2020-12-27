@@ -3,50 +3,53 @@
 
 require __DIR__ . '/inc.bootstrap.php';
 
-$grid = [
-	' 6      7',
-	'   6 67x ',
-	' 3  3   8',
-	'1 97 5   ',
-	'    x    ',
-	'  9    5 ',
-	' 5       ',
-	'     3   ',
-	'549 7x3x ',
+$grids = [
+	[
+		' 6      7',
+		'   6 67x ',
+		' 3  3   8',
+		'1 97 5   ',
+		'    x    ',
+		'  9    5 ',
+		' 5       ',
+		'     3   ',
+		'549 7x3x ',
+	],
+	[
+		'2   ',
+		'1  2',
+		' 33 ',
+		'x1  ',
+	],
+	[
+		'2 3  ',
+		'4    ',
+		'  55x',
+		'xx  1',
+		'  2  ',
+	],
+	[
+		'     7 x',
+		' x  7 7 ',
+		'   33   ',
+		'4       ',
+		' 885 x 5',
+		'    xx 5',
+		'3    4 7',
+		'4    3  ',
+	],
+	[
+		'x5353xx ',
+		'  x x2 5',
+		'4535  24',
+		'1xxx22x3',
+		' x  3 x ',
+		' 3 xxx x',
+		' 3x   54',
+		' 533 34 ',
+	],
 ];
-$grid = [
-	'2   ',
-	'1  2',
-	' 33 ',
-	'x1  ',
-];
-$grid = [
-	'2 3  ',
-	'4    ',
-	'  55x',
-	'xx  1',
-	'  2  ',
-];
-$grid = [
-	'     7 x',
-	' x  7 7 ',
-	'   33   ',
-	'4       ',
-	' 885 x 5',
-	'    xx 5',
-	'3    4 7',
-	'4    3  ',
-];
-$grid = [
-	'x5353xx ',
-	'  x x2 5',
-	'4535  24',
-	'1xxx22x3',
-	' x  3 x ',
-	' 3 xxx x',
-	' 3x   54',
-	' 533 34 ',
-];
+$selected = isset($grids[$_GET['demo'] ?? 0]) ? ($_GET['demo'] ?? 0) : 0;
 
 ?>
 <!doctype html>
@@ -57,43 +60,19 @@ $grid = [
 <title>0h n0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-body, table {
+body {
+	background-color: #eee;
+	margin: 0;
+	padding: 0;
 	font-family: sans-serif;
 }
-img.loader {
-	margin-left: .5em;
-	height: 1.4em;
-}
-
-table {
-	border-spacing: 4px;
-	user-select: none;
-}
-td {
-	border: 0;
-	padding: 0;
-	text-align: center;
-	vertical-align: middle;
-}
-td span {
-	display: block;
-	width: 30px;
-	height: 30px;
-	line-height: 30px;
+canvas {
 	background-color: #eee;
-	border-radius: 15px;
+	max-width: 100vw;
+	max-height: 100vh;
 }
-td[data-closed] span {
-	background-color: #b10000;
-}
-td.closed span {
-	background-color: red;
-}
-td[data-required] span,
-td.active span {
-	background-color: #86c5da;
-	color: white;
-	font-weight: bold;
+p {
+	margin-left: 1em;
 }
 </style>
 <? include 'tpl.onerror.php' ?>
@@ -104,23 +83,25 @@ td.active span {
 
 <body>
 
-<table class="inside" id="grid"></table>
+<canvas></canvas>
 
 <p>
 	<button id="cheat">Cheat</button>
 	<button id="new">New game</button>
+	<? foreach ($grids as $i => $grid): ?>
+		| <a href="?demo=<?= $i ?>"><?= $i ?></a>
+	<? endforeach ?>
 </p>
 <p>
 	Analyze: <input type="file" />
 </p>
 
 <script>
-objGame = new Ohno($('#grid'));
-objGame.createEmpty();
+objGame = new Ohno($('canvas'));
+objGame.clickCheat = <?= json_encode(is_local()) ?>;
 objGame.listenControls();
-setTimeout(function() {
-	objGame.createMap(<?= json_encode($grid) ?>);
-}, 100);
+objGame.importMap(<?= strlen($grids[$selected][0]) ?>, <?= json_encode(str_replace(' ', '_', implode('', $grids[$selected]))) ?>);
+objGame.startPainting();
 </script>
 </body>
 
