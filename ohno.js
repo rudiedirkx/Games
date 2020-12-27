@@ -123,6 +123,7 @@ class Ohno extends CanvasGame {
 
 	unscale(source) {
 		if (source instanceof Coords2D) {
+			source = source.multiply(this.canvas.width / this.canvas.offsetWidth);
 			const C = new Coords2D(this.unscale(source.x), this.unscale(source.y));
 			return this.scale(C).distance(source) < Ohno.CIRCLE/2 - 3 ? C : null;
 		}
