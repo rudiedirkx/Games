@@ -1,28 +1,288 @@
 "use strict";
 
-class Ohhi extends GridGame {
+class OhhiBuilder {
+
+	static createEmpty(size) {
+		return (new Array(size)).fill(0).map(row => (new Array(size)).fill(0));
+	}
+
+	constructor(size) {
+		this.size = size;
+		this.grid = OhhiBuilder.createEmpty(this.size);
+		this.buildTries = 1;
+		this.playableTries = 1;
+	}
+
+	restartRow(row) {
+		this.buildTries++;
+		this.grid[row].fill(0);
+	}
+
+	restartGrid() {
+		this.buildTries++;
+		this.grid.forEach(cells => cells.fill(0));
+	}
+
+	static isValidLineDistribution(line) {
+		if ( line.replace(/1/g, '').length != line.length / 2 ) {
+			return false;
+		}
+
+		if ( line.match(/(111|222)/) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	getLineRow(y) {
+		return this.grid[y].join('');
+	}
+
+	getLineRows() {
+		return this.grid.map((x, i) => this.getLineRow(i));
+	}
+
+	getLineCol(x) {
+		return this.grid.map(cells => cells[x]).join('');
+	}
+
+	getLineCols() {
+		return this.grid.map((x, i) => this.getLineCol(i));
+	}
+
+	getOneAsNum(x, y) {
+		return this.grid[y] && this.grid[y][x] || 0;
+	}
+
+	getOneAsPrevString(x, y) {
+		const num = this.getOneAsNum(x, y);
+		return num === 0 ? '' : String(num);
+	}
+
+	getPrevTwoInRow(x, y) {
+		const p1 = this.getOneAsPrevString(x-1, y);
+		const p2 = this.getOneAsPrevString(x-2, y);
+		return p1 + p2;
+	}
+
+	getPrevTwoInCol(x, y) {
+		const p1 = this.getOneAsPrevString(x, y-1);
+		const p2 = this.getOneAsPrevString(x, y-2);
+		return p1 + p2;
+	}
+
+	makeOneRandom() {
+		if (Date.now() > this.timeout) {
+			throw new Error('builder timeout');
+		}
+
+		return Math.random() > 0.5 ? 2 : 1;
+	}
+
+	build(timeout = 5000) {
+		this.timeout = Date.now() + timeout;
+
+		for ( let row = 0; row < this.size; row++ ) {
+			for ( let col = 0; col < this.size; col++ ) {
+				const p2row = this.getPrevTwoInRow(col, row);
+				const p2col = this.getPrevTwoInCol(col, row);
+
+				if ( p2row == '22' ) {
+					if ( p2col == '11' ) {
+// console.log('restart grid at', col, row);
+						this.restartGrid();
+						row = -1;
+						col = 0;
+						break;
+					}
+					else {
+						this.grid[row][col] = 1;
+					}
+				}
+				else if ( p2row == '11' ) {
+					if ( p2col == '22' ) {
+// console.log('restart grid at', col, row);
+						this.restartGrid();
+						row = -1;
+						col = 0;
+						break;
+					}
+					else {
+						this.grid[row][col] = 2;
+					}
+				}
+				else {
+					if ( p2col == '22' ) {
+						this.grid[row][col] = 1;
+					}
+					else if ( p2col == '11' ) {
+						this.grid[row][col] = 2;
+					}
+					else {
+						this.grid[row][col] = this.makeOneRandom();
+					}
+				}
+
+				if ( row == this.size - 1 ) {
+					const line = this.getLineCol(col);
+					if ( !OhhiBuilder.isValidLineDistribution(line) ) {
+// console.log('restart col/grid at', col);
+						this.restartGrid();
+						row = -1;
+						col = 0;
+						break;
+					}
+				}
+
+				if ( row == this.size - 1 && col == this.size - 1 ) {
+					const rows = this.getLineRows();
+					if ( rows.unique().length != rows.length ) {
+// console.log('restart grid (rows)');
+						this.restartGrid();
+						row = -1;
+						col = 0;
+						break;
+					}
+
+					const cols = this.getLineCols();
+					if ( cols.unique().length != cols.length ) {
+// console.log('restart grid (cols)');
+						row = -1;
+						col = 0;
+						break;
+					}
+				}
+			}
+
+			if ( row != -1 ) {
+				const line = this.getLineRow(row);
+				if ( !OhhiBuilder.isValidLineDistribution(line) ) {
+// console.log('restart row at', row, line);
+					this.restartRow(row);
+					row--;
+				}
+			}
+		}
+
+		return this.grid;
+	}
+
+	makePlayable(timeout = 5000) {
+		const timeoutEnd = Date.now() + timeout;
+		var playableGrid;
+		while (!this.isPlayable(playableGrid = this.hideCellsPlayable())) {
+			this.playableTries++;
+
+			if (Date.now() > timeoutEnd) {
+				throw new Error('playable timeout');
+			}
+		}
+
+		return playableGrid;
+	}
+
+	hideCellsPlayable() {
+		return this.grid.map(cells => cells.map(value => Math.random() < 0.3 ? value : 0));
+	}
+
+	isPlayable(grid) {
+		const solver = new OhhiSolver(grid);
+		for ( let i = 0; i < 40; i++ ) {
+			solver.findKnowns();
+
+			if (!solver.updates.length) {
+				return solver.isPlayable();
+			}
+			solver.updates.length = 0;
+		}
+
+		return false;
+	}
+
+}
+
+class Ohhi extends CanvasGame {
+
+	static ON_USER = 1;
+	static OFF_USER = 2;
+
+	static OFFSET = 20;
+	static SQUARE = 40;
+	static MARGIN = 8;
 
 	reset() {
 		super.reset();
 
+		this.grid = [];
 		this.size = 0;
+		this.lastChange = null;
 	}
 
-	handleCellClick( cell ) {
-		if ( cell.dataset.initial != null ) return;
+	drawStructure() {
+	}
+
+	drawContent() {
+		this.drawGrid();
+	}
+
+	drawGrid() {
+		for ( let y = 0; y < this.size; y++ ) {
+			for ( let x = 0; x < this.size; x++ ) {
+				const v = this.grid[y] && this.grid[y][x];
+				const color = v == 2 ? 'red' : (v == 1 ? 'green' : '#ddd');
+
+				if (this.lastChange && this.lastChange.x == x && this.lastChange.y == y) {
+					this.ctx.fillStyle = 'black';
+					this.ctx.fillRect(this.scale(x) - 2, this.scale(y) - 2, Ohhi.SQUARE + 4, Ohhi.SQUARE + 4);
+				}
+
+				this.ctx.fillStyle = color;
+				this.ctx.fillRect(this.scale(x), this.scale(y), Ohhi.SQUARE, Ohhi.SQUARE);
+			}
+		}
+	}
+
+	scale( source ) {
+		if ( source instanceof Coords2D ) {
+			return new Coords2D(this.scale(source.x), this.scale(source.y));
+		}
+
+		return Ohhi.OFFSET + source * (Ohhi.SQUARE + Ohhi.MARGIN);
+	}
+
+	unscale( source ) {
+		if ( source instanceof Coords2D ) {
+			source = source.multiply(this.canvas.width / this.canvas.offsetWidth);
+			const C = new Coords2D(this.unscale(source.x), this.unscale(source.y));
+			return C;
+		}
+
+		return Math.round((source - Ohhi.OFFSET - Ohhi.SQUARE/2) / (Ohhi.MARGIN + Ohhi.SQUARE));
+	}
+
+	getState(C) {
+		return C && this.grid[C.y] && this.grid[C.y][C.x];
+	}
+
+	handleClick( coord ) {
+		const C = this.unscale(coord);
+		const v = this.getState(C);
+		if (v == null) return;
 
 		this.startTime();
 
-		const curColor = cell.dataset.color;
-		if (curColor === 'on') {
-			cell.dataset.color = 'off';
+		if (v === 0) {
+			this.grid[C.y][C.x] = Ohhi.ON_USER;
 		}
-		else if (curColor === 'off') {
-			delete cell.dataset.color;
+		else if (v === Ohhi.ON_USER) {
+			this.grid[C.y][C.x] = Ohhi.OFF_USER;
 		}
-		else {
-			cell.dataset.color = 'on';
+		else if (v === Ohhi.OFF_USER) {
+			this.grid[C.y][C.x] = 0;
 		}
+
+		this.changed = true;
 
 		this.startWinCheck();
 	}
@@ -35,24 +295,13 @@ class Ohhi extends GridGame {
 	}
 
 	haveWon() {
-		const unset = this.m_objGrid.getElements('td:not([data-color])');
-		if ( unset.length > 0 ) {
-			return false;
-		}
-
-		const grid = this.m_objGrid.getElements('tr').map(tr => {
-			return tr.getElements('td').map(td => td.dataset.color === 'on');
-		});
-		if ( !this.isValidGrid(grid) ) {
-			return false;
-		}
-
-		return true;
+		const solver = new OhhiSolver(this.grid);
+		return solver.getUnknowns() == 0 && solver.isValidGrid();
 	}
 
 	createFromExport(chars) {
 		const size = Math.sqrt(chars.length);
-		if (!chars.match(/[_0123]+/) || Math.ceil(size) != Math.floor(size)) {
+		if (size < 4 || chars.match(/[^012]/) || Math.ceil(size) != Math.floor(size)) {
 			return false;
 		}
 
@@ -62,17 +311,10 @@ class Ohhi extends GridGame {
 			if (!grid[0] || grid[grid.length-1].length == size) {
 				grid.push([]);
 			}
-			grid[grid.length-1].push(C === '_' ? null : Number((parseInt(C) & 1) == 1));
+			grid[grid.length-1].push(parseInt(C));
 		}
 
-		this.m_objGrid.setHTML(this.createMapHtml(grid, false));
-		const cells = this.m_objGrid.getElements('td');
-		for ( let i = 0; i < chars.length; i++ ) {
-			const val = parseInt(chars[i]);
-			if (!isNaN(val) && (val & 2) == 2) {
-				cells[i].dataset.initial = '';
-			}
-		}
+		this.loadMap(grid);
 
 		return true;
 	}
@@ -93,229 +335,40 @@ class Ohhi extends GridGame {
 		});
 	}
 
-	createEmptyGrid(size) {
-		return (new Array(size)).fill(0).map(row => (new Array(size)).fill(null));
-	}
-
-	async createMap(size) {
+	createMap(size) {
 		this.reset();
 
 		this.size = size;
-		const grid = this.createEmptyGrid(size);
 
 		console.time('createMap');
-
-		for ( let row = 0; row < size; row++ ) {
-			for ( let col = 0; col < size; col++ ) {
-				const p2row = this.getPrevTwoInRow(grid, col, row);
-				const p2col = this.getPrevTwoInCol(grid, col, row);
-
-				if ( p2row == '11' ) {
-					if ( p2col == '00' ) {
-						// console.log('restart grid at', col, row);
-						this.restartGrid(grid);
-						row = -1;
-						col = 0;
-						break;
-					}
-					else {
-						grid[row][col] = 0;
-					}
-				}
-				else if ( p2row == '00' ) {
-					if ( p2col == '11' ) {
-						// console.log('restart grid at', col, row);
-						this.restartGrid(grid);
-						row = -1;
-						col = 0;
-						break;
-					}
-					else {
-						grid[row][col] = 1;
-					}
-				}
-				else {
-					if ( p2col == '11' ) {
-						grid[row][col] = 0;
-					}
-					else if ( p2col == '00' ) {
-						grid[row][col] = 1;
-					}
-					else {
-						grid[row][col] = this.makeOneRandom();
-					}
-				}
-
-				if ( row == size - 1 ) {
-					// const line = grid.map(cells => cells[col]);
-					const line = this.getLineCol(grid, col);
-					if ( !this.isValidLineDistribution(line) ) {
-						// console.log('restart col/grid at', col);
-						row = -1;
-						col = 0;
-						break;
-					}
-				}
-
-				if ( row == size - 1 && col == size - 1 ) {
-					// const rows = grid.map(cells => cells.join(''));
-					const rows = this.getLineRows(grid);
-					if ( rows.unique().length != rows.length ) {
-						// console.log('restart grid (rows)');
-						row = -1;
-						col = 0;
-						break;
-					}
-
-					// const cols = grid.map((x, col) => grid.map(row => row[col]).join(''));
-					const cols = this.getLineCols(grid);
-					if ( cols.unique().length != cols.length ) {
-						// console.log('restart grid (cols)');
-						row = -1;
-						col = 0;
-						break;
-					}
-				}
-			}
-
-			if ( row != -1 ) {
-				// const line = grid[row];
-				const line = this.getLineRow(grid, row);
-				if ( !this.isValidLineDistribution(line) ) {
-					// console.log('restart row at', row);
-					this.restartRow(grid[row]);
-					row--;
-				}
-			}
-		}
-
+		const builder = new OhhiBuilder(size);
+		builder.build(2000);
 		console.timeEnd('createMap');
+console.log(builder.buildTries, builder.grid);
 
 		// this.printGrid(grid);
 
 		console.time('make playable');
-		var playableGrid;
-		while (!this.isPlayable(playableGrid = this.hideCellsPlayable(grid))) {
-			// redo
-		}
+		const playableGrid = builder.makePlayable(2000);
+		// const playableGrid = builder.hideCellsPlayable();
 		console.timeEnd('make playable');
+console.log(builder.playableTries, playableGrid);
 
-		this.printGrid(playableGrid);
+		this.loadMap(playableGrid);
+	}
 
-		return grid;
+	loadMap(grid) {
+		this.reset();
+
+		this.grid = grid;
+		this.size = this.grid.length;
+		this.gridBackup = JSON.stringify(this.grid);
+		this.canvas.width = this.canvas.height = Ohhi.OFFSET + this.size * (Ohhi.SQUARE + Ohhi.MARGIN) - Ohhi.MARGIN + Ohhi.OFFSET;
+		this.changed = true;
 	}
 
 	debugGrid(grid) {
 		console.log(grid.map(row => row.map(val => val === null ? '_' : Number(val)).join(' ')).join("\n"));
-	}
-
-	printGrid(grid) {
-		this.m_objGrid.setHTML(this.createMapHtml(grid));
-	}
-
-	isPlayable(grid) {
-		const solver = new OhhiSolver(grid);
-		while (true) {
-			const founds = Array.from(solver.findMustBes());
-			solver.updateGrid(founds);
-
-			if (!founds.length) {
-				return solver.isPlayable();
-			}
-		}
-
-		return true;
-	}
-
-	hideCellsPlayable(grid) {
-		return grid.map(cells => cells.map(value => Math.random() < 0.3 ? value : null));
-	}
-
-	restartRow(cells) {
-		cells.fill(null);
-	}
-
-	restartGrid(grid) {
-		grid.forEach(cells => cells.fill(null));
-	}
-
-	isValidGrid(grid) {
-		for ( let i = 0; i < grid.length; i++ ) {
-			if ( !this.isValidLineDistribution(this.getLineRow(grid, i)) ) {
-				return false;
-			}
-
-			if ( !this.isValidLineDistribution(this.getLineCol(grid, i)) ) {
-				return false;
-			}
-		}
-
-		const rows = this.getLineRows(grid);
-		if ( rows.unique().length != rows.length ) {
-			return false;
-		}
-
-		const cols = this.getLineCols(grid);
-		if ( cols.unique().length != cols.length ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	isValidLineDistribution(line) {
-		// return line.map(n => Number(n)).join('').replace(/0/g, '').length == line.length / 2;
-		if ( line.replace(/0/g, '').length != line.length / 2 ) {
-			return false;
-		}
-
-		if ( line.match(/(000|111)/) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	getLineRow(grid, y) {
-		return grid[y].map(val => Number(val)).join('');
-	}
-
-	getLineRows(grid) {
-		return grid.map((x, i) => this.getLineRow(grid, i));
-	}
-
-	getLineCol(grid, x) {
-		return grid.map(cells => cells[x]).map(val => Number(val)).join('');
-	}
-
-	getLineCols(grid) {
-		return grid.map((x, i) => this.getLineCol(grid, i));
-	}
-
-	getOneAsNum(grid, x, y) {
-		const val = (grid[y] || [])[x];
-		return val == null ? null : Number(val);
-	}
-
-	getOneAsPrevString(grid, x, y) {
-		const num = this.getOneAsNum(grid, x, y);
-		return num === null ? '' : String(num);
-	}
-
-	getPrevTwoInRow(grid, x, y) {
-		const p1 = this.getOneAsPrevString(grid, x-1, y);
-		const p2 = this.getOneAsPrevString(grid, x-2, y);
-		return p1 + p2;
-	}
-
-	getPrevTwoInCol(grid, x, y) {
-		const p1 = this.getOneAsPrevString(grid, x, y-1);
-		const p2 = this.getOneAsPrevString(grid, x, y-2);
-		return p1 + p2;
-	}
-
-	makeOneRandom() {
-		return Number(Math.random() > 0.5);
 	}
 
 	createMapHtml(grid, initial = true) {
@@ -339,51 +392,37 @@ class Ohhi extends GridGame {
 		return html;
 	}
 
-	startLoading(el) {
-		if (this.isLoading()) return false;
-
-		const loader = document.el('img', {"class": 'loader', "src": '/images/loading.gif'});
-		el.append(loader);
-
-		return true;
-	}
-
-	isLoading() {
-		return $('img.loader');
-	}
-
-	stopLoading() {
-		$$('img.loader').invoke('remove');
-	}
-
 	listenControls() {
-		this.listenCellClick();
+		this.listenClick();
+		this.canvas.on('mousedown', (e) => {
+			e.preventDefault();
+		});
 
 		$('#restart').on('click', e => {
-			this.m_objGrid.getElements('td[data-color]:not([data-initial])').attr('data-color', null);
+			this.loadMap(JSON.parse(this.gridBackup));
 		});
 
 		$('#newgame').on('click', e => {
-			const size = this.m_objGrid.getElements('tr').length;
-			this.startLoading(e.target) && requestIdleCallback(() => this.createMap(size).then(this.stopLoading()));
+			const size = this.size;
+			setTimeout(() => this.createMap(size), 60);
 		});
 
 		$('#sizes').on('click', 'a[data-size]', e => {
 			e.preventDefault();
 
 			const size = Number(e.target.data('size'));
-			this.startLoading(e.target) && requestIdleCallback(() => this.createMap(size).then(this.stopLoading()));
+			setTimeout(() => this.createMap(size), 60);
 		});
 
 		$('#build').on('click', e => {
 			const size = prompt('What size?', '8');
 			if (size && !isNaN(parseInt(size))) {
-				this.printGrid(this.createEmptyGrid(parseInt(size)));
+				this.printGrid(OhhiBuilder.createEmpty(parseInt(size)));
 			}
 		});
 
 		$('#cheat').on('click', e => {
-			this.cheatOneRound();
+			this.cheatOneFind();
 		});
 
 		$('#export').on('click', e => {
@@ -392,18 +431,34 @@ class Ohhi extends GridGame {
 	}
 
 	exportCurrent() {
-		const cells = this.m_objGrid.getElements('td').map(td => td.dataset);
-		const chars = cells.map(D => D.color == null ? '_' : Number(D.color == 'on') + (D.initial == null ? 0 : 2));
-		return chars.join('');
+		return this.grid.map(row => row.join('')).join('');
+	}
+
+	cheatOneFind() {
+		this.m_bCheating = true;
+
+		const solver = new OhhiSolver(this.grid);
+		solver.findKnowns();
+		if (solver.updates.length) {
+			const found = solver.updates[0];
+			this.grid[found.y][found.x] = found.color;
+			console.log(found);
+			this.lastChange = found;
+		}
+
+		this.changed = true;
 	}
 
 	cheatOneRound() {
 		this.m_bCheating = true;
 
-		const solver = OhhiSolver.fromDom(this.m_objGrid);
-		for (let found of solver.findMustBes()) {
-			this.m_objGrid.rows[found.y].cells[found.x].dataset.color = found.color ? 'on' : 'off';
+		const solver = new OhhiSolver(this.grid);
+		solver.findKnowns();
+		for (let found of solver.updates) {
+			this.grid[found.y][found.x] = found.color;
 		}
+
+		this.changed = true;
 	}
 
 	createStats() {
@@ -433,33 +488,20 @@ class OhhiSolver {
 
 	constructor(grid) {
 		this.size = grid.length;
-		this.grid = grid.map(cells => cells.map(val => val == null ? null : Number(val)));
+		this.grid = grid.map(cells => [...cells]);
 
-		this.threeStarts = this.constructor.makeCoords(this.grid);
+		this.threeStarts = OhhiSolver.makeCoords(this.grid);
 
 		this.seen = [];
-	}
-
-	updateGrid(founds) {
-		this.seen.length = 0;
-
-		for (let found of founds) {
-			this.grid[found.y][found.x] = Number(found.color);
-		}
+		this.updates = [];
 	}
 
 	getUnknowns() {
-		return this.threeStarts.map(C => this.grid[C.y][C.x]).filter(val => val == null).length;
+		return this.threeStarts.map(C => this.grid[C.y][C.x]).filter(val => val == 0).length;
 	}
 
 	isPlayable() {
 		return this.getUnknowns() == 0;
-	}
-
-	findMustBe() {
-		for (let end of this.findMustBes()) {
-			return end;
-		}
 	}
 
 	haveSeen(x, y) {
@@ -471,90 +513,108 @@ class OhhiSolver {
 		return true;
 	}
 
-	*findFromAdjacentThrees() {
+	remember(found) {
+		this.grid[found.y][found.x] = found.color;
+		this.updates.push(found);
+	}
+
+	coordWithColor(x, y, color, reason) {
+		const C = new Coords2D(x, y);
+		C.color = color;
+		C.reason = reason;
+		return C;
+	}
+
+	other(color) {
+		return color === 1 || color === '1' ? 2 : 1;
+	}
+
+	findKnownsFromAdjacentThrees() {
 		for ( let C of this.threeStarts ) {
 			const s = this.grid[C.y][C.x];
 
 			if (C.x <= this.size - 3) {
 				const r1 = this.grid[C.y][C.x+1];
 				const r2 = this.grid[C.y][C.x+2];
-				if (r1 != null && s == null && r1 == r2) {
-					yield this.coordWithColor(C.x, C.y, !r1);
+				if (s == 0 && r1 != 0 && r2 == r1) {
+					this.remember(this.coordWithColor(C.x, C.y, this.other(r2), 'before two hor sames'));
 				}
-				if (s != null && s == r2 && r1 == null) {
-					yield this.coordWithColor(C.x+1, C.y, !s);
+				if (s != 0 && r1 == 0 && r2 == s) {
+					this.remember(this.coordWithColor(C.x+1, C.y, this.other(r2), 'between two hor sames'));
 				}
-				if (r1 != null && s == r1 && r2 == null) {
-					yield this.coordWithColor(C.x+2, C.y, !r1);
+				if (s == r1 && r1 != 0 && r2 == 0) {
+					this.remember(this.coordWithColor(C.x+2, C.y, this.other(s), 'after two hor sames'));
 				}
 			}
 
 			if (C.y <= this.size - 3) {
 				const b1 = this.grid[C.y+1][C.x];
 				const b2 = this.grid[C.y+2][C.x];
-				if (b1 != null && s == null && b1 == b2) {
-					yield this.coordWithColor(C.x, C.y, !b1);
+				if (s == 0 && b1 != 0 && b2 == b1) {
+					this.remember(this.coordWithColor(C.x, C.y, this.other(b2), 'before two ver sames'));
 				}
-				if (s != null && s == b2 && b1 == null) {
-					yield this.coordWithColor(C.x, C.y+1, !s);
+				if (s != 0 && b1 == 0 && b2 == s) {
+					this.remember(this.coordWithColor(C.x, C.y+1, this.other(b2), 'between two ver sames'));
 				}
-				if (b1 != null && s == b1 && b2 == null) {
-					yield this.coordWithColor(C.x, C.y+2, !b1);
+				if (s == b1 && b1 != 0 && b2 == 0) {
+					this.remember(this.coordWithColor(C.x, C.y+2, this.other(s), 'after two ver sames'));
 				}
 			}
 		}
 	}
 
-	*findFromFulls() {
+	findKnownsFromFulls() {
 		const rows = this.getLineRows();
 		const cols = this.getLineCols();
 
-		const makeFounds = (line, x, y, color) => {
-			return Array.from(line)
-				.map((v, i) => v == '_' ? this.coordWithColor(x == null ? i : x, y == null ? i : y, color) : null)
-				.filter(v => v != null);
+		const rememberFounds = (line, x, y, color, reason) => {
+			return Array.from(line).forEach((v, i) => {
+				if (v == '_') {
+					this.remember(this.coordWithColor(x == null ? i : x, y == null ? i : y, color, reason));
+				}
+			});
 		};
 
 		for ( let y = 0; y < this.size; y++ ) {
 			const line = rows[y];
-			const no0 = line.replace(/[0_]/g, '').length;
-			const no1 = line.replace(/[1_]/g, '').length;
-			if (no0 == this.size / 2 && no1 < no0) {
-				yield* makeFounds(line, null, y, false);
+			const ones = line.replace(/[2_]/g, '').length;
+			const twos = line.replace(/[1_]/g, '').length;
+			if (ones == this.size / 2 && twos < ones) {
+				rememberFounds(line, null, y, 2, 'full of ones');
 			}
-			if (no1 == this.size / 2 && no0 < no1) {
-				yield* makeFounds(line, null, y, true);
+			if (twos == this.size / 2 && ones < twos) {
+				rememberFounds(line, null, y, 1, 'full of twos');
 			}
 		}
 
 		for ( let x = 0; x < this.size; x++ ) {
 			const line = cols[x];
-			const no0 = line.replace(/[0_]/g, '').length;
-			const no1 = line.replace(/[1_]/g, '').length;
-			if (no0 == this.size / 2 && no1 < no0) {
-				yield* makeFounds(line, x, null, false);
+			const ones = line.replace(/[2_]/g, '').length;
+			const twos = line.replace(/[1_]/g, '').length;
+			if (ones == this.size / 2 && twos < ones) {
+				rememberFounds(line, x, null, 2, 'full of ones');
 			}
-			if (no1 == this.size / 2 && no0 < no1) {
-				yield* makeFounds(line, x, null, true);
+			if (twos == this.size / 2 && ones < twos) {
+				rememberFounds(line, x, null, 1, 'full of twos');
 			}
 		}
 	}
 
-	*findFromUniqueLines() {
+	findKnownsFromUniqueLines() {
 		const rows = this.getLineRows();
 		const cols = this.getLineCols();
 
 		for ( let y = 0; y < rows.length; y++ ) {
 			const line = rows[y];
-			if (line.replace(/[01]/g, '').length == 2) {
-				const re = new RegExp('^' + line.replace(/_/g, '([01])') + '$');
+			if (line.replace(/[12]/g, '').length == 2) {
+				const re = new RegExp('^' + line.replace(/_/g, '([12])') + '$');
 				for ( let y2 = 0; y2 < rows.length; y2++ ) {
 					const match = rows[y2].match(re);
 					if (match) {
 						const x1 = line.indexOf('_');
 						const x2 = line.indexOf('_', x1+1);
-						yield this.coordWithColor(x1, y, Number(!Number(match[1])));
-						yield this.coordWithColor(x2, y, Number(!Number(match[2])));
+						this.remember(this.coordWithColor(x1, y, this.other(match[1]), `hor line exists on y = ${y2}`));
+						this.remember(this.coordWithColor(x2, y, this.other(match[2]), `hor line exists on y = ${y2}`));
 						break;
 					}
 				}
@@ -563,15 +623,15 @@ class OhhiSolver {
 
 		for ( let x = 0; x < cols.length; x++ ) {
 			const line = cols[x];
-			if (line.replace(/[01]/g, '').length == 2) {
-				const re = new RegExp('^' + line.replace(/_/g, '([01])') + '$');
+			if (line.replace(/[12]/g, '').length == 2) {
+				const re = new RegExp('^' + line.replace(/_/g, '([12])') + '$');
 				for ( let x2 = 0; x2 < cols.length; x2++ ) {
 					const match = cols[x2].match(re);
 					if (match) {
 						const y1 = line.indexOf('_');
 						const y2 = line.indexOf('_', y1+1);
-						yield this.coordWithColor(x, y1, Number(!Number(match[1])));
-						yield this.coordWithColor(x, y2, Number(!Number(match[2])));
+						this.remember(this.coordWithColor(x, y1, match[1] == '1' ? 2 : 1, `ver line exists on x = ${x2}`));
+						this.remember(this.coordWithColor(x, y2, match[2] == '1' ? 2 : 1, `ver line exists on x = ${x2}`));
 						break;
 					}
 				}
@@ -579,7 +639,7 @@ class OhhiSolver {
 		}
 	}
 
-	*findFromThreeOpens() {
+	findKnownsFromThreeOpens() {
 		return;
 
 		const rows = this.getLineRows();
@@ -587,52 +647,27 @@ class OhhiSolver {
 
 		for ( let y = 0; y < rows.length; y++ ) {
 			const line = rows[y];
-			if (line.replace(/[01]/g, '').length == 3 && line.match(/__/)) {
+			if (line.replace(/[12]/g, '').length == 3 && line.match(/__/)) {
 				console.log('three open in row', y, line);
-				const m = line.match(/([01]?)__+([01]?)/);
+				const m = line.match(/([12]?)__+([12]?)/);
 				console.log(m);
 			}
 		}
 	}
 
-	*findMustBes() {
-		for (let found of this.findFromAdjacentThrees()) {
-			if (!this.haveSeen(found.x, found.y)) {
-				yield found;
-			}
-		}
-
-		for (let found of this.findFromFulls()) {
-			if (!this.haveSeen(found.x, found.y)) {
-				yield found;
-			}
-		}
-
-		for (let found of this.findFromThreeOpens()) {
-			if (!this.haveSeen(found.x, found.y)) {
-				yield found;
-			}
-		}
-
-		for (let found of this.findFromUniqueLines()) {
-			if (!this.haveSeen(found.x, found.y)) {
-				yield found;
-			}
-		}
-	}
-
-	coordWithColor(x, y, color) {
-		const C = new Coords2D(x, y);
-		C.color = Number(color);
-		return C;
+	findKnowns() {
+		this.findKnownsFromAdjacentThrees();
+		this.findKnownsFromFulls();
+		this.findKnownsFromThreeOpens();
+		this.findKnownsFromUniqueLines();
 	}
 
 	getLineRow(y) {
-		return this.grid[y].map(val => val == null ? '_' : val).join('');
+		return this.grid[y].map(val => val == 0 ? '_' : val).join('');
 	}
 
 	getLineCol(x) {
-		return this.grid.map(cells => cells[x]).map(val => val == null ? '_' : val).join('');
+		return this.grid.map(cells => cells[x]).map(val => val == 0 ? '_' : val).join('');
 	}
 
 	getLineRows() {
@@ -641,6 +676,30 @@ class OhhiSolver {
 
 	getLineCols() {
 		return this.grid.map((x, i) => this.getLineCol(i));
+	}
+
+	isValidGrid() {
+		for ( let i = 0; i < this.size; i++ ) {
+			if ( !OhhiBuilder.isValidLineDistribution(this.getLineRow(i)) ) {
+				return false;
+			}
+
+			if ( !OhhiBuilder.isValidLineDistribution(this.getLineCol(i)) ) {
+				return false;
+			}
+		}
+
+		const rows = this.getLineRows();
+		if ( rows.unique().length != rows.length ) {
+			return false;
+		}
+
+		const cols = this.getLineCols();
+		if ( cols.unique().length != cols.length ) {
+			return false;
+		}
+
+		return true;
 	}
 
 }

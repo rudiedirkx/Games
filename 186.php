@@ -14,35 +14,19 @@ $size = $_GET['size'] ?? 6;
 <title>0h h1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-img.loader {
-	margin-left: .5em;
-	height: 1.4em;
-}
-
-table {
-	border-spacing: 3px;
-	border: solid 1px #999;
-	user-select: none;
-}
-td {
-	border: 0;
-	padding: 0;
-	width: 30px;
-	height: 30px;
+body {
 	background-color: #eee;
-	text-align: center;
-	vertical-align: middle;
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
 }
-td[data-color="on"] {
-	background-color: green;
-	color: lightseagreen;
+canvas {
+	background-color: #eee;
+	max-width: 100vw;
+	max-height: 100vh;
 }
-td[data-color="off"] {
-	background-color: gold;
-	color: orange;
-}
-td:not([data-initial]) span {
-	display: none;
+p {
+	margin-left: 1em;
 }
 </style>
 <? include 'tpl.onerror.php' ?>
@@ -53,7 +37,7 @@ td:not([data-initial]) span {
 
 <body>
 
-<table class="inside" id="grid"></table>
+<canvas></canvas>
 
 <p>
 	<button id="restart">Restart</button>
@@ -67,9 +51,10 @@ td:not([data-initial]) span {
 </p>
 
 <script>
-objGame = new Ohhi($('#grid'));
+objGame = new Ohhi($('canvas'));
 objGame.createFromExport(location.hash.substr(1)) || objGame.createMap(<?= $size ?>);
 objGame.listenControls();
+objGame.startPainting();
 </script>
 </body>
 
