@@ -252,6 +252,16 @@ class CanvasGame extends Game {
 		this.ctx.stroke();
 	}
 
+	drawRectangle( from, to, {width = 2, color = '#000', fill = false} = {} ) {
+		const [x, y] = [Math.min(from.x, to.x), Math.min(from.y, to.y)];
+		const [w, h] = [Math.abs(from.x - to.x), Math.abs(from.y - to.y)];
+
+		fill ? this.ctx.fillStyle = color : this.ctx.strokeStyle = color;
+		this.ctx.lineWidth = width;
+
+		fill ? this.ctx.fillRect(x, y, w, h) : this.ctx.strokeRect(x, y, w, h);
+	}
+
 	drawText( coord, text, {size = '20px', color = '#000', style = ''} = {} ) {
 		this.ctx.font = `${style} ${size} sans-serif`;
 		this.ctx.fillStyle = color;
@@ -270,7 +280,45 @@ class CanvasGame extends Game {
 		});
 	}
 
+	listenGlobalDirection() {
+		document.on('keydown', (e) => {
+			if ( e.code.match(/^Arrow/) && !e.alt && !e.ctrl ) {
+				e.preventDefault();
+				var dir = e.code.substr(5).toLowerCase();
+				this.handleGlobalDirection(dir);
+			}
+		});
+
+		var movingStart, movingEnd;
+		document.on('touchstart', (e) => {
+			if ( this.isTouchable(e.target) ) {
+				e.preventDefault();
+				movingStart = e.pageXY;
+			}
+		});
+		document.on('touchmove', (e) => {
+			e.preventDefault();
+			if ( movingStart ) {
+				movingEnd = e.pageXY;
+			}
+		});
+		document.on('touchend', (e) => {
+			if ( movingStart && movingEnd ) {
+				var distance = movingStart.distance(movingEnd);
+				if ( distance > 10 ) {
+					var moved = movingEnd.subtract(movingStart);
+					var dir = moved.direction();
+					this.handleGlobalDirection(dir);
+				}
+			}
+			movingStart = movingEnd = null;
+		});
+	}
+
 	handleClick( coord ) {
+	}
+
+	handleCellClick( cell ) {
 	}
 
 }
@@ -368,41 +416,6 @@ class GridGame extends Game {
 		return element.closest('.outside') || getComputedStyle(document.body).touchAction == 'none';
 	}
 
-	listenGlobalDirection() {
-		document.on('keydown', (e) => {
-			if ( e.code.match(/^Arrow/) && !e.alt && !e.ctrl ) {
-				e.preventDefault();
-				var dir = e.code.substr(5).toLowerCase();
-				this.handleGlobalDirection(dir);
-			}
-		});
-
-		var movingStart, movingEnd;
-		document.on('touchstart', (e) => {
-			if ( this.isTouchable(e.target) ) {
-				e.preventDefault();
-				movingStart = e.pageXY;
-			}
-		});
-		document.on('touchmove', (e) => {
-			e.preventDefault();
-			if ( movingStart ) {
-				movingEnd = e.pageXY;
-			}
-		});
-		document.on('touchend', (e) => {
-			if ( movingStart && movingEnd ) {
-				var distance = movingStart.distance(movingEnd);
-				if ( distance > 10 ) {
-					var moved = movingEnd.subtract(movingStart);
-					var dir = moved.direction();
-					this.handleGlobalDirection(dir);
-				}
-			}
-			movingStart = movingEnd = null;
-		});
-	}
-
 	listenCellClick( grid ) {
 		grid || (grid = this.m_objGrid);
 		grid.on('click', '#' + grid.idOrRnd() + ' td', (e) => {
@@ -411,9 +424,6 @@ class GridGame extends Game {
 	}
 
 	handleGlobalDirection( direction ) {
-	}
-
-	handleCellClick( cell ) {
 	}
 
 }

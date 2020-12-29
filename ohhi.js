@@ -204,12 +204,15 @@ class OhhiBuilder {
 
 class Ohhi extends CanvasGame {
 
-	static ON_USER = 1;
-	static OFF_USER = 2;
+	static ONE_USER = 1;
+	static TWO_USER = 2;
 
 	static OFFSET = 20;
 	static SQUARE = 40;
-	static MARGIN = 8;
+	static MARGIN = 5;
+
+	static COLOR_ONE = 'green';
+	static COLOR_TWO = 'gold';
 
 	reset() {
 		super.reset();
@@ -230,7 +233,7 @@ class Ohhi extends CanvasGame {
 		for ( let y = 0; y < this.size; y++ ) {
 			for ( let x = 0; x < this.size; x++ ) {
 				const v = this.grid[y] && this.grid[y][x];
-				const color = v == 2 ? 'red' : (v == 1 ? 'green' : '#ddd');
+				const color = v == 2 ? Ohhi.COLOR_TWO : (v == 1 ? Ohhi.COLOR_ONE : '#ddd');
 
 				if (this.lastChange && this.lastChange.x == x && this.lastChange.y == y) {
 					this.ctx.fillStyle = 'black';
@@ -273,12 +276,12 @@ class Ohhi extends CanvasGame {
 		this.startTime();
 
 		if (v === 0) {
-			this.grid[C.y][C.x] = Ohhi.ON_USER;
+			this.grid[C.y][C.x] = Ohhi.ONE_USER;
 		}
-		else if (v === Ohhi.ON_USER) {
-			this.grid[C.y][C.x] = Ohhi.OFF_USER;
+		else if (v === Ohhi.ONE_USER) {
+			this.grid[C.y][C.x] = Ohhi.TWO_USER;
 		}
-		else if (v === Ohhi.OFF_USER) {
+		else if (v === Ohhi.TWO_USER) {
 			this.grid[C.y][C.x] = 0;
 		}
 
@@ -342,14 +345,14 @@ class Ohhi extends CanvasGame {
 
 		console.time('createMap');
 		const builder = new OhhiBuilder(size);
-		builder.build(2000);
+		builder.build();
 		console.timeEnd('createMap');
 console.log(builder.buildTries, builder.grid);
 
 		// this.printGrid(grid);
 
 		console.time('make playable');
-		const playableGrid = builder.makePlayable(2000);
+		const playableGrid = builder.makePlayable();
 		// const playableGrid = builder.hideCellsPlayable();
 		console.timeEnd('make playable');
 console.log(builder.playableTries, playableGrid);
