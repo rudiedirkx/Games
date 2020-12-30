@@ -361,36 +361,3 @@ td.wall2 {
 .gridlock td[data-block="z"] {
 	background-color	: #c00;
 }
-.gridlock td[data-block="a"] {
-	background-color	: #444;
-}
-.gridlock td[data-block="b"] {
-	background-color	: #555;
-}
-.gridlock td[data-block="c"] {
-	background-color	: #666;
-}
-.gridlock td[data-block="d"] {
-	background-color	: #777;
-}
-.gridlock td[data-block="e"] {
-	background-color	: #888;
-}
-.gridlock td[data-block="f"] {
-	background-color	: #999;
-}
-.gridlock td[data-block="g"] {
-	background-color	: #aaa;
-}
-.gridlock td[data-block="h"] {
-	background-color	: #bbb;
-}
-.gridlock td[data-block="i"] {
-	background-color	: #ccc;
-}
-.gridlock td[data-block="j"] {
-	background-color	: #ddd;
-}
-.gridlock td[data-block="k"] {
-	background-color	: #eee;
-}
