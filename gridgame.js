@@ -189,6 +189,44 @@ class Game {
 		this.checker = setTimeout(() => this.winOrLose(), 500);
 	}
 
+	listenGlobalDirection() {
+		document.on('keydown', (e) => {
+			if ( e.code.match(/^Arrow/) && !e.alt && !e.ctrl ) {
+				e.preventDefault();
+				var dir = e.code.substr(5).toLowerCase();
+				this.handleGlobalDirection(dir);
+			}
+		});
+
+		var movingStart, movingEnd;
+		document.on('touchstart', (e) => {
+			if ( this.isTouchable(e.target) ) {
+				e.preventDefault();
+				movingStart = e.pageXY;
+			}
+		});
+		document.on('touchmove', (e) => {
+			e.preventDefault();
+			if ( movingStart ) {
+				movingEnd = e.pageXY;
+			}
+		});
+		document.on('touchend', (e) => {
+			if ( movingStart && movingEnd ) {
+				var distance = movingStart.distance(movingEnd);
+				if ( distance > 10 ) {
+					var moved = movingEnd.subtract(movingStart);
+					var dir = moved.direction();
+					this.handleGlobalDirection(dir);
+				}
+			}
+			movingStart = movingEnd = null;
+		});
+	}
+
+	handleGlobalDirection( direction ) {
+	}
+
 }
 
 class CanvasGame extends Game {
@@ -280,45 +318,7 @@ class CanvasGame extends Game {
 		});
 	}
 
-	listenGlobalDirection() {
-		document.on('keydown', (e) => {
-			if ( e.code.match(/^Arrow/) && !e.alt && !e.ctrl ) {
-				e.preventDefault();
-				var dir = e.code.substr(5).toLowerCase();
-				this.handleGlobalDirection(dir);
-			}
-		});
-
-		var movingStart, movingEnd;
-		document.on('touchstart', (e) => {
-			if ( this.isTouchable(e.target) ) {
-				e.preventDefault();
-				movingStart = e.pageXY;
-			}
-		});
-		document.on('touchmove', (e) => {
-			e.preventDefault();
-			if ( movingStart ) {
-				movingEnd = e.pageXY;
-			}
-		});
-		document.on('touchend', (e) => {
-			if ( movingStart && movingEnd ) {
-				var distance = movingStart.distance(movingEnd);
-				if ( distance > 10 ) {
-					var moved = movingEnd.subtract(movingStart);
-					var dir = moved.direction();
-					this.handleGlobalDirection(dir);
-				}
-			}
-			movingStart = movingEnd = null;
-		});
-	}
-
 	handleClick( coord ) {
-	}
-
-	handleCellClick( cell ) {
 	}
 
 }
@@ -423,7 +423,7 @@ class GridGame extends Game {
 		});
 	}
 
-	handleGlobalDirection( direction ) {
+	handleCellClick( cell ) {
 	}
 
 }

@@ -1,6 +1,4 @@
-Coords2D.prototype.multiply = function( factor ) {
-	return new this.constructor(this.x * factor, this.y * factor);
-};
+"use strict";
 
 class Mirror {
 }

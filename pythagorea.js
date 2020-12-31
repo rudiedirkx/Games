@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * @property {int} x
  * @property {int} y

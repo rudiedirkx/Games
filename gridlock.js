@@ -1,3 +1,5 @@
+"use strict";
+
 class GridlockBar {
 
 	constructor(from, name) {
