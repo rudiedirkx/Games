@@ -129,6 +129,9 @@ while (count($g_arrUseGames) < $g_iHeight * $g_iWidth) {
 
 $iMediaQueryLimit = $g_iWidth * $g_iTileWidth + 2 + 20;
 
+$thumbs = get_thumbs_positions();
+$thumbsRange = count($thumbs) - 1;
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -151,6 +154,9 @@ canvas {
 	top:0;
 	left:0;
 	z-index: 1;
+}
+#tiles {
+	--thumbs-total: <?= count($thumbs) ?>;
 }
 #tiles .img {
 	width: 91px;
@@ -221,6 +227,8 @@ canvas {
 	#tiles li {
 		display: block;
 		float: left;
+	}
+	#tiles li:not(.empty) {
 		background: #000;
 	}
 	#tiles.positioned li {
@@ -283,9 +291,6 @@ canvas {
 <ul id="tiles" data-width="<?= $g_iWidth ?>" data-height="<?= $g_iHeight ?>">
 <?php
 
-$thumbs = get_thumbs_positions();
-$thumbsRange = count($thumbs) - 1;
-
 foreach ( $g_arrUseGames AS $i => $game ) {
 	$y = floor($i / $g_iWidth);
 	$x = $i % $g_iWidth;
@@ -298,8 +303,8 @@ foreach ( $g_arrUseGames AS $i => $game ) {
 		$index = $bgpos / THUMB_SIZE;
 		$bgposY = round(100 / $thumbsRange * $index, 3);
 
-		echo '<a title="'.$game[1].'" href="' . $game[0] . '.php">';
-		echo '  <span class="img" style="background-position: 0 ' . $bgposY . '%; background-position: 0 calc(100% / ' . $thumbsRange . ' * ' . $index . ')"></span>';
+		echo '<a data-bgname="' . $bgname . '" title="'.$game[1].'" href="' . $game[0] . '.php">';
+		echo '  <span class="img" style="background-position: 0 ' . $bgposY . '%; x-background-position: 0 calc(100% / ' . $thumbsRange . ' * ' . $index . ')"></span>';
 		echo '  <h2>'.$game[1].'</h2>';
 		echo '  <p>'.$game[2].'</p>';
 		echo '</a>';

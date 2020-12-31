@@ -3,7 +3,7 @@
 define('THUMB_SIZE', 91);
 
 function is_local() {
-	return is_int(strpos($_SERVER['HTTP_HOST'], '.home'));
+	return !isset($_SERVER['HTTP_HOST']) || is_int(strpos($_SERVER['HTTP_HOST'], '.home'));
 }
 
 function is_mobile() {
@@ -55,17 +55,19 @@ function shash($str) {
 	return sprintf('%u', $hash);
 }
 
-function get_thumbs_positions( &$thumbs = array() ) {
+function get_thumbs_positions( &$thumbs = array(), $debug = false ) {
 	$thumbs = get_thumbs();
 	$positions = array();
 	foreach ( $thumbs as $index => $thumb ) {
-		$positions[substr(basename($thumb), 0, -4)] = THUMB_SIZE * $index;
+		$name = substr(basename($thumb), 0, -4);
+		$debug and isset($positions[$name]) and var_dump($thumb);
+		$positions[$name] = THUMB_SIZE * $index;
 	}
 	return $positions;
 }
 
 function get_thumbs() {
-	$thumbs = glob('images/_*.gif');
+	$thumbs = glob('images/_*.{gif,png}', GLOB_BRACE);
 	natcasesort($thumbs);
 	return $thumbs;
 }

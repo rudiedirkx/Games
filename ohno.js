@@ -543,7 +543,6 @@ class OhnoSolver {
 	setActive(C) {
 		const curr = this.grid[C.y][C.x];
 		if (curr === 0) {
-// console.log('SET ACTIVE', C);
 			this.grid[C.y][C.x] = 'o';
 			this.updatesActive.push(C);
 		}
@@ -552,7 +551,6 @@ class OhnoSolver {
 	setClosed(C) {
 		const curr = this.grid[C.y] && this.grid[C.y][C.x];
 		if (curr === 0) {
-// console.log('SET CLOSED', C);
 			this.grid[C.y][C.x] = 'x';
 			this.updatesClosed.push(C);
 		}
@@ -587,11 +585,9 @@ class OhnoSolver {
 
 		const left = total - required;
 		if (left > 0 && left < Math.max(...neighbors.map(L => L.length))) {
-// console.log(C, 'fill -' + left, lengths);
 			return this.updateFromSpacesLeft(C, neighbors, left);
 		}
 
-// console.log(C, 'too many options', lengths);
 	}
 
 	findKnownsFromEnoughStarting(C) {
@@ -600,26 +596,21 @@ class OhnoSolver {
 		const lengths = neighbors.map(L => L.length);
 		const total = neighbors.flat(1).length;
 		if (total == required) {
-// console.log(C, 'enough', lengths);
 			return this.updateFromEnough(C, neighbors);
 		}
 	}
 
 	findKnownsFromTooFarStarting(C) {
 		const required = this.grid[C.y][C.x];
-console.log(required);
 		const neighbors = this.allActiveNeighbors(C);
-console.log(neighbors);
 		neighbors.forEach((L, d) => {
 			const D = Coords2D.dir4Coords[d];
 			const next = (L.length ? L[L.length-1] : C).add(D);
 			const val = this.grid[next.y] && this.grid[next.y][next.x];
-console.log(next, val);
 			if (val === 0) {
 				this.grid[next.y][next.x] = Ohno.ACTIVE_USER;
 				const neighbors2 = this.allActiveNeighbors(C);
 				const total2 = neighbors2.flat(1).length;
-console.log(total2);
 				this.grid[next.y][next.x] = 0;
 				if (total2 > required) {
 					this.setClosed(next);
