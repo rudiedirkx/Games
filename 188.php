@@ -28,16 +28,13 @@ p {
 	margin-left: 1em;
 }
 
-body.editing,
-body.editing canvas {
-	background-color: pink;
+#level-num {
+	display: inline-block;
+	width: 3.5em;
+	text-align: center;
 }
-body.editing #edit {
-	font-weight: bold;
-}
-body.editing #cheat,
-body:not(.editing) #clear {
-	display: none;
+button:disabled {
+	opacity: 0.75;
 }
 </style>
 <? include 'tpl.onerror.php' ?>
@@ -52,7 +49,10 @@ body:not(.editing) #clear {
 
 <p>
 	<button id="restart">Restart</button>
-	<span id="level-links"></span>
+	|
+	<button id="prev">&lt;&lt;</button>
+	<strong id="level-num"></strong>
+	<button id="next">&gt;&gt;</button>
 </p>
 
 <script>

@@ -72,7 +72,7 @@ class Gridlock extends CanvasGame {
 
 		this.setMoves(0);
 
-		this.level = 0;
+		this.levelNum = 0;
 		this.width = 0;
 		this.height = 0;
 		this.bars = [];
@@ -81,14 +81,22 @@ class Gridlock extends CanvasGame {
 		this.dragging = null;
 	}
 
+	setLevelNum(n) {
+		this.levelNum = n;
+
+		$('#level-num').textContent = `${(n + 1)} / ${Gridlock.LEVELS.length}`;
+		$('#prev').disabled = n <= 0;
+		$('#next').disabled = n >= Gridlock.LEVELS.length-1;
+	}
+
 	loadLevel(n) {
 		if (!Gridlock.LEVELS[n]) return;
 
 		this.reset();
+		this.setLevelNum(n);
 
 		const level = Gridlock.LEVELS[n];
 
-		this.level = n;
 		this.width = Math.max(...level.map.map(row => row.length));
 		this.height = level.map.length;
 		this.exit = Coords2D.fromArray(level.exit || [6, 2]);
@@ -316,15 +324,20 @@ class Gridlock extends CanvasGame {
 
 	listenControls() {
 		this.listenDrag();
+		this.listenActions();
 
 		$('#restart').on('click', e => {
 			e.preventDefault();
-			this.loadLevel(this.level);
+			this.loadLevel(this.levelNum);
 		});
+	}
 
-		$$('a[data-level]').on('click', e => {
-			e.preventDefault();
-			this.loadLevel(parseInt(e.target.dataset.level));
+	listenActions() {
+		$('#prev').on('click', (e) => {
+			this.loadLevel(this.levelNum - 1);
+		});
+		$('#next').on('click', (e) => {
+			this.loadLevel(this.levelNum + 1);
 		});
 	}
 
@@ -367,14 +380,6 @@ class Gridlock extends CanvasGame {
 	}
 
 	createGame() {
-		this.createLevelLinks();
-	}
-
-	createLevelLinks() {
-		const html = Gridlock.LEVELS.map((level, n) => {
-			return `| <a data-level="${n}" href="?level=${n}">${n+1}</a>`;
-		}).join(' ');
-		$('#level-links').setHTML(html);
 	}
 
 	setTime( time ) {

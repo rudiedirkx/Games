@@ -36,7 +36,7 @@ canvas {
 }
 #level-num {
 	display: inline-block;
-	width: 1.2em;
+	width: 3.5em;
 	text-align: center;
 }
 button:disabled {

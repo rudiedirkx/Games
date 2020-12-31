@@ -96,15 +96,19 @@ class Laser extends CanvasGame {
 		];
 	}
 
+	setLevelNum( n ) {
+		this.levelNum = n;
+
+		$('#level-num').textContent = `${(n + 1)} / ${Laser.levels.length}`;
+		$('#prev').disabled = n <= 0;
+		$('#next').disabled = n >= Laser.levels.length-1;
+	}
+
 	loadLevel( n ) {
 		this.reset();
 
-		this.levelNum = n;
+		this.setLevelNum(n);
 		this.level = Laser.levels[n];
-
-		document.querySelector('#level-num').textContent = n + 1;
-		document.querySelector('#prev').disabled = n <= 0;
-		document.querySelector('#next').disabled = n >= Laser.levels.length-1;
 
 		this.canvas.width = 30 * 2 + this.level.map[0].length * 40;
 		this.canvas.height = 30 * 2 + this.level.map.length * 40;
@@ -393,10 +397,10 @@ class Laser extends CanvasGame {
 	}
 
 	listenActions() {
-		document.querySelector('#prev').on('click', (e) => {
+		$('#prev').on('click', (e) => {
 			this.loadLevel(this.levelNum - 1);
 		});
-		document.querySelector('#next').on('click', (e) => {
+		$('#next').on('click', (e) => {
 			this.loadLevel(this.levelNum + 1);
 		});
 	}
