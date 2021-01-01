@@ -24,8 +24,8 @@ canvas {
 }
 #level-num {
 	display: inline-block;
-	width: 1.2em;
-	text-align: center;
+	width: 3.5em;
+	text-align: right;
 }
 button:disabled {
 	opacity: 0.75;

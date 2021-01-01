@@ -31,7 +31,7 @@ p {
 #level-num {
 	display: inline-block;
 	width: 3.5em;
-	text-align: center;
+	text-align: right;
 }
 button:disabled {
 	opacity: 0.75;

@@ -83,6 +83,9 @@ class Lasing {
 
 class Laser extends CanvasGame {
 
+	static OFFSET = 40;
+	static SQUARE = 60;
+
 	constructor( canvas ) {
 		super(canvas);
 
@@ -110,8 +113,8 @@ class Laser extends CanvasGame {
 		this.setLevelNum(n);
 		this.level = Laser.levels[n];
 
-		this.canvas.width = 30 * 2 + this.level.map[0].length * 40;
-		this.canvas.height = 30 * 2 + this.level.map.length * 40;
+		this.canvas.width = Laser.OFFSET + this.level.map[0].length * Laser.SQUARE + Laser.OFFSET;
+		this.canvas.height = Laser.OFFSET + this.level.map.length * Laser.SQUARE + Laser.OFFSET;
 
 		this.lasers = [];
 		this.lights = [];
@@ -144,7 +147,17 @@ class Laser extends CanvasGame {
 			return new Coords2D(this.scale(source.x), this.scale(source.y));
 		}
 
-		return 30 + source * 40;
+		return Laser.OFFSET + source * Laser.SQUARE;
+	}
+
+	unscale( source ) {
+		if ( source instanceof Coords2D ) {
+			source = source.multiply(this.canvas.width / this.canvas.offsetWidth);
+			const C = new Coords2D(this.unscale(source.x), this.unscale(source.y));
+			return this.inside(C) ? C : null;
+		}
+
+		return Math.round((source - Laser.OFFSET - Laser.SQUARE/2) / (/*Laser.MARGIN +*/ Laser.SQUARE));
 	}
 
 	inside( coord ) {
@@ -293,7 +306,7 @@ class Laser extends CanvasGame {
 		const typeOffset = this.getLaserOffset(type);
 		const half = new Coords2D(.5, .5);
 		const scale = (C) => this.scale(C.add(half)).add(new Coords2D(.5, .5)).add(typeOffset);
-		const style = {color: this.constructor.color(type), width: 3};
+		const style = {color: Laser.color(type), width: 3};
 		this.drawLine(scale(from), scale(to), style);
 	}
 
@@ -313,7 +326,7 @@ class Laser extends CanvasGame {
 		const center = this.scale(square.add(new Coords2D(.5, .5)));
 
 		const scale = (C) => {
-			return C.multiply(10).add(center);
+			return C.multiply(15).add(center);
 		};
 
 		if ( points.length == 2 ) {
@@ -366,28 +379,31 @@ class Laser extends CanvasGame {
 			let typeOffset = this.getLaserOffset(C[3]);
 			let pos = this.scale(cell.add(new Coords2D(.5, .5))).add(moreDir).add(typeOffset);
 
-			let style = {radius: 4, color: this.constructor.color(C[3])};
+			let style = {radius: 4, color: Laser.color(C[3])};
 			this.drawDot(pos, style);
 		});
 	}
 
 	drawBlock( coord ) {
-		const tl = this.scale(coord).add(new Coords2D(9, 9));
+		const MARGIN = 9;
+		const tl = this.scale(coord).add(new Coords2D(MARGIN, MARGIN));
 		this.ctx.fillStyle = '#000';
-		this.ctx.fillRect(tl.x + 0.5, tl.y + 0.5, 22, 22);
+		this.ctx.fillRect(tl.x + 0.5, tl.y + 0.5, Laser.SQUARE - MARGIN*2, Laser.SQUARE - MARGIN*2);
 	}
 
 	drawSquare( coord, type ) {
-		const tl = this.scale(coord).add(new Coords2D(3, 3));
-		this.ctx.strokeStyle = this.constructor.color(type);
+		const MARGIN = 3;
+		const tl = this.scale(coord).add(new Coords2D(MARGIN, MARGIN));
+		this.ctx.strokeStyle = Laser.color(type);
 		this.ctx.lineWidth = 3;
-		this.ctx.strokeRect(tl.x + 0.5, tl.y + 0.5, 34, 34);
+		this.ctx.strokeRect(tl.x + 0.5, tl.y + 0.5, Laser.SQUARE - MARGIN*2, Laser.SQUARE - MARGIN*2);
 	}
 
 	drawLight( coord, type ) {
-		const tl = this.scale(coord).add(new Coords2D(5, 5));
-		this.ctx.fillStyle = this.constructor.color(type) + '7';
-		this.ctx.fillRect(tl.x + 0.5, tl.y + 0.5, 30, 30);
+		const MARGIN = 5;
+		const tl = this.scale(coord).add(new Coords2D(MARGIN, MARGIN));
+		this.ctx.fillStyle = Laser.color(type) + '7';
+		this.ctx.fillRect(tl.x + 0.5, tl.y + 0.5, Laser.SQUARE - MARGIN*2, Laser.SQUARE - MARGIN*2);
 	}
 
 	listenControls() {
@@ -412,12 +428,12 @@ class Laser extends CanvasGame {
 	}
 
 	handleWheel( coord, dir ) {
-		const square = this.getSquare(coord);
+		const square = this.unscale(coord);
 		square && this.changeMirror(square, dir);
 	}
 
 	handleClick( coord ) {
-		const square = this.getSquare(coord);
+		const square = this.unscale(coord);
 		square && this.changeMirror(square, 1);
 	}
 
@@ -431,15 +447,6 @@ class Laser extends CanvasGame {
 		this.recalculate();
 
 		this.winOrLose();
-	}
-
-	getSquare( coord ) {
-		const x = Math.floor((coord.x - 30) / 40);
-		const y = Math.floor((coord.y - 30) / 40);
-		const square = new Coords2D(x, y);
-		if ( this.inside(square) ) {
-			return square;
-		}
 	}
 
 	setTime() {

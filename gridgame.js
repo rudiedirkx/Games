@@ -237,6 +237,7 @@ class CanvasGame extends Game {
 		this.canvas = canvas;
 		this.ctx = canvas.getContext('2d');
 
+		this.paintingTiming = false;
 		this.changed = true;
 	}
 
@@ -254,8 +255,10 @@ class CanvasGame extends Game {
 	paint() {
 		this.canvas.width = 1 * this.canvas.width;
 
+		this.paintingTiming && console.time('paint');
 		this.drawStructure();
 		this.drawContent();
+		this.paintingTiming && console.timeEnd('paint');
 		this.changed = false;
 	}
 

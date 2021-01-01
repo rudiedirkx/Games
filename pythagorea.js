@@ -132,7 +132,7 @@ class Pythagorea extends CanvasGame {
 		this.level = Pythagorea.levels[this.levelNum];
 		this.level.init(this);
 
-		document.querySelector('#level-num').textContent = this.levelNum + 1;
+		document.querySelector('#level-num').textContent = `${this.levelNum + 1} / ${Pythagorea.levels.length}`;
 		document.querySelector('#level-desc').textContent = this.level._desc;
 		document.querySelector('#prev').disabled = this.levelNum <= 0;
 		document.querySelector('#next').disabled = this.levelNum >= Pythagorea.levels.length-1;

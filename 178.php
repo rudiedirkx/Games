@@ -17,15 +17,19 @@ require __DIR__ . '/178_levels.php';
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('laser.js') ?>"></script>
 <style>
+body {
+	font-family: sans-serif;
+}
 canvas {
+
 	touch-action: none;
 	user-select: none;
 
 	background: #aaa none;
 	background: repeating-linear-gradient(
-		120deg,
-		#666,
-		#666 10px,
+		130deg,
+		#6c6c6c,
+		#6c6c6c 10px,
 		#777 10px,
 		#777 20px
 	);
@@ -33,11 +37,13 @@ canvas {
 	image-rendering: optimizeSpeed;
 	image-rendering: -webkit-optimize-contrast;
 	image-rendering: pixelated;
+
+	max-width: 100%;
 }
 #level-num {
 	display: inline-block;
 	width: 3.5em;
-	text-align: center;
+	text-align: right;
 }
 button:disabled {
 	opacity: 0.75;
