@@ -1,61 +1,205 @@
-class Squarescape extends LeveledGridGame {
+"use strict";
 
-	createField( cell, type, rv, x, y ) {
-		if ( type != 'x' ) {
-			cell.addClass('available');
+class Squarescape extends CanvasGame {
+
+	static LEVELS = [];
+
+	static OFFSET = 20;
+	static SQUARE = 40;
+	static MARGIN = 3;
+
+	reset() {
+		super.reset();
+
+		this.setMoves(0);
+
+		this.levelNum = 0;
+		this.width = 0;
+		this.height = 0;
+		this.map = null;
+		this.player = null;
+		this.end = null;
+		this.collectibles = [];
+
+		// this.dragging = null;
+		// this.paintingTiming = true;
+	}
+
+	setLevelNum(n) {
+		this.levelNum = n;
+
+		$('#level-num').textContent = `${(n + 1)} / ${Squarescape.LEVELS.length}`;
+		$('#prev').disabled = n <= 0;
+		$('#next').disabled = n >= Squarescape.LEVELS.length-1;
+	}
+
+	restart() {
+		return this.loadLevel(this.levelNum);
+	}
+
+	loadLevel(n) {
+		if (isNaN(n = parseInt(n)) || !Squarescape.LEVELS[n]) return;
+
+		this.reset();
+		this.setLevelNum(n);
+
+		const level = Squarescape.LEVELS[n];
+console.log(n, level);
+
+		this.width = Math.max(...level.map.map(row => row.length));
+		this.height = level.map.length;
+
+		this.parseMap(level.map);
+		this.player = Coords2D.fromArray(level.start);
+		this.playerDirection = this.getInitialPlayerDirection();
+
+		this.canvas.width = Squarescape.OFFSET + this.width * (Squarescape.SQUARE + Squarescape.MARGIN) - Squarescape.MARGIN + Squarescape.OFFSET;
+		this.canvas.height = Squarescape.OFFSET + this.height * (Squarescape.SQUARE + Squarescape.MARGIN) - Squarescape.MARGIN + Squarescape.OFFSET;
+
+		this.changed = true;
+	}
+
+	scale( source ) {
+		if ( source instanceof Coords2D ) {
+			return new Coords2D(this.scale(source.x), this.scale(source.y));
 		}
 
-		if ( type == 'p' ) {
-			cell.addClass('pause');
+		return Squarescape.OFFSET + source * (Squarescape.SQUARE + Squarescape.MARGIN);
+	}
+
+	unscale( source ) {
+		if ( source instanceof Coords2D ) {
+			source = source.multiply(this.canvas.width / this.canvas.offsetWidth);
+			const C = new Coords2D(this.unscale(source.x), this.unscale(source.y));
+			return C;
 		}
-		else if ( type == 'd' ) {
-			cell.addClass('danger');
-		}
-		else if ( type == 'o' ) {
-			cell.addClass('collect');
-		}
-		else if ( type == 't' ) {
-			cell.addClass('end');
+
+		return Math.round((source - Squarescape.OFFSET - Squarescape.SQUARE/2) / (Squarescape.MARGIN + Squarescape.SQUARE));
+	}
+
+	drawStructure() {
+		this.drawMap();
+	}
+
+	drawContent() {
+		this.drawCollectibles();
+		this.drawPlayerTriangle();
+	}
+
+	drawMap() {
+		for ( let y = 0; y < this.height; y++ ) {
+			for ( let x = 0; x < this.width; x++ ) {
+				const t = this.map[y][x];
+				if (t !== 'x') {
+					const C = new Coords2D(x, y);
+					const from = this.scale(C);
+					const to = from.add(new Coords2D(Squarescape.SQUARE, Squarescape.SQUARE));
+					const color = this.end.equal(C) ? 'lime' : (t === 'd' ? 'red' : (t === 'p' ? 'yellow' : 'white'));
+					this.drawRectangle(from, to, {color, fill: true});
+				}
+			}
 		}
 	}
 
-	createdMap( rv ) {
-		var start = Coords2D.fromArray(rv.start);
-		this.getCell(start).addClass('player');
+	drawCollectibles() {
+		this.collectibles.forEach(C => {
+			const center = this.scale(C).add(new Coords2D(Squarescape.SQUARE / 2, Squarescape.SQUARE / 2));
+			this.drawDot(center, {radius: Squarescape.SQUARE / 3, color: 'gold'});
+		});
+	}
+
+	drawPlayerDot() {
+		const C = this.scale(this.player).add(new Coords2D(Squarescape.SQUARE / 2, Squarescape.SQUARE / 2));
+		this.drawDot(C, {radius: Squarescape.SQUARE / 3});
+	}
+
+	drawPlayerTriangle() {
+		const C = this.scale(this.player);
+		const size = 6;
+		const triangles = [
+			[new Coords2D(0.5, 1/size), new Coords2D(1 - 1/size, 1 - 1/size), new Coords2D(1/size, 1 - 1/size)],
+			[new Coords2D(1 - 1/size, 0.5), new Coords2D(1/size, 1 - 1/size), new Coords2D(1/size, 1/size)],
+			[new Coords2D(0.5, 1 - 1/size), new Coords2D(1 - 1/size, 1/size), new Coords2D(1/size, 1/size)],
+			[new Coords2D(1/size, 0.5), new Coords2D(1 - 1/size, 1 - 1/size), new Coords2D(1 - 1/size, 1/size)],
+		];
+		const triangle = triangles[this.playerDirection].map(P => C.add(P.multiply(Squarescape.SQUARE)));
+		this.drawPolygon(triangle);
+	}
+
+	drawPolygon(points) {
+		this.ctx.fillStyle = 'black';
+
+		this.ctx.beginPath();
+		this.ctx.moveTo(points[0].x, points[0].y);
+		for (const point of points) {
+			this.ctx.lineTo(point.x, point.y);
+		}
+		this.ctx.closePath();
+		this.ctx.fill();
+	}
+
+	isNavigable(t) {
+		return t != null && t !== 'x';
+	}
+
+	cellIsNavigable(C) {
+		const t = this.map[C.y] && this.map[C.y][C.x];
+		return this.isNavigable(t);
+	}
+
+	getInitialPlayerDirection() {
+		return Coords2D.dir4Coords.findIndex(D => {
+			return this.cellIsNavigable(this.player.add(D));
+		});
+	}
+
+	parseMap(map) {
+		this.map = map.slice(0);
+
+		for ( let y = 0; y < this.height; y++ ) {
+			for ( let x = 0; x < this.width; x++ ) {
+				const t = this.map[y][x];
+				if (t === 'o') {
+					this.collectibles.push(new Coords2D(x, y));
+				}
+				else if (t === 't') {
+					this.end = new Coords2D(x, y);
+				}
+			}
+			this.map[y] = this.map[y].replace(/[ot]/g, ' ');
+		}
 	}
 
 	haveWon() {
-		return this.m_objGrid.querySelectorAll('.collect:not(.end)').length == 0;
+		return this.collectibles.length == 0 && this.end.equal(this.player);
 	}
 
 	haveLost() {
-		return (
-			this.m_objGrid.querySelector('.player.danger') ||
-			this.m_objGrid.querySelector('.player.end')
-		);
+		const t = this.map[this.player.y][this.player.x];
+		return t === 'd' || (this.end.equal(this.player) && this.collectibles.length > 0);
 	}
 
-	getPlayer() {
-		return this.m_objGrid.getElement('.player');
-	}
+	move( D ) {
+		this.startTime();
 
-	move( offset ) {
-		const path = this.findPath(this.getPlayer(), offset);
+		const path = this.findPath(this.player, D);
 		if ( path.length > 0 ) {
+			this.playerDirection = Coords2D.dir4Coords.findIndex(C => C.equal(D));
 			this.drawPath(path);
 			this.setMoves(this.m_iMoves + 1);
 		}
 	}
 
-	findPath( from, offset ) {
+	findPath( from, D ) {
 		const path = [];
 		var current = from;
-		while ( current = this.getCell(this.getCoord(current).add(offset)) ) {
-			if ( current.hasClass('pause') || current.hasClass('danger') ) {
+		while ( current = current.add(D) ) {
+			const t = this.map[current.y] && this.map[current.y][current.x];
+			if ( t === 'p' || t === 'd' ) {
 				path.push(current);
 				return path;
 			}
-			else if ( !current.hasClass('available') ) {
+			else if ( !this.isNavigable(t) ) {
 				return path;
 			}
 			else {
@@ -63,38 +207,57 @@ class Squarescape extends LeveledGridGame {
 			}
 		}
 
-		return path;
+		throw new Error('eh?');
 	}
 
 	drawPath( path ) {
+		this.drawingPath = true;
 		var drawStep = () => {
 			const step = path.shift();
 			this.movePlayer(step);
-			this.winOrLose();
-			path.length > 0 && setTimeout(drawStep, 50);
+			if (path.length > 0) {
+				setTimeout(drawStep, 50);
+			}
+			else {
+				this.drawingPath = false;
+				this.startWinCheck(100);
+			}
 		};
 		drawStep();
 	}
 
 	movePlayer( to ) {
-		const player = this.getPlayer();
-		player.removeClass('player');
-		to.addClass('player');
+		this.player = to;
 
-		if ( player.hasClass('collect') ) {
-			player.removeClass('collect');
-			to.addClass('collect');
-		}
+		this.collectibles = this.collectibles.filter(C => !C.equal(to));
+
+		this.changed = true;
+	}
+
+	handleGlobalDirection(dir) {
+		if (this.drawingPath) return;
+		if (this.m_bGameOver) return this.restart();
+
+		this.move(Coords2D.dir4Coords[Coords2D.dir4Names.indexOf(dir[0])]);
 	}
 
 	listenControls() {
 		this.listenGlobalDirection();
+		this.listenActions();
+
+		$('#restart').on('click', e => this.restart());
 	}
 
-	handleGlobalDirection( direction ) {
-		if ( this.m_bGameOver ) return this.restartLevel();
+	listenActions() {
+		$('#prev').on('click', (e) => {
+			this.loadLevel(this.levelNum - 1);
+		});
+		$('#next').on('click', (e) => {
+			this.loadLevel(this.levelNum + 1);
+		});
+	}
 
-		this.move(this.dir4Coords[this.dir4Names.indexOf(direction[0])]);
+	createGame() {
 	}
 
 }

@@ -76,12 +76,15 @@ class Game {
 		this.stopTime();
 		this.m_iStartTime = 0;
 		this.m_iTimer = 0;
+
 		this.setTime('0:00');
+		this.setMoves(0);
 	}
 
 	statTypes() {
 		return {
 			time: 'Time',
+			moves: 'Moves',
 		};
 	}
 
@@ -128,9 +131,20 @@ class Game {
 		return m + ':' + ('0' + s).slice(-2);
 	}
 
+	setMoves( f_iMoves ) {
+		if ( f_iMoves != null ) {
+			this.m_iMoves = f_iMoves;
+		}
+		if ( this.m_iMoves > 0 ) {
+			this.startTime();
+		}
+		$('#stats-moves').setText(this.m_iMoves);
+	}
+
 	getScore() {
 		return {
 			time: this.getTime(),
+			moves: this.m_iMoves,
 		};
 	}
 
@@ -184,9 +198,13 @@ class Game {
 		}
 	}
 
-	startWinCheck() {
+	startWinCheck(delay = 500) {
 		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), 500);
+		this.checker = setTimeout(() => this.winOrLose(), delay);
+	}
+
+	isTouchable( element ) {
+		return element.matches('canvas') || element.closest('.outside') || getComputedStyle(document.body).touchAction == 'none';
 	}
 
 	listenGlobalDirection() {
@@ -304,6 +322,7 @@ class CanvasGame extends Game {
 	}
 
 	drawText( coord, text, {size = '20px', color = '#000', style = ''} = {} ) {
+		typeof size == 'number' && (size = size + 'px');
 		this.ctx.font = `${style} ${size} sans-serif`;
 		this.ctx.fillStyle = color;
 		this.ctx.fillText(text, coord.x, coord.y);
@@ -345,36 +364,6 @@ class GridGame extends Game {
 		this.reset();
 	}
 
-	reset() {
-		super.reset();
-		this.setMoves(0);
-	}
-
-	statTypes() {
-		return {
-			...super.statTypes(),
-			moves: 'Moves',
-		};
-	}
-
-	getScore() {
-		const score = super.getScore();
-		if ( this.m_iMoves != null ) {
-			score.moves = this.m_iMoves;
-		}
-		return score;
-	}
-
-	setMoves( f_iMoves ) {
-		if ( f_iMoves != null ) {
-			this.m_iMoves = f_iMoves;
-		}
-		if ( this.m_iMoves > 0 ) {
-			this.startTime();
-		}
-		$('#stats-moves').setText(this.m_iMoves);
-	}
-
 	makeWall( cell ) {
 		cell.addClass('wall');
 		cell.addClass('wall' + Math.ceil(2*Math.random()));
@@ -413,10 +402,6 @@ class GridGame extends Game {
 	}
 
 	listenControls() {
-	}
-
-	isTouchable( element ) {
-		return element.closest('.outside') || getComputedStyle(document.body).touchAction == 'none';
 	}
 
 	listenCellClick( grid ) {

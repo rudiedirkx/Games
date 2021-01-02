@@ -1,6 +1,6 @@
 <?php
 
-$g_arrLevels = [1 =>
+$g_arrLevels = [
 	[
 		'map' => [
 			'xxxxt',
