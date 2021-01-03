@@ -357,6 +357,43 @@ td.wall2 {
 .zhor td.path.target {
 	background-color	: darkorange;
 }
+.zhor td[data-selected-nb] {
+	position: relative;
+	cursor: pointer;
+}
+.zhor td[data-selected-nb]:after {
+	content: "";
+	position: absolute;
+	display: block;
+	height: 0;
+	width: 0;
+	--nb-triangle-size: calc(var(--inside-cell) / 2);
+	--nb-triangle-color: black;
+}
+.zhor td[data-selected-nb="u"]:after {
+	border-left: var(--nb-triangle-size) solid transparent;
+	border-right: var(--nb-triangle-size) solid transparent;
+	border-bottom: var(--nb-triangle-size) solid var(--nb-triangle-color);
+	bottom: 5px;
+}
+.zhor td[data-selected-nb="r"]:after {
+	border-top: var(--nb-triangle-size) solid transparent;
+	border-bottom: var(--nb-triangle-size) solid transparent;
+	border-left: var(--nb-triangle-size) solid var(--nb-triangle-color);
+	left: 5px;
+}
+.zhor td[data-selected-nb="d"]:after {
+	border-left: var(--nb-triangle-size) solid transparent;
+	border-right: var(--nb-triangle-size) solid transparent;
+	border-top: var(--nb-triangle-size) solid var(--nb-triangle-color);
+	top: 5px;
+}
+.zhor td[data-selected-nb="l"]:after {
+	border-top: var(--nb-triangle-size) solid transparent;
+	border-bottom: var(--nb-triangle-size) solid transparent;
+	border-right: var(--nb-triangle-size) solid var(--nb-triangle-color);
+	right: 5px;
+}
 
 .gridlock td[data-block="z"] {
 	background-color	: #c00;

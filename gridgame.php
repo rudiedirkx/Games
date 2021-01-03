@@ -34,6 +34,10 @@ if ( isset($_REQUEST['load_map']) ) {
 <body class="<?= $bodyClass ?>">
 <img id="loading" alt="loading" src="images/loading.gif" />
 
+<? if (isset($explanation)): ?>
+	<p><?= do_html($explanation) ?></p>
+<? endif ?>
+
 <table class="outside">
 	<tr>
 		<td colspan="2" class="level">

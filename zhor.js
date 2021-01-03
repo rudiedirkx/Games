@@ -48,7 +48,7 @@ class Zhor extends LeveledGridGame {
 	}
 
 	getPath( start, dir ) {
-		const offset = Coords2D.dir4Coords[ Coords2D.dir4Names.indexOf(dir[0]) ];
+		const offset = Coords2D.dir4Coords[ Coords2D.dir4Names.indexOf(dir) ];
 
 		const path = [];
 		var current = start;
@@ -61,18 +61,53 @@ class Zhor extends LeveledGridGame {
 		return path;
 	}
 
-	handleCellClick( cell ) {
-		if ( cell.data('source') && !cell.hasClass('path') ) {
-			this.startTime();
+	selectSource( cell ) {
+		const selected = this.getSelected();
+		selected && this.unselectSource(selected);
 
+		cell.addClass('selected');
+
+		const C = this.getCoord(cell);
+		Coords2D.dir4Coords.forEach((D, d) => {
+			const nb = this.getCell(C.add(D));
+			nb && nb.data('selected-nb', Coords2D.dir4Names[d]);
+		});
+	}
+
+	unselectSource( cell ) {
+		cell || (cell = this.getSelected());
+
+		cell && cell.removeClass('selected');
+		$$('[data-selected-nb]').data('selected-nb', null);
+	}
+
+	move( selected, dir ) {
+		this.unselectSource();
+
+		const n = parseInt(selected.data('source'));
+		const path = this.getPath(selected, dir).slice(0, n);
+
+		(new Elements(path.concat(selected))).addClass('path');
+
+		this.winOrLose();
+	}
+
+	handleCellClick( cell ) {
+		this.startTime();
+
+		if ( cell.data('source') && !cell.hasClass('path') ) {
 			const selected = this.getSelected();
 			if ( cell == selected ) {
-				cell.removeClass('selected');
+				this.unselectSource(cell);
 			}
 			else {
-				selected && selected.removeClass('selected');
-				cell.addClass('selected');
+				this.selectSource(cell);
 			}
+		}
+
+		if ( cell.data('selected-nb') ) {
+			const selected = this.getSelected();
+			selected && this.move(selected, cell.data('selected-nb'));
 		}
 	}
 
@@ -80,13 +115,7 @@ class Zhor extends LeveledGridGame {
 		const selected = this.getSelected();
 		if ( !selected ) return;
 
-		const n = parseInt(selected.data('source'));
-		const path = this.getPath(selected, dir).slice(0, n);
-
-		selected.removeClass('selected');
-		(new Elements(path.concat(selected))).addClass('path');
-
-		this.winOrLose();
+		this.move(selected, dir[0]);
 	}
 
 }
