@@ -385,13 +385,6 @@ class Gridlock extends CanvasGame {
 	createGame() {
 	}
 
-	setTime( time ) {
-	}
-
-	setMoves( moves ) {
-		this.m_iMoves = moves;
-	}
-
 }
 
 class GridlockEditor extends GridGameEditor {

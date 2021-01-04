@@ -53,6 +53,10 @@ button:disabled {
 	<button id="prev">&lt;&lt;</button>
 	<strong id="level-num"></strong>
 	<button id="next">&gt;&gt;</button>
+	|
+	<span id="stats-time"></span>
+	|
+	<span id="stats-moves"></span> moves
 </p>
 
 <script>
