@@ -150,7 +150,7 @@ class Gridlock extends CanvasGame {
 	}
 
 	static makeRandomBarColor() {
-		const c = ('0' + (10 + parseInt(Math.random() * 196)).toString(16)).slice(-2);
+		const c = ('0' + (50 + parseInt(Math.random() * 116)).toString(16)).slice(-2);
 		// const c = (10 + parseInt(Math.random() * 216)).toString(16);
 		return '#' + c + c + c;
 	}
@@ -163,6 +163,9 @@ class Gridlock extends CanvasGame {
 
 	drawContent() {
 		this.drawBars();
+
+		// this.prepareCircle(new Coords2D(150, 150), 80).fill('red').stroke('yellow', 5);
+		// this.prepareRectangle(new Coords2D(150, 150), new Coords2D(250, 250)).fill('green').stroke('purple', 5);
 	}
 
 	drawGrid() {
@@ -236,7 +239,7 @@ class Gridlock extends CanvasGame {
 		const from = this.scale(bar.from);
 		const to = this.scale(bar.from.add(new Coords2D(bar.size.x || 1, bar.size.y || 1))).subtract(new Coords2D(Gridlock.MARGIN, Gridlock.MARGIN));
 		const color = bar.color;
-		this.drawRectangle(from, to, {color, fill: true});
+		this.prepareRoundedRectangle(from, to, 3).fill(color);
 	}
 
 	drawDraggingBar(bar) {
@@ -252,7 +255,7 @@ class Gridlock extends CanvasGame {
 		to[axis] += move;
 
 		const color = bar.color;
-		this.drawRectangle(from, to, {color, fill: true});
+		this.prepareRoundedRectangle(from, to, 3).stroke('#bbb', 2).fill(color);
 	}
 
 	getOpenSpaces(bar, dir) {
@@ -506,6 +509,18 @@ class GridlockEditor extends GridGameEditor {
 
 	setType_k( cell ) {
 		this.setBlockType(cell, 'k');
+	}
+
+	setType_l( cell ) {
+		this.setBlockType(cell, 'l');
+	}
+
+	setType_m( cell ) {
+		this.setBlockType(cell, 'm');
+	}
+
+	setType_n( cell ) {
+		this.setBlockType(cell, 'n');
 	}
 
 }

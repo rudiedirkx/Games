@@ -247,6 +247,41 @@ class Game {
 
 }
 
+class Drawable {
+
+	constructor( ctx, args = [] ) {
+		this.ctx = ctx;
+		this.args = args;
+
+		this.fillMethod = 'fill';
+		this.strokeMethod = 'stroke';
+	}
+
+	fill(color = '#000') {
+		this.ctx.fillStyle = color;
+		this.ctx[this.fillMethod](...this.args);
+		return this;
+	}
+
+	stroke(color = '#000', width = 2) {
+		this.ctx.strokeStyle = color;
+		this.ctx.lineWidth = width;
+		this.ctx[this.strokeMethod](...this.args);
+		return this;
+	}
+
+}
+
+class DrawableRectangle extends Drawable {
+
+	constructor( ctx, args = [] ) {
+		super(ctx, args);
+		this.fillMethod = 'fillRect';
+		this.strokeMethod = 'strokeRect';
+	}
+
+}
+
 class CanvasGame extends Game {
 
 	constructor( canvas ) {
@@ -300,6 +335,14 @@ class CanvasGame extends Game {
 		fill ? this.ctx.fill() : this.ctx.stroke();
 	}
 
+	prepareCircle( coord, radius ) {
+		this.ctx.beginPath();
+		this.ctx.arc(coord.x, coord.y, radius, 0, 2*Math.PI);
+		this.ctx.closePath();
+
+		return new Drawable(this.ctx);
+	}
+
 	drawLine( from, to, {width = 2, color = '#000'} = {} ) {
 		this.ctx.lineWidth = width;
 		this.ctx.strokeStyle = color;
@@ -319,6 +362,27 @@ class CanvasGame extends Game {
 		this.ctx.lineWidth = width;
 
 		fill ? this.ctx.fillRect(x, y, w, h) : this.ctx.strokeRect(x, y, w, h);
+	}
+
+	prepareRectangle( from, to ) {
+		const [x, y] = [Math.min(from.x, to.x), Math.min(from.y, to.y)];
+		const [w, h] = [Math.abs(from.x - to.x), Math.abs(from.y - to.y)];
+
+		return new DrawableRectangle(this.ctx, [x, y, w, h]);
+	}
+
+	prepareRoundedRectangle( from, to, radius ) {
+		const [x1, y1] = [Math.min(from.x, to.x), Math.min(from.y, to.y)];
+		const [x2, y2] = [Math.max(from.x, to.x), Math.max(from.y, to.y)];
+
+		this.ctx.beginPath();
+		this.ctx.arc(x2 - radius, y1 + radius, radius, -Math.PI/2, 0);
+		this.ctx.arc(x2 - radius, y2 - radius, radius, 0, Math.PI/2);
+		this.ctx.arc(x1 + radius, y2 - radius, radius, Math.PI/2, Math.PI);
+		this.ctx.arc(x1 + radius, y1 + radius, radius, Math.PI, -Math.PI/2);
+		this.ctx.closePath();
+
+		return new Drawable(this.ctx);
 	}
 
 	drawText( coord, text, {size = '20px', color = '#000', style = ''} = {} ) {
