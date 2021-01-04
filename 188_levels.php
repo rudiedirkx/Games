@@ -173,12 +173,12 @@ $g_arrLevels = [
 	],
 	[
 		'map' => [
-			' aacd ',
-			' bbcd ',
-			' ezzd ',
-			' efff ',
-			' egg  ',
-			' hhh  ',
+			'aacd  ',
+			'bbcd  ',
+			'ezzd  ',
+			'efff  ',
+			'egg   ',
+			'hhh   ',
 		],
 	],
 	[
