@@ -74,7 +74,7 @@ button:disabled {
 <? endif ?>
 objGame = new Squarescape($('canvas'));
 objGame.listenControls();
-objGame.loadLevel(<?= json_encode($_GET['level'] ?? 0) ?>);
+objGame.loadLevel(<?= (int) ($_GET['level'] ?? 0) ?>);
 objGame.startPainting();
 </script>
 </body>
