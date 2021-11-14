@@ -40,6 +40,7 @@ class Mamono extends GridGame {
 
 	reset() {
 		super.reset();
+		this.m_iMoves = 0;
 
 		this.mapInited = false;
 		this.level = 1;
