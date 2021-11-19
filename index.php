@@ -106,6 +106,7 @@ $g_arrGames = array(
 	['186',				'0h h1',										'From Android'],
 	['189',				'0h n0',										'From Android'],
 	['190',				'Bridges',										'From Android'],
+	['191',				'Keer Op Keer',									'The simplest (?) variant'],
 );
 
 $g_iHeight = ceil(count($g_arrGames)/$g_iWidth);

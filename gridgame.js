@@ -114,7 +114,7 @@ class Game {
 	}
 
 	getTime() {
-		return Math.ceil((Date.now() - this.m_iStartTime) / 1000);
+		return this.m_iStartTime ? Math.ceil((Date.now() - this.m_iStartTime) / 1000) : 0;
 	}
 
 	stopTime() {
@@ -122,7 +122,8 @@ class Game {
 	}
 
 	setTime( time ) {
-		$('#stats-time').setText(time);
+		var el = $('#stats-time');
+		if (el) el.setText(time);
 	}
 
 	formatTime( s ) {
@@ -138,7 +139,8 @@ class Game {
 		if ( this.m_iMoves > 0 ) {
 			this.startTime();
 		}
-		$('#stats-moves').setText(this.m_iMoves);
+		var el = $('#stats-moves');
+		if (el) el.setText(this.m_iMoves);
 	}
 
 	getScore() {
