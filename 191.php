@@ -46,6 +46,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <style>
 :root {
 	--center-border: solid 3px #c00;
+	--size: 30px;
 }
 body {
 	background-color: <?= do_html($mapColor) ?>;
@@ -57,8 +58,8 @@ body {
 .meta {
 	float: left;
 }
-.board {
-	margin-right: 20px;
+.meta {
+	margin-left: 20px;
 }
 
 table {
@@ -66,8 +67,8 @@ table {
 	border-collapse: collapse;
 }
 td {
-	width: 30px;
-	height: 30px;
+	width: var(--size);
+	height: var(--size);
 	padding: 0;
 	border: solid 1px <?= do_html($mapColor) ?>;
 	text-align: center;
@@ -102,18 +103,18 @@ tbody tr:last-child .center {
 	content: "\2606";
 	top: 1px;
 	left: 1px;
-	width: 28px;
-	height: 28px;
-	font-size: 28px;
+	width: calc(var(--size) - 2px);
+	height: calc(var(--size) - 2px);
+	font-size: calc(var(--size) - 2px);
 }
 .choosing:after,
 .chosen:after {
 	content: "\274C";
 	top: 7px;
 	left: 7px;
-	width: 16px;
-	height: 16px;
-	font-size: 16px;
+	width: calc(var(--size) - 14px);
+	height: calc(var(--size) - 14px);
+	font-size: calc(var(--size) - 14px);
 }
 .chosen:after {
 	font-weight: bold;
@@ -123,8 +124,8 @@ tbody tr:last-child .center {
 	position: absolute;
 	top: 2px;
 	left: 2px;
-	width: 22px;
-	height: 22px;
+	width: calc(var(--size) - 8px);
+	height: calc(var(--size) - 8px);
 	border-radius: 30px;
 	border: solid 2px currentColor;
 }
@@ -185,6 +186,18 @@ tbody tr:last-child .center {
 }
 [data-color="o"] {
 	background-color: orange;
+}
+
+@media (max-width: 480px) {
+	:root {
+		--size: 26px;
+	}
+}
+
+@media (max-width: 430px) {
+	:root {
+		--size: 22px;
+	}
 }
 </style>
 </head>
