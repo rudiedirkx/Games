@@ -126,7 +126,7 @@ tbody tr:last-child .center {
 	width: 22px;
 	height: 22px;
 	border-radius: 30px;
-	border: solid 2px white;
+	border: solid 2px currentColor;
 }
 
 .dice-cont {
@@ -149,6 +149,7 @@ tbody tr:last-child .center {
 	font-size: 24px;
 	line-height: 30px;
 	margin-right: 5px;
+	cursor: pointer;
 }
 #dice > .number {
 	background-color: white;
@@ -211,7 +212,7 @@ tbody tr:last-child .center {
 		<? foreach (array_slice($columns, 1, 1) as $row): ?>
 			<tr>
 				<? foreach ($row as $i => $cell): ?>
-					<td data-col="<?= $i ?>" data-score="<?= $cell ?>"><?= $cell ?></td>
+					<td class="full-column" data-col="<?= $i ?>" data-score="<?= $cell ?>"><?= $cell ?></td>
 				<? endforeach ?>
 			</tr>
 		<? endforeach ?>
@@ -225,6 +226,14 @@ tbody tr:last-child .center {
 	</p>
 
 	<p id="stats"></p>
+
+	<table>
+		<tr>
+			<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
+				<td class="full-color" data-color="<?= $color ?>">5</td>
+			<? endforeach ?>
+		</tr>
+	</table>
 </div>
 
 <script>

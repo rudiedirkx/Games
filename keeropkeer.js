@@ -38,6 +38,15 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		setTimeout(() => this.printScore());
 	}
 
+	setMoves( f_iMoves ) {
+		this.m_iMoves = f_iMoves;
+		if ( this.m_iMoves > 0 ) {
+			this.startTime();
+		}
+
+		$('#stats-moves').setText(`${this.m_iMoves} / ${this.TURNS}`);
+	}
+
 	printJokers() {
 		$('#stats-jokers').setText(`${KeerOpKeer.JOKERS - this.usedJokers} / ${KeerOpKeer.JOKERS}`);
 	}
@@ -70,9 +79,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		const cols = $$('[data-col][data-score].self').reduce((T, cell) => {
 			return T + parseInt(cell.dataset.score);
 		}, 0);
-		const colors = KeerOpKeer.COLORS.filter(color => {
-			return this.m_objGrid.getElements(`[data-color="${color}"]:not(.chosen)`).length == 0;
-		}).length * 5;
+		const colors = $$('.full-color.self').length * 5;
 		const jokers = KeerOpKeer.JOKERS - this.usedJokers;
 		const stars = this.m_objGrid.getElements('[data-color].star:not(.chosen)').length;
 
@@ -80,8 +87,47 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	currentTurnIsComplete() {
-return true;
+// return true;
 		if (this.m_iMoves == 0) return true;
+
+		const choosing = this.m_objGrid.getElements('.choosing');
+
+		// Verify number of choosing
+		if ( choosing.length > 0 ) {
+			if ( this.turnNumber != '?' && choosing.length != this.turnNumber ) {
+				return false;
+			}
+
+			// All choosing must be 1 group
+			const group1 = this.expandChoosing(choosing[0]);
+// console.log(group1);
+			if ( group1.length != choosing.length ) {
+				return false;
+			}
+
+			// Must originate from allowed coord
+			const alloweds = choosing.filter(cell => this.gridClickAllowedCoord(this.getCoord(cell), false));
+// console.log(choosing, alloweds);
+			if ( !alloweds.length ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	expandChoosing( start, all = [] ) {
+		all.push(start);
+
+		const C = this.getCoord(start);
+		Coords2D.dir4Coords.forEach(O => {
+			const adj = this.getCell(O.add(C));
+			if ( adj && !all.includes(adj) && adj.hasClass('choosing') ) {
+				this.expandChoosing(adj, all);
+			}
+		});
+
+		return all;
 	}
 
 	finishTurn() {
@@ -89,6 +135,23 @@ return true;
 		if ( this.turnNumber == '?' ) this.useJoker();
 
 		this.m_objGrid.getElements('.choosing').removeClass('choosing').addClass('chosen');
+
+		// Full columns
+		this.getTable().getElements('[data-col][data-score]').forEach(el => {
+			const n = parseInt(el.dataset.col);
+			const cells = this.m_objGrid.getElements(`tr > :nth-child(${n+1}):not(.chosen)`);
+			if ( cells.length == 0 ) {
+				el.addClass('self');
+			}
+		});
+
+		// Full colors
+		KeerOpKeer.COLORS.forEach(color => {
+			if ( this.m_objGrid.getElements(`[data-color="${color}"]:not(.chosen)`).length == 0 ) {
+				$(`.full-color[data-color="${color}"]`).addClass('self');
+			}
+		});
+
 		this.turnColor = this.turnNumber = null;
 		this.turnColors.length = this.turnNumbers.length = 0;
 
@@ -127,18 +190,23 @@ return true;
 		return parseInt(Math.random() * (max + 1));
 	}
 
-	gridClickAllowedCoord( C ) {
+	gridClickAllowedCoord( C, choosing = true ) {
 		if ( C.x == KeerOpKeer.CENTER ) return true;
-		if ( this.getCell(C).hasClass('choosing') ) return true;
 
+		const sel = choosing ? '.chosen, .choosing' : '.chosen';
 		const adj = Coords2D.dir4Coords.find(O => {
 			const cell = this.getCell(O.add(C));
-			return cell && cell.is('.choosing, .chosen');
+			return cell && cell.is(sel);
 		});
 		return adj != null;
 	}
 
 	gridClickAllowedColor( cell ) {
+		const prev = this.m_objGrid.getElement('.choosing');
+		if ( prev ) {
+			return prev.dataset.color == cell.dataset.color;
+		}
+
 		return this.turnColor == '?' || cell.data('color') == this.turnColor;
 	}
 
@@ -153,7 +221,7 @@ return true;
 		if ( this.m_bGameOver ) return;
 
 		if ( !this.turnColor || !this.turnNumber ) return;
-		if ( !this.gridClickAllowedCoord(this.getCoord(cell)) ) return;
+		if ( !cell.hasClass('choosing') && !this.gridClickAllowedCoord(this.getCoord(cell)) ) return;
 		if ( !this.gridClickAllowedColor(cell) ) return;
 		if ( !this.gridClickAllowedNumber(cell) ) return;
 		if ( cell.hasClass('chosen') ) return;
@@ -162,17 +230,13 @@ return true;
 		cell.data('turn', cell.hasClass('choosing') ? this.m_iMoves : null);
 	}
 
-	handleColumnClick( index ) {
-		const el = this.getTable().getElement(`tfoot tr:first-child [data-col="${index}"]`);
-		el.toggleClass('self');
-	}
-
 	resetChoosing() {
 		this.m_objGrid.getElements('.choosing').removeClass('choosing');
 	}
 
 	selectColor( el ) {
 		if ( this.turnColor == el.dataset.color ) return;
+		if ( el.dataset.color == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
 
 		$$(`#dice > [data-color="${this.turnColor}"]`).removeClass('selected');
 		this.turnColor = el.dataset.color;
@@ -182,9 +246,10 @@ return true;
 
 	selectNumber( el ) {
 		if ( this.turnNumber == el.dataset.number ) return;
+		if ( el.dataset.number == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
 
 		$$(`#dice > [data-number="${this.turnNumber}"]`).removeClass('selected');
-		this.turnNumber = el.dataset.number;
+		this.turnNumber = el.dataset.number == '?' ? '?' : parseInt(el.dataset.number);
 		el.addClass('selected');
 		this.resetChoosing();
 	}
@@ -196,12 +261,8 @@ return true;
 	listenControls() {
 		this.listenCellClick();
 
-		this.getTable().on('click', '[data-col]', e => {
-			this.handleColumnClick(parseInt(e.subject.dataset.col));
-		});
-
 		$('#next-turn').on('click', e => {
-			this.currentTurnIsComplete() && this.nextTurn();
+			if ( !this.m_bGameOver && this.currentTurnIsComplete() ) this.nextTurn();
 		});
 
 		$('#dice').on('click', '[data-color]', e => {
