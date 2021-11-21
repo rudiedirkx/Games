@@ -1,7 +1,5 @@
 <?php
 // Keer op keer
-// https://www.spelmagazijn.be/media/catalog/product/g/r/groene_scoreblok_b.jpg
-// https://media.s-bol.com/N07PKk4pRn9p/550x567.jpg
 
 require __DIR__ . '/inc.bootstrap.php';
 
@@ -11,24 +9,50 @@ $columns = [
 	[3, 2, 2, 2, 1, 1, 1, 0, 1, 1, 1, 2, 2, 2, 3],
 ];
 
-// Gray
-$maps = [
+$boards = [
 	'gray' => [
 		'color' => '#444',
 		'map' => [
-			'gggyyyyGbbbOyyy',
-			'ogYgYyoopBboogg',
-			'BgpgggGpppyyogg',
-			'bppgoObbggyyoPb',
-			'poooopbbooopppp',
-			'pBbPpppyYoPbbbO',
-			'yybbbbpyyyggGoo',
+			'gggyyyy G bbbOyyy',
+			'ogYgYyo o pBboogg',
+			'BgpgggG p ppyyogg',
+			'bppgoOb b ggyyoPb',
+			'poooopb b ooopppp',
+			'pBbPppp y YoPbbbO',
+			'yybbbbp y yyggGoo',
+		],
+	],
+	'green' => [
+		'color' => '#5fb55f',
+		'map' => [
+			'Ogbbppp g ggYyypp',
+			'ggggpyg P ggpyypy',
+			'bboGyyG b ppppooy',
+			'boooogg b bbboPoo',
+			'bPOpboo o BYoopYO',
+			'ppppbbb y yyoBggg',
+			'yyyyGBy y ooggbbb',
+		],
+	],
+	'pink' => [
+		'color' => '#a50d61',
+		'map' => [
+			'gGooOpp p Ybbbbbp',
+			'pooygGb y yyGooOp',
+			'BbbPggB y pppogoo',
+			'bbpppgg O oPygggg',
+			'bppbbbo b boyyyyB',
+			'oyggboo g booYPpy',
+			'yyYgyyy g ggopppy',
 		],
 	],
 ];
 
-$mapMap = $maps['gray']['map'];
-$mapColor = $maps['gray']['color'];
+$board = isset($_GET['board'], $boards[$_GET['board']]) ? $_GET['board'] : array_rand($boards);
+$mapMap = array_map(function($line) {
+	return str_replace(' ', '', $line);
+}, $boards[$board]['map']);
+$mapColor = $boards[$board]['color'];
 $mapCenter = ceil(count($columns[0]) / 2) - 1;
 
 ?>
@@ -45,13 +69,17 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 <style>
 :root {
-	--center-border: solid 3px #c00;
+	--center-border: solid 3px #fff;
+	--color: <?= do_html($mapColor) ?>;
 	--size: 30px;
 }
 body {
-	background-color: <?= do_html($mapColor) ?>;
+	background-color: var(--color);
 	color: white;
 	font-family: sans-serif;
+}
+a {
+	color: inherit;
 }
 
 .board,
@@ -70,7 +98,7 @@ td {
 	width: var(--size);
 	height: var(--size);
 	padding: 0;
-	border: solid 1px <?= do_html($mapColor) ?>;
+	border: solid 1px var(--color);
 	text-align: center;
 }
 tbody td {
@@ -162,6 +190,9 @@ tbody tr:last-child .center {
 #dice > .selected {
 	border-color: green;
 }
+#dice > .selected.valid {
+	border-color: green;
+}
 
 #next-turn {
 	margin-right: 20px;
@@ -173,16 +204,16 @@ tbody tr:last-child .center {
 	color: white;
 }
 [data-color="g"] {
-	background-color: lightgreen;
+	background-color: #6fe951;
 }
 [data-color="y"] {
 	background-color: yellow;
 }
 [data-color="b"] {
-	background-color: lightblue;
+	background-color: #97c3e9;
 }
 [data-color="p"] {
-	background-color: pink;
+	background-color: #e49baf;
 }
 [data-color="o"] {
 	background-color: orange;
@@ -247,6 +278,13 @@ tbody tr:last-child .center {
 			<? endforeach ?>
 		</tr>
 	</table>
+
+	<p>
+		Boards:
+		<?= implode(' | ', array_map(function($board) {
+			return '<a href="?board=' . do_html($board) . '">' . do_html($board) . '</a>';
+		}, array_keys($boards))) ?>
+	</p>
 </div>
 
 <script>
