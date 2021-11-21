@@ -160,6 +160,7 @@ tbody tr:last-child .center {
 
 .dice-cont {
 	display: flex;
+	user-select: none;
 }
 .dice-cont button {
 	height: 36px;

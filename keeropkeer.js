@@ -169,21 +169,26 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 		this.setMoves(this.m_iMoves + 1);
 
-		const html = [];
+		let rolls = 15;
+		const roll = () => {
+			const html = [];
 
-		for ( let i = 0; i < this.DICE; i++ ) {
-			const c = KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length)] || '?';
-			this.turnColors.push(c);
-			html.push(`<span class="color" data-color="${c}">${c == '?' ? '?' : '&nbsp;'}</span>`);
-		}
+			for ( let i = 0; i < this.DICE; i++ ) {
+				const c = KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length)] || '?';
+				this.turnColors.push(c);
+				html.push(`<span class="color" data-color="${c}">${c == '?' ? '?' : '&nbsp;'}</span>`);
+			}
 
-		for ( let i = 0; i < this.DICE; i++ ) {
-			const n = this.randInt(5);
-			this.turnNumbers.push(n);
-			html.push(`<span class="number" data-number="${n == 0 ? '?' : n}">${n == 0 ? '?' : n}</span>`);
-		}
+			for ( let i = 0; i < this.DICE; i++ ) {
+				const n = this.randInt(5);
+				this.turnNumbers.push(n);
+				html.push(`<span class="number" data-number="${n == 0 ? '?' : n}">${n == 0 ? '?' : n}</span>`);
+			}
 
-		$('#dice').setHTML(html.join(' '));
+			$('#dice').setHTML(html.join(' '));
+			if (--rolls) setTimeout(roll, 80);
+		};
+		roll();
 	}
 
 	randInt(max) {
