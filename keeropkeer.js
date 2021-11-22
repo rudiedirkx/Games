@@ -64,6 +64,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		this.m_bGameOver = true;
 		this.stopTime();
 		$('#dice').setHTML('');
+		$('#next-turn').addClass('gameover');
 
 		KeerOpKeer.saveScore(this.getScore());
 	}
@@ -169,7 +170,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 		this.setMoves(this.m_iMoves + 1);
 
-		let rolls = 15;
+		let rolls = 12;
 		const roll = () => {
 			const html = [];
 
@@ -186,7 +187,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 			}
 
 			$('#dice').setHTML(html.join(' '));
-			if (--rolls) setTimeout(roll, 80);
+			if (--rolls) setTimeout(roll, 60);
 		};
 		roll();
 	}
@@ -233,6 +234,11 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 		cell.toggleClass('choosing');
 		cell.data('turn', cell.hasClass('choosing') ? this.m_iMoves : null);
+		this.evalNextReady();
+	}
+
+	evalNextReady() {
+		$('#next-turn').disabled = !this.currentTurnIsComplete();
 	}
 
 	resetChoosing() {
@@ -267,7 +273,12 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		this.listenCellClick();
 
 		$('#next-turn').on('click', e => {
-			if ( !this.m_bGameOver && this.currentTurnIsComplete() ) this.nextTurn();
+			if ( this.m_bGameOver ) {
+				location.reload();
+			}
+			else if ( this.currentTurnIsComplete() ) {
+				this.nextTurn();
+			}
 		});
 
 		$('#dice').on('click', '[data-color]', e => {
