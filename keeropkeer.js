@@ -88,27 +88,29 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	currentTurnIsComplete() {
-// return true;
 		if (this.m_iMoves == 0) return true;
 
 		const choosing = this.m_objGrid.getElements('.choosing');
 
 		// Verify number of choosing
 		if ( choosing.length > 0 ) {
+			const needJokers = Number(this.turnNumber == '?') + Number(this.turnColor == '?');
+			if ( needJokers > this.JOKERS - this.useJoker ) {
+				return false;
+			}
+
 			if ( this.turnNumber != '?' && choosing.length != this.turnNumber ) {
 				return false;
 			}
 
 			// All choosing must be 1 group
 			const group1 = this.expandChoosing(choosing[0]);
-// console.log(group1);
 			if ( group1.length != choosing.length ) {
 				return false;
 			}
 
 			// Must originate from allowed coord
 			const alloweds = choosing.filter(cell => this.gridClickAllowedCoord(this.getCoord(cell), false));
-// console.log(choosing, alloweds);
 			if ( !alloweds.length ) {
 				return false;
 			}
@@ -132,10 +134,10 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	finishTurn() {
-		if ( this.turnColor == '?' ) this.useJoker();
-		if ( this.turnNumber == '?' ) this.useJoker();
+		const choosing = this.m_objGrid.getElements('.choosing').removeClass('choosing').addClass('chosen');
 
-		this.m_objGrid.getElements('.choosing').removeClass('choosing').addClass('chosen');
+		if ( this.turnColor == '?' && choosing.length ) this.useJoker();
+		if ( this.turnNumber == '?' && choosing.length ) this.useJoker();
 
 		// Full columns
 		this.getTable().getElements('[data-col][data-score]').forEach(el => {
@@ -243,6 +245,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 	resetChoosing() {
 		this.m_objGrid.getElements('.choosing').removeClass('choosing');
+		this.evalNextReady();
 	}
 
 	selectColor( el ) {
