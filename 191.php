@@ -198,9 +198,14 @@ tbody tr:last-child .center {
 #next-turn {
 	margin-right: 20px;
 }
-#next-turn.gameover .turn,
-#next-turn:not(.gameover) .game {
+#next-turn > * {
 	display: none;
+}
+body:not([data-state]) #next-turn > .start,
+body[data-state="turn"] #next-turn > .turn,
+body[data-state="last"] #next-turn > .end,
+body[data-state="done"] #next-turn > .restart {
+	display: inline;
 }
 
 [data-color="?"],
@@ -270,7 +275,12 @@ tbody tr:last-child .center {
 
 <div class="meta">
 	<p class="dice-cont">
-		<button id="next-turn"><span class="turn">Next round</span><span class="game">New game</span></button>
+		<button id="next-turn">
+			<span class="start">Start game</span>
+			<span class="turn">Next round</span>
+			<span class="end">End game</span>
+			<span class="restart">New game</span>
+		</button>
 		<span id="dice"></span>
 	</p>
 

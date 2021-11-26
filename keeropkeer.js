@@ -64,9 +64,25 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		this.m_bGameOver = true;
 		this.stopTime();
 		$('#dice').setHTML('');
-		$('#next-turn').addClass('gameover');
+		this.printGameState();
 
 		KeerOpKeer.saveScore(this.getScore());
+	}
+
+	printGameState() {
+		$('body').data('state', this.getGameState());
+	}
+
+	getGameState() {
+		if (this.m_bGameOver) {
+			return 'done';
+		}
+		else if (this.m_iMoves == this.TURNS) {
+			return 'last';
+		}
+		else {
+			return 'turn';
+		}
 	}
 
 	getScore() {
@@ -171,7 +187,9 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		if ( this.m_bGameOver ) return;
 
 		this.setMoves(this.m_iMoves + 1);
+		this.printGameState();
 
+		$('#next-turn').disabled = true;
 		let rolls = 12;
 		const roll = () => {
 			const html = [];
@@ -189,7 +207,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 			}
 
 			$('#dice').setHTML(html.join(' '));
-			if (--rolls) setTimeout(roll, 60);
+			--rolls ? setTimeout(roll, 60) : $('#next-turn').disabled = false;
 		};
 		roll();
 	}
