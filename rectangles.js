@@ -19,18 +19,24 @@ class Rectangles extends GridGame {
 	}
 
 	handleCellDragStart(start) {
+		if (this.m_bGameOver) return;
+
 		this.startTime();
 
 		this.draggingColor = this.registerNewColor();
 	}
 
 	handleCellDragMove(start, end) {
+		if (this.m_bGameOver) return;
+
 		this.m_objGrid.getElements(`td[data-color="${this.draggingColor}"]`).data('color', null);
 		this.m_objGrid.getElements(`td[data-provisional-color="${this.draggingColor}"]`).data('provisional-color', null);
 		this.colorArea(...this.getCornerCoords(start, end), {provisional: true, color: this.draggingColor});
 	}
 
 	handleCellDragEnd(start, end) {
+		if (this.m_bGameOver) return;
+
 		if (!end) {
 			start.data('color', null);
 			start = end = null;
@@ -71,7 +77,8 @@ class Rectangles extends GridGame {
 
 	updateColorsStyle() {
 		$('#colors').setText(this.colors.map((color, i) => {
-			return `td[data-color="${i}"], td[data-provisional-color="${i}"] { background-color: ${color}; }`;
+			const dark = (new RgbColor(color)).isDark() ? ' color: white;' : '';
+			return `td[data-color="${i}"], td[data-provisional-color="${i}"] { background-color: ${color};${dark} }`;
 		}).join("\n"));
 	}
 
@@ -370,6 +377,8 @@ class Rectangles extends GridGame {
 		this.listenCellDrag();
 
 		$('#restart').on('click', e => {
+			if (this.m_bGameOver) return;
+
 			this.colors.length = 0;
 			this.draggingColor = null;
 			this.m_objGrid.getElements('td').data('provisional-color', null).data('color', null);
