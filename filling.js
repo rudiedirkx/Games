@@ -26,16 +26,22 @@ class Filling extends GridGame {
 	}
 
 	handleCellDragStart(start) {
+		if (this.m_bGameOver) return;
+
 		this.startTime();
 
 		this.draggingColor = this.registerNewColor();
 	}
 
 	handleCellDragMove(start, end) {
+		if (this.m_bGameOver) return;
+
 		end.data('color', this.draggingColor);
 	}
 
 	handleCellDragEnd(start, end) {
+		if (this.m_bGameOver) return;
+
 		if (!end) {
 			start.data('color', null);
 			return;
@@ -52,7 +58,8 @@ class Filling extends GridGame {
 
 	updateColorsStyle() {
 		$('#colors').setText(this.colors.map((color, i) => {
-			return `td[data-color="${i}"] { background-color: ${color}; }`;
+			const dark = (new RgbColor(color)).isDark() ? ' color: white;' : '';
+			return `td[data-color="${i}"] { background-color: ${color};${dark} }`;
 		}).join("\n"));
 	}
 
@@ -332,6 +339,8 @@ class Filling extends GridGame {
 		this.listenCellDrag();
 
 		$('#restart').on('click', e => {
+			if (this.m_bGameOver) return;
+
 			this.colors.length = 0;
 			this.draggingColor = null;
 			this.m_objGrid.getElements('td').data('color', null);

@@ -58,6 +58,45 @@ Coords2D.dir8Names = [
 	'w',
 ];
 
+class RgbColor {
+	static DARK = 138;
+
+	constructor(color) {
+		this.color = color.replace(/^#/, '');
+		[this.r, this.g, this.b] = RgbColor.parseColor(this.color);
+	}
+
+	lightness() {
+		return ((this.r*299) + (this.g*587) + (this.b*114)) / 1000;
+	}
+
+	isDark() {
+		return this.lightness() < RgbColor.DARK;
+	}
+
+	static parseColor(color) {
+		if (color.length == 6 || color.length == 8) {
+			return RgbColor.parse6(color.substr(0, 6));
+		}
+		if (color.length == 3 || color.length == 4) {
+			return RgbColor.parse3(color.substr(0, 3));
+		}
+		throw new Error(`Invalid color: ${color}`);
+	}
+
+	static parse6(color) {
+		return [
+			parseInt(color.substr(0, 2), 16),
+			parseInt(color.substr(2, 2), 16),
+			parseInt(color.substr(4, 2), 16),
+		];
+	}
+
+	static parse3(color) {
+		return RgbColor.parse6(`${color[0]}${color[0]}${color[1]}${color[1]}${color[2]}${color[2]}`);
+	}
+}
+
 class Game {
 
 	constructor() {
