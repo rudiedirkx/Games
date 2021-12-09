@@ -189,10 +189,8 @@ tbody tr:last-child .center {
 	margin-left: 10px;
 }
 #dice > .selected {
-	border-color: green;
-}
-#dice > .selected.valid {
-	border-color: green;
+	border-color: white;
+	box-shadow: 0 0 10px white;
 }
 
 #next-turn {

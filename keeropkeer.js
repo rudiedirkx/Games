@@ -207,7 +207,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 			}
 
 			$('#dice').setHTML(html.join(' '));
-			--rolls ? setTimeout(roll, 60) : $('#next-turn').disabled = false;
+			--rolls ? setTimeout(roll, 60) : setTimeout(() => $('#next-turn').disabled = false, 1000);
 		};
 		roll();
 	}
