@@ -70,7 +70,7 @@ class F1Racer extends LeveledGridGame {
 			this.m_iPosition++;
 			this.hilitePosition();
 
-			this.winOrLose();
+			this.startWinCheck(100);
 		}
 	}
 

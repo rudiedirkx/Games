@@ -146,7 +146,7 @@ class Machinarium2 extends LeveledGridGame {
 	handleDragEnd() {
 		this.m_objDraggingCell = null;
 
-		this.winOrLose();
+		this.startWinCheck();
 	}
 
 }

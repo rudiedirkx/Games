@@ -195,7 +195,7 @@ class Tetravex extends GridGame {
 		sourceCell.append(targetImg);
 
 		isMove && this.setMoves(this.m_iMoves + 1);
-		this.winOrLose();
+		this.startWinCheck();
 
 		this.unselect();
 	}

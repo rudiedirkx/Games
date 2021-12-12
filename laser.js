@@ -446,7 +446,7 @@ class Laser extends CanvasGame {
 
 		this.recalculate();
 
-		this.winOrLose();
+		this.startWinCheck();
 	}
 
 	setTime() {

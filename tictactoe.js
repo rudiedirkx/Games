@@ -38,7 +38,7 @@ class TicTacToe extends GridGame {
 
 		this.setTurn(!this.m_iTurn);
 
-		this.winOrLose();
+		this.startWinCheck();
 	}
 
 	haveWon() {

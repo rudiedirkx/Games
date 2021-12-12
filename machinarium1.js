@@ -81,7 +81,7 @@ class Machinarium1 extends LeveledGridGame {
 		var directions = this.hiliteDirections(lastTaken);
 
 		if ( directions.length == 0 ) {
-			this.winOrLose();
+			this.startWinCheck(100);
 		}
 		else if ( directions.length == 1 ) {
 			this.m_iAutoChooseTimer = setTimeout(() => directions[0].click(), 300);

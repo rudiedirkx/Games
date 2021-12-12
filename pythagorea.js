@@ -439,7 +439,7 @@ class Pythagorea extends CanvasGame {
 
 		this.saveUndoState();
 		this.addEdge(this.draggingEdge);
-		this.winOrLose();
+		this.startWinCheck();
 	}
 
 	handleClick( coord ) {
@@ -452,7 +452,7 @@ class Pythagorea extends CanvasGame {
 		if ( this.withinBounds(V) ) {
 			this.saveUndoState();
 			this.addVertex(new Vertex(V.x, V.y));
-			this.winOrLose();
+			this.startWinCheck();
 		}
 	}
 

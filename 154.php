@@ -14,21 +14,21 @@ $arrMoves = array();
 $iStart = rand(0, $x*$y-1);
 $iPosition = $iStart;
 
-$arrMaze[$iPosition]{0} = '1';
+$arrMaze[$iPosition][0] = '1';
 $iDiscovered = 1;
 
 while ( $iDiscovered < $x*$y ) {
 	$dirs = '';
-	if ( isset($arrMaze[$iPosition-$x]) && '0' === $arrMaze[$iPosition-$x]{0} ) {
+	if ( isset($arrMaze[$iPosition-$x]) && '0' === $arrMaze[$iPosition-$x][0] ) {
 		$dirs .= 'U';
 	}
-	if ( isset($arrMaze[$iPosition-1]) && 0 != $iPosition%$x && '0' === $arrMaze[$iPosition-1]{0} ) {
+	if ( isset($arrMaze[$iPosition-1]) && 0 != $iPosition%$x && '0' === $arrMaze[$iPosition-1][0] ) {
 		$dirs .= 'L';
 	}
-	if ( isset($arrMaze[$iPosition+1]) && 0 != ($iPosition+1)%$x && '0' === $arrMaze[$iPosition+1]{0} ) {
+	if ( isset($arrMaze[$iPosition+1]) && 0 != ($iPosition+1)%$x && '0' === $arrMaze[$iPosition+1][0] ) {
 		$dirs .= 'R';
 	}
-	if ( isset($arrMaze[$iPosition+$x]) && '0' === $arrMaze[$iPosition+$x]{0} ) {
+	if ( isset($arrMaze[$iPosition+$x]) && '0' === $arrMaze[$iPosition+$x][0] ) {
 		$dirs .= 'D';
 	}
 	if ( !$dirs ) {
@@ -36,29 +36,29 @@ while ( $iDiscovered < $x*$y ) {
 	}
 	else {
 		array_push($arrMoves, $iPosition);
-		$dir = $dirs{rand(0, strlen($dirs)-1)};
+		$dir = $dirs[rand(0, strlen($dirs)-1)];
 		switch ( $dir ) {
 			case 'U':
-				$arrMaze[$iPosition]{1} = $arrMaze[$iPosition-$x]{4} = '0';
+				$arrMaze[$iPosition][1] = $arrMaze[$iPosition-$x][4] = '0';
 				$iPosition -= $x;
 			break;
 			case 'L':
-				$arrMaze[$iPosition]{2} = $arrMaze[$iPosition-1]{3} = '0';
+				$arrMaze[$iPosition][2] = $arrMaze[$iPosition-1][3] = '0';
 				$iPosition -= 1;
 			break;
 			case 'R':
-				$arrMaze[$iPosition]{3} = $arrMaze[$iPosition+1]{2} = '0';
+				$arrMaze[$iPosition][3] = $arrMaze[$iPosition+1][2] = '0';
 				$iPosition += 1;
 			break;
 			case 'D':
-				$arrMaze[$iPosition]{4} = $arrMaze[$iPosition+$x]{1} = '0';
+				$arrMaze[$iPosition][4] = $arrMaze[$iPosition+$x][1] = '0';
 				$iPosition += $x;
 			break;
 		}
 		$arrDiscovered[$iPosition] = 1;
-		if ( '0' === $arrMaze[$iPosition]{0} ) {
+		if ( '0' === $arrMaze[$iPosition][0] ) {
 			$iDiscovered++;
-			$arrMaze[$iPosition]{0} = '1';
+			$arrMaze[$iPosition][0] = '1';
 		}
 	}
 }
@@ -200,7 +200,7 @@ class Maze extends GridGame {
 		cell.addClass('current').addClass('done');
 
 		this.setMoves(this.m_iMoves + 1);
-		this.winOrLose();
+		this.startWinCheck();
 	}
 
 	handleGlobalDirection( direction ) {

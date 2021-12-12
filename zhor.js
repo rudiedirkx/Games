@@ -89,7 +89,7 @@ class Zhor extends LeveledGridGame {
 
 		(new Elements(path.concat(selected))).addClass('path');
 
-		this.winOrLose();
+		this.startWinCheck();
 	}
 
 	handleCellClick( cell ) {
