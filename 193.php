@@ -1,5 +1,15 @@
 <?php
-// Hitomezashi Stitch
+// INDEX concept
+
+require __DIR__ . '/inc.bootstrap.php';
+
+$tiles = require __DIR__ . '/inc.index.php';
+// var_dump(count($tiles));
+$tiles = array_values(array_unique(array_column($tiles, 0)));
+// var_dump(count($tiles));
+// print_r($tiles);
+$thumbs = get_thumbs_positions();
+// print_r($thumbs);
 
 ?>
 <!doctype html>
@@ -20,7 +30,7 @@ table {
 	border-collapse: collapse;
 }
 td {
-	border: solid 1px black;
+	border: solid 0px black;
 }
 </style>
 </head>
@@ -30,6 +40,11 @@ td {
 
 <script>
 const tbl = document.querySelector('table');
+var layout = '';
+
+function randomColor() {
+	return '#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6);
+}
 
 function getGrid(tiles, width, height) {
 	const ratio = width / height;
@@ -45,17 +60,21 @@ function getGrid(tiles, width, height) {
 
 	const h = tiles1 < tiles2 ? y1 : y2;
 	const w = tiles1 < tiles2 ? tiles1 / y1 : tiles2 / y2;
-console.log(w, h);
 	return [w, h];
 }
 
 function applyGrid() {
-	const [w, h] = getGrid(89, innerWidth, innerHeight);
+	const [w, h] = getGrid(<?= count($tiles) ?>, innerWidth, innerHeight);
+	const newLayout = `${w} x ${h} = ${w*h}`;
+	if (layout == newLayout) return;
+	layout = newLayout;
+console.log(layout);
+
 	let html = '';
 	for ( let y = 0; y < h; y++ ) {
 		html += '<tr>';
 		for ( let x = 0; x < w; x++ ) {
-			html += '<td></td>';
+			html += `<td bgcolor="${randomColor()}"></td>`;
 		}
 		html += '</tr>';
 	}
