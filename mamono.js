@@ -42,6 +42,7 @@ class Mamono extends GridGame {
 		super.reset();
 		this.m_iMoves = 0;
 
+		this.grid = null;
 		this.mapInited = false;
 		this.level = 1;
 		this.exp = 0;
@@ -80,26 +81,88 @@ class Mamono extends GridGame {
 		}).join(''));
 	}
 
-	createMap(size) {
-		this.createSizeSelect(size);
+	getSaveName(size) {
+		return 'mamonoMap_' + size;
+	}
 
+	getSavedMap(size) {
+		try {
+			return JSON.parse(localStorage.getItem(this.getSaveName(size)));
+		}
+		catch (ex) {}
+	}
+
+	chunk(array, length) {
+		const out = [];
+		for ( let i = 0; i < array.length; i += length ) {
+			out.push(array.slice(i, i + length));
+		}
+		return out;
+	}
+
+	createMap(size) {
 		this.reset();
 		this.size = size;
-
 		document.body.data('size', size);
 
-		const specs = this.getSpecs();
-		specs.level != null && (this.level = specs.level);
+		this.createSizeSelect(size);
 
+		this.createSavedMap(size) || this.createNewMap(size);
+	}
+
+	createSavedMap(size) {
+		const data = this.getSavedMap(size);
+		if (!data) return false;
+
+		const specs = this.getSpecs();
+		this.level = data.lvl;
+		this.exp = data.exp;
+
+		this.startTime();
+		this.m_iStartTime = Date.now() - data.time * 1000;
+		this.createMapStructure(specs.size);
+
+		const cells = this.m_objGrid.getElements('td');
+
+		const decs = [...data.map].map((enc, i) => enc.charCodeAt(0) - 65);
+		const monsters = decs.map(m => m % 10);
+		const opens = decs.map(m => m >= 10);
+
+		this.grid = this.chunk(monsters, specs.size[0]);
+		this.fillMap();
+
+		opens.forEach((o, i) => {
+			const cell = cells[i];
+			const m = monsters[i];
+			cell.toggleClass('closed', !o);
+			const C = this.getCoord(cell);
+			const adj = this.getAdjacentCount(C);
+
+			cell.innerHTML = '<span>' + (m || adj ? adj : '') + '</span>';
+		});
+
+		this.mapInited = true;
 		this.showStats();
 
-		this.m_objGrid.empty();
-		this.m_objGrid.style.setProperty('--w', specs.size[0]);
-		this.m_objGrid.style.setProperty('--h', specs.size[1]);
+		return true;
+	}
 
-		for (var y = 0; y < specs.size[1]; y++) {
+	createNewMap(size) {
+		const specs = this.getSpecs();
+		if (specs.level != null) this.level = specs.level;
+
+		this.showStats();
+		this.createMapStructure(specs.size);
+	}
+
+	createMapStructure([w, h]) {
+		this.m_objGrid.empty();
+		this.m_objGrid.style.setProperty('--w', w);
+		this.m_objGrid.style.setProperty('--h', h);
+
+		for (var y = 0; y < h; y++) {
 			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
-			for (var x = 0; x < specs.size[0]; x++) {
+			for (var x = 0; x < w; x++) {
 				var cell = nr.insertCell(nr.cells.length);
 				cell.className = 'closed';
 			}
@@ -197,6 +260,18 @@ class Mamono extends GridGame {
 
 		this.showStats();
 		this.winOrLose();
+
+		if (this.m_bGameOver) {
+			localStorage.removeItem(this.getSaveName(this.size));
+		}
+		else {
+			localStorage.setItem(this.getSaveName(this.size), JSON.stringify({
+				time: this.getTime(),
+				lvl: this.level,
+				exp: this.exp,
+				map: this.m_objGrid.getElements('td').map(c => String.fromCharCode(65 + (c.hasClass('closed') ? 0 : 10) + parseInt(c.dataset.monster || 0))).join(''),
+			}));
+		}
 	}
 
 	haveWon() {
