@@ -66,7 +66,7 @@ class TheBoxMultiple extends LeveledGridGame {
 
 		this.postMove(toField, nextField);
 
-		this.haveWon() && this.win();
+		this.startWinCheck();
 	}
 
 	postMove(toField, nextField) {
