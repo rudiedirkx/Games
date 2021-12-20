@@ -48,7 +48,7 @@ if ( isset($_GET['map'], $_GET['type']) ) {
 <!doctype html>
 <html lang="en">
 
-<head> 
+<head>
 <meta charset="utf-8" />
 <title>Linx</title>
 <link rel="stylesheet" href="/145.css" />
@@ -400,7 +400,7 @@ $(function() {
 	$('#btn-play').on('click', function(e) {
 		e.preventDefault()
 
-		location = '/145?' + getBoard()
+		location = '/145.php?' + getBoard()
 	})
 
 	var $exportTextarea
