@@ -46,7 +46,7 @@ class BioshockFlood extends GridGame {
 	}
 
 	getCurrentCell() {
-		return this.m_objGrid.getElement('.current');
+		return this.m_objGrid.getElement('[data-full]') || this.m_objGrid.getElement('.start');
 	}
 
 	getCellCoords( cell ) {
@@ -103,7 +103,7 @@ class BioshockFlood extends GridGame {
 			if ( this.m_bGameOver ) {
 				clearInterval(this.m_iTicker);
 			}
-		}, 100);
+		}, 60);
 	}
 
 	start() {
@@ -111,19 +111,28 @@ class BioshockFlood extends GridGame {
 
 		if ( this.m_iTicker ) return;
 
+		this.startTime();
+
 		clearInterval(this.m_iTicker);
 		this.m_iTicker = setInterval(() => {
 			this.tick();
 			if ( this.m_bGameOver ) {
 				clearInterval(this.m_iTicker);
 			}
-		}, 2500);
+		}, 600);
 	}
 
 	tick() {
 		if ( this.m_bGameOver ) return this.createMap(this.m_iSize);
 
 		var currentCell = this.getCurrentCell();
+		var fullness = parseInt(currentCell.data('full'));
+
+		if (fullness < 5) {
+			currentCell.data('full', fullness+1);
+			return;
+		}
+
 		var nextCell = this.getNextCell();
 		var direction = this.getCellDirection(currentCell);
 
@@ -132,13 +141,13 @@ class BioshockFlood extends GridGame {
 			return this.lose();
 		}
 
-		currentCell.removeClass('current');
+		currentCell.data('full', null);
 
 		if ( nextCell.hasClass('end') ) {
 			return this.win();
 		}
 
-		nextCell.addClass('current').addClass('locked');
+		nextCell.data('full', 1).addClass('locked');
 		nextCell.data('in', this.makeOppositeDir(direction));
 	}
 
@@ -192,7 +201,7 @@ class BioshockFlood extends GridGame {
 		var [start, end] = this.generateStartEnd();
 
 		var startCell = this.m_objGrid.rows[start.y].cells[start.x];
-		startCell.addClass('io').addClass('start').addClass('current').setText('STA RT');
+		startCell.addClass('io').addClass('start').data('full', 1).setText('STA RT');
 		var endCell = this.m_objGrid.rows[end.y].cells[end.x];
 		endCell.addClass('io').addClass('end').setText('END');
 	}

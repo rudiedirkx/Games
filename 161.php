@@ -49,12 +49,6 @@ require __DIR__ . '/inc.bootstrap.php';
 .inside th.io:last-child {
 	background-image 	: url(images/161_io_r.png);
 }
-.inside th.io.start {
-	background-color	: lightblue;
-}
-.inside th.io.end {
-	background-color	: lightgreen;
-}
 .inside td.pipe-ud {
 	background-image 	: url(images/161_pipe_ud.png);
 }
@@ -76,11 +70,28 @@ require __DIR__ . '/inc.bootstrap.php';
 .with-selection td:not(.selected) {
 	opacity: 0.5;
 }
-.inside td.locked {
+
+.io.start,
+.locked {
 	background-color: lightblue;
 }
-.inside td.current {
-	background-color: blue;
+.io.end {
+	background-color: lightgreen;
+}
+[data-full="1"] {
+	background-color: #b3cde0 !important;
+}
+[data-full="2"] {
+	background-color: #6497b1 !important;
+}
+[data-full="3"] {
+	background-color: #005b96 !important;
+}
+[data-full="4"] {
+	background-color: #03396c !important;
+}
+[data-full="5"] {
+	background-color: #011f4b !important;
 }
 </style>
 <? include 'tpl.onerror.php' ?>
