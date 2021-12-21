@@ -70,6 +70,8 @@ class Mamono extends GridGame {
 
 		const specs = this.getSpecs();
 		$('#stats-nxt').setText(specs.levelUps[this.level]);
+
+		$('#monsters').setText('[' + this.getMonstersLeft().join(', ') + ']');
 	}
 
 	createSizeSelect(selected) {
@@ -131,15 +133,7 @@ class Mamono extends GridGame {
 		this.grid = this.chunk(monsters, specs.size[0]);
 		this.fillMap();
 
-		opens.forEach((o, i) => {
-			const cell = cells[i];
-			const m = monsters[i];
-			cell.toggleClass('closed', !o);
-			const C = this.getCoord(cell);
-			const adj = this.getAdjacentCount(C);
-
-			cell.innerHTML = '<span>' + (m || adj ? adj : '') + '</span>';
-		});
+		opens.forEach((o, i) => o && this.setCellOpen(cells[i]));
 
 		this.mapInited = true;
 		this.showStats();
@@ -295,17 +289,30 @@ class Mamono extends GridGame {
 		return this.exp < need && this.exp + exp >= need;
 	}
 
-	openCell(cell) {
-		if (!cell.hasClass('closed')) return;
+	getMonstersLeft() {
+		const specs = this.getSpecs(this.size);
+		return specs.monsters.map((num, m) => {
+			return this.m_objGrid.getElements(`.closed[data-monster="${m+1}"]`).length;
+		});
+	}
 
+	setCellOpen(cell) {
 		cell.removeClass('closed');
 		const C = this.getCoord(cell);
 		const adj = this.getAdjacentCount(C);
+		const m = parseInt(cell.data('monster') || 0);
 
-		if (cell.data('monster')) {
-			cell.innerHTML = '<span>' + (adj || '0') + '</span>';
+		cell.innerHTML = '<span>' + (m || adj ? adj : '') + '</span>';
 
-			const m = parseInt(cell.data('monster'));
+		return [m, adj];
+	}
+
+	openCell(cell) {
+		if (!cell.hasClass('closed')) return;
+
+		const [m, adj] = this.setCellOpen(cell);
+
+		if (m) {
 			if (m > this.level) {
 				return this.lose();
 			}
@@ -317,13 +324,9 @@ class Mamono extends GridGame {
 				this.level++;
 				this.happening();
 			}
-
-			adj == 0 && this.openAdjacentCells(C);
-			return;
 		}
 
-		cell.innerHTML = '<span>' + (adj || '') + '</span>';
-		adj == 0 && this.openAdjacentCells(C);
+		adj == 0 && this.openAdjacentCells(this.getCoord(cell));
 	}
 
 	happening() {

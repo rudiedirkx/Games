@@ -165,6 +165,7 @@ img.preload { visibility: hidden; position: absolute; }
 <div id="stats-bar">
 	<select id="select-size"></select>
 	<span id="stats"></span>
+	<span id="monsters"></span>
 </div>
 
 <div id="ms">
