@@ -29,11 +29,6 @@ $monsters = [
 	padding: 0;
 	box-sizing: border-box;
 }
-html, body {
-	height: 100%;
-	width: 100%;
-	overflow: hidden;
-}
 html {
 	background: black;
 	font-family: sans-serif;
@@ -42,6 +37,9 @@ html {
 	user-select: none;
 
 	--stats-height: 30px;
+}
+body {
+	padding-top: calc(0px + var(--stats-height));
 }
 body.happening {
 	animation: happening 0.5s 2;
@@ -71,30 +69,31 @@ body[data-size="blind"] {
 #stats-bar {
 	height: var(--stats-height);
 	line-height: var(--stats-height);
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
 	font-weight: bold;
 	font-family: monospace;
 	text-transform: uppercase;
+	white-space: nowrap;
 }
 #stats-bar .stat-time .label {
 	display: none;
 }
 
-#ms {
-	height: calc(100% - var(--stats-height));
-	width: 100vw;
-	overflow: auto;
-}
 #ms .padding {
-	padding: 50px;
-	width: fit-content;
+	padding: 10px;
+	width: calc(20px + var(--w) * 23px);
+	height: calc(20px + var(--h) * 23px);
 }
 table {
 	border-spacing: 0;
 	font-size: inherit;
-	border: solid 0 black;
-	border-width: 0 5px 5px 3px;
-	width: calc(var(--w) * 23px);
-	height: calc(var(--h) * 23px);
+	border: solid 1 var(--border);
+	border-width: 0 1px 1px 0;
+	/*width: calc(var(--w) * 23px);*/
+	/*height: calc(var(--h) * 23px);*/
 }
 td {
 	border: solid 1px black;

@@ -151,8 +151,8 @@ class Mamono extends GridGame {
 
 	createMapStructure([w, h]) {
 		this.m_objGrid.empty();
-		this.m_objGrid.style.setProperty('--w', w);
-		this.m_objGrid.style.setProperty('--h', h);
+		document.body.style.setProperty('--w', w);
+		document.body.style.setProperty('--h', h);
 
 		for (var y = 0; y < h; y++) {
 			var nr = this.m_objGrid.insertRow(this.m_objGrid.rows.length);
