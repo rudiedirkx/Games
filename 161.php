@@ -72,26 +72,30 @@ require __DIR__ . '/inc.bootstrap.php';
 }
 
 .io.start,
-.locked {
+.inside td.locked {
 	background-color: lightblue;
 }
 .io.end {
 	background-color: lightgreen;
 }
+[data-full] {
+	background-color: var(--water-color) !important;
+}
+
 [data-full="1"] {
-	background-color: #b3cde0 !important;
+	--water-color: #b3cde0;
 }
 [data-full="2"] {
-	background-color: #6497b1 !important;
+	--water-color: #6497b1;
 }
 [data-full="3"] {
-	background-color: #005b96 !important;
+	--water-color: #005b96;
 }
 [data-full="4"] {
-	background-color: #03396c !important;
+	--water-color: #03396c;
 }
 [data-full="5"] {
-	background-color: #011f4b !important;
+	--water-color: #011f4b;
 }
 </style>
 <? include 'tpl.onerror.php' ?>
