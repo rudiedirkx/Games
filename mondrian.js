@@ -165,7 +165,7 @@ class Mondrian extends CanvasGame {
 	}
 
 	drawGrid() {
-		for (var y = Mondrian.OFFSET; y < this.canvas.width; y += Mondrian.SQUARE) {
+		for (var y = Mondrian.OFFSET; y < this.canvas.height; y += Mondrian.SQUARE) {
 			this.drawLine(new Coords2D(Mondrian.WHITESPACE, y), new Coords2D(this.canvas.width - Mondrian.WHITESPACE, y), {color: '#ddd', width: 1});
 		}
 

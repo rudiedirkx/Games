@@ -1,107 +1,73 @@
 <?php
 // LINX
 
-header('Content-type: text/html; charset="utf-8"');
-
-//type = singular | symmetric | multiple
-$g_arrBoards = require '145.boards.php';
-
-$iBoard = isset($_GET['board'], $g_arrBoards[$_GET['board']]) ? $_GET['board'] : key($g_arrBoards);
-$arrBoard = $g_arrBoards[$iBoard];
-
-$board = board($arrBoard, $iBoard);
+require __DIR__ . '/inc.bootstrap.php';
+$g_arrLevels = require __DIR__ . '/145_levels.php';
 
 ?>
 <!doctype html>
-<html lang="en">
+<html>
 
 <head>
 <meta charset="utf-8" />
 <title>Linx</title>
-<link rel="stylesheet" href="/145.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+body {
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
+}
+canvas {
+	max-width: 100vw;
+	max-height: 100vh;
+}
+p {
+	margin-left: 1em;
+}
+
+#level-num {
+	display: inline-block;
+	width: 3.5em;
+	text-align: right;
+}
+button:disabled {
+	opacity: 0.75;
+}
+</style>
+<? include 'tpl.onerror.php' ?>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
+<script src="<?= html_asset('linx.js') ?>"></script>
 </head>
 
 <body>
 
-<div class="help">
-	<p>Connect the big dots. Drag a <span title="Yes, I know black and white aren't colors. But I don't care and neither do you.">colored</span> big dot to another big dot of the same color.</p>
-	<p>[<?=$iBoard?>] | <a href="?board=<?=$iBoard+1?>">Next board</a> | <a href="145B.php">Do it yourself</a></p>
-</div>
+<canvas></canvas>
 
-<div class="status">
-	<p id="message">Nothing going on down here...</p>
-</div>
+<p>
+	<button id="restart">Restart</button>
+	|
+	<button id="prev">&lt;&lt;</button>
+	<strong id="level-num"></strong>
+	<button id="next">&gt;&gt;</button>
+	|
+	<span id="stats-time"></span>
+	|
+	<span id="stats-moves"></span> moves
+</p>
 
-<div class="game">
-	<div id="map-container" class="m">
-		<?php
-
-		$map = $board->map;
-
-		for ( $y=0; $y<$board->rows; $y++ ) {
-			echo '<div class="row">' . "\n";
-
-			for ( $x=0; $x<$board->cols; $x++ ) {
-				$tile = isset($map[$y][$x]) ? trim($map[$y][$x]) : '';
-
-				$classes = array('cell');
-				if ( 'x' == $tile ) {
-					$classes[] = 'na';
-				}
-				else if ( $tile ) {
-					$classes[] = 'pad';
-					$classes[] = 'type-' . $tile;
-				}
-
-				$class = $classes ? ' class="'.implode(' ', $classes).'"' : '';
-
-				echo '<a href="#" data-type="' . $tile . '" data-x="' . $x . '" data-y="' . $y . '"' . $class . '></a>' . "\n";
-			}
-
-			echo '</div>' . "\n";
-		}
-
-		?>
-	</div>
-</div>
-
-<img class="preload" src="/images/145-lines.png" alt="preloading lines sprite" />
-
-<script src="js/rjs-custom.js"></script>
 <script>
-	var LEVEL = <?= (int)$iBoard ?>;
-	var TYPE = '<?= $board->type ?>';
+<? if (isset($_POST['import'])): ?>
+	Linx.LEVELS = [<?= json_encode(json_decode($_POST['import'])) ?>];
+<? else: ?>
+	Linx.LEVELS = <?= json_encode($g_arrLevels) ?>;
+<? endif ?>
+objGame = new Linx($('canvas'));
+objGame.listenControls();
+objGame.loadLevel(<?= (int) ($_GET['level'] ?? 0) ?>);
+objGame.startPainting();
 </script>
-<script src="/145.js"></script>
-
 </body>
 
 </html>
-<?php
-
-function board( $arrBoard, &$iBoard = null ) {
-	isset($arrBoard['map']) || $arrBoard = array('map' => $arrBoard);
-
-	if ( isset($_GET['type'], $_GET['map']) ) {
-		$arrBoard = $_GET;
-		$iBoard = 'CUSTOM';
-	}
-
-	$type = strtolower(@$arrBoard['type']);
-	$map = $arrBoard['map'];
-
-	$singular = 'singular' == $type;
-	$multiple = 'multiple' == $type;
-
-	return (object)array(
-		'type' => $type,
-		'map' => $map,
-		'cols' => max(array_map('strlen', $map)),
-		'rows' => count($map),
-		'singular' => $singular,
-		'multiple' => $multiple,
-		'symmetric' => !$singular && !$multiple,
-	);
-}
-
-

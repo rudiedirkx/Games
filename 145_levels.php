@@ -1,12 +1,12 @@
 <?php
 
-return array(1=>
+return array(
 	array(
-		'',
+		'x',
 		'   3  3 ',
 		'',
 		' 1  1',
-		'',
+		'       x',
 	),
 	array(
 		' 5  6',

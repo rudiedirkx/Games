@@ -264,13 +264,13 @@ class Gridlock extends CanvasGame {
 		var loc = dir < 0 ? bar.from : bar.getTo();
 		for ( let d = 1; d < 10; d++ ) {
 			loc = loc.add(D);
-			if (!this.isInside(loc) || this.getBar(loc)) {
+			if (!this.inside(loc) || this.getBar(loc)) {
 				return d - 1;
 			}
 		}
 	}
 
-	isInside(C) {
+	inside(C) {
 		return C.x >= 0 && C.y >= 0 && C.x < this.width && C.y < this.height;
 	}
 
