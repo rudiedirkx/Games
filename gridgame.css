@@ -398,3 +398,32 @@ td.wall2 {
 .gridlock td[data-block="z"] {
 	background-color	: #c00;
 }
+
+.linx.builder #grid td {
+	border-color: #fff;
+}
+.linx.builder #grid td:not(.block) {
+	background-color: #ddd;
+}
+.linx.builder #grid td[data-type],
+.linx.builder #building-blocks [data-type] > :first-child {
+	background-color: var(--type-color);
+}
+.linx.builder [data-type="1"] {
+	--type-color: red;
+}
+.linx.builder [data-type="2"] {
+	--type-color: orange;
+}
+.linx.builder [data-type="3"] {
+	--type-color: pink;
+}
+.linx.builder [data-type="4"] {
+	--type-color: black;
+}
+.linx.builder [data-type="5"] {
+	--type-color: #0d0;
+}
+.linx.builder [data-type="6"] {
+	--type-color: blue;
+}

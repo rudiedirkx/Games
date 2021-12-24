@@ -796,7 +796,7 @@ class GridGameEditor extends GridGame {
 			return;
 		}
 
-		this['setType_' + type](cell);
+		(this['setType_' + type] || this.setType_).call(this, cell, type);
 	}
 
 	setWall( cell ) {
@@ -842,6 +842,7 @@ class GridGameEditor extends GridGame {
 
 	formatAsPHP( level ) {
 		// @todo JS(ON) to PHP?
+		return [];
 	}
 
 }

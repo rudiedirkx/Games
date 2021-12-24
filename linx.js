@@ -52,7 +52,7 @@ class Linx extends CanvasGame {
 	static WHITESPACE = 3;
 	static SQUARE = 40;
 
-	static COLORS = ['fuchsia', 'red', 'orange', 'white', 'black', '#0d0', 'blue'];
+	static COLORS = ['fuchsia', 'red', 'orange', 'pink', 'black', '#0d0', 'blue'];
 	static CELL = 20;
 	static NA = 21;
 
@@ -100,6 +100,13 @@ class Linx extends CanvasGame {
 
 	inside(coord) {
 		return coord.x >= 0 && coord.x < this.width && coord.y >= 0 && coord.y < this.height;
+	}
+
+	getScore() {
+		return {
+			...super.getScore(),
+			level: this.levelNum,
+		};
 	}
 
 	setLevelNum(n) {
@@ -348,6 +355,57 @@ class Linx extends CanvasGame {
 		$('#next').on('click', (e) => {
 			this.loadLevel(this.levelNum + 1);
 		});
+	}
+
+}
+
+class LinxEditor extends GridGameEditor {
+
+	defaultCellType() {
+		return '1';
+	}
+
+	cellTypes() {
+		return {
+			"x": 'Block',
+			"1": '1',
+			"2": '2',
+			"3": '3',
+			"4": '4',
+			"5": '5',
+			"6": '6',
+		};
+	}
+
+	setType_x( cell ) {
+		cell.toggleClass('block');
+		cell.data('type', null);
+	}
+
+	setType_( cell, type ) {
+		cell.removeClass('block');
+		cell.data('type', cell.data('type') === type ? null : type);
+	}
+
+	exportLevel() {
+		return {
+			map: this.m_objGrid.getElements('tr').map(tr => {
+				return tr.getElements('td').map(td => {
+					return td.data('type') || (td.hasClass('block') ? 'x' : ' ');
+				}).join('');
+			}),
+		};
+	}
+
+	formatAsPHP( level ) {
+		var code = [];
+		code.push('\t[');
+		code.push("\t\t'map' => [");
+		r.each(level.map, row => code.push("\t\t\t'" + row + "',"));
+		code.push("\t\t],");
+		code.push('\t],');
+		code.push('');
+		return code;
 	}
 
 }
