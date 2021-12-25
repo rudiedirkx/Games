@@ -20,11 +20,32 @@ class LinxPath {
 		return this.nodes.length == 1 && this.nodes[0].equal(C);
 	}
 
-	canConnectTo(C) {
+	isNeighbor(C) {
 		const end = this.nodes[this.nodes.length-1];
 		return Coords2D.dir4Coords.some(O => {
 			return end.add(O).equal(C);
 		});
+	}
+
+	contains(C) {
+		return this.nodes.some(N => N.equal(C));
+	}
+
+	containsAnywhere(C) {
+		return this.contains(C);
+	}
+
+	containsInside(C) {
+		return this.nodes.length > 2 && this.nodes.slice(1, this.nodes.length - 1).some(N => N.equal(C));
+	}
+
+	removeUntil(C) {
+		for ( let i = this.nodes.length - 1; i >= 0; i-- ) {
+			if (this.nodes[i].equal(C)) {
+				return;
+			}
+			this.nodes.pop();
+		}
 	}
 
 	connectsTo(C) {
@@ -52,19 +73,20 @@ class Linx extends CanvasGame {
 	static WHITESPACE = 3;
 	static SQUARE = 40;
 
-	static COLORS = ['fuchsia', 'red', 'orange', 'pink', 'black', '#0d0', 'blue'];
+	static COLORS = ['fuchsia', 'red', 'orange', 'white', 'black', '#0d0', 'blue'];
 	static CELL = 20;
 	static NA = 21;
 
 	static DRAG_NO = 0;
 	static DRAG_NEXT = 1;
 	static DRAG_SAME = 2;
+	static DRAG_BACKTRACK = 3;
 
 	reset() {
 		super.reset();
 
 		this.levelNum = 0;
-		this.type = '';
+		// this.type = '';
 		this.width = 0;
 		this.height = 0;
 		this.grid = [];
@@ -155,7 +177,7 @@ class Linx extends CanvasGame {
 
 		const level = this.ensureLevelFormat(Linx.LEVELS[n]);
 
-		this.type = level.type || '';
+		// this.type = level.type || '';
 		this.width = Math.max(...level.map.map(row => row.length));
 		this.height = level.map.length;
 		[this.grid, this.pads] = this.extractGrid(level.map);
@@ -255,27 +277,61 @@ class Linx extends CanvasGame {
 	}
 
 	draggableTo(path, C) {
-		if (!path.canConnectTo(C)) {
+		if (!path.isNeighbor(C)) {
+// console.log(1);
 			return Linx.DRAG_NO;
 		}
 
 		const T = this.grid[C.y][C.x];
 		if (T == Linx.NA) {
+// console.log(2);
 			return Linx.DRAG_NO;
 		}
 
-		// Check existing path
-		// Check dragging path
+		if (path.contains(C)) {
+			if (this.isSingular(path.type) && path.startEquals(C)) {
+// console.log(3);
+				return Linx.DRAG_SAME;
+			}
+// console.log(4);
+			return Linx.DRAG_BACKTRACK;
+		}
+
+		if (this.paths.some(P => this.isMultiple(P.type) ? P.containsInside(C) : P.containsAnywhere(C))) {
+// console.log(5);
+			return Linx.DRAG_NO;
+		}
 
 		if (T != Linx.CELL) {
+// console.log(6);
 			return T == path.type ? Linx.DRAG_SAME : Linx.DRAG_NO;
 		}
 
 		return Linx.DRAG_NEXT;
 	}
 
+	countPads(type) {
+		return this.pads.filter(P => P.type == type).length;
+	}
+
+	isMultiple(type) {
+		const pads = this.countPads(type);
+		return pads > 2 && (pads % 2) == 1;
+	}
+
+	isSingular(type) {
+		return this.countPads(type) == 1;
+	}
+
 	handleDragStart(pad) {
 		this.startTime();
+		if (!this.isMultiple(pad.type)) {
+			const path = this.paths.find(P => P.startEquals(pad) || P.endEquals(pad));
+			if (path) {
+				this.removePath(path.nodes[0]);
+			}
+		}
+
 		this.dragging = new LinxPath(pad);
 	}
 
@@ -288,6 +344,10 @@ class Linx extends CanvasGame {
 
 	handleDragEndNext(C) {
 		this.dragging.add(C);
+	}
+
+	handleDragEndBacktrack(C) {
+		this.dragging.removeUntil(C);
 	}
 
 	listenDrag() {
@@ -312,6 +372,11 @@ class Linx extends CanvasGame {
 					if (draggable == Linx.DRAG_SAME) {
 						this.handleDragEndSame(C);
 						this.dragging = null;
+						this.changed = true;
+						return;
+					}
+					else if (draggable == Linx.DRAG_BACKTRACK) {
+						this.handleDragEndBacktrack(C);
 						this.changed = true;
 						return;
 					}
