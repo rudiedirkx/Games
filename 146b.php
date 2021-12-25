@@ -33,6 +33,7 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 		-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 	}
 	#red {
+		display: none;
 		position: absolute;
 		width: 6px;
 		height: 6px;
@@ -78,6 +79,7 @@ var _LEVEL = 1;
 	// var lvl;
 	var o;
 	// var connectors;
+	// var disabledConnectors;
 	// var conditions;
 	var gameover;
 	var slithering;
@@ -90,6 +92,21 @@ var _LEVEL = 1;
 		level || (level = {n: _LEVEL, prep: ''});
 		initLevel(level.n, level.prep);
 
+		elCanvas.on('contextmenu', function(e) {
+			e.preventDefault();
+
+			$('#red').css(e.pageXY.toCSS());
+
+			var zoom = this.offsetWidth / _w;
+			var c = e.subjectXY.multiply(1/zoom);
+
+			var connector = getClosestConnector(c);
+			if (connector) {
+				var hilited = disableConnector(connector, true);
+				drawLevel();
+			}
+		});
+
 		elCanvas.on(evType, function(e) {
 			$('#red').css(e.pageXY.toCSS());
 
@@ -101,7 +118,7 @@ var _LEVEL = 1;
 			var connector = getClosestConnector(c);
 			if (connector) {
 				var hilited = hiliteConnector(connector, true);
-				updateConditions(connector, hilited);
+				if (hilited != null) updateConditions(connector, hilited);
 				drawLevel();
 				checkWinStatus();
 			}
@@ -165,6 +182,7 @@ var _LEVEL = 1;
 		lvl.connectors = getAllConnectors();
 
 		connectors = [];
+		disabledConnectors = [];
 		conditions = {};
 
 		// Fill connectors from URL

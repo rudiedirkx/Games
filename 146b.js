@@ -227,6 +227,28 @@ function getNeighborCells(connector) {
 	return cells;
 }
 
+function disableConnector(connector, withState) {
+	var dir = connector.dir,
+		hor = connector.x,
+		ver = connector.y,
+		method = dir == 'ver' ? getVerticalConnectorCoords : getHorizontalConnectorCoords,
+		cs = method(hor, ver);
+
+	var ckey = dir + '-' + hor + '-' + ver,
+		eIndex = disabledConnectors.indexOf(ckey),
+		exists = eIndex != -1;
+
+	if ( withState == true ) {
+		exists ? disabledConnectors.splice(eIndex, 1) : disabledConnectors.push(ckey);
+		var eIndex2 = connectors.indexOf(ckey);
+		if (eIndex2 != -1) {
+			connectors.splice(eIndex2, 1);
+		}
+	}
+
+	drawLine(cs[0], cs[1], '#9bcc7b', true);
+}
+
 function hiliteConnector(connector, withState) {
 	var dir = connector.dir,
 		hor = connector.x,
@@ -236,8 +258,11 @@ function hiliteConnector(connector, withState) {
 
 	var ckey = dir + '-' + hor + '-' + ver,
 		eIndex = connectors.indexOf(ckey),
+		disExists = disabledConnectors.indexOf(ckey) != -1,
 		exists = eIndex != -1,
 		color = typeof withState == 'string' ? withState : (withState && exists ? gridColor : gridHiliteColor);
+
+	if (disExists) return;
 
 	drawLine(cs[0], cs[1], color, true);
 	if ( withState == true ) {
@@ -320,6 +345,11 @@ function hiliteConnectors() {
 		var c = key.split('-'),
 			con = new Connector(c[1], c[2], c[0]);
 		hiliteConnector(con, false);
+	});
+	r.each(disabledConnectors, function(key) {
+		var c = key.split('-'),
+			con = new Connector(c[1], c[2], c[0]);
+		disableConnector(con, false);
 	});
 }
 
