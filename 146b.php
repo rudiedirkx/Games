@@ -13,7 +13,7 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 	}, $boards));
 }
 
-// var_dump($allBoards);
+// print_r($allBoards);
 
 ?>
 <!doctype html>
@@ -53,9 +53,9 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 	<a id="restart" href="#">Restart</a>,
 	<a id="share" href="#">share</a>,
 	or switch level:
-	<a class="goto" data-prev href="#">&lt; prev</a> |
-	<span id="lvl">?</span> |
-	<a class="goto" data-next href="#">next &gt;</a>
+	<select id="lvl"><?= implode('', array_map(function($n) use ($allBoards) {
+		return '<option value="' . $n . '">' . $n . ' / ' . count($allBoards);
+	}, array_keys($allBoards))) ?></select>
 </p>
 <p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>
 
@@ -139,11 +139,9 @@ var _LEVEL = 1;
 		return String(n) + (prep ? '.' + prep : '');
 	}
 
-	$$('.goto').on('click', function(e) {
-		e.preventDefault();
-		var d = this.data('prev') != null ? -1 : 1;
-		if ( getMap(lvl.n + d) ) {
-			initLevel(lvl.n + d);
+	$('#lvl').on('change', function(e) {
+		if ( getMap(this.value) ) {
+			initLevel(this.value);
 		}
 	});
 
@@ -176,7 +174,7 @@ var _LEVEL = 1;
 	function initLevel(n, prep) {
 		clearInterval(slithering);
 		location.hash = levelToString(n, prep);
-		$('#lvl').setText(n);
+		$('#lvl').value = n;
 
 		lvl = getLevel(n);
 		lvl.connectors = getAllConnectors();
