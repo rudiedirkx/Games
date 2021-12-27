@@ -246,7 +246,7 @@ function disableConnector(connector, withState) {
 		}
 	}
 
-	drawLine(cs[0], cs[1], '#9bcc7b', true);
+	drawLine(cs[0], cs[1], '#bde4a3', true);
 }
 
 function hiliteConnector(connector, withState) {
