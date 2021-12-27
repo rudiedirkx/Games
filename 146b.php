@@ -1,15 +1,19 @@
 <?php
-// SLITHER
+// SLITHER 2
 
 require __DIR__ . '/inc.bootstrap.php';
 
 $g_arrBoards = require '146_levels.php';
+
 $allBoards = array();
 foreach ($g_arrBoards as $difficulty => $boards) {
-	$allBoards = array_merge($allBoards, array_map(function($board) {
-		return array_merge(array_map(function($line) use ($board) {
-			return str_pad($line, $board['size'][0], ' ');
-		}, $board['board']), array_fill(0, $board['size'][1] - count($board['board']), str_repeat(' ', $board['size'][0])));
+	$allBoards = array_merge($allBoards, array_map(function($board) use ($difficulty) {
+		return [
+			'difc' => $difficulty,
+			'map' => array_map(function($line) use ($board) {
+				return str_pad($line, $board['size'][0], ' ');
+			}, $board['board']),
+		];
 	}, $boards));
 }
 
@@ -20,7 +24,7 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 <html>
 
 <head>
-	<title>Slither CANVAS</title>
+	<title>SLITHER 2</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
 	* {
@@ -53,9 +57,9 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 	<a id="restart" href="#">Restart</a>,
 	<a id="share" href="#">share</a>,
 	or switch level:
-	<select id="lvl"><?= implode('', array_map(function($n) use ($allBoards) {
-		return '<option value="' . $n . '">' . $n . ' / ' . count($allBoards);
-	}, array_keys($allBoards))) ?></select>
+	<select id="lvl"><?= implode('', array_map(function($board, $n) use ($allBoards) {
+		return '<option value="' . $n . '">' . ($n + 1) . ' (' . $board['difc'] . ') / ' . count($allBoards);
+	}, $allBoards, array_keys($allBoards))) ?></select>
 </p>
 <p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>
 
@@ -354,7 +358,7 @@ var _LEVEL = 1;
 		return map;
 	}
 
-})(<?= json_encode($allBoards) ?>);
+})(<?= json_encode(array_column($allBoards, 'map')) ?>);
 </script>
 
 </body>

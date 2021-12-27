@@ -3,11 +3,14 @@
 
 $g_arrBoards = require '146_levels.php';
 
-$done = isset($_COOKIE['g146']) ? array_map('intval', explode(',', $_COOKIE['g146'])) : array();
-
-$iGame = isset($_GET['lvl']) && ( isset($g_arrBoards['easy'][$_GET['lvl']]) || isset($g_arrBoards['normal'][$_GET['lvl']]) || isset($g_arrBoards['hard'][$_GET['lvl']]) ) ? (int)$_GET['lvl'] : 101;
-$szDifficulty = !isset($_GET['lvl'])  ? 'easy' : ( isset($g_arrBoards['normal'][$_GET['lvl']]) ? 'normal' : ( isset($g_arrBoards['hard'][$_GET['lvl']]) ? 'hard' : 'easy' ) );
-$arrGame = (array)$g_arrBoards[$szDifficulty][$iGame];
+$lvl = explode('-', $_GET['lvl'] ?? 'easy-0');
+$iGame = (int) ($lvl[1] ?? 0);
+$szDifficulty = $lvl[0];
+if (!isset($g_arrBoards[$szDifficulty][$iGame])) {
+	$iGame = 0;
+	$szDifficulty = 'easy';
+}
+$arrGame = $g_arrBoards[$szDifficulty][$iGame];
 
 $b = 5;		// border width
 $t = 26;	// td 'size'
@@ -81,9 +84,8 @@ button {
 </style>
 <script src="js/rjs-custom.js"></script>
 <script>
-var g_c = <?= $c ?>, g_r = <?= $r ?>, g_l = <?= $iGame ?>, g_max = <?= max($ak=array_keys($g_arrBoards[$szDifficulty])) ?>, g_min = <?= min($ak=array_keys($g_arrBoards[$szDifficulty])) ?>;
-
-var done = <?= json_encode($done) ?>;
+var g_c = <?= $c ?>;
+var g_r = <?= $r ?>;
 
 (new Image()).src = 'images/146_horbor_not.bmp';
 (new Image()).src = 'images/146_verbor_not.bmp';
@@ -313,11 +315,7 @@ function hiliteNextBorder() {
 	return false;
 }
 function levelDone() {
-	if ( !done.contains(g_l) ) {
-		done.push(g_l);
-		document.cookie = 'g146=' + done.join(',') + ';expires=' + new Date('2020-01-01');
-	}
-	$('#notices').setHTML('<a href="?lvl=' + (g_l+1) + '">Go to lvl ' + (g_l+1) + '...</a>');
+	$('#notices').setHTML('<a href="?lvl=<?= $szDifficulty ?>-<?= ($iGame + 1) ?>">Next: <?= $szDifficulty ?> <?= ($iGame + 2) ?>...</a>');
 }
 function checkDone(btn) {
 	g_bHB = false;
@@ -346,7 +344,7 @@ function xor(a, b) {
 		<?foreach( $g_arrBoards AS $szD => $arrBoards ):?>
 			<optgroup label="<?=ucfirst(strtolower($szD))?>">
 			<?foreach( $arrBoards AS $iL => $arrL ):?>
-				<option value="<?= $iL ?>"<?if( $iGame == $iL ):?>selected>&gt; <?else:?>><?endif?>Level <?= $iL ?><?if( in_array($iL, $done) ):?> (done)<?endif?></option>
+				<option value="<?= "$szD-$iL" ?>"<?if( $szDifficulty == $szD && $iGame == $iL ):?>selected>&gt; <?else:?>><?endif?><?= $szD ?> <?= ($iL + 1) ?></option>
 			<?endforeach?>
 			</optgroup>
 		<?endforeach?>
@@ -364,7 +362,7 @@ for ( $i=0; $i<$r; $i++ )
 	echo '<tr><td class="verbor"></td>';
 	for ( $j=0; $j<$c; $j++ )
 	{
-		$iNumber = isset($arrGame['board'][$i]{$j}) ? trim($arrGame['board'][$i]{$j}) : '';
+		$iNumber = trim($arrGame['board'][$i][$j] ?? '');
 		echo '<th id="c_'.$j.'_'.$i.'" class="clue" style="color:'.( '0' === $iNumber ? 'white' : 'black' ).';">'.$iNumber.'</th><td class="verbor"></td>';
 	}
 	echo '</tr>'.$szRow;

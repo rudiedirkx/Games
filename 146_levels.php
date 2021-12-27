@@ -2,24 +2,17 @@
 
 return array(
 	'easy'	=> array(
-		100 => array( // 0
-			'size'	=> array(5,5),
-			'board'	=> array(
-				'    1',
-				' 3',
-				' 3  1',
-			),
-		),
-		101 => array( // 1
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'  0',
 				'  3',
-				'1  2',
+				'1  2 ',
 				' 23',
+				'',
 			),
 		),
-		array( // 2
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'01010',
@@ -29,7 +22,7 @@ return array(
 				'  3',
 			),
 		),
-		array( // 3
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 313',
@@ -39,7 +32,7 @@ return array(
 				'3 1 3',
 			),
 		),
-		array( // 4
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 231',
@@ -49,7 +42,7 @@ return array(
 				'0   0',
 			),
 		),
-		array( // 5
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'',
@@ -59,7 +52,7 @@ return array(
 				'31  1',
 			),
 		),
-		array( // 6
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 33 0',
@@ -69,7 +62,7 @@ return array(
 				' 1  3',
 			),
 		),
-		array( // 7
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'2332',
@@ -79,7 +72,7 @@ return array(
 				' 333',
 			),
 		),
-		array( // 8
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 122',
@@ -89,7 +82,7 @@ return array(
 				' 2 2',
 			),
 		),
-		array( // 9
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'3 3',
@@ -99,7 +92,7 @@ return array(
 				' 2',
 			),
 		),
-		array( // 10
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 1',
@@ -109,7 +102,7 @@ return array(
 				' 0',
 			),
 		),
-		array( // 11
+		array(
 			'size'	=> array(6,6),
 			'board'	=> array(
 				'0 1 22',
@@ -120,7 +113,7 @@ return array(
 				'212  0',
 			),
 		),
-		array( // 12
+		array(
 			'size'	=> array(6,6),
 			'board'	=> array(
 				'1   32',
@@ -131,7 +124,7 @@ return array(
 				' 3 23',
 			),
 		),
-		array( // 13
+		array(
 			'size'	=> array(6,6),
 			'board'	=> array(
 				' 22 0',
@@ -142,7 +135,7 @@ return array(
 				'  212',
 			),
 		),
-		array( // 14
+		array(
 			'size'	=> array(6,6),
 			'board'	=> array(
 				'  22',
@@ -153,7 +146,7 @@ return array(
 				' 3  3',
 			),
 		),
-		array( // 15
+		array(
 			'size'	=> array(6,6),
 			'board'	=> array(
 				' 2223',
@@ -164,7 +157,7 @@ return array(
 				'0  22',
 			),
 		),
-		array( // 16
+		array(
 			'size'	=> array(7,7),
 			'board'	=> array(
 				'   3 0',
@@ -176,7 +169,7 @@ return array(
 				'0 321 0',
 			),
 		),
-		array( // 17
+		array(
 			'size'	=> array(7,7),
 			'board'	=> array(
 				' 22  0',
@@ -188,7 +181,7 @@ return array(
 				'   2 2',
 			),
 		),
-		array( // 18
+		array(
 			'size'	=> array(7,7),
 			'board'	=> array(
 				'    3',
@@ -200,19 +193,19 @@ return array(
 				'  22 0',
 			),
 		),
-		array( // 19
+		array(
 			'size'	=> array(7,7),
 			'board'	=> array(
 				'  22',
 				'21 1 0',
 				'2101',
-				'  1 12',
+				'  1 12 ',
 				' 2   2',
 				'  0',
 				' 21 3',
 			),
 		),
-		array( // 20
+		array(
 			'size'	=> array(7,7),
 			'board'	=> array(
 				'2 2',
@@ -224,7 +217,7 @@ return array(
 				'    212',
 			),
 		),
-		array( // 21
+		array(
 			'size'	=> array(10,10),
 			'board'	=> array(
 				'212 22   3',
@@ -239,7 +232,7 @@ return array(
 				'   3 2112',
 			),
 		),
-		array( // 22
+		array(
 			'size'	=> array(10,10),
 			'board'	=> array(
 				'    22',
@@ -254,7 +247,7 @@ return array(
 				'    22',
 			),
 		),
-		array( // 23
+		array(
 			'size'	=> array(10,10),
 			'board'	=> array(
 				'',
@@ -266,9 +259,10 @@ return array(
 				'     1  1',
 				'     1   2',
 				'    3  2',
+				'',
 			),
 		),
-		array( // 24
+		array(
 			'size'	=> array(10,10),
 			'board'	=> array(
 				'22',
@@ -283,7 +277,7 @@ return array(
 				'         3',
 			),
 		),
-		array( // 25
+		array(
 			'size'	=> array(10,10),
 			'board'	=> array(
 				'    3 13',
@@ -300,7 +294,7 @@ return array(
 		),
 	),
 	'normal' => array(
-		201 => array( // 1
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'3 31',
@@ -310,17 +304,17 @@ return array(
 				'22 1',
 			),
 		),
-		array( // 2
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
-				' 333',
+				' 333 ',
 				' 202',
 				'   2',
 				'2 23',
 				'  2',
 			),
 		),
-		array( // 3
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'3 33',
@@ -330,7 +324,7 @@ return array(
 				' 2233',
 			),
 		),
-		array( // 4
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 233',
@@ -340,7 +334,7 @@ return array(
 				'   12',
 			),
 		),
-		array( // 5
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'2 2',
@@ -350,7 +344,7 @@ return array(
 				' 33 3',
 			),
 		),
-		array( // 6
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'   33',
@@ -360,7 +354,7 @@ return array(
 				'3233',
 			),
 		),
-		array( // 7
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'3  1',
@@ -370,7 +364,7 @@ return array(
 				'02  0',
 			),
 		),
-		array( // 8
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'02',
@@ -380,17 +374,17 @@ return array(
 				' 1 2',
 			),
 		),
-		array( // 9
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
-				'   3',
+				'   3 ',
 				'131',
 				' 30',
 				'  3',
 				' 2 2',
 			),
 		),
-		array( // 10
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'322',
@@ -402,7 +396,7 @@ return array(
 		),
 	),
 	'hard' => array(
-		301 => array( // 1
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 23 3',
@@ -412,7 +406,7 @@ return array(
 				'    2',
 			),
 		),
-		array( // 2
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 3  3',
@@ -422,7 +416,7 @@ return array(
 				'  2 3',
 			),
 		),
-		array( // 3
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'2',
@@ -432,7 +426,7 @@ return array(
 				'   13',
 			),
 		),
-		array( // 4
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'3 2 2',
@@ -442,7 +436,7 @@ return array(
 				'3 23',
 			),
 		),
-		array( // 5
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'  2',
@@ -452,7 +446,7 @@ return array(
 				' 2',
 			),
 		),
-		array( // 6
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				'   3 3',
@@ -462,7 +456,7 @@ return array(
 				'221',
 			),
 		),
-		array( // 7
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 1',
@@ -472,7 +466,7 @@ return array(
 				' 0',
 			),
 		),
-		array( // 8
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 33',
@@ -482,7 +476,7 @@ return array(
 				'3  2',
 			),
 		),
-		array( // 9
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 31 3',
@@ -492,7 +486,7 @@ return array(
 				' 2  3',
 			),
 		),
-		array( // 10
+		array(
 			'size'	=> array(5,5),
 			'board'	=> array(
 				' 3',
