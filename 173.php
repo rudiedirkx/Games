@@ -37,6 +37,7 @@ html {
 	user-select: none;
 
 	--stats-height: 30px;
+	--square: 26px;
 }
 body {
 	padding-top: calc(0px + var(--stats-height));
@@ -85,23 +86,21 @@ body[data-size="blind"] {
 
 #ms .padding {
 	padding: 10px;
-	width: calc(20px + var(--w) * 23px);
-	height: calc(20px + var(--h) * 23px);
+	width: calc(20px + var(--w) * (1px + var(--square)));
+	height: calc(20px + var(--h) * (1px + var(--square)));
 }
 table {
 	border-spacing: 0;
 	font-size: inherit;
 	border: solid 1 var(--border);
 	border-width: 0 1px 1px 0;
-	/*width: calc(var(--w) * 23px);*/
-	/*height: calc(var(--h) * 23px);*/
 }
 td {
 	border: solid 1px black;
 	border-top-color: var(--border);
 	border-left-color: var(--border);
-	width: 22px;
-	height: 22px;
+	width: var(--square);
+	height: var(--square);
 	background: black;
 	color: white;
 	font-weight: bold;
@@ -129,15 +128,6 @@ td[data-monster].show-adjacents {
 td.closed span,
 td[data-monster]:not(.show-adjacents) span {
 	visibility: hidden;
-}
-
-span.adjacents,
-span.empty {
-	pointer-events: none;
-	display: block;
-	width: 22px;
-	height: 22px;
-	line-height: 22px;
 }
 
 img.preload { visibility: hidden; position: absolute; }

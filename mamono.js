@@ -263,23 +263,27 @@ class Mamono extends GridGame {
 		}
 
 		this.showStats();
-		this.winOrLose();
-
-		if (this.m_bGameOver) {
-			localStorage.removeItem(this.getSaveName(this.size));
-		}
-		else {
-			localStorage.setItem(this.getSaveName(this.size), JSON.stringify({
-				time: this.getTime(),
-				lvl: this.level,
-				exp: this.exp,
-				map: this.m_objGrid.getElements('td').map(c => String.fromCharCode(65 + (c.hasClass('closed') ? 0 : 10) + parseInt(c.dataset.monster || 0))).join(''),
-			}));
-		}
+		this.startWinCheck(60).then(() => {
+			if (this.m_bGameOver) {
+				localStorage.removeItem(this.getSaveName(this.size));
+			}
+			else {
+				localStorage.setItem(this.getSaveName(this.size), JSON.stringify({
+					time: this.getTime(),
+					lvl: this.level,
+					exp: this.exp,
+					map: this.m_objGrid.getElements('td').map(c => String.fromCharCode(65 + (c.hasClass('closed') ? 0 : 10) + parseInt(c.dataset.monster || 0))).join(''),
+				}));
+			}
+		});
 	}
 
 	haveWon() {
 		return this.m_objGrid.getElements('.closed').length == 0;
+	}
+
+	haveLost() {
+		return this.exp == -1;
 	}
 
 	getMonster(C, grid = null) {
@@ -324,7 +328,8 @@ class Mamono extends GridGame {
 
 		if (m) {
 			if (m > this.level) {
-				return this.lose();
+				this.exp = -1;
+				return;
 			}
 
 			const exp = Math.pow(2, m-1);

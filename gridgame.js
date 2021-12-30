@@ -241,8 +241,13 @@ class Game {
 	}
 
 	startWinCheck(delay = 500) {
-		clearTimeout(this.checker);
-		this.checker = setTimeout(() => this.winOrLose(), delay);
+		return new Promise(resolve => {
+			clearTimeout(this.checker);
+			this.checker = setTimeout(() => {
+				this.winOrLose();
+				resolve();
+			}, delay);
+		});
 	}
 
 	isTouchable( element ) {
