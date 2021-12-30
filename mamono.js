@@ -35,7 +35,7 @@ class Mamono extends GridGame {
 	};
 
 	getSpecs() {
-		return this.constructor.SIZES[this.size];
+		return Mamono.SIZES[this.size];
 	}
 
 	reset() {
@@ -77,7 +77,7 @@ class Mamono extends GridGame {
 	createSizeSelect(selected) {
 		const el = $('#select-size');
 		el.empty();
-		el.setHTML(Object.keys(this.constructor.SIZES).map(size => {
+		el.setHTML(Object.keys(Mamono.SIZES).map(size => {
 			const sel = selected == size ? ' selected' : '';
 			return `<option${sel}>${size}`;
 		}).join(''));
@@ -100,6 +100,16 @@ class Mamono extends GridGame {
 			out.push(array.slice(i, i + length));
 		}
 		return out;
+	}
+
+	loadAnySaved() {
+		return Object.keys(Mamono.SIZES).some(size => {
+			const saved = this.getSavedMap(size);
+			if (saved) {
+				this.createMap(size);
+				return true;
+			}
+		});
 	}
 
 	createMap(size) {

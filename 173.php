@@ -69,6 +69,7 @@ body[data-size="blind"] {
 #stats-bar {
 	height: var(--stats-height);
 	line-height: var(--stats-height);
+	background-color: black;
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -182,7 +183,7 @@ img.preload { visibility: hidden; position: absolute; }
 <script src="<?= html_asset('mamono.js') ?>"></script>
 <script>
 objGame = new Mamono($('#ms table'));
-objGame.createMap('normal');
+objGame.loadAnySaved() || objGame.createMap('normal');
 objGame.listenControls();
 </script>
 </body>
