@@ -92,7 +92,7 @@ body[data-size="blind"] {
 table {
 	border-spacing: 0;
 	font-size: inherit;
-	border: solid 1 var(--border);
+	border: solid 0 var(--border);
 	border-width: 0 1px 1px 0;
 }
 td {
