@@ -54,6 +54,8 @@ class Slither extends CanvasGame {
 	reset() {
 		super.reset();
 
+		// this.paintingTiming = true;
+
 		this.levelNum = 0;
 		this.width = 0;
 		this.height = 0;
@@ -90,8 +92,8 @@ class Slither extends CanvasGame {
 	drawContent() {
 		this.drawGrid();
 		this.drawDisableds();
-		this.drawEnableds();
 		this.drawDots();
+		this.drawEnableds();
 		this.drawNumbers();
 
 		// this.drawConnectorCenters();
@@ -113,7 +115,7 @@ class Slither extends CanvasGame {
 
 	drawEnableds() {
 		// @todo Rounded corners, animated after toggle on
-		this.enableds.forEach(conn => this.drawConnection(conn, '#888'));
+		this.enableds.forEach(conn => this.drawConnection(conn, this.m_bGameOver ? '#555' : '#888'));
 	}
 
 	drawDisableds() {
@@ -331,17 +333,21 @@ class Slither extends CanvasGame {
 
 		localStorage.setItem('slitherBoard', this.levelNum + '-' + this.exportBoard());
 
-		this.startWinCheck();
-
 		this.changed = true;
 	}
 
 	toggleEnabled(conn) {
-		return this.toggleXabled(conn, 'enableds', 'disableds');
+		this.toggleXabled(conn, 'enableds', 'disableds');
+		this.startWinCheck(200).then(() => {
+			if (this.m_bGameOver) {
+				this.changed = true;
+				localStorage.removeItem('slitherBoard');
+			}
+		});
 	}
 
 	toggleDisabled(conn) {
-		return this.toggleXabled(conn, 'disableds', 'enableds');
+		this.toggleXabled(conn, 'disableds', 'enableds');
 	}
 
 	exportBoard() {
@@ -397,6 +403,8 @@ class Slither extends CanvasGame {
 	}
 
 	handleClick(C) {
+		if (this.m_bGameOver) return;
+
 		this.startTime();
 
 		const conn = this.findConnector(C);
@@ -406,6 +414,8 @@ class Slither extends CanvasGame {
 	}
 
 	handleContextClick(C) {
+		if (this.m_bGameOver) return;
+
 		this.startTime();
 
 		const conn = this.findConnector(C);
