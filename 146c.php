@@ -32,6 +32,7 @@ canvas {
 	max-height: calc(100vh - 10px);
 	max-width: 100%;
 	touch-action: none;
+	user-select: none;
 }
 </style>
 </head>

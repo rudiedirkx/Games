@@ -1,5 +1,35 @@
 "use strict";
 
+class SlitherRoundedCorner extends Coords2D {
+	static SIZE = 0.2;
+
+	constructor(C, conn1, conn2) {
+		super(C.x, C.y);
+		if (conn1.orient == 'ver') {
+			this.ver = conn1;
+			this.hor = conn2;
+		}
+		else {
+			this.ver = conn2;
+			this.hor = conn1;
+		}
+	}
+
+	get center() {
+		const dx = this.ver.x == this.hor.x ? +SlitherRoundedCorner.SIZE : -SlitherRoundedCorner.SIZE;
+		const dy = this.ver.y == this.hor.y ? +SlitherRoundedCorner.SIZE : -SlitherRoundedCorner.SIZE;
+		return new Coords2D(this.ver.x + dx, this.hor.y + dy);
+	}
+
+	get startAngle() {
+		if (this.ver.x == this.hor.x) {
+			return this.ver.y == this.hor.y ? 0.5 : 0.25;
+		}
+
+		return this.ver.y == this.hor.y ? 0.75 : 0.0;
+	}
+}
+
 class SlitherConnector extends Coords2D {
 	static ENABLED_HOR = 1;
 	static ENABLED_VER = 2;
@@ -25,6 +55,14 @@ class SlitherConnector extends Coords2D {
 
 	get to() {
 		return this.orient == 'hor' ? new Coords2D(this.x + 1, this.y) : new Coords2D(this.x, this.y + 1);
+	}
+
+	get fromTrimmed() {
+		return this.orient == 'hor' ? new Coords2D(this.x + SlitherRoundedCorner.SIZE, this.y) : new Coords2D(this.x, this.y + SlitherRoundedCorner.SIZE);
+	}
+
+	get toTrimmed() {
+		return this.orient == 'hor' ? new Coords2D(this.x + 1 - SlitherRoundedCorner.SIZE, this.y) : new Coords2D(this.x, this.y + 1 - SlitherRoundedCorner.SIZE);
 	}
 
 	get enabledBits() {
@@ -63,6 +101,9 @@ class Slither extends CanvasGame {
 		this.connectors = [];
 		this.enableds = [];
 		this.disableds = [];
+
+		// Drawing cache
+		this.roundedCorners = [];
 	}
 
 	scale(source) {
@@ -90,10 +131,13 @@ class Slither extends CanvasGame {
 	}
 
 	drawContent() {
+		this.roundedCorners = [];
+
 		this.drawGrid();
 		this.drawDisableds();
-		this.drawDots();
 		this.drawEnableds();
+		this.drawRoundedCorners();
+		this.drawDots();
 		this.drawNumbers();
 
 		// this.drawConnectorCenters();
@@ -114,8 +158,46 @@ class Slither extends CanvasGame {
 	}
 
 	drawEnableds() {
-		// @todo Rounded corners, animated after toggle on
-		this.enableds.forEach(conn => this.drawConnection(conn, this.m_bGameOver ? '#555' : '#888'));
+		// @todo Animate after toggle on
+		const color = this.m_bGameOver ? '#555' : '#888';
+		this.enableds.forEach(conn => {
+			this.drawConnectionStraight(conn, color);
+		});
+	}
+
+	drawConnectionStraight(conn, color) {
+		let to = conn.to;
+		const toConnections = this.getConnections(to, conn);
+		if (toConnections.length == 1 && toConnections[0].orient != conn.orient) {
+			this.roundedCorners.push(new SlitherRoundedCorner(to, conn, toConnections[0]));
+			to = conn.toTrimmed;
+		}
+
+		let from = conn.from;
+		const fromConnections = this.getConnections(from, conn);
+		if (fromConnections.length == 1 && fromConnections[0].orient != conn.orient) {
+			this.roundedCorners.push(new SlitherRoundedCorner(from, conn, fromConnections[0]));
+			from = conn.fromTrimmed;
+		}
+
+		this.drawLine(this.scale(from), this.scale(to), {color, width: 8});
+	}
+
+	drawRoundedCorners() {
+		const color = this.m_bGameOver ? '#555' : '#888';
+
+		this.ctx.strokeStyle = color;
+		this.ctx.lineWidth = 8;
+
+		this.roundedCorners.forEach(corner => {
+			const C = this.scale(corner.center);
+			const A = corner.startAngle * 2 * Math.PI;
+			this.ctx.beginPath();
+			this.ctx.arc(C.x, C.y, SlitherRoundedCorner.SIZE * Slither.SQUARE, A, A + Math.PI/2);
+			this.ctx.stroke();
+
+			// this.drawCircle(C, SlitherRoundedCorner.SIZE * Slither.SQUARE, {width: 8, color});
+		});
 	}
 
 	drawDisableds() {
@@ -127,9 +209,13 @@ class Slither extends CanvasGame {
 	}
 
 	drawDots() {
+		const color = this.m_bGameOver ? '#555' : '#888';
 		for (var y = 0; y <= this.height; y++) {
 			for (var x = 0; x <= this.width; x++) {
-				this.drawDot(this.scale(new Coords2D(x, y)), {color: '#888', radius: 4});
+				const C = new Coords2D(x, y);
+				if (!this.roundedCorners.some(corner => corner.equal(C))) {
+					this.drawDot(this.scale(C), {color, radius: 4});
+				}
 			}
 		}
 	}
@@ -141,6 +227,12 @@ class Slither extends CanvasGame {
 			const C = this.scale(cond.add(new Coords2D(0.5, 0.5)));
 			const color = this.countConnections(cond) == cond.number ? 'white' : 'black';
 			this.drawText(C, cond.number, {size: 35, color});
+		});
+	}
+
+	getConnections(C, notConn) {
+		return this.enableds.filter(conn => {
+			return conn != notConn && conn.touchesPoint(C);
 		});
 	}
 
@@ -185,9 +277,7 @@ class Slither extends CanvasGame {
 	}
 
 	findSlitherNext(fromPoint, notConn) {
-		const touchings = this.enableds.filter(conn => {
-			return conn != notConn && conn.touchesPoint(fromPoint);
-		});
+		const touchings = this.getConnections(fromPoint, notConn);
 		if (touchings.length == 1) {
 			return touchings[0];
 		}
