@@ -164,7 +164,7 @@ class Slither extends CanvasGame {
 		let conn = start;
 		let point = conn.from;
 		const path = [conn];
-		for ( let i = 0; i < 33; i++ ) {
+		for ( let i = 0; i < 200; i++ ) {
 			const nextConn = this.findSlitherNext(point, conn);
 			if (nextConn === start) {
 				return path;
