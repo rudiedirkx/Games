@@ -40,7 +40,10 @@ canvas {
 <canvas></canvas>
 
 <p>
+	<span id="stats-time">?</span>
+	&nbsp;
 	<button id="restart">Restart</button>
+	&nbsp;
 	Level: <select id="level"></select>
 	<button data-level-nav="-1">&lt;</button>
 	<button data-level-nav="+1">&gt;</button>

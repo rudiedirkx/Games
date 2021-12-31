@@ -11,6 +11,10 @@ class SlitherConnector extends Coords2D {
 		this.orient = orient;
 	}
 
+	touchesPoint(C) {
+		return this.from.equal(C) || this.to.equal(C);
+	}
+
 	get center() {
 		return this.orient == 'hor' ? new Coords2D(this.x + 0.5, this.y) : new Coords2D(this.x, this.y + 0.5);
 	}
@@ -108,6 +112,7 @@ class Slither extends CanvasGame {
 	}
 
 	drawEnableds() {
+		// @todo Rounded corners, animated after toggle on
 		this.enableds.forEach(conn => this.drawConnection(conn, '#888'));
 	}
 
@@ -154,26 +159,78 @@ class Slither extends CanvasGame {
 		return num;
 	}
 
+	findSlither() {
+		const start = this.enableds[0];
+		let conn = start;
+		let point = conn.from;
+		const path = [conn];
+		for ( let i = 0; i < 33; i++ ) {
+			const nextConn = this.findSlitherNext(point, conn);
+			if (nextConn === start) {
+				return path;
+			}
+
+			if (!nextConn) {
+				return null;
+			}
+
+			point = point.equal(nextConn.from) ? nextConn.to : nextConn.from;
+			conn = nextConn;
+			path.push(nextConn);
+		}
+
+		return path;
+	}
+
+	findSlitherNext(fromPoint, notConn) {
+		const touchings = this.enableds.filter(conn => {
+			return conn != notConn && conn.touchesPoint(fromPoint);
+		});
+		if (touchings.length == 1) {
+			return touchings[0];
+		}
+	}
+
 	haveWon() {
 		if (!this.conditions.every(cond => this.countConnections(cond) == cond.number)) {
 			return false;
 		}
 
-		// @todo Find Slither
+		const slither = this.findSlither();
+		return slither && slither.length == this.enableds.length;
+	}
+
+	getLevelInt() {
+		const [difc, n] = this.levelNum.split('-');
+		const difcMult = Object.keys(Slither.LEVELS).indexOf(difc) * 200;
+		return difcMult + parseInt(n) + 1;
+	}
+
+	getScore() {
+		return {
+			time: this.getTime(),
+			moves: this.enableds.length,
+			level: this.getLevelInt(),
+		};
+	}
+
+	getSaved() {
+		const saved = localStorage.getItem('slitherBoard');
+		if (!saved) return null;
+
+		const [difc, n, board] = saved.split('-');
+		return [difc + '-' + n, board];
 	}
 
 	loadFromSaved() {
-		const saved = localStorage.getItem('slitherBoard');
+		const saved = this.getSaved();
 		if (!saved) return false;
 
-		const [difc, n, board] = saved.split('-');
-		if (!this.loadLevel(difc + '-' + n)) return false;
-
-		this.importBoard(board);
-		return true;
+		const [lvl, board] = saved;
+		return this.loadLevel(lvl);
 	}
 
-	loadLevel(lvl) {
+	loadLevel(lvl, trySaved = true) {
 		const level = this.getLevel(lvl);
 		if (!level) return false;
 
@@ -189,6 +246,13 @@ class Slither extends CanvasGame {
 
 		this.canvas.width = Slither.OFFSET * 2 + Slither.SQUARE * this.width;
 		this.canvas.height = Slither.OFFSET * 2 + Slither.SQUARE * this.height;
+
+		if (trySaved) {
+			const saved = this.getSaved();
+			if (saved && saved[0] == this.levelNum) {
+				this.importBoard(saved[1]);
+			}
+		}
 
 		this.changed = true;
 
@@ -333,6 +397,8 @@ class Slither extends CanvasGame {
 	}
 
 	handleClick(C) {
+		this.startTime();
+
 		const conn = this.findConnector(C);
 		if (conn) {
 			this.toggleEnabled(conn);
@@ -340,6 +406,8 @@ class Slither extends CanvasGame {
 	}
 
 	handleContextClick(C) {
+		this.startTime();
+
 		const conn = this.findConnector(C);
 		if (conn) {
 			this.toggleDisabled(conn);
@@ -360,7 +428,7 @@ class Slither extends CanvasGame {
 
 		$('#restart').on('click', e => {
 			e.preventDefault();
-			this.loadLevel(this.levelNum);
+			this.loadLevel(this.levelNum, false);
 		});
 	}
 
