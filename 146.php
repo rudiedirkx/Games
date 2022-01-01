@@ -29,7 +29,7 @@ $h = 40 + ($r+1)*$b + $r*$t;	// total table height
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta charset="utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-<title>SLITHER | LEVEL <?= str_pad((string)$iGame,3,'0',STR_PAD_LEFT).' '.strtoupper($szDifficulty) ?></title>
+<title>SLITHER | LEVEL <?= str_pad($iGame + 1,3,'0',STR_PAD_LEFT).' '.strtoupper($szDifficulty) ?></title>
 <style>
 * {
 	padding: 0;

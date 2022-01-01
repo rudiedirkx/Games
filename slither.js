@@ -323,13 +323,12 @@ class Slither extends CanvasGame {
 	}
 
 	loadLevel(lvl, trySaved = true) {
-		const level = this.getLevel(lvl);
-		if (!level) return false;
+		const map = this.getLevel(lvl);
+		if (!map) return false;
 
 		this.reset();
 		this.setLevelNum(lvl);
 
-		const map = level.board;
 		this.width = Math.max(...map.map(row => row.length));
 		this.height = map.length;
 
@@ -523,7 +522,11 @@ class Slither extends CanvasGame {
 		});
 		$$('[data-level-nav]').on('click', e => {
 			const D = parseInt(e.target.data('level-nav'));
-			this.loadLevel(this.levelNum.replace(/-(\d+)/, m => '-' + (parseInt(m[1]) + D)));
+			const options = $$('#level option');
+			const curIndex = options.findIndex(opt => opt.value == this.levelNum);
+			if (options[curIndex + D]) {
+				this.loadLevel(options[curIndex + D].value);
+			}
 		});
 
 		$('#restart').on('click', e => {

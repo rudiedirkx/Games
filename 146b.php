@@ -58,7 +58,7 @@ foreach ($g_arrBoards as $difficulty => $boards) {
 	<a id="share" href="#">share</a>,
 	or switch level:
 	<select id="lvl"><?= implode('', array_map(function($board, $n) use ($allBoards) {
-		return '<option value="' . $n . '">' . ($n + 1) . ' (' . $board['difc'] . ') / ' . count($allBoards);
+		return '<option value="' . $n . '">' . $board['difc'] . ' ' . ($n + 1) . ' / ' . count($allBoards);
 	}, $allBoards, array_keys($allBoards))) ?></select>
 </p>
 <p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>

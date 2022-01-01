@@ -56,7 +56,9 @@ canvas {
 <? if (isset($_POST['import'])): ?>
 	Slither.LEVELS = [<?= json_encode(json_decode($_POST['import'])) ?>];
 <? else: ?>
-	Slither.LEVELS = <?= json_encode($g_arrLevels) ?>;
+	Slither.LEVELS = <?= json_encode(array_map(function($levels) {
+		return array_column($levels, 'board');
+	}, $g_arrLevels)) ?>;
 <? endif ?>
 objGame = new Slither($('canvas'));
 objGame.listenControls();
