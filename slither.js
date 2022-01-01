@@ -306,8 +306,20 @@ class Slither extends CanvasGame {
 		};
 	}
 
-	getSaved() {
-		const saved = localStorage.getItem('slitherBoard');
+	quickSave() {
+		localStorage.setItem('slitherQuickSave', this.exportBoard());
+	}
+
+	quickLoad() {
+		const saved = localStorage.getItem('slitherQuickSave');
+		if (saved) {
+			this.loadLevel(this.levelNum, false);
+			this.importBoard(saved);
+		}
+	}
+
+	getAutoSaved() {
+		const saved = localStorage.getItem('slitherAutoSave');
 		if (!saved) return null;
 
 		const [difc, n, board] = saved.split('-');
@@ -315,7 +327,7 @@ class Slither extends CanvasGame {
 	}
 
 	loadFromSaved() {
-		const saved = this.getSaved();
+		const saved = this.getAutoSaved();
 		if (!saved) return false;
 
 		const [lvl, board] = saved;
@@ -339,7 +351,7 @@ class Slither extends CanvasGame {
 		this.canvas.height = Slither.OFFSET * 2 + Slither.SQUARE * this.height;
 
 		if (trySaved) {
-			const saved = this.getSaved();
+			const saved = this.getAutoSaved();
 			if (saved && saved[0] == this.levelNum) {
 				this.importBoard(saved[1]);
 			}
@@ -420,7 +432,7 @@ class Slither extends CanvasGame {
 			this[inList].push(conn);
 		}
 
-		localStorage.setItem('slitherBoard', this.levelNum + '-' + this.exportBoard());
+		localStorage.setItem('slitherAutoSave', this.levelNum + '-' + this.exportBoard());
 
 		this.changed = true;
 	}
@@ -430,7 +442,7 @@ class Slither extends CanvasGame {
 		this.startWinCheck(200).then(() => {
 			if (this.m_bGameOver) {
 				this.changed = true;
-				localStorage.removeItem('slitherBoard');
+				localStorage.removeItem('slitherAutoSave');
 			}
 		});
 	}
@@ -529,8 +541,14 @@ class Slither extends CanvasGame {
 			}
 		});
 
+		$('#save').on('click', e => {
+			this.quickSave();
+		});
+		$('#load').on('click', e => {
+			this.quickLoad();
+		});
+
 		$('#restart').on('click', e => {
-			e.preventDefault();
 			this.loadLevel(this.levelNum, false);
 		});
 	}

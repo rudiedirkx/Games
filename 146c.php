@@ -45,6 +45,9 @@ canvas {
 	&nbsp;
 	<button id="restart">Restart</button>
 	&nbsp;
+	<button id="save">Save</button>
+	<button id="load">Load</button>
+	&nbsp;
 	Level: <select id="level"></select>
 	<button data-level-nav="-1">&lt;</button>
 	<button data-level-nav="+1">&gt;</button>
