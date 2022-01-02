@@ -24,6 +24,9 @@ html, body {
 }
 body {
 	margin: 5px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
 }
 canvas {
 	background-color: #bde4a3;
@@ -34,26 +37,38 @@ canvas {
 	touch-action: none;
 	user-select: none;
 }
+.meta {
+	min-width: 300px;
+	max-width: 500px;
+}
+.meta > :first-child {
+	margin-top: 0;
+}
+button, select {
+	padding: 6px 10px;
+}
 </style>
 </head>
 
 <body>
 <canvas></canvas>
 
-<p>
-	<span id="stats-time">?</span>
-	&nbsp;
-	<button id="restart">Restart</button>
-	&nbsp;
-	<button id="save">Save</button>
-	<button id="load">Load</button>
-	&nbsp;
-	Level: <select id="level"></select>
-	<button data-level-nav="-1">&lt;</button>
-	<button data-level-nav="+1">&gt;</button>
-</p>
-
-<p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>
+<div class="meta">
+	<p>
+		<span id="stats-time">?</span>
+		&nbsp;
+		<button id="restart">Restart</button>
+		&nbsp;
+		<button id="save">Save</button>
+		<button id="load">Load</button>
+	</p>
+	<p>
+		Level: <select id="level"></select>
+		<button data-level-nav="-1">&lt;</button>
+		<button data-level-nav="+1">&gt;</button>
+	</p>
+	<p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>
+</div>
 
 <script>
 <? if (isset($_POST['import'])): ?>

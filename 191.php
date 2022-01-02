@@ -77,17 +77,12 @@ body {
 	background-color: var(--color);
 	color: white;
 	font-family: sans-serif;
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 20px;
 }
 a {
 	color: inherit;
-}
-
-.board,
-.meta {
-	float: left;
-}
-.meta {
-	margin-left: 20px;
 }
 
 table {
