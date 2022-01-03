@@ -1,4 +1,4 @@
-r.extend(Element, {
+this.Element && r.extend(Element, {
 	idOrRnd: function() {
 		return this.id || this.attr('id', '_' + String(Math.random()).substr(2)).id;
 	},

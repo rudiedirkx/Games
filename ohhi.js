@@ -1,6 +1,34 @@
 "use strict";
 
+const OHHI_SCRIPT_URL = self.document && document.currentScript.src;
+
 class OhhiBuilder {
+
+	static WORKER() {
+		importScripts('SELF_URL'.replace('ohhi.js', 'js/rjs-custom.js'));
+		importScripts('SELF_URL'.replace('ohhi.js', 'gridgame.js'));
+		importScripts('SELF_URL');
+
+		self.onmessage = function(e) {
+			console.time('build');
+			const builder = new OhhiBuilder(e.data.size);
+			builder.build();
+			console.timeEnd('build');
+console.log(builder.buildTries, builder.grid);
+
+			try {
+				console.time('make playable');
+				const playableGrid = builder.makePlayable();
+				console.timeEnd('make playable');
+console.log(builder.playableTries, playableGrid);
+				self.postMessage({grid: playableGrid});
+			}
+			catch (ex) {
+				console.timeEnd('make playable');
+				self.postMessage({error: ex.message});
+			}
+		};
+	}
 
 	static createEmpty(size) {
 		return (new Array(size)).fill(0).map(row => (new Array(size)).fill(0));
@@ -339,25 +367,23 @@ class Ohhi extends CanvasGame {
 	}
 
 	createMap(size) {
-		this.reset();
+		$('#newgame').addClass('loading');
 
+		this.reset();
 		this.size = size;
 
-		console.time('createMap');
-		const builder = new OhhiBuilder(size);
-		builder.build();
-		console.timeEnd('createMap');
-console.log(builder.buildTries, builder.grid);
+		const script = String(OhhiBuilder.WORKER).slice(10, -1).replace(/SELF_URL/g, OHHI_SCRIPT_URL);
 
-		// this.printGrid(grid);
+		const blob = new Blob([script], {type: "text/javascript"});
+		const worker = new Worker(window.URL.createObjectURL(blob));
 
-		console.time('make playable');
-		const playableGrid = builder.makePlayable();
-		// const playableGrid = builder.hideCellsPlayable();
-		console.timeEnd('make playable');
-console.log(builder.playableTries, playableGrid);
-
-		this.loadMap(playableGrid);
+		worker.postMessage({size});
+		worker.onmessage = e => {
+			if (e.data.grid) {
+				this.loadMap(e.data.grid);
+			}
+			$('#newgame').removeClass('loading');
+		};
 	}
 
 	loadMap(grid) {
@@ -407,14 +433,14 @@ console.log(builder.playableTries, playableGrid);
 
 		$('#newgame').on('click', e => {
 			const size = this.size;
-			setTimeout(() => this.createMap(size), 60);
+			this.createMap(size);
 		});
 
 		$('#sizes').on('click', 'a[data-size]', e => {
 			e.preventDefault();
 
 			const size = Number(e.target.data('size'));
-			setTimeout(() => this.createMap(size), 60);
+			this.createMap(size);
 		});
 
 		$('#build').on('click', e => {

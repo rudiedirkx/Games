@@ -28,6 +28,9 @@ canvas {
 p {
 	margin-left: 1em;
 }
+#newgame:not(.loading) > img {
+	display: none;
+}
 </style>
 <? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
@@ -41,7 +44,7 @@ p {
 
 <p>
 	<button id="restart">Restart</button>
-	<button id="newgame">New game</button>
+	<button id="newgame">New game <img src="images/loading.gif" style="height: 1em"></button>
 	<span id="sizes"></span>
 	<button id="build">Build</button>
 </p>

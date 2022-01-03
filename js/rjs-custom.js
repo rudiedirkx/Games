@@ -1,12 +1,12 @@
 // https://homeblox.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// 578d01cb28ac1f83d924519d9cc9d82db7613d1f
+// 5cdaa31ca2fbf943c39acc75fb6ccfd4e6b4c1e0
 
 (function(W, D) {
 
 	"use strict";
 
-	var html = D.documentElement,
-		head = html.getElementsByTagName('head')[0];
+	var html = D && D.documentElement,
+		head = html && html.getElementsByTagName('head')[0];
 
 	var r = function r(selector) {
 		return r.$(selector);
@@ -92,6 +92,8 @@
 		}
 
 		r.each(Hosts, function(Host) {
+			if ( !Host ) return;
+
 			if ( Super ) {
 				Host.prototype = new Super.constructor;
 				Host.prototype.constructor = Host;
@@ -101,7 +103,7 @@
 			r.each(proto, function(fn, name) {
 				Object.defineProperty(methodOwner, name, {value: fn});
 
-				if ( Host === Element && !Elements.prototype[name] ) {
+				if ( Host === W.Element && !Elements.prototype[name] ) {
 					Object.defineProperty(Elements.prototype, name, {value: function() {
 						return this.invoke(name, arguments);
 					}});
@@ -379,19 +381,19 @@
 		}
 	};
 
-	if ( 'onmouseenter' in html ) {
+	if ( html && 'onmouseenter' in html ) {
 		delete Event.Custom.mouseenter;
 	}
-	if ( 'onmouseleave' in html ) {
+	if ( html && 'onmouseleave' in html ) {
 		delete Event.Custom.mouseleave;
 	}
 	r.each([
 		W,
 		D,
-		Element,
+		W.Element,
 		Elements
 	], function(Host) {
-		Host.extend = function(methods) {
+		if (Host) Host.extend = function(methods) {
 			r.extend([this], methods);
 		};
 	});
@@ -512,12 +514,12 @@
 			return this;
 		}
 	});
-	var hosts = [W, D, Element, XMLHttpRequest];
+	var hosts = [W, D, W.Element, XMLHttpRequest];
 	if ( W.XMLHttpRequestUpload ) {
 		hosts.push(W.XMLHttpRequestUpload);
 	}
 	r.extend(hosts, eventablePrototype);
-	r.extend(Node, {
+	W.Node && r.extend(Node, {
 		ancestor: function(selector) {
 			var el = this;
 			while ( (el = el.parentNode) && el != D ) {
@@ -571,8 +573,8 @@
 			return el;
 		}
 	});
-	var EP = Element.prototype;
-	r.extend(Element, {
+	var EP = W.Element && Element.prototype;
+	W.Element && r.extend(Element, {
 		prop: function(name, value) {
 			if ( value !== undefined ) {
 				this[name] = value;
@@ -812,7 +814,7 @@
 		}
 	});
 
-	r.extend(D, {
+	W.Element && r.extend(D, {
 		getElement: Element.prototype.getElement,
 		getElements: Element.prototype.getElements,
 		getElementsByText: Element.prototype.getElementsByText,
