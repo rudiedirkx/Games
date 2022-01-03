@@ -72,6 +72,13 @@ class SlitherConnector extends Coords2D {
 	get disabledBits() {
 		return this.orient == 'hor' ? SlitherConnector.DISABLED_HOR : SlitherConnector.DISABLED_VER;
 	}
+
+	static fromPoints(a, b) {
+		if (a.x == b.x) {
+			return new SlitherConnector(a.x, Math.min(a.y, b.y), 'ver');
+		}
+		return new SlitherConnector(Math.min(a.x, b.x), a.y, 'hor');
+	}
 }
 
 class SlitherCondition extends Coords2D {
@@ -114,20 +121,21 @@ class Slither extends CanvasGame {
 		return Slither.OFFSET + source * Slither.SQUARE;
 	}
 
-	unscale(source, round = true) {
+	unscale(source) {
 		if (source instanceof Coords2D) {
 			source = source.multiply(this.canvas.width / this.canvas.offsetWidth);
-			const C = new Coords2D(this.unscale(source.x, round), this.unscale(source.y, round));
-			return this.inside(C) ? C : null;
+			return new Coords2D(this.unscale(source.x), this.unscale(source.y));
 		}
 
-		const c = (source - Slither.OFFSET) / Slither.SQUARE;
-		return round ? Math.round(c) : c;
+		return (source - Slither.OFFSET) / Slither.SQUARE;
 	}
 
-	inside(coord) {
-		return true;
-		// return coord.x >= 0 && coord.x < this.width && coord.y >= 0 && coord.y < this.height;
+	getConnectionColor() {
+		if (this.builder) {
+			return this.builder.path.length >= this.builder.minPoints ? 'green' : 'red';
+		}
+
+		return this.m_bGameOver ? '#555' : '#888';
 	}
 
 	drawContent() {
@@ -158,14 +166,11 @@ class Slither extends CanvasGame {
 	}
 
 	drawEnableds() {
-		// @todo Animate after toggle on
-		const color = this.m_bGameOver ? '#555' : '#888';
-		this.enableds.forEach(conn => {
-			this.drawConnectionStraight(conn, color);
-		});
+		this.enableds.forEach(conn => this.drawConnectionStraight(conn));
 	}
 
-	drawConnectionStraight(conn, color) {
+	drawConnectionStraight(conn) {
+		const color = this.getConnectionColor();
 		let to = conn.to;
 		const toConnections = this.getConnections(to, conn);
 		if (toConnections.length == 1 && toConnections[0].orient != conn.orient) {
@@ -184,7 +189,7 @@ class Slither extends CanvasGame {
 	}
 
 	drawRoundedCorners() {
-		const color = this.m_bGameOver ? '#555' : '#888';
+		const color = this.getConnectionColor();
 
 		this.ctx.strokeStyle = color;
 		this.ctx.lineWidth = 8;
@@ -209,7 +214,7 @@ class Slither extends CanvasGame {
 	}
 
 	drawDots() {
-		const color = this.m_bGameOver ? '#555' : '#888';
+		const color = this.getConnectionColor();
 		for (var y = 0; y <= this.height; y++) {
 			for (var x = 0; x <= this.width; x++) {
 				const C = new Coords2D(x, y);
@@ -338,17 +343,8 @@ class Slither extends CanvasGame {
 		const map = this.getLevel(lvl);
 		if (!map) return false;
 
-		this.reset();
+		this.loadMap(map);
 		this.setLevelNum(lvl);
-
-		this.width = Math.max(...map.map(row => row.length));
-		this.height = map.length;
-
-		this.connectors = this.createConnectors();
-		this.conditions = this.extractConditions(map);
-
-		this.canvas.width = Slither.OFFSET * 2 + Slither.SQUARE * this.width;
-		this.canvas.height = Slither.OFFSET * 2 + Slither.SQUARE * this.height;
 
 		if (trySaved) {
 			const saved = this.getAutoSaved();
@@ -360,6 +356,66 @@ class Slither extends CanvasGame {
 		this.changed = true;
 
 		return true;
+	}
+
+	loadMap(map) {
+		this.reset();
+
+		this.width = Math.max(...map.map(row => row.length));
+		this.height = map.length;
+
+		this.connectors = this.createConnectors();
+		this.conditions = this.extractConditions(map);
+
+		this.canvas.width = Slither.OFFSET * 2 + Slither.SQUARE * this.width;
+		this.canvas.height = Slither.OFFSET * 2 + Slither.SQUARE * this.height;
+	}
+
+	createLevel() {
+		const size = 5 + parseInt(Math.random() * 8);
+		let attempts = 0;
+		var builder;
+		while (attempts < 100) {
+			attempts++;
+			builder = new SlitherBuilder(size, size);
+			builder.randomStart();
+			while (!builder.done) {
+				builder.walk();
+			}
+// console.log(builder);
+			if (builder.success()) {
+				break;
+			}
+		}
+console.log(size, attempts);
+
+		const lvl = this.levelNum;
+		this.loadMap(builder.createEmptyMap());
+		this.levelNum = lvl;
+		this.m_bGameOver = true;
+		this.enableds = builder.makeConnections();
+		this.paint();
+		this.drawDot(this.scale(builder.start), {color: 'red'});
+	}
+
+	createLevelStep() {
+		this.m_bGameOver = true;
+		if (!this.builder) {
+			this.builder = new SlitherBuilder(5, 5);
+			this.builder.randomStart();
+		}
+		else {
+			this.builder.walk();
+			if (this.builder.done) {
+				setTimeout(() => alert(this.builder.success() ? 'SUCCESS' : 'failed'), 100);
+			}
+		}
+console.log(this.builder);
+
+		this.loadMap(this.builder.createEmptyMap());
+		this.enableds = this.builder.makeConnections();
+		this.paint();
+		this.drawDot(this.scale(this.builder.start), {color: 'red'});
 	}
 
 	getLevel(lvl) {
@@ -551,6 +607,10 @@ class Slither extends CanvasGame {
 		$('#restart').on('click', e => {
 			this.loadLevel(this.levelNum, false);
 		});
+
+		$('#create').on('click', e => {
+			this.createLevel();
+		});
 	}
 
 	listenContextClick() {
@@ -570,4 +630,103 @@ class Slither extends CanvasGame {
 		$('#level').setHTML(html);
 	}
 
+}
+
+class SlitherBuilder {
+	constructor(width, height) {
+		this.width = width;
+		this.height = height;
+		this.minPoints = 0.8 * this.width * this.height - Math.max(this.width, this.height);
+
+		this.start = null;
+		this.path = [];
+		this.pos = null;
+		this.options = [];
+		this.visited = [];
+		this.done = false;
+		this.stepsForward = 0;
+		this.stepsBackward = 0;
+	}
+
+	randomStart() {
+		this.moveForward(this.start = new Coords2D(
+			Math.floor(Math.random() * (this.width + 1)),
+			Math.floor(Math.random() * (this.height + 1))
+		));
+	}
+
+	moveForward(C) {
+		this.stepsForward++;
+
+		this.path.push(C);
+		this.moved();
+		this.done = (this.stepsForward > 1 && this.start.equal(C)) || this.visited.some(V => V.equal(C));
+		if (!this.done && this.path.length > 1) {
+			this.visited.push(C);
+		}
+	}
+
+	moveBackward() {
+		this.stepsBackward++;
+
+		this.path.pop();
+		this.done = this.path.length == 0;
+		if (!this.done) this.moved();
+	}
+
+	moved() {
+		const C = this.path[this.path.length-1];
+		this.pos = C;
+		this.options = Coords2D.dir4Coords.map(D => C.add(D)).filter(neig => {
+			if (!this.inside(neig)) return false;
+			if (this.path.length >= this.minPoints && this.start.equal(neig)) return true;
+			if (!this.path.some(P => P.equal(neig))) return true;
+			return false;
+		});
+	}
+
+	inside(C) {
+		return C.x >= 0 && C.x <= this.width && C.y >= 0 && C.y <= this.height;
+	}
+
+	walk() {
+		if (this.options.length) {
+			this.moveForward(this.options[parseInt(Math.random() * this.options.length)])
+		}
+		else {
+			while (this.options.length < 2 && !this.done) {
+				this.moveBackward();
+			}
+			if (!this.done) {
+				this.options = this.options.filter(O => !this.visited.some(V => V.equal(O)));
+				// this.visited = [];
+			}
+		}
+	}
+
+	success() {
+		if (this.path.length < this.minPoints) return false;
+		if (!this.start.equal(this.path[this.path.length-1])) return false;
+
+		const xs = this.path.map(C => C.x);
+		const ys = this.path.map(C => C.y);
+		if (Math.min(...xs) > 0 || Math.max(...xs) < this.width) return false;
+		if (Math.min(...ys) > 0 || Math.max(...ys) < this.height) return false;
+
+		return true;
+	}
+
+	makeConnections() {
+		const conns = [];
+		for ( let i = 1; i < this.path.length; i++ ) {
+			const from = this.path[i-1];
+			const to = this.path[i];
+			conns.push(SlitherConnector.fromPoints(from, to));
+		}
+		return conns;
+	}
+
+	createEmptyMap() {
+		return Array(this.height).fill(0).map(() => ' '.repeat(this.width));
+	}
 }

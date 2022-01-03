@@ -68,6 +68,7 @@ button, select {
 		<button data-level-nav="+1">&gt;</button>
 	</p>
 	<p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>
+	<p><button id="create">Create</button></p>
 </div>
 
 <script>

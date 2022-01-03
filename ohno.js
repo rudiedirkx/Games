@@ -160,6 +160,7 @@ class Ohno extends CanvasGame {
 		}
 
 		this.loadGrid(grid);
+		return grid;
 	}
 
 	createRandom(size) {
@@ -169,48 +170,40 @@ class Ohno extends CanvasGame {
 		const RED_MAX = 0.6;
 
 		let attempts = 0;
-		while (true) {
-			this.createEmpty(size);
+		var grid;
+		while (attempts < 1) {
 			attempts++;
-			this.m_objGrid.getElements('td').forEach(td => td.className = Math.random() > RED_CHANCE ? 'active' : 'closed');
-			var recount = false;
-			const starts = this.m_objGrid.getElements('td.active');
-			let neighbors = starts.map(td => {
-				const neighbors = this.allActiveNeighbors(td).length;
-				if (neighbors == 0) {
-					recount = true;
-					td.className = 'closed';
-				}
-				else {
-					td.firstElementChild.setText(neighbors);
-				}
-				return neighbors;
-			});
-			if (recount) {
-				neighbors = starts.map(td => this.allActiveNeighbors(td).length);
-			}
+
+			grid = this.createEmpty(size);
+			grid.forEach(row => row.forEach((v, x) => row[x] = Math.random() > RED_CHANCE ? Ohno.ACTIVE_STRUCTURE : Ohno.CLOSED_STRUCTURE));
+// console.log(grid);
+
+// 			var recount = false;
+// 			const starts = this.m_objGrid.getElements('td.active');
+// 			let neighbors = starts.map(td => {
+// 				const neighbors = this.allActiveNeighbors(td).length;
+// 				if (neighbors == 0) {
+// 					recount = true;
+// 					td.className = 'closed';
+// 				}
+// 				else {
+// 					td.firstElementChild.setText(neighbors);
+// 				}
+// 				return neighbors;
+// 			});
 // console.log(neighbors);
-			const closed = this.m_objGrid.getElements('.closed').length;
-			if (Math.max(...neighbors) <= 9 && closed/size/size < RED_MAX) {
-				break;
-			}
+// 			if (recount) {
+// 				neighbors = starts.map(td => this.allActiveNeighbors(td).length);
+// 			}
+// // console.log(neighbors);
+// 			const closed = this.m_objGrid.getElements('.closed').length;
+// 			if (Math.max(...neighbors) <= 9 && closed/size/size < RED_MAX) {
+// 				break;
+// 			}
 		}
 console.log(`in ${attempts} attempts`);
 
-		this.m_objGrid.getElements('td').forEach(td => {
-			if (Math.random() > 0.5) {
-				td.firstElementChild.setText('');
-			}
-			else {
-				if (td.hasClass('closed')) {
-					td.removeClass('closed').data('closed', '1');
-				}
-				else {
-					td.removeClass('active').data('required', parseInt(td.firstElementChild.getText()));
-				}
-			}
-			td.className = '';
-		});
+		this.loadGrid(grid);
 	}
 
 	createEmpty(size) {
@@ -225,7 +218,7 @@ console.log(`in ${attempts} attempts`);
 			e.preventDefault();
 		});
 
-		$('#new').on('click', e => this.createRandom());
+		$('#create').on('click', e => this.createRandom());
 
 		$('#cheat').on('click', e => this.cheatOneRound());
 	}
@@ -250,6 +243,9 @@ console.log(`in ${attempts} attempts`);
 		}
 		else if (v === Ohno.CLOSED_USER) {
 			this.grid[C.y][C.x] = 0;
+		}
+		else {
+			return;
 		}
 
 		this.changed = true;

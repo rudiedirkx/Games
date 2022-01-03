@@ -87,7 +87,7 @@ p {
 
 <p>
 	<button id="cheat">Cheat</button>
-	<button id="new">New game</button>
+	<button id="create">Create</button>
 	<? foreach ($grids as $i => $grid): ?>
 		| <a href="?demo=<?= $i ?>"><?= $i ?></a>
 	<? endforeach ?>
