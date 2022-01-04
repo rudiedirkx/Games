@@ -364,6 +364,8 @@ class Slither extends CanvasGame {
 		this.width = Math.max(...map.map(row => row.length));
 		this.height = map.length;
 
+		$('#create-size').value = this.width;
+
 		this.connectors = this.createConnectors();
 		this.conditions = this.extractConditions(map);
 
@@ -371,11 +373,11 @@ class Slither extends CanvasGame {
 		this.canvas.height = Slither.OFFSET * 2 + Slither.SQUARE * this.height;
 	}
 
-	createLevel() {
-		const size = 5 + parseInt(Math.random() * 8);
+	createLevel(size) {
+		// const size = 5 + parseInt(Math.random() * 8);
 		let attempts = 0;
 		var builder;
-		while (attempts < 100) {
+		while (attempts < 1000) {
 			attempts++;
 			builder = new SlitherBuilder(size, size);
 			builder.randomStart();
@@ -609,7 +611,9 @@ console.log(this.builder);
 		});
 
 		$('#create').on('click', e => {
-			this.createLevel();
+			console.time('createLevel');
+			this.createLevel(parseInt($('#create-size').value));
+			console.timeEnd('createLevel');
 		});
 	}
 
@@ -696,6 +700,9 @@ class SlitherBuilder {
 		else {
 			while (this.options.length < 2 && !this.done) {
 				this.moveBackward();
+			}
+			if (this.stepsBackward > this.minPoints * 2) {
+				this.done = true;
 			}
 			if (!this.done) {
 				this.options = this.options.filter(O => !this.visited.some(V => V.equal(O)));

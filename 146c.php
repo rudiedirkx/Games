@@ -44,7 +44,7 @@ canvas {
 .meta > :first-child {
 	margin-top: 0;
 }
-button, select {
+button, select, input {
 	padding: 6px 10px;
 }
 </style>
@@ -68,7 +68,10 @@ button, select {
 		<button data-level-nav="+1">&gt;</button>
 	</p>
 	<p>Click between dots to connect a slither and make every cell have the right number of connectors. White numbers = good.</p>
-	<p><button id="create">Create</button></p>
+	<p>
+		<input id="create-size" type="number" min="5" max="15" />
+		<button id="create">Create</button>
+	</p>
 </div>
 
 <script>
