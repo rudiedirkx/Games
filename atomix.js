@@ -82,6 +82,19 @@ class Atomix extends LeveledGridGame {
 		this.listenCellClick();
 	}
 
+	isDirectionable( cell ) {
+		return !cell.hasClass('wall') && !cell.data('atom');
+	}
+
+	getMovableDirection( cell ) {
+		const selected = this.getSelectedCell();
+		if ( !selected ) return;
+
+		const selectedC = this.getCoord(selected);
+		const cellC = this.getCoord(cell);
+		return Coords2D.dir4Names.find((dir, i) => selectedC.add(Coords2D.dir4Coords[i]).equal(cellC));
+	}
+
 	unselect() {
 		this.m_objGrid.getElements('.selected').removeClass('selected');
 	}
@@ -90,6 +103,15 @@ class Atomix extends LeveledGridGame {
 		if ( cell.data('atom') ) {
 			this.unselect();
 			cell.addClass('selected');
+			return;
+		}
+
+		if ( this.isDirectionable(cell) ) {
+			var dir = this.getMovableDirection(cell);
+			if ( dir ) {
+				this.handleGlobalDirection(dir);
+				return;
+			}
 		}
 	}
 
@@ -130,7 +152,7 @@ class Atomix extends LeveledGridGame {
 
 		this.setMoves(this.m_iMoves + 1);
 
-		this.haveWon() && this.win();
+		this.startWinCheck();
 	}
 
 }

@@ -134,6 +134,7 @@ td.wall2 {
 	width				: calc(var(--inside-cell) - 4px);
 	margin				: 2px auto 0;
 	border-radius		: 99px;
+	text-align			: center;
 }
 .atomix td[data-atom] span:after {
 	color				: white;
