@@ -267,7 +267,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	selectColor( el ) {
-		if ( this.turnColor == el.dataset.color ) return;
+		if ( el.hasClass('selected') ) return;
 		if ( el.dataset.color == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
 
 		$$(`#dice > [data-color="${this.turnColor}"]`).removeClass('selected');
@@ -277,7 +277,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	selectNumber( el ) {
-		if ( this.turnNumber == el.dataset.number ) return;
+		if ( el.hasClass('selected') ) return;
 		if ( el.dataset.number == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
 
 		$$(`#dice > [data-number="${this.turnNumber}"]`).removeClass('selected');
