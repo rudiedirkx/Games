@@ -1,4 +1,3 @@
-
 "use strict";
 
 var Coord = THREE.Vector3;
@@ -56,6 +55,12 @@ function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
 		C = new Coord(~~C[0], ~~C[1], ~~C[2]);
 		self.move(C);
 	});
+	$(window).on('resize', function(e) {
+		const intended = parseFloat(getComputedStyle(self.$container[0]).getPropertyValue('--width').trim());
+		const max = document.documentElement.clientWidth - 30;
+		console.log(intended, max);
+		self.$container[0].style.setProperty('--scale', max >= intended ? '1.0' : max / intended);
+	}).trigger('resize');
 
 	// Start polling
 	self.tickStatus();

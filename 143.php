@@ -165,7 +165,7 @@ $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOppone
 
 <head>
 <title>Abalone</title>
-<link rel="stylesheet" href="143.css" />
+<link rel="stylesheet" href="<?= html_asset('143.css') ?>" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta charset="utf-8" />
 </head>
@@ -177,16 +177,18 @@ $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOppone
 <p class="friend-url">Share <a href="<?= $friendURL ?>"><?= $friendURL ?></a> with your friend.</p>
 
 <div id="board">
-	<a href="#" class="direction tl" data-dir="-1,-1,0">tl</a>
-	<a href="#" class="direction tr" data-dir="0,-1,-1">tr</a>
-	<a href="#" class="direction r"  data-dir="1,0,-1">r</a>
-	<a href="#" class="direction br" data-dir="1,1,0">br</a>
-	<a href="#" class="direction bl" data-dir="0,1,1">bl</a>
-	<a href="#" class="direction l"  data-dir="-1,0,1">l</a>
+	<a href="#" class="direction tl" data-dir="-1,-1,0"></a>
+	<a href="#" class="direction tr" data-dir="0,-1,-1"></a>
+	<a href="#" class="direction r"  data-dir="1,0,-1"></a>
+	<a href="#" class="direction br" data-dir="1,1,0"></a>
+	<a href="#" class="direction bl" data-dir="0,1,1"></a>
+	<a href="#" class="direction l"  data-dir="-1,0,1"></a>
 
-	<? foreach (Abalone::balls() as $ball): ?>
-		<?= Abalone::renderBall($ball) ?>
-	<? endforeach ?>
+	<div class="shape">
+		<? foreach (Abalone::balls() as $ball): ?>
+			<?= Abalone::renderBall($ball) ?>
+		<? endforeach ?>
+	</div>
 </div>
 
 <div id="players">
@@ -224,12 +226,13 @@ Opponent: <?= $objOpponent->id ?>
 <div id="help">
 	<h2>What's this then?</h2>
 	<p><a href="http://en.wikipedia.org/wiki/Abalone_(board_game)">It's Abalone.</a></p>
+	<p>Click your balls, and then an arrow.</p>
 </div>
 
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script>THREE = {}</script>
-<script src="Vector3.js"></script>
-<script src="143.js"></script>
+<script src="<?= html_asset('Vector3.js') ?>"></script>
+<script src="<?= html_asset('143.js') ?>"></script>
 <script>
 $body = $('body');
 objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame->turn ?>', true);
