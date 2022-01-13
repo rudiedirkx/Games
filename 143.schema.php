@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'version' => 'abalone:1',
+	'version' => 'abalone:3',
 	'tables' => [
 		'abalone_games' => [
 			'id' => ['pk' => true],
@@ -13,6 +13,8 @@ return [
 			'game_id' => ['unsigned' => true],
 			'password' => ['null' => false],
 			'color' => ['null' => false, 'default' => 'white'],
+			'online' => ['unsigned' => true, 'default' => 0],
+			'ip',
 		],
 		'abalone_balls' => [
 			'id' => ['pk' => true],

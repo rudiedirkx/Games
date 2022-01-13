@@ -64,6 +64,7 @@ function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
 	document.body.classList.add('ready');
 }
 
+Abalone.INACTIVE_AFTER = 20;
 Abalone.selectMaxBalls = 4;
 Abalone.oppositeColor = function( color ) {
 	return 'white' == color ? 'black' : 'white';
@@ -175,12 +176,13 @@ console.debug('click: move');
 	tickStatus: function() {
 		var self = this;
 
-		var xhr = this.updateStatus();
-		xhr.done(function() {
-			setTimeout(function() {
-				self.tickStatus();
-			}, 500);
-		});
+		if (!document.hidden) {
+			this.updateStatus();
+		}
+
+		setTimeout(function() {
+			self.tickStatus();
+		}, 800);
 	},
 
 
@@ -193,7 +195,12 @@ console.debug('click: move');
 		return $.get('?status', function(rv) {
 			if ( rv.status.turn != self.m_szTurnColor ) {
 				location.reload();
+				return;
 			}
+
+			var $tr = $('tr.other');
+			$tr[0].cells[1].title = `Online: ${rv.status.opponentOnline} sec ago`;
+			$tr.toggleClass('inactive', rv.status.opponentOnline > Abalone.INACTIVE_AFTER);
 		});
 
 	}, // updateStatus

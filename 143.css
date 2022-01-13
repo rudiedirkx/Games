@@ -120,6 +120,10 @@ table.players tr.self .img.self {
 table.players tr.turn .img.turn {
 	border-right: 18px solid black;
 }
+table.players tr.other.inactive {
+	color: red;
+	font-weight: bold;
+}
 
 
 

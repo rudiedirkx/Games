@@ -138,9 +138,15 @@ if ( isset($_POST['changes']) ) {
 
 // Fetch status
 else if ( isset($_GET['status']) ) {
+	$db->update('abalone_players', [
+		'online' => time(),
+		'ip' => $_SERVER['REMOTE_ADDR'],
+	], ['id' => $objPlayer->id]);
+
 	$status = (object) array(
 		'turn' => $objGame->turn,
 		'opponent' => (int) $objOpponent->id,
+		'opponentOnline' => time() - $objOpponent->online,
 	);
 
 	return json_respond(array('error' => 0, 'status' => $status));
@@ -152,7 +158,7 @@ if ( empty($_GET['login']) ) {
 	exit;
 }
 
-$friendURL = 'http://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOpponent->password;
+$friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOpponent->password;
 
 ?>
 <html>
@@ -343,7 +349,7 @@ class Abalone {
 		}
 		$password = preg_replace('#[^a-z0-9]#i', '', base64_encode($password));
 		$password = substr($password, rand(0, strlen($password) - 10), 10);
-		return $password;
+		return strtoupper($password);
 	}
 
 }
