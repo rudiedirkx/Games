@@ -89,6 +89,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		return {
 			...super.getScore(),
 			score: this.getNumericScore(),
+			level: this.boardIndex,
 		};
 	}
 

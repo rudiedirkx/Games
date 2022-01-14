@@ -298,5 +298,6 @@ body[data-state="done"] #next-turn > .restart {
 <script>
 KeerOpKeer.CENTER = <?= $mapCenter ?>;
 var objGame = new SoloKeerOpKeer($('#grid'));
+objGame.boardIndex = <?= json_encode(array_search($board, array_keys($boards))) ?>;
 objGame.listenControls();
 </script>
