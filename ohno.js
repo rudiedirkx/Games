@@ -11,7 +11,7 @@ const OhnoMixin = {
 	},
 
 	isNumber(v) {
-		return v > 0 && v < 100;
+		return v != null && v > 0 && v < 100;
 	},
 
 	allActiveNeighbors(C) {
@@ -27,7 +27,7 @@ const OhnoMixin = {
 		var next;
 
 		const list = [];
-		while (this[matcher](next = curr.add(D))) {
+		while (this.grid.insideC(next = curr.add(D)) && this[matcher](next)) {
 			list.push(next);
 			curr = next;
 		}
@@ -36,11 +36,12 @@ const OhnoMixin = {
 	},
 
 	isActiveNeighbor(C) {
-		return this.grid[C.y] && this.isActive(this.grid[C.y][C.x]);
+		return this.isActive(this.grid.getC(C));
 	},
 
 	isPotentialNeighbor(C) {
-		return this.grid[C.y] && (this.grid[C.y][C.x] === 0 || this.isActive(this.grid[C.y][C.x]));
+		const v = this.grid.getC(C);
+		return v === 0 || this.isActive(v);
 	},
 
 };
@@ -88,7 +89,7 @@ class Ohno extends CanvasGame {
 
 		for ( let y = 0; y < this.size; y++ ) {
 			for ( let x = 0; x < this.size; x++ ) {
-				const v = this.grid[y][x];
+				const v = this.grid.get(x, y);
 
 				const centerC = this.scale(new Coords2D(x, y));
 				const color = this.isActive(v) ? '#86c5da' : (this.isClosed(v) ? 'red' : '#cccc');
@@ -132,11 +133,11 @@ class Ohno extends CanvasGame {
 	}
 
 	getState(C) {
-		return C && this.grid[C.y] && this.grid[C.y][C.x];
+		return C && this.grid.getC(C);
 	}
 
 	loadGrid(grid) {
-		this.size = grid.length;
+		this.size = grid.width;
 		this.grid = grid;
 
 		this.canvas.width = this.canvas.height = Ohno.OFFSET + Ohno.CIRCLE * this.size + Ohno.MARGIN * (this.size - 1) + Ohno.OFFSET;
@@ -144,17 +145,15 @@ class Ohno extends CanvasGame {
 	}
 
 	importMap(size, source) {
-		const grid = [];
+		const grid = new GameGrid(size, size);
 		for ( let y = 0; y < size; y++ ) {
-			const row = new Uint8Array(size);
-			grid.push(row);
 			for ( let x = 0; x < size; x++ ) {
 				const t = source[y*size+x];
 				if (t == 'x') {
-					row[x] = Ohno.CLOSED_STRUCTURE;
+					grid.set(x, y, Ohno.CLOSED_STRUCTURE);
 				}
 				else if (!isNaN(parseInt(t))) {
-					row[x] = parseInt(t);
+					grid.set(x, y, parseInt(t));
 				}
 			}
 		}
@@ -170,12 +169,14 @@ class Ohno extends CanvasGame {
 		const RED_MAX = 0.6;
 
 		let attempts = 0;
-		var grid;
+		const grid = new GameGrid(size, size);
 		while (attempts < 1) {
 			attempts++;
 
-			grid = this.createEmpty(size);
-			grid.forEach(row => row.forEach((v, x) => row[x] = Math.random() > RED_CHANCE ? Ohno.ACTIVE_STRUCTURE : Ohno.CLOSED_STRUCTURE));
+			for ( let i = 0; i < grid.length; i++ ) {
+				const v = Math.random() > RED_CHANCE ? Ohno.ACTIVE_STRUCTURE : Ohno.CLOSED_STRUCTURE;
+				grid.setIndex(i, v);
+			}
 // console.log(grid);
 
 // 			var recount = false;
@@ -236,13 +237,13 @@ console.log(`in ${attempts} attempts`);
 		}
 
 		if (v === 0) {
-			this.grid[C.y][C.x] = Ohno.ACTIVE_USER;
+			this.grid.setC(C, Ohno.ACTIVE_USER);
 		}
 		else if (v === Ohno.ACTIVE_USER) {
-			this.grid[C.y][C.x] = Ohno.CLOSED_USER;
+			this.grid.setC(C, Ohno.CLOSED_USER);
 		}
 		else if (v === Ohno.CLOSED_USER) {
-			this.grid[C.y][C.x] = 0;
+			this.grid.setC(C, 0);
 		}
 		else {
 			return;
@@ -257,14 +258,14 @@ console.log(`in ${attempts} attempts`);
 		const starts = [];
 		for ( let y = 0; y < this.size; y++ ) {
 			for ( let x = 0; x < this.size; x++ ) {
-				const v = this.grid[y][x];
+				const v = this.grid.get(x, y);
 				if (v === 0) return false;
 
 				if (this.isNumber(v)) starts.push(new Coords2D(x, y));
 			}
 		}
 
-		return starts.every(C => this.allActiveNeighbors(C).flat(1).length == this.grid[C.y][C.x]);
+		return starts.every(C => this.allActiveNeighbors(C).flat(1).length == this.grid.getC(C));
 	}
 
 	cheatOneRoundFromStart(C) {
@@ -287,8 +288,8 @@ console.log(`in ${attempts} attempts`);
 
 	cheatFromSolver(solver) {
 console.log(solver);
-		solver.updatesActive.forEach(C => this.grid[C.y][C.x] = Ohno.ACTIVE_USER);
-		solver.updatesClosed.forEach(C => this.grid[C.y][C.x] = Ohno.CLOSED_USER);
+		solver.updatesActive.forEach(C => this.grid.setC(C, Ohno.ACTIVE_USER));
+		solver.updatesClosed.forEach(C => this.grid.setC(C, Ohno.CLOSED_USER));
 		this.changed = true;
 	}
 
@@ -512,11 +513,11 @@ console.log(grid);
 class OhnoSolver {
 
 	static fromGrid(grid) {
-		return new OhnoSolver(grid.map(row => row.slice(0)));
+		return new OhnoSolver(grid.copy());
 	}
 
 	constructor(grid) {
-		this.size = grid.length;
+		this.size = grid.width;
 		this.grid = grid;
 
 		this.requireds = this.makeRequireds();
@@ -528,7 +529,7 @@ class OhnoSolver {
 		const coords = [];
 		for ( let y = 0; y < this.size; y++ ) {
 			for ( let x = 0; x < this.size; x++ ) {
-				if (this.isNumber(this.grid[y][x])) {
+				if (this.isNumber(this.grid.get(x, y))) {
 					coords.push(new Coords2D(x, y));
 				}
 			}
@@ -537,17 +538,15 @@ class OhnoSolver {
 	}
 
 	setActive(C) {
-		const curr = this.grid[C.y][C.x];
-		if (curr === 0) {
-			this.grid[C.y][C.x] = 'o';
+		if (this.grid.getC(C) === 0) {
+			this.grid.setC(C, 'o');
 			this.updatesActive.push(C);
 		}
 	}
 
 	setClosed(C) {
-		const curr = this.grid[C.y] && this.grid[C.y][C.x];
-		if (curr === 0) {
-			this.grid[C.y][C.x] = 'x';
+		if (this.grid.getC(C) === 0) {
+			this.grid.setC(C, 'x');
 			this.updatesClosed.push(C);
 		}
 	}
@@ -566,12 +565,12 @@ class OhnoSolver {
 		neighbors.forEach((L, d) => {
 			const D = Coords2D.dir4Coords[d];
 			const next = (L.length ? L[L.length-1] : C).add(D);
-			this.setClosed(next);
+			this.grid.insideC(next) && this.setClosed(next);
 		});
 	}
 
 	findKnownsFromSpacesStarting(C) {
-		const required = this.grid[C.y][C.x];
+		const required = this.grid.getC(C);
 		const neighbors = this.allPotentialNeighbors(C);
 		const lengths = neighbors.map(L => L.length);
 		const total = neighbors.flat(1).length;
@@ -587,7 +586,7 @@ class OhnoSolver {
 	}
 
 	findKnownsFromEnoughStarting(C) {
-		const required = this.grid[C.y][C.x];
+		const required = this.grid.getC(C);
 		const neighbors = this.allActiveNeighbors(C);
 		const lengths = neighbors.map(L => L.length);
 		const total = neighbors.flat(1).length;
@@ -597,17 +596,17 @@ class OhnoSolver {
 	}
 
 	findKnownsFromTooFarStarting(C) {
-		const required = this.grid[C.y][C.x];
+		const required = this.grid.getC(C);
 		const neighbors = this.allActiveNeighbors(C);
 		neighbors.forEach((L, d) => {
 			const D = Coords2D.dir4Coords[d];
 			const next = (L.length ? L[L.length-1] : C).add(D);
-			const val = this.grid[next.y] && this.grid[next.y][next.x];
+			const val = this.grid.get(next.x, next.y);
 			if (val === 0) {
-				this.grid[next.y][next.x] = Ohno.ACTIVE_USER;
+				this.grid.set(next.x, next.y, Ohno.ACTIVE_USER);
 				const neighbors2 = this.allActiveNeighbors(C);
 				const total2 = neighbors2.flat(1).length;
-				this.grid[next.y][next.x] = 0;
+				this.grid.set(next.x, next.y, 0);
 				if (total2 > required) {
 					this.setClosed(next);
 				}

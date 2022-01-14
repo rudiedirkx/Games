@@ -97,6 +97,51 @@ class RgbColor {
 	}
 }
 
+class GameGrid {
+	constructor(width, height) {
+		this.width = width;
+		this.content = height instanceof Uint8Array ? height : new Uint8Array(width * height);
+		this.length = this.content.length;
+		this.height = this.length / this.width;
+	}
+
+	inside(x, y) {
+		return x >= 0 && y >= 0 && x < this.width && y < this.height;
+	}
+
+	insideC(C) {
+		return this.inside(C.x, C.y);
+	}
+
+	get(x, y) {
+		return this.inside(x, y) ? this.getIndex(y * this.width + x) : null;
+	}
+
+	getC(C) {
+		return this.inside(C.x, C.y) ? this.getIndex(C.y * this.width + C.x) : null;
+	}
+
+	getIndex(i) {
+		return this.content[i];
+	}
+
+	set(x, y, value) {
+		/*if (this.inside(x, y))*/ this.setIndex(y * this.width + x, value);
+	}
+
+	setC(C, value) {
+		/*if (this.inside(C.x, C.y))*/ this.setIndex(C.y * this.width + C.x, value);
+	}
+
+	setIndex(i, value) {
+		this.content[i] = value;
+	}
+
+	copy() {
+		return new this.constructor(this.width, this.content.slice(0));
+	}
+}
+
 class Game {
 
 	constructor() {
