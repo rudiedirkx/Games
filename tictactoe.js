@@ -17,6 +17,7 @@ class TicTacToe extends GridGame {
 	reset() {
 		super.reset();
 
+		this.winner = null;
 		this.setTurn(0);
 	}
 
@@ -41,6 +42,18 @@ class TicTacToe extends GridGame {
 		this.startWinCheck();
 	}
 
+	getPlayerLabel(player) {
+		return parseInt(player) ? 'o' : 'x';
+	}
+
+	haveLost() {
+		return this.m_objGrid.getElements('td:not([data-chosen])').length == 0;
+	}
+
+	getLoseText() {
+		return 'NOBODY WINS :-(';
+	}
+
 	haveWon() {
 		const lines = this.getWinLines();
 		const winner = lines.find((coords) => {
@@ -50,9 +63,14 @@ class TicTacToe extends GridGame {
 			return chosens === '111' || chosens === '000';
 		});
 		if ( winner ) {
-			new Elements(winner.map((coord) => this.getCell(coord))).addClass('winner');
+			this.winner = this.getCell(winner[0]).data('chosen');
+			winner.forEach(C => this.getCell(C).addClass('winner'));
 			return true;
 		}
+	}
+
+	getWinText() {
+		return `${this.getPlayerLabel(this.winner)} WINS!`;
 	}
 
 	getWinLines() {
@@ -82,7 +100,7 @@ class TicTacToe extends GridGame {
 			}).filter((line) => line.length == 3);
 		}));
 		const coords = lines.map((cells) => cells.map((cell) => this.getCoord(cell)));
-		return coords;
+		return this.m_arrWinLines = coords;
 	}
 
 	listenControls() {

@@ -263,9 +263,11 @@ class Game {
 		this.stopTime();
 		this.m_bGameOver = true;
 
-		setTimeout(function() {
-			alert('You LOSE :-(');
-		}, this.ALERT_DELAY);
+		setTimeout(() => alert(this.getLoseText()), this.ALERT_DELAY);
+	}
+
+	getLoseText() {
+		return 'You LOSE :-(';
 	}
 
 	haveWon() {
