@@ -21,7 +21,6 @@ body {
 	font-family: sans-serif;
 }
 canvas {
-
 	touch-action: none;
 	user-select: none;
 
@@ -34,9 +33,9 @@ canvas {
 		#777 20px
 	);
 
-	image-rendering: optimizeSpeed;
+	/*image-rendering: optimizeSpeed;
 	image-rendering: -webkit-optimize-contrast;
-	image-rendering: pixelated;
+	image-rendering: pixelated;*/
 
 	max-width: 100%;
 }
