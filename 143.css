@@ -9,12 +9,12 @@
 }
 
 body {
-	max-width: 500px;
+	max-width: 540px;
 }
-body.ready.my-turn {
+body.my-turn {
 	background-color: #bfb;
 }
-body.ready.their-turn {
+body.their-turn {
 	background-color: #fcc;
 }
 
@@ -34,12 +34,19 @@ h1,
  * Module: board
  */
 
+body[data-player="black"] #board {
+	transform: rotate(180deg);
+	transform-origin: center;
+}
+
 #board {
-	--width: 408px;
-	--height: 370px;
-	--scale: 1.0;
-	width: calc(var(--width) * var(--scale));
-	height: calc(var(--height) * var(--scale));
+	--size: 8;
+	--xscale: 50;
+	--yscale: 173 / 200 * var(--xscale);
+	--ball: 22;
+	--margin: 30px;
+	width: calc(var(--margin) * 2 + 1px * var(--size) * var(--xscale));
+	height: calc(var(--margin) * 2 + 1px * var(--size) * var(--yscale));
 	margin-left: auto;
 	margin-right: auto;
 	position: relative;
@@ -52,36 +59,35 @@ h1,
 	/*box-shadow: #000 0px 0px 0px 2px;*/
 }
 
+.hole,
 .ball {
 	position: absolute;
-	cursor: pointer;
-	width: 21px;
-	height: 21px;
-	margin: -3px 0 0-3px;
-	background: #aaa;
+	/*cursor: pointer;*/
+	width: calc(1px * var(--ball));
+	height: calc(1px * var(--ball));
+	transform: translate(calc(var(--ball) * -0.5px), calc(var(--ball) * -0.5px));
 	border-radius: 50%;
+	left: calc(var(--margin) + 1px * var(--xscale) * var(--left));
+	top: calc(var(--margin) + 1px * var(--yscale) * var(--top));
+}
+.hole {
+	background: #aaa;
 	box-shadow: 0 0 10px #666 inset;
 }
-.ball.black {
+.ball {
+	transition: left 500ms linear, top 500ms linear;
+}
+.ball[data-color="black"] {
 	background: #666;
 	box-shadow: 0 0 10px #666, 0 0 5px #000 inset;
 }
-.ball.white {
+.ball[data-color="white"] {
 	background: white;
 	box-shadow: 0 0 10px #666, 0 0 5px #666 inset;
 }
-.ball.changed {
-	box-shadow: 0 0 10px red;
-}
-.ball.changed.black {
-	box-shadow: 0 0 10px red, 0 0 5px #000 inset;
-}
-.ball.changed.white {
-	box-shadow: 0 0 10px red, 0 0 5px #666 inset;
-}
 .ball.selected {
 	background: lime;
-	box-shadow: none;
+	box-shadow: 0 0 10px #666, 0 0 5px green inset;
 }
 
 
@@ -92,7 +98,6 @@ h1,
 
 table.players {
 	border: solid 1px #000;
-	x-width: 230px;
 }
 table.players th {
 	text-decoration: underline;
@@ -105,8 +110,8 @@ table.players td.img {
 table.players tr.self {
 	font-weight: bold;
 }
-table.players tr.self .img.self,
-table.players tr.turn .img.turn {
+table.players .img.self,
+table.players .img.turn {
 	display: inline-block;
 	height: 0;
 	width: 0;
@@ -116,11 +121,20 @@ table.players tr.turn .img.turn {
 table.players tr.self .img.self {
 	border-left: 18px solid black;
 }
-table.players tr.turn .img.turn {
+body.my-turn table.players tr.self .img.turn,
+body.their-turn table.players tr.other .img.turn {
 	border-right: 18px solid black;
 }
-table.players tr.other.inactive {
+table.players tr.other[data-status="offline"] {
 	color: red;
+	font-weight: bold;
+}
+table.players tr.other[data-status="inactive"] {
+	color: orange;
+	font-weight: bold;
+}
+table.players tr.other[data-status="pending"] {
+	color: blue;
 	font-weight: bold;
 }
 
@@ -144,41 +158,40 @@ table.players tr.other.inactive {
 	color: orange;
 	z-index: 3;
 	transform-origin: center;
-	text-shadow: black 2px -2px 0, black 2px 2px 0, black -2px 2px 0, black -2px -2px 0;
-	/*filter: drop-shadow(black 0 0 3px);*/
+	filter: drop-shadow(black 0 0 1px);
 }
 .direction:after {
 	content: "\27A4";
 }
 .direction.tl {
-	top: -18px;
-	left: 88px;
-	transform: rotate(-120deg);
+	top: 0;
+	left: calc(15px + 2px * var(--xscale));
+	transform: translate(-15px, -15px) rotate(-120deg);
 }
 .direction.tr {
-	top: -18px;
-	right: 88px;
-	transform: rotate(-60deg);
+	top: 0;
+	left: calc(0px + 7px * var(--xscale));
+	transform: translate(-15px, -15px) rotate(-60deg);
 }
 .direction.r {
-	top: 163px;
-	right: -19px;
-	transform: rotate(0deg);
+	top: 50%;
+	left: 100%;
+	transform: translate(-15px, -15px) rotate(0deg);
 }
 .direction.br {
-	bottom: -18px;
-	right: 88px;
-	transform: rotate(60deg);
+	top: 100%;
+	left: calc(0px + 7px * var(--xscale));
+	transform: translate(-15px, -15px) rotate(60deg);
 }
 .direction.bl {
-	bottom: -18px;
-	left: 88px;
-	transform: rotate(120deg);
+	top: 100%;
+	left: calc(15px + 2px * var(--xscale));
+	transform: translate(-15px, -15px) rotate(120deg);
 }
 .direction.l {
-	top: 163px;
-	left: -19px;
-	transform: rotate(180deg);
+	top: 50%;
+	left: 0;
+	transform: translate(-15px, -15px) rotate(180deg);
 }
 
 
@@ -192,3 +205,11 @@ body:after {
 }
 
 
+@media (max-width: 500px) {
+	#board {
+		--xscale: 38;
+		--yscale: 173 / 200 * var(--xscale);
+		--ball: 20;
+		--margin: 28px;
+	}
+}

@@ -58,6 +58,22 @@ Coords2D.dir8Names = [
 	'w',
 ];
 
+class Coords3D {
+	constructor(x, y, z) {
+		this.x = x || 0;
+		this.y = y || 0;
+		this.z = z || 0;
+	}
+
+	equal(C) {
+		return this.x == C.x && this.y == C.y && this.z == C.z;
+	}
+
+	add(C) {
+		return new Coords3D(this.x + C.x, this.y + C.y, this.z + C.z);
+	}
+}
+
 class RgbColor {
 	static DARK = 138;
 

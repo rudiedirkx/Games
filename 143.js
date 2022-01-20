@@ -1,648 +1,472 @@
 "use strict";
 
-var Coord = THREE.Vector3;
+const Coord = Coords3D;
 
-Coord.prototype.each = function(cb) {
-	this.x && cb('x', this.x);
-	this.y && cb('y', this.y);
-	this.z && cb('z', this.z);
+Coord.dir6Coords = [
+	new Coord(-1, -1,  0),
+	new Coord(+1, +1,  0),
+	new Coord( 0, -1, -1),
+	new Coord( 0, +1, +1),
+	new Coord(-1,  0, +1),
+	new Coord(+1,  0, -1),
+];
 
-	return this;
+Coord.prototype.reverse = function() {
+	return new Coord(this.x * -1, this.y * -1, this.z * -1);
 };
-
-Coord.prototype.underscore = function(cb) {
+Coord.prototype.underscore = function() {
 	return this.x + '_' + this.y + '_' + this.z;
 };
-
-Coord.prototype.reverse = function(cb) {
-	var C = this.clone();
-
-	C.x *= -1;
-	C.y *= -1;
-	C.z *= -1;
-
-	return C;
+Coord.fromUnderscore = function(coord) {
+	const C = coord.split('_');
+	return new Coord(parseInt(C[0]), parseInt(C[1]), parseInt(C[2]))
 };
 
-function Abalone( container, f_szYouColor, f_szTurnColor, fetch ) {
-	var self = this;
+class AbaloneSelection {
+	constructor(coords) {
+		this.coords = coords;
+	}
 
-	this.$container = $(container);
-	this.m_szPlayerColor = f_szYouColor;
-	this.m_szOpponentColor = Abalone.oppositeColor(this.m_szPlayerColor);
-	this.m_szTurnColor = f_szTurnColor;
+	get length() {
+		return this.coords.length;
+	}
 
-	// Create [id => DOM element] index
-	this.index = {};
-	this.createIndex();
+	get head() {
+		return this.coords[0];
+	}
 
-	// Hilite difference
-	this.hiliteDifference();
+	get tail() {
+		return this.coords[this.coords.length - 1];
+	}
 
-	// Attach DOM handlers
-	var self = this,
-		match = '.ball.' + this.m_szPlayerColor;
-	this.$container.on('click', function(e) {
-		e.preventDefault();
-	});
-	this.$container.on('click', match, function(e) {
-		self.clickedOn(e.target.id.substr(5));
-	});
-	this.$container.on('click', 'a.direction', function(e) {
-		e.preventDefault();
+	get axis() {
+		if (this.coords.length < 2) return null;
 
-		var C = this.dataset.dir.split(',');
-		C = new Coord(~~C[0], ~~C[1], ~~C[2]);
-		self.move(C);
-	});
-	$(window).on('resize', function(e) {
-		const intended = parseFloat(getComputedStyle(self.$container[0]).getPropertyValue('--width').trim());
-		const max = document.documentElement.clientWidth - 30;
-		console.log(intended, max);
-		self.$container[0].style.setProperty('--scale', max >= intended ? '1.0' : max / intended);
-	}).trigger('resize');
-
-	// Start polling
-	self.tickStatus();
-
-	document.body.classList.add(self.m_szPlayerColor == self.m_szTurnColor ? 'my-turn' : 'their-turn');
-	document.body.classList.add('ready');
-}
-
-Abalone.INACTIVE_AFTER = 20;
-Abalone.selectMaxBalls = 4;
-Abalone.oppositeColor = function( color ) {
-	return 'white' == color ? 'black' : 'white';
-};
-
-Abalone.prototype = {
-
-
-	/**
-	 * Clicked on an Abalone IMG (why and the consequences are yet unknown)
-	 */
-	createIndex: function() {
-		var self = this;
-
-		var $balls = this.$container.find('.ball').each(function(i, el) {
-			self.index[ el.id.substr(5) ] = el;
-		});
-
-		return this.index;
-
-	}, // createIndex
-
-
-	/**
-	 *
-	 */
-	hiliteDifference: function() {
-		var old = JSON.parse(sessionStorage.abaloneState || '{}');
-console.debug('old', old);
-		var current = this.getCurrentState();
-console.debug('current', current);
-
-		for ( var coord in old ) {
-			if ( old[coord] != current[coord] ) {
-				this.index[coord].classList.add('changed');
-			}
+		const el1 = this.coords[0];
+		const el2 = this.coords[1];
+		if (el1.x == el2.x) {
+			return 'x';
+		}
+		else if (el1.y == el2.y) {
+			return 'y';
+		}
+		else if (el1.z == el2.z) {
+			return 'z';
 		}
 
-		this.saveCurrentState(current);
-	},
-
-
-	/**
-	 *
-	 */
-	getCurrentState: function() {
-		var state = {};
-		for ( var coord in this.index ) {
-			state[coord] = this.owner(this.index[coord]) || '';
-		}
-
-		return state;
-	},
-
-
-	/**
-	 *
-	 */
-	saveCurrentState: function( state ) {
-		sessionStorage.abaloneState = JSON.stringify(state || this.getCurrentState());
-	},
-
-
-	/**
-	 *
-	 */
-	owner: function( ball ) {
-		return ball.classList.contains('black') ? 'black' : ball.classList.contains('white') ? 'white' : null;
-	},
-
-
-	/**
-	 * Clicked on an Abalone IMG (why and the consequences are yet unknown)
-	 */
-	clickedOn: function( id ) {
-		var ball = this.index[id];
-
-		// Is my turn?
-		if ( this.m_szPlayerColor == this.m_szTurnColor ) {
-console.debug('click: my turn');
-			// Is my ball?
-			if ( this.owner(ball) == this.m_szPlayerColor ) {
-console.debug('click: my ball');
-				return this.toggleSelectBall(ball);
-			}
-
-			// Move selected balls
-			var selecteds = this.selecteds();
-			if ( selecteds.length ) {
-console.debug('click: move');
-				return this.moveSelectedTo(id);
-			}
-		}
-
-	}, // clickedOn
-
-
-	/**
-	 *
-	 */
-	selecteds: function() {
-		return this.$container.find('.ball.selected').get();
-	},
-
-
-	/**
-	 *
-	 */
-	tickStatus: function() {
-		var self = this;
-
-		if (!document.hidden) {
-			this.updateStatus();
-		}
-
-		setTimeout(function() {
-			self.tickStatus();
-		}, 800);
-	},
-
-
-	/**
-	 * Waiting for turn or other player
-	 */
-	updateStatus: function() {
-		var self = this;
-
-		return $.get('?status', function(rv) {
-			if ( rv.status.turn != self.m_szTurnColor ) {
-				location.reload();
-				return;
-			}
-
-			var $tr = $('tr.other');
-			$tr[0].cells[1].title = `Online: ${rv.status.opponentOnline} sec ago`;
-			$tr.toggleClass('inactive', rv.status.opponentOnline > Abalone.INACTIVE_AFTER);
-		});
-
-	}, // updateStatus
-
-
-	/**
-	 *
-	 */
-	nextInDirection: function( balls, direction ) {
-		var coords = balls.map(function(ball) {
-			return ball.underscore();
-		});
-
-		for (var i=0; i<balls.length; i++) {
-			var ball = balls[i];
-			var next = ball.clone().addSelf(direction);
-			if (coords.indexOf(next.underscore()) == -1) {
-				return next;
-			}
-		}
-	},
-
-
-	/**
-	 *
-	 */
-	offsets: function( balls, direction ) {
-		return balls.map(function(ball) {
-			return ball.clone().addSelf(direction);
-		});
-	},
-
-
-	/**
-	 * Move selected balls into a direction (Coord)
-	 */
-	move: function( direction ) {
-		var self = this;
-
-console.debug('direction', direction);
-
-		var balls = this.selectedCoords();
-		if ( !balls.length ) {
-console.warn('No balls selected');
-			return false;
-		}
-console.debug('balls:', balls);
-
-		// @todo Do all validation only server side
-
-		var info = this.coordsAreAligned();
-		if ( !info ) {
-console.warn('Invalid balls selection');
-			return false;
-		}
-console.debug('info:', info);
-
-		// Find direction type
-		var inline = balls.length == 1 || direction.underscore() == info.direction.underscore() || direction.clone().negate().underscore() == info.direction.underscore();
-console.debug('inline', inline);
-
-		// Find target location(s)
-		var targets;
-		if ( inline ) {
-			// Find 1 extension following axis
-			targets = [this.nextInDirection(balls, direction)];
-		}
-		else {
-			// Find all adjacents following axis
-			targets = balls.map(function(ball) {
-				return ball.clone().addSelf(direction);
-			});
-		}
-console.debug('targets', targets);
-
-		// All targets must exist
-		var wrong = targets.some(function(coord) {
-			if ( !self.index[coord.underscore()] ) {
-				return true;
-			}
-		});
-		if ( wrong ) {
-console.warn('Not all targets exist.');
-			return;
-		}
-
-		// Target can't be our own
-		if ( inline ) {
-			var ball = this.index[ targets[0].underscore() ];
-			if ( this.owner(ball) == this.m_szPlayerColor ) {
-console.warn("Can't push own ball.");
-				return;
-			}
-		}
-
-		// All targets must be empty
-		if ( !inline ) {
-			var wrong = targets.some(function(coord) {
-				var ball = self.index[ coord.underscore() ];
-				if ( self.owner(ball) ) {
-					return true;
-				}
-			});
-			if ( wrong ) {
-console.warn("Can't push sideways onto other balls.");
-				return;
-			}
-		}
-
-		// Can only push fewer other balls
-		var pushing = [];
-		if ( inline ) {
-			var nexts = this.nexts(balls, direction);
-console.debug('nexts', nexts);
-
-			var owners = nexts.map(function(coord) {
-				return self.owner(self.index[ coord.underscore() ]);
-			});
-console.debug('owners', owners);
-
-			owners.some(function(owner, i) {
-				if (!owner) {
-					return true;
-				}
-
-				pushing.push(nexts[i]);
-			});
-console.debug('pushing', pushing);
-			if ( pushing.length > balls.length-1 ) {
-console.warn("Can only push " + (balls.length-1) + " balls, not " + pushing.length + ".");
-				return;
-			}
-
-			var pushingOwners = pushing.map(function(coord) {
-				return self.owner(self.index[ coord.underscore() ]);
-			});
-console.debug('pushingOwners', pushingOwners);
-			if ( pushingOwners.indexOf(this.m_szPlayerColor) != -1 ) {
-console.warn("Can't push own balls.");
-				return;
-			}
-		}
-
-		// Find pusher/pushee target location(s)
-		var pusherTargets = this.offsets(balls, direction);
-// console.debug('pusheeTargets', pusheeTargets);
-		var pusheeTargets = this.offsets(pushing, direction);
-// console.debug('pusheeTargets', pusheeTargets);
-
-		// Replace pushees
-		this.clearBalls(pushing);
-		this.placeBalls(pusheeTargets, this.m_szOpponentColor);
-
-		// Replace pushers
-		this.clearBalls(balls);
-		this.placeBalls(pusherTargets, this.m_szPlayerColor);
-
-		// Collect all changed locations and send it to the server
-		// @todo Send the actual move to the server and let IT decide what to change
-		var changed = pushing.concat(pusheeTargets).concat(balls).concat(pusherTargets);
-		this.sendChange(changed);
-
-	}, // move
-
-
-	/**
-	 *
-	 */
-	clearBalls: function( coords ) {
-		for (var i=0; i<coords.length; i++) {
-			var ball = this.index[ coords[i].underscore() ];
-			ball.className = 'ball';
-		}
-	},
-
-
-	/**
-	 *
-	 */
-	placeBalls: function( coords, color ) {
-		for (var i=0; i<coords.length; i++) {
-			var ball = this.index[ coords[i].underscore() ];
-			if ( ball ) {
-				ball.className = 'ball ' + color;
-			}
-		}
-	},
-
-
-	/**
-	 *
-	 */
-	sendChange: function( coords ) {
-		var self = this;
-
-		var changes = {};
-		for (var i=0; i<coords.length; i++) {
-			var coord = coords[i];
-			var ball = this.index[ coord.underscore() ];
-			if ( ball ) {
-				changes[ coord.underscore() ] = this.owner(ball);
-			}
-		}
-console.debug('changes:', changes);
-
-		this.saveCurrentState();
-
-		// Prep & send data
-		var data = {changes: changes};
-		$.post('?send_changes=1', data, function(rv) {
-			location.reload();
-		});
-
-	}, // sendChange
-
-
-	/**
-	 * Selected balls in Coord format
-	 */
-	selectedCoords: function() {
-		var self = this;
-
-		var balls = this.selecteds();
-		return balls.map(function(ball) {
-			return self.ballToCoord(ball);
-		});
-
-	}, // selectedCoords
-
-
-	/**
-	 *
-	 */
-	ballToCoord: function( ball ) {
-		var C = ball.id.substr(5).split('_');
-		return new Coord(parseInt(C[0]), parseInt(C[1]), parseInt(C[2]))
-	},
-
-
-	/**
-	 * Check if coords are aligned
-	 */
-	coordsAreAligned: function() {
-		var self = this, balls, C, axis, values, i, diffs, direction, M;
-
-		balls = this.selectedCoords();
-// console.debug('balls:', balls);
-
-		// First ball is always fine
-		if ( 1 >= balls.length ) {
-			return true;
-		}
-
-		// Find common axis/direction
-		values = { x: [], y: [], z: [] };
-		$.each(['x', 'y', 'z'], function(i, ax) {
-			values[ax].push(balls[0][ax]);
-			values[ax].push(balls[1][ax]);
-			if ( balls[0][ax] == balls[1][ax] ) {
-				axis = ax;
-				delete values[ax];
-console.debug('found common axis: ' + ax);
-			}
-		});
-
-		if ( !axis ) {
-console.debug('found no common axis');
-			return false;
-		}
-
-		// Find reversable direction (for forecasting the next ball)
-		direction = new Coord;
-		$.each(values, function(ax, values) {
-			direction[ax] = balls[0][ax] > balls[1][ax] ? 1 : -1;
-		});
-// console.debug('reversable direction:', direction);
-
-		// The rest must have that axis as well
-		for ( var i=2, L=balls.length; i<L; i++ ) {
-			if ( balls[i][axis] != balls[0][axis] ) {
-// console.debug('ball # ' + i + ' has different axis ' + axis + ' value: ' + balls[i][axis]);
+		return null;
+	}
+
+	add(C) {
+		this.coords.push(C);
+	}
+
+	remove(C) {
+		this.coords = this.coords.filter(el => !el.equal(C));
+	}
+
+	isInline() {
+		if (this.coords.length < 3) return null;
+
+		const axis = this.axis;
+		const el1 = this.coords[0];
+		for ( let i = 1; i < this.coords.length; i++ ) {
+			const el = this.coords[i];
+			if (!['x', 'y', 'z'].every(ax =>  {
+				return axis == ax ? (el1[ax] == el[ax]) : (el1[ax] != el[ax]);
+			})) {
 				return false;
 			}
-
-			values.x && values.x.push(balls[i].x);
-			values.y && values.y.push(balls[i].y);
-			values.z && values.z.push(balls[i].z);
-		}
-// console.debug('ball coord values:', values);
-
-		// Find distance between ends
-		diffs = [];
-		$.each(values, function(ax, values) {
-			diffs.push(Math.max.apply(Math, values) - Math.min.apply(Math, values));
-		});
-// console.debug('diffs:', diffs);
-
-		// Shortest distance
-		M = balls.length-1;
-		if ( diffs != M + ',' + M ) {
-			return false;
 		}
 
-		// Aaaaight!
+		return true;
+	}
 
-		var potentials = this.potentialNexts(balls, direction);
-// console.debug('potentials:', potentials);
+	isAdjacent() {
+		if (this.coords.length < 2) return null;
 
-		return {
-			axis: axis,
-			direction: direction,
-			potentials: potentials
-		};
-
-	}, // coordsAreAligned
-
-
-	/**
-	 * All the next holes into one direction (Coord)
-	 */
-	nexts: function( balls, direction ) {
-		var self = this, next, nexts;
-
-		nexts = [];
-		next = balls;
-
-		while ( true ) {
-			next = this.potentialNexts(next, direction, true);
-			if ( next && next[0] && this.index[ next[0].underscore() ] ) {
-				nexts.push(next[0]);
-			}
-			else {
-console.debug('next/fail:', next[0], '"' + next[0].underscore() + '"');
-				break;
-			}
-		}
-
-		return nexts;
-
-	}, // nexts
-
-
-	/**
-	 * The two potential next coordinates (or one if oneWay)
-	 */
-	potentialNexts: function( balls, direction, oneWay ) {
-		var self = this, potentials, Ca, Cb, C, coords;
-
-		potentials = {};
-		$.each(balls, function(i, C) {
-			Ca = $.extend({}, C);
-			Cb = $.extend({}, C);
-
-			direction.each(function(ax, dir) {
-				Ca[ax] += dir;
-				Cb[ax] -= dir;
+		return this.coords.every(C => {
+			return this.coords.some(el => {
+				return C != el && Coord.dir6Coords.some(D => el.add(D).equal(C));
 			});
+		});
+	}
 
-			Ca = Ca.underscore();
-			potentials[Ca] || (potentials[Ca] = 0);
-			potentials[Ca]++;
+	prepDir(dir) {
+		if (this.length < 2) return {inline: false};
+		if (dir[this.axis] != 0) return {inline: false};
 
-			if ( !oneWay ) {
-				Cb = Cb.underscore();
-				potentials[Cb] || (potentials[Cb] = 0);
-				potentials[Cb]++;
+		const rev = dir.reverse();
+		let cur = this.getHead(dir);
+		const els = [cur];
+		for ( let i = 1; i < this.coords.length; i++ ) {
+			cur = cur.add(rev);
+			els.push(cur);
+		}
+
+		this.coords = els;
+		return {inline: true};
+	}
+
+	getHead(dir) {
+		let head = this.coords[0];
+		for ( let i = 0; i < this.coords.length; i++ ) {
+			const next = head.add(dir);
+			if (!this.coords.some(el => el.equal(next))) {
+				return head;
+			}
+			head = next;
+		}
+	}
+}
+
+class Abalone extends GridGame {
+
+	static STATUS_REQUEST_MS = 1500;
+	static OFFLINE_AFTER = 120;
+	static INACTIVE_AFTER = 20;
+
+	static UNSELECT_BALLS_TIMEOUT = 600;
+	static SELECT_MAX_BALLS = 4;
+
+	static oppositeColor( color ) {
+		return 'white' == color ? 'black' : 'white';
+	}
+
+	reset() {
+		this.playerColor = null;
+		this.opponentColor = null;
+
+		// this.index = null;
+
+		this.previousState = null;
+		this.lastMove = null;
+		this.turnColor = null;
+	}
+
+	startGame(playerColor, state) {
+		this.playerColor = playerColor;
+		this.opponentColor = Abalone.oppositeColor(this.playerColor);
+
+		document.body.data('player', this.playerColor).addClass('ready');
+
+		this.populateBoard(state);
+		// this.index = this.createIndex();
+
+		this.tickStatus();
+	}
+
+	createStats() {}
+
+	listenControls() {
+		this.m_objGrid.on('click', `a.ball[data-color="${this.playerColor}"]`, e => {
+			e.preventDefault();
+
+			this.clickBall(Coord.fromUnderscore(e.target.dataset.coord));
+		});
+		this.m_objGrid.on('click', 'a.direction', e => {
+			e.preventDefault();
+
+			const C = Coord.fromUnderscore(e.target.dataset.dir);
+			this.clickDirection(C);
+		});
+
+		$('#replay-last-move').on('click', e => {
+			this.playLastMove();
+		});
+	}
+
+	tickStatus() {
+		this.updateStatus();
+
+		setInterval(() => {
+			if (!document.hidden) {
+				this.updateStatus();
+			}
+		}, Abalone.STATUS_REQUEST_MS);
+	}
+
+	updateStatus() {
+		$.get(location.search + '&status=1').on('done', (e, rv) => {
+			if (this.turnColor && rv.status.turn != this.turnColor && rv.status.turn == this.playerColor) {
+				this.lastMove = rv.lastMove;
+				this.saveCurrentState();
+				this.playMove(rv.lastMove.balls, rv.lastMove.direction);
+			}
+
+			this.setTurn(rv.status.turn);
+
+			const tr = $('tr.other');
+			tr.cells[1].title = `Online: ${rv.status.opponentOnline} sec ago`;
+			tr.data('status', this.getOnlineStatus(rv.status.opponentOnline));
+
+			$('#player-balls-left').setText(rv.status.playerBalls);
+			$('#opponent-balls-left').setText(rv.status.opponentBalls);
+		});
+	}
+
+	getOnlineStatus( ago ) {
+		if (ago > Abalone.OFFLINE_AFTER) {
+			return 'offline';
+		}
+		if (ago > Abalone.INACTIVE_AFTER) {
+			return 'inactive';
+		}
+		if (ago == -1) {
+			return 'pending';
+		}
+		return 'active';
+	}
+
+	createIndex() {
+		const index = {};
+		this.m_objGrid.getElements('.ball').forEach(el => {
+			index[el.dataset.coord] = el.dataset.color;
+		});
+
+		return index;
+	}
+
+	populateBoard(balls) {
+		this.m_objGrid.getElements('.ball').forEach(el => el.remove());
+
+		$.each(balls, (color, coord) => {
+			const tag = color == this.playerColor ? 'a' : 'span';
+			const el = document.el(tag, {href: '#'}).addClass('ball').data('color', color).data('coord', coord).attr('title', coord);
+			this.m_objGrid.append(el);
+		});
+	}
+
+	setTurn(color) {
+		this.turnColor = color;
+		const mine = this.playerColor == this.turnColor;
+		document.body.data('turn', this.turnColor).toggleClass('my-turn', mine).toggleClass('their-turn', !mine);
+	}
+
+	getCurrentState() {
+		return this.createIndex();
+	}
+
+	saveCurrentState() {
+		this.previousState = this.getCurrentState();
+	}
+
+	restoreState(state) {
+		this.populateBoard(state);
+	}
+
+	hole(C) {
+		return this.m_objGrid.getElement(`.hole[data-coord="${C.underscore()}"]`);
+	}
+
+	ball(C) {
+		return this.m_objGrid.getElement(`.ball[data-coord="${C.underscore()}"]`);
+	}
+
+	inside(C) {
+		return this.hole(C) != null;
+	}
+
+	coord(ball) {
+		return Coord.fromUnderscore(ball.dataset.coord);
+	}
+
+	color(C) {
+		const ball = this.ball(C);
+		return ball ? ball.dataset.color : '';
+	}
+
+	clickBall(C) {
+		if ( this.playerColor != this.turnColor ) return console.warn('not your turn');
+
+		if ( this.playerColor !== this.color(C) ) return console.warn('not your ball');
+
+		this.toggleSelectBall(C);
+	}
+
+	toggleSelectBall(C) {
+		const ball = this.ball(C);
+		ball.hasClass('selected') ? this.unselectBall(C) : this.selectBall(C);
+	}
+
+	unselectBall(C) {
+		const selection = this.getSelection();
+		selection.remove(C);
+
+		if (selection.isAdjacent() === false) return console.warn('not adjacent');
+
+		const ball = this.ball(C);
+		ball.removeClass('selected');
+	}
+
+	selectBall(C) {
+		const selection = this.getSelection();
+		if ( selection.length >= Abalone.SELECT_MAX_BALLS ) return;
+
+		selection.add(C);
+
+		if (selection.isInline() === false) return console.warn('not inline');
+		if (selection.isAdjacent() === false) return console.warn('not adjacent');
+
+		this.ball(C).addClass('selected');
+	}
+
+	getSelection() {
+		const balls = this.m_objGrid.getElements('.ball.selected');
+		const coords = balls.map(ball => this.coord(ball));
+		const selection = new AbaloneSelection(coords);
+		return selection;
+	}
+
+	clickDirection(dir) {
+		const selection = this.getSelection();
+		const {inline} = selection.prepDir(dir);
+		if (inline) {
+			this.moveInline(selection, dir);
+		}
+		else {
+			this.moveSideways(selection, dir);
+		}
+	}
+
+	moveInline(selection, dir) {
+		const aheads = this.getAheads(selection.head, dir);
+		const takens = this.untilFree(aheads);
+		if (!this.inside(selection.head.add(dir))) return console.warn('head outside the board');
+		if (takens.length >= selection.length) return console.warn('too many takens');
+		if (takens.some(C => this.color(C) == this.playerColor)) return console.warn('own balls in takens');
+
+		const changers = [...selection.coords, ...takens];
+		const head = takens[takens.length - 1] || selection.head;
+		const infront = head.add(dir);
+		if (this.inside(infront)) {
+			changers.push(infront);
+		}
+
+		this.unselectAllBallsAsync();
+		this.saveCurrentState();
+		this.playMoveInline(selection, dir);
+		this.sendMove(selection, dir, this.getChanges(changers));
+	}
+
+	playMoveInline(selection, dir) {
+		const aheads = this.getAheads(selection.head, dir);
+		const takens = this.untilFree(aheads);
+		const movers = [...selection.coords, ...takens];
+
+		const head = takens[takens.length - 1] || selection.head;
+		const infront = head.add(dir);
+		if (!this.inside(infront)) {
+			const posHead = this.getPosition(head);
+			const posDiff = posHead.subtract(this.getPosition(head.add(dir.reverse())));
+			const ball = this.ball(head);
+			ball.css(posHead.add(posDiff).toCSS());
+			setTimeout(() => ball.remove(), 3 * Abalone.UNSELECT_BALLS_TIMEOUT);
+		}
+
+		this.moveBalls(movers, dir);
+	}
+
+	moveSideways(selection, dir) {
+		const targets = selection.coords.map(C => C.add(dir));
+		if (targets.some(C => !this.inside(C))) return console.warn('target outside the board');
+		if (targets.some(C => this.color(C))) return console.warn('balls in the way');
+
+		this.unselectAllBallsAsync();
+		this.saveCurrentState();
+		this.moveBalls(selection.coords, dir);
+		this.sendMove(selection, dir, this.getChanges([...selection.coords, ...targets]));
+	}
+
+	playMoveSideways(selection, dir) {
+		this.moveBalls(selection.coords, dir);
+	}
+
+	moveBalls(coords, dir) {
+		const balls = coords.map(C => this.ball(C));
+		coords.forEach((C, i) => {
+			const coord = C.add(dir).underscore();
+			balls[i].data('coord', coord).attr('title', coord);
+		});
+	}
+
+	getChanges(coords) {
+		const state = {};
+		coords.forEach(C => {
+			if (this.inside(C)) {
+				state[C.underscore()] = this.color(C);
 			}
 		});
+		return state;
+	}
 
-		$.each(balls, function(i, C) {
-			C = C.underscore();
-			delete potentials[C];
+	getAheads(from, dir) {
+		const aheads = [];
+		var cur = from;
+		while (this.inside(cur = cur.add(dir))) {
+			aheads.push(cur);
+		}
+
+		return aheads;
+	}
+
+	untilFree(aheads) {
+		for ( let i = 0; i < aheads.length; i++ ) {
+			const color = this.color(aheads[i]);
+			if (!color) {
+				return aheads.slice(0, i);
+			}
+		}
+
+		return aheads;
+	}
+
+	getPosition(C) {
+		const style = getComputedStyle(this.hole(C));
+		return new Coords2D(parseFloat(style.left), parseFloat(style.top));
+	}
+
+	unselectAllBallsAsync() {
+		setTimeout(() => this.unselectAllBalls(), Abalone.UNSELECT_BALLS_TIMEOUT);
+	}
+
+	unselectAllBalls() {
+		this.m_objGrid.getElements('.ball.selected').removeClass('selected');
+	}
+
+	sendMove(selection, dir, changes) {
+		const move = {
+			balls: selection.coords.map(C => C.underscore()),
+			direction: dir.underscore(),
+		};
+		const data = {changes, move};
+console.log('sendMove', data);
+		this.lastMove = move;
+		$.post(location.search, r.serialize(data)).on('done', (e, rv) => {
+			// console.log('rv', rv);
 		});
+	}
 
-		coords = [];
-		$.each(potentials, function(id, n) {
-			C = id.split('_');
-			coords.push(new Coord(~~C[0], ~~C[1], ~~C[2]));
-		});
+	playLastMove() {
+		if (!this.previousState || !this.lastMove) return;
 
-		return coords;
+		this.restoreState(this.previousState);
+		setTimeout(() => this.playMove(this.lastMove.balls, this.lastMove.direction), 500);
+	}
 
-	}, // potentialNexts
+	playMove(coords, dir) {
+		coords = coords.map(coord => Coords3D.fromUnderscore(coord));
+		dir = Coords3D.fromUnderscore(dir);
 
+		const selection = new AbaloneSelection(coords);
 
-	/**
-	 * A player selects a ball with this function (his own color ofcourse), by clicking on the board
-	 */
-	toggleSelectBall: function( ball ) {
-		if ( !ball.classList.contains('selected') ) {
-			return this.selectBall(ball);
+		const {inline} = selection.prepDir(dir);
+		if (inline) {
+			this.playMoveInline(selection, dir);
 		}
-
-		return this.unselectBall(ball);
-
-	}, // toggleSelectBall
-
-
-	/**
-	 * Add coords to list and color ball on board to hilite
-	 */
-	selectBall: function( ball ) {
-		var selecteds = this.selecteds();
-		if ( Abalone.selectMaxBalls <= selecteds.length ) {
-			return;
+		else {
+			this.playMoveSideways(selection, dir);
 		}
+	}
 
-		ball.classList.add('selected');
-
-		var caa = this.coordsAreAligned();
-		if ( !caa ) {
-			ball.classList.remove('selected');
-console.debug("Won't select because out of line.");
-			return;
-		}
-
-	}, // selectBall
-
-
-	/**
-	 * Remove coords from list and color ball on board to normal
-	 */
-	unselectBall: function( ball ) {
-		ball.classList.remove('selected');
-
-	}, // unselectBall
-
-
-	/**
-	 * Dev helper
-	 */
-	debug: function( msg ) {
-		if ( window.console && window.console.debug ) {
-			window.console.debug.apply(window.console, arguments);
-		}
-
-	} // debug
-
-
-}; // var Abalone
+}

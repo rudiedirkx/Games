@@ -1,80 +1,35 @@
 <?php
 // ABALONE
 
-/*
-exit(json_encode(Abalone::initialBalls()));
-/*
-exit(json_encode(call_user_func(function($_balls) {
-	$all = array();
-	foreach ( $_balls as $c => $balls ) {
-		array_map(function($ball) use (&$all, $c) {
-			$all[] = array_merge(array_map('intval', explode(':', $ball)), array($c));
-		}, $balls);
-	}
-	return $all;
-}, Abalone::initialBalls())));
-/**/
-
-define('REQUEST_TIME', time());
-
-session_start();
-define('S_NAME', 'abalone');
-
 require 'inc.bootstrap.php';
 require 'inc.db.php';
 $db->ensureSchema(require '143.schema.php');
 
+$login = $_GET['login'] ?? null;
 
-
-// Log out
-if ( isset($_GET['logout']) ) {
-	unset($_SESSION[S_NAME]);
-
-	header('Location: 143.php');
-	exit('Bye');
-}
-
-else if ( empty($_SESSION[S_NAME]['player_id']) ) {
-
-	// Log in from code
-	if ( isset($_REQUEST['login']) ) {
-		$user = $db->select('abalone_players', array(
-			'password' => $_REQUEST['login'],
-		))->first();
-
-		if ( $user ) {
-			$_SESSION[S_NAME]['player_id'] = (int)$user->id;
-
-			header('Location: 143.php');
-			exit('Logging in...');
-		}
-
-		header('Location: 143.php');
-		exit('Nope...');
-	}
+if ( !$login ) {
 
 	// New game
 	if ( isset($_GET['newgame']) ) {
-		$info = newGame($white, $black);
+		$login = newGame();
 
-		$_SESSION[S_NAME]['player_id'] = (int)$info['white'];
-
-		header('Location: 143.php');
+		header("Location: 143.php?login=$login");
 		exit('Game created');
 	}
 
 	// Log in form
 	?>
+	<title>Abalone: log in</title>
 	<style>html, body, h1 { margin: 0; } body { padding: 30px; }</style>
 
 	<h1>Abalone: log in</h1>
 
-	<form action method=post>
+	<form action method="get">
 		<p>Password: <input name="login" /></p>
-		<p><input type=submit /></p>
+		<p><button>Log in</button></p>
 	</form>
 
-	<p><a href="?newgame">Start a new game for 2</a></p>
+	<p><a href="?newgame=1">Start a new game for 2</a></p>
 	<?php
 
 	exit;
@@ -82,12 +37,8 @@ else if ( empty($_SESSION[S_NAME]['player_id']) ) {
 
 
 
-$_player = $_SESSION[S_NAME]['player_id'];
-
-
-
 // Load player
-$objPlayer = $db->select('abalone_players', array('id' => $_player), null, true);
+$objPlayer = $db->select('abalone_players', array('password' => $login), null, true);
 if ( !$objPlayer ) {
 	exit('Invalid login');
 }
@@ -111,26 +62,29 @@ $arrPlayerByColor = array(
 
 
 // Move
-if ( isset($_POST['changes']) ) {
+if ( isset($_POST['changes'], $_POST['move']) ) {
 	if ( $objGame->turn == $objPlayer->color ) {
-		$success = $db->transaction(function($db, $context) use ($changes, $arrPlayerByColor, $objOpponent, $objGame) {
-			foreach ( $_POST['changes'] as $coord => $color ) {
-				$conditions = array_combine(['x', 'y', 'z'], explode('_', $coord));
+		try {
+			$db->transaction(function($db) use ($arrPlayerByColor, $objOpponent, $objGame) {
+				foreach ( $_POST['changes'] as $coord => $color ) {
+					$conditions = array_combine(['x', 'y', 'z'], explode('_', $coord));
 
-				$db->delete('abalone_balls', ['player_id' => $arrPlayerByColor] + $conditions);
-				if ( $color ) {
-					$db->insert('abalone_balls', ['player_id' => $arrPlayerByColor[$color]] + $conditions);
+					$db->delete('abalone_balls', ['player_id' => $arrPlayerByColor] + $conditions);
+					if ( $color ) {
+						$db->insert('abalone_balls', ['player_id' => $arrPlayerByColor[$color]] + $conditions);
+					}
 				}
-			}
 
-			$db->update('abalone_games', array('turn' => $objOpponent->color), array('id' => $objGame->id));
-		}, $context);
-
-		if ( $success ) {
+				$db->update('abalone_games', array(
+					'turn' => $objOpponent->color,
+					'last_move' => json_encode($_POST['move']),
+				), array('id' => $objGame->id));
+			});
 			return json_respond(array('error' => 0));
 		}
-
-		return json_respond(array('error' => 'Db exception?'));
+		catch (db_exception $ex) {
+			return json_respond(array('error' => $ex->getMessage()));
+		}
 	}
 
 	return json_respond(array('error' => 'Not your turn!'));
@@ -145,17 +99,15 @@ else if ( isset($_GET['status']) ) {
 
 	$status = (object) array(
 		'turn' => $objGame->turn,
-		'opponent' => (int) $objOpponent->id,
-		'opponentOnline' => time() - $objOpponent->online,
+		// 'opponent' => (int) $objOpponent->id,
+		'opponentOnline' => $objOpponent->online ? time() - $objOpponent->online : -1,
+		'playerBalls' => $objPlayer->balls_left,
+		'opponentBalls' => $objOpponent->balls_left,
 	);
 
-	return json_respond(array('error' => 0, 'status' => $status));
-}
+	$lastMove = json_decode($objGame->last_move) ?: new stdClass;
 
-// Always be on the 'login' page, to save the URL
-if ( empty($_GET['login']) ) {
-	header('Location: ?login=' . $objPlayer->password);
-	exit;
+	return json_respond(compact('status', 'lastMove'));
 }
 
 $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOpponent->password;
@@ -168,6 +120,11 @@ $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOppone
 <link rel="stylesheet" href="<?= html_asset('143.css') ?>" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta charset="utf-8" />
+<style>
+<? foreach (Abalone::holes() as $hole): ?>
+[data-coord="<?= implode('_', $hole->coords) ?>"] { --left: <?= $hole->left ?>; --top: <?= $hole->top ?>; }
+<? endforeach ?>
+</style>
 </head>
 
 <body>
@@ -177,50 +134,48 @@ $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $objOppone
 <p class="friend-url">Share <a href="<?= $friendURL ?>"><?= $friendURL ?></a> with your friend.</p>
 
 <div id="board">
-	<a href="#" class="direction tl" data-dir="-1,-1,0"></a>
-	<a href="#" class="direction tr" data-dir="0,-1,-1"></a>
-	<a href="#" class="direction r"  data-dir="1,0,-1"></a>
-	<a href="#" class="direction br" data-dir="1,1,0"></a>
-	<a href="#" class="direction bl" data-dir="0,1,1"></a>
-	<a href="#" class="direction l"  data-dir="-1,0,1"></a>
+	<div class="shape"></div>
 
-	<div class="shape">
-		<? foreach (Abalone::balls() as $ball): ?>
-			<?= Abalone::renderBall($ball) ?>
-		<? endforeach ?>
-	</div>
+	<a href="#" class="direction tl" data-dir="-1_-1_0" title="-1, -1, 0"></a>
+	<a href="#" class="direction tr" data-dir="0_-1_-1" title="0, -1, -1"></a>
+	<a href="#" class="direction r"  data-dir="1_0_-1" title="1, 0, -1"></a>
+	<a href="#" class="direction br" data-dir="1_1_0" title="1, 1, 0"></a>
+	<a href="#" class="direction bl" data-dir="0_1_1" title="0, 1, 1"></a>
+	<a href="#" class="direction l"  data-dir="-1_0_1" title="-1, 0, 1"></a>
+
+	<? foreach (Abalone::holes() as $hole): ?>
+		<?= Abalone::renderHole($hole) . "\n" ?>
+	<? endforeach ?>
 </div>
 
 <div id="players">
 	<table class="players">
 		<tr>
-			<th title="
-Player: <?= $objPlayer->id . "\n" ?>
-Opponent: <?= $objOpponent->id ?>
-			">You</th>
+			<th>You</th>
 			<th></td>
 			<th>Turn</th>
 		</tr>
-		<tr class="self <?if($objGame->turn == $objPlayer->color):?>turn<?endif?>">
+		<tr class="self">
 			<td class="img"><span class="img self"></span></td>
 			<td>
-				<?= ucfirst($objPlayer->color) ?> (<?= $objPlayer->balls_left ?>)
+				<?= ucfirst($objPlayer->color) ?> (<span id="player-balls-left"><?= $objPlayer->balls_left ?></span>)
 			</td>
 			<td class="img"><span class="img turn"></span></td>
 		</tr>
-		<tr class="other <?if($objGame->turn == $objOpponent->color):?>turn<?endif?>">
+		<tr class="other">
 			<td class="img"><span class="img self"></span></td>
 			<td>
-				<?= ucfirst($objOpponent->color) ?> (<?= $objOpponent->balls_left ?>)
+				<?= ucfirst($objOpponent->color) ?> (<span id="opponent-balls-left"><?= $objOpponent->balls_left ?></span>)
 			</td>
 			<td class="img"><span class="img turn"></span></td>
 		</tr>
 		<tr>
 			<td colspan="3" align="center">
-				<a href="?logout">Log out</a>
+				<a href="143.php">Log out</a>
 			</td>
 		</tr>
 	</table>
+	<p><button id="replay-last-move">Replay last move</button></p>
 </div>
 
 <div id="help">
@@ -229,13 +184,14 @@ Opponent: <?= $objOpponent->id ?>
 	<p>Click your balls, and then an arrow.</p>
 </div>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script>THREE = {}</script>
-<script src="<?= html_asset('Vector3.js') ?>"></script>
 <script src="<?= html_asset('143.js') ?>"></script>
 <script>
-$body = $('body');
-objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame->turn ?>', true);
+objAbalone = new Abalone($('#board'));
+objAbalone.startGame('<?= $objPlayer->color ?>', <?= json_encode(Abalone::ensureAllBalls()) ?>);
+objAbalone.listenControls();
 </script>
 
 </body>
@@ -243,88 +199,104 @@ objAbalone = new Abalone('#board', '<?= $objPlayer->color ?>', '<?= $objGame->tu
 </html>
 <?php
 
+class AbalonePosition {
+	public $coords;
+	public $top;
+	public $left;
+	public function __construct(array $coords, float $top, float $left) {
+		$this->coords = $coords;
+		$this->top = $top;
+		$this->left = $left;
+	}
+}
+
 class Abalone {
 
 	static public $allBalls = [];
 
-	static function balls() {
-		$balls = [
-			['coords' => [1, 1, 5], 'top' =>  17, 'left' => 107],
-			['coords' => [2, 1, 4], 'top' =>  17, 'left' => 152],
-			['coords' => [3, 1, 3], 'top' =>  17, 'left' => 197],
-			['coords' => [4, 1, 2], 'top' =>  17, 'left' => 242],
-			['coords' => [5, 1, 1], 'top' =>  17, 'left' => 287],
-			['coords' => [1, 2, 6], 'top' =>  57, 'left' =>  84],
-			['coords' => [2, 2, 5], 'top' =>  57, 'left' => 129],
-			['coords' => [3, 2, 4], 'top' =>  57, 'left' => 174],
-			['coords' => [4, 2, 3], 'top' =>  57, 'left' => 219],
-			['coords' => [5, 2, 2], 'top' =>  57, 'left' => 264],
-			['coords' => [6, 2, 1], 'top' =>  57, 'left' => 309],
-			['coords' => [1, 3, 7], 'top' =>  97, 'left' =>  61],
-			['coords' => [2, 3, 6], 'top' =>  97, 'left' => 106],
-			['coords' => [3, 3, 5], 'top' =>  97, 'left' => 151],
-			['coords' => [4, 3, 4], 'top' =>  97, 'left' => 196],
-			['coords' => [5, 3, 3], 'top' =>  97, 'left' => 241],
-			['coords' => [6, 3, 2], 'top' =>  97, 'left' => 286],
-			['coords' => [7, 3, 1], 'top' =>  97, 'left' => 331],
-			['coords' => [1, 4, 8], 'top' => 137, 'left' =>  38],
-			['coords' => [2, 4, 7], 'top' => 137, 'left' =>  83],
-			['coords' => [3, 4, 6], 'top' => 137, 'left' => 128],
-			['coords' => [4, 4, 5], 'top' => 137, 'left' => 173],
-			['coords' => [5, 4, 4], 'top' => 137, 'left' => 218],
-			['coords' => [6, 4, 3], 'top' => 137, 'left' => 263],
-			['coords' => [7, 4, 2], 'top' => 137, 'left' => 308],
-			['coords' => [8, 4, 1], 'top' => 137, 'left' => 353],
-			['coords' => [1, 5, 9], 'top' => 177, 'left' =>  15],
-			['coords' => [2, 5, 8], 'top' => 177, 'left' =>  60],
-			['coords' => [3, 5, 7], 'top' => 177, 'left' => 105],
-			['coords' => [4, 5, 6], 'top' => 177, 'left' => 150],
-			['coords' => [5, 5, 5], 'top' => 177, 'left' => 195],
-			['coords' => [6, 5, 4], 'top' => 177, 'left' => 240],
-			['coords' => [7, 5, 3], 'top' => 177, 'left' => 285],
-			['coords' => [8, 5, 2], 'top' => 177, 'left' => 330],
-			['coords' => [9, 5, 1], 'top' => 177, 'left' => 375],
-			['coords' => [2, 6, 9], 'top' => 217, 'left' =>  37],
-			['coords' => [3, 6, 8], 'top' => 217, 'left' =>  82],
-			['coords' => [4, 6, 7], 'top' => 217, 'left' => 127],
-			['coords' => [5, 6, 6], 'top' => 217, 'left' => 172],
-			['coords' => [6, 6, 5], 'top' => 217, 'left' => 217],
-			['coords' => [7, 6, 4], 'top' => 217, 'left' => 262],
-			['coords' => [8, 6, 3], 'top' => 217, 'left' => 307],
-			['coords' => [9, 6, 2], 'top' => 217, 'left' => 352],
-			['coords' => [3, 7, 9], 'top' => 257, 'left' =>  59],
-			['coords' => [4, 7, 8], 'top' => 257, 'left' => 104],
-			['coords' => [5, 7, 7], 'top' => 257, 'left' => 149],
-			['coords' => [6, 7, 6], 'top' => 257, 'left' => 194],
-			['coords' => [7, 7, 5], 'top' => 257, 'left' => 239],
-			['coords' => [8, 7, 4], 'top' => 257, 'left' => 284],
-			['coords' => [9, 7, 3], 'top' => 257, 'left' => 329],
-			['coords' => [4, 8, 9], 'top' => 297, 'left' =>  81],
-			['coords' => [5, 8, 8], 'top' => 297, 'left' => 126],
-			['coords' => [6, 8, 7], 'top' => 297, 'left' => 171],
-			['coords' => [7, 8, 6], 'top' => 297, 'left' => 216],
-			['coords' => [8, 8, 5], 'top' => 297, 'left' => 261],
-			['coords' => [9, 8, 4], 'top' => 297, 'left' => 306],
-			['coords' => [5, 9, 9], 'top' => 337, 'left' => 103],
-			['coords' => [6, 9, 8], 'top' => 337, 'left' => 148],
-			['coords' => [7, 9, 7], 'top' => 337, 'left' => 193],
-			['coords' => [8, 9, 6], 'top' => 337, 'left' => 238],
-			['coords' => [9, 9, 5], 'top' => 337, 'left' => 283],
+	static function holes() {
+		return [
+			new AbalonePosition([1, 1, 5],  0, 2.0),
+			new AbalonePosition([2, 1, 4],  0, 3.0),
+			new AbalonePosition([3, 1, 3],  0, 4.0),
+			new AbalonePosition([4, 1, 2],  0, 5.0),
+			new AbalonePosition([5, 1, 1],  0, 6.0),
+			new AbalonePosition([1, 2, 6],  1, 1.5),
+			new AbalonePosition([2, 2, 5],  1, 2.5),
+			new AbalonePosition([3, 2, 4],  1, 3.5),
+			new AbalonePosition([4, 2, 3],  1, 4.5),
+			new AbalonePosition([5, 2, 2],  1, 5.5),
+			new AbalonePosition([6, 2, 1],  1, 6.5),
+			new AbalonePosition([1, 3, 7],  2, 1.0),
+			new AbalonePosition([2, 3, 6],  2, 2.0),
+			new AbalonePosition([3, 3, 5],  2, 3.0),
+			new AbalonePosition([4, 3, 4],  2, 4.0),
+			new AbalonePosition([5, 3, 3],  2, 5.0),
+			new AbalonePosition([6, 3, 2],  2, 6.0),
+			new AbalonePosition([7, 3, 1],  2, 7.0),
+			new AbalonePosition([1, 4, 8],  3, 0.5),
+			new AbalonePosition([2, 4, 7],  3, 1.5),
+			new AbalonePosition([3, 4, 6],  3, 2.5),
+			new AbalonePosition([4, 4, 5],  3, 3.5),
+			new AbalonePosition([5, 4, 4],  3, 4.5),
+			new AbalonePosition([6, 4, 3],  3, 5.5),
+			new AbalonePosition([7, 4, 2],  3, 6.5),
+			new AbalonePosition([8, 4, 1],  3, 7.5),
+			new AbalonePosition([1, 5, 9],  4, 0.0),
+			new AbalonePosition([2, 5, 8],  4, 1.0),
+			new AbalonePosition([3, 5, 7],  4, 2.0),
+			new AbalonePosition([4, 5, 6],  4, 3.0),
+			new AbalonePosition([5, 5, 5],  4, 4.0),
+			new AbalonePosition([6, 5, 4],  4, 5.0),
+			new AbalonePosition([7, 5, 3],  4, 6.0),
+			new AbalonePosition([8, 5, 2],  4, 7.0),
+			new AbalonePosition([9, 5, 1],  4, 8.0),
+			new AbalonePosition([2, 6, 9],  5, 0.5),
+			new AbalonePosition([3, 6, 8],  5, 1.5),
+			new AbalonePosition([4, 6, 7],  5, 2.5),
+			new AbalonePosition([5, 6, 6],  5, 3.5),
+			new AbalonePosition([6, 6, 5],  5, 4.5),
+			new AbalonePosition([7, 6, 4],  5, 5.5),
+			new AbalonePosition([8, 6, 3],  5, 6.5),
+			new AbalonePosition([9, 6, 2],  5, 7.5),
+			new AbalonePosition([3, 7, 9],  6, 1.0),
+			new AbalonePosition([4, 7, 8],  6, 2.0),
+			new AbalonePosition([5, 7, 7],  6, 3.0),
+			new AbalonePosition([6, 7, 6],  6, 4.0),
+			new AbalonePosition([7, 7, 5],  6, 5.0),
+			new AbalonePosition([8, 7, 4],  6, 6.0),
+			new AbalonePosition([9, 7, 3],  6, 7.0),
+			new AbalonePosition([4, 8, 9],  7, 1.5),
+			new AbalonePosition([5, 8, 8],  7, 2.5),
+			new AbalonePosition([6, 8, 7],  7, 3.5),
+			new AbalonePosition([7, 8, 6],  7, 4.5),
+			new AbalonePosition([8, 8, 5],  7, 5.5),
+			new AbalonePosition([9, 8, 4],  7, 6.5),
+			new AbalonePosition([5, 9, 9],  8, 2.0),
+			new AbalonePosition([6, 9, 8],  8, 3.0),
+			new AbalonePosition([7, 9, 7],  8, 4.0),
+			new AbalonePosition([8, 9, 6],  8, 5.0),
+			new AbalonePosition([9, 9, 5],  8, 6.0),
 		];
-
-		return $balls;
 	}
 
-	static function renderBall( array $ball, $withPlayers = true ) {
-		$player = call_user_func_array(['self', 'getCoordPlayer'], $ball['coords']);
-		return '<a href="#" id="ball_' . implode('_', $ball['coords']) . '" style="top: ' . $ball['top'] . 'px; left: ' . $ball['left'] . 'px" class="ball ' . $player . '" title="' . implode(', ', $ball['coords']) . '"></a>';
+	static function renderHole(AbalonePosition $hole) {
+		$coord = implode('_', $hole->coords);
+		return '<span' . html_attributes([
+			// 'href' => '#',
+			// 'id' => "ball_$coord",
+			// 'style' => "--left: {$hole->left}; --top: {$hole->top}",
+			'class' => 'hole',
+			'data-coord' => $coord,
+			'title' => $coord,
+		]) . '></span>';
 	}
 
-	static function getCoordPlayer( $x, $y, $z ) {
-		$balls = self::ensureAllBalls();
-		$coord = implode('_', [$x, $y, $z]);
-		return @$balls[$coord];
-	}
+	// static function getCoordPlayer( $x, $y, $z ) {
+	// 	$balls = self::ensureAllBalls();
+	// 	$coord = implode('_', [$x, $y, $z]);
+	// 	return $balls[$coord] ?? '';
+	// }
 
 	static function ensureAllBalls() {
 		global $db, $arrPlayerByColor;
@@ -375,40 +347,47 @@ function json_respond( $object ) {
 	exit(json_encode($object));
 }
 
-function newGame(&$white, &$black) {
+function newGame() {
 	global $db;
 
 	$db->begin();
 
 	// create game
+	$turn = rand(0, 1) ? 'white' : 'black';
 	$db->insert('abalone_games', array(
-		'turn' => rand(0, 1) ? 'white' : 'black',
+		'turn' => $turn,
 		'password' => '',
 	));
-	$return['game'] = $gameId = $db->insert_id();
+	$gid = $db->insert_id();
 
 	$balls = Abalone::initialBalls();
 
 	// create players
+	$login = null;
 	foreach ( array('white', 'black') AS $color ) {
+		$password = Abalone::password();
 		$db->insert('abalone_players', array(
-			'game_id' => $gameId,
-			'password' => Abalone::password(),
+			'game_id' => $gid,
+			'password' => $password,
 			'color' => $color,
 		));
-		$return[$color] = $db->insert_id();
+		$pid = $db->insert_id();
+
+		if ($color == $turn) {
+			$login = $password;
+		}
 
 		// create balls
 		foreach ( $balls[$color] AS $ball ) {
 			$ball = array_combine(array('x', 'y', 'z'), explode(':', $ball));
-			$ball['player_id'] = $return[$color];
+			$ball['player_id'] = $pid;
 			$db->insert('abalone_balls', $ball);
 		}
 	}
 
 	$db->commit();
 
-	return $return;
+	return $login;
 }
 
 

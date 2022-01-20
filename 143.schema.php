@@ -1,12 +1,13 @@
 <?php
 
 return [
-	'version' => 'abalone:3',
+	'version' => 'abalone:4',
 	'tables' => [
 		'abalone_games' => [
 			'id' => ['pk' => true],
 			'turn' => ['null' => false, 'default' => 'white'],
 			'password' => ['null' => false],
+			'last_move',
 		],
 		'abalone_players' => [
 			'id' => ['pk' => true],
