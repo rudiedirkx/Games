@@ -312,3 +312,135 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 }
+
+class KeerOpKeerGroup {
+	constructor(color, cells, stars = 0) {
+		this.color = color;
+		this.cells = cells;
+		this.stars = stars;
+	}
+
+	getAvailables() {
+		return this.cells.filter(cell => !cell.hasClass('chosen')).length;
+	}
+
+	// isFull() {
+	// 	return this.getAvailables() == 0;
+	// }
+
+	hilite() {
+		new Elements(this.cells).addClass('hilite');
+	}
+
+	unhilite() {
+		new Elements(this.cells).removeClass('hilite');
+	}
+}
+
+class KeerOpKeerCheater {
+	static PERFECT = 3;
+	static IMPERFECT = 2;
+	static POSSIBLE = 1;
+	static IMPOSSIBLE = 0;
+
+	constructor(grid) {
+		this.m_objGrid = grid;
+
+		this.groups = this.makeGroups();
+	}
+
+	findGroups(colors, numbers) {
+		const matches = [
+			[], [], [], [],
+		];
+
+		this.groups.forEach(group => {
+			if (this.groupIsAccessible(group)) {
+				const match = this.matchGroup(group, colors, numbers);
+				if (match) {
+					matches[match].push(group);
+				}
+			}
+		});
+
+		const i = matches.findLastIndex(groups => groups.length);
+// console.log('match type', i);
+		return matches[i] || [];
+	}
+
+	matchGroup(group, colors, numbers) {
+		const av = group.getAvailables();
+		const sn = Math.max(1, Math.min(...numbers));
+
+		const perfectColor = colors.includes(group.color);
+		const imperfectColor = colors.includes('?');
+		const imperfectNumber = av >= sn;
+		const perfectNumber = av && numbers.includes(av) || (imperfectNumber && av == 6);
+
+		if (perfectColor && perfectNumber) return KeerOpKeerCheater.PERFECT;
+		if (imperfectColor && perfectNumber) return KeerOpKeerCheater.IMPERFECT;
+		if (perfectColor && imperfectNumber) return KeerOpKeerCheater.IMPERFECT;
+		if (imperfectColor && imperfectNumber) return KeerOpKeerCheater.POSSIBLE;
+		return KeerOpKeerCheater.IMPOSSIBLE;
+	}
+
+	groupIsAccessible(group) {
+		return group.cells.some(cell => {
+			if (this.getCoord(cell).x == KeerOpKeer.CENTER) return true;
+			const C = this.getCoord(cell);
+			return Coords2D.dir4Coords.some(O => {
+				const nb = this.getCell(C.add(O));
+				return nb && nb.hasClass('chosen');
+			});
+		});
+	}
+
+	makeGroups() {
+		let cells = this.m_objGrid.getElements('td'); // .map(el => this.getCoord(el));
+		const total = cells.length;
+		let found = 0;
+		const groups = [];
+		while (found < total) {
+			const group = this.expandGroup(cells[0]);
+			found += group.length;
+			groups.push(new KeerOpKeerGroup(group[0].dataset.color, group));
+			cells = cells.filter(cell => !group.includes(cell));
+		}
+		return groups;
+	}
+
+	expandGroup(start, group = []) {
+		group.push(start);
+
+		const C = this.getCoord(start);
+		Coords2D.dir4Coords.forEach(O => {
+			const nb = this.getCell(C.add(O));
+			if (nb && nb.dataset.color == group[0].dataset.color && !group.includes(nb)) {
+				this.expandGroup(nb, group);
+			}
+		});
+
+		return group;
+	}
+
+	static getRolledColors() {
+		const els = $$('#dice .color');
+		const values = [];
+		if (els.length != 2) return values;
+		values.push(els[0].dataset.color);
+		values.push(els[1].dataset.color);
+		return values;
+	}
+
+	static getRolledNumbers() {
+		const els = $$('#dice .number');
+		const values = [];
+		if (els.length != 2) return values;
+		values.push(parseInt(els[0].dataset.number) || 0);
+		values.push(parseInt(els[1].dataset.number) || 0);
+		return values;
+	}
+}
+
+KeerOpKeerCheater.prototype.getCell = GridGame.prototype.getCell;
+KeerOpKeerCheater.prototype.getCoord = GridGame.prototype.getCoord;
