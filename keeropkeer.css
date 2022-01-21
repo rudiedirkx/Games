@@ -1,0 +1,165 @@
+:root {
+	--center-border: solid 3px #fff;
+	--color: #000;
+	--size: 30px;
+}
+body {
+	background-color: var(--color);
+	color: white;
+	font-family: sans-serif;
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 20px;
+}
+a {
+	color: inherit;
+}
+
+table {
+	/*border-spacing: 0px;*/
+	border-collapse: collapse;
+}
+td {
+	width: var(--size);
+	height: var(--size);
+	padding: 0;
+	border: solid 1px var(--color);
+	text-align: center;
+}
+tbody td {
+	color: black;
+}
+tbody .center {
+	border-left: var(--center-border);
+	border-right: var(--center-border);
+}
+thead .center,
+tbody tr:last-child .center {
+	border-bottom: var(--center-border);
+}
+
+.star,
+.choosing,
+.chosen,
+.self {
+	position: relative;
+}
+.star:before,
+.choosing:after,
+.chosen:after {
+	display: block;
+	position: absolute;
+	line-height: 1;
+	text-align: center;
+}
+.star:before {
+	content: "\2606";
+	top: 1px;
+	left: 1px;
+	width: calc(var(--size) - 2px);
+	height: calc(var(--size) - 2px);
+	font-size: calc(var(--size) - 2px);
+}
+.choosing:after,
+.chosen:after {
+	content: "\274C";
+	top: 7px;
+	left: 7px;
+	width: calc(var(--size) - 14px);
+	height: calc(var(--size) - 14px);
+	font-size: calc(var(--size) - 14px);
+}
+.chosen:after {
+	font-weight: bold;
+}
+.self:after {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: calc(var(--size) - 8px);
+	height: calc(var(--size) - 8px);
+	border-radius: 30px;
+	border: solid 2px currentColor;
+}
+
+.dice-cont {
+	display: flex;
+	user-select: none;
+}
+.dice-cont button {
+	height: 36px;
+	line-height: 36px;
+	padding: 0 6px;
+}
+#dice {
+	display: contents;
+}
+#dice > * {
+	width: 30px;
+	height: 30px;
+	border: solid 4px black;
+	font-weight: bold;
+	text-align: center;
+	font-size: 24px;
+	line-height: 30px;
+	margin-right: 5px;
+	cursor: pointer;
+}
+#dice > .number {
+	background-color: white;
+	color: black;
+}
+#dice > .color + .number {
+	margin-left: 10px;
+}
+#dice > .selected {
+	border-color: white;
+	box-shadow: 0 0 10px white;
+}
+
+#next-turn {
+	margin-right: 20px;
+}
+#next-turn > * {
+	display: none;
+}
+body:not([data-state]) #next-turn > .start,
+body[data-state="turn"] #next-turn > .turn,
+body[data-state="last"] #next-turn > .end,
+body[data-state="done"] #next-turn > .restart {
+	display: inline;
+}
+
+[data-color="?"],
+#dice > [data-number="?"] {
+	background-color: black;
+	color: white;
+}
+[data-color="g"] {
+	background-color: #6fe951;
+}
+[data-color="y"] {
+	background-color: yellow;
+}
+[data-color="b"] {
+	background-color: #97c3e9;
+}
+[data-color="p"] {
+	background-color: #e49baf;
+}
+[data-color="o"] {
+	background-color: orange;
+}
+
+@media (max-width: 480px) {
+	:root {
+		--size: 26px;
+	}
+}
+
+@media (max-width: 430px) {
+	:root {
+		--size: 22px;
+	}
+}

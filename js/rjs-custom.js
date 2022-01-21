@@ -1,5 +1,5 @@
 // https://homeblox.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// 5cdaa31ca2fbf943c39acc75fb6ccfd4e6b4c1e0
+// b653b15359fabb43a8458b2a882127c5abc73ee6
 
 (function(W, D) {
 
@@ -765,12 +765,12 @@
 				}
 
 				r.each(property, function(value, name) {
-					this.style[name] = value;
+					this.style.setProperty(name, value);
 				}, this);
 				return this;
 			}
 
-			this.style[property] = value;
+			this.style.setProperty(property, value);
 			return this;
 		},
 		show: function() {

@@ -1,5 +1,7 @@
 class KeerOpKeer extends GridGame {
 
+	static BOARDS = [];
+
 	static CENTER = 7;
 	static COLORS = ['g', 'y', 'b', 'p', 'o'];
 	static JOKERS = 8;
@@ -11,6 +13,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	reset() {
 		super.reset();
 
+		this.board = null;
 		this.DICE = 2;
 		this.TURNS = 30;
 
@@ -47,6 +50,39 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		$('#stats-moves').setText(`${this.m_iMoves} / ${this.TURNS}`);
 	}
 
+	startRandomDifferentGame() {
+		const boards = Object.keys(KeerOpKeer.BOARDS).filter(board => board != this.board);
+		const board = boards[parseInt(Math.random() * boards.length)];
+
+		this.startGame(board);
+	}
+
+	startGame(boardName) {
+		this.reset();
+		this.printGameState();
+
+		this.board = boardName;
+		const board = KeerOpKeer.BOARDS[boardName];
+		document.body.css('--color', board.color);
+
+		const html = [];
+		board.map.forEach(line => {
+			html.push('<tr>');
+			[...line.replace(/\s+/g, '')].forEach((cell, x) => {
+				const classes = [];
+				if (this.isStar(cell)) classes.push('star');
+				if (x == KeerOpKeer.CENTER) classes.push('center');
+				html.push(`<td data-color="${cell.toLowerCase()}" class="${classes.join(' ')}"></td>`);
+			});
+			html.push('</tr>');
+		});
+		this.m_objGrid.setHTML(html.join(''));
+	}
+
+	isStar(cell) {
+		return cell.toUpperCase() == cell;
+	}
+
 	printJokers() {
 		$('#stats-jokers').setText(`${KeerOpKeer.JOKERS - this.usedJokers} / ${KeerOpKeer.JOKERS}`);
 	}
@@ -77,6 +113,9 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		if (this.m_bGameOver) {
 			return 'done';
 		}
+		else if (this.m_iMoves == 0) {
+			return null;
+		}
 		else if (this.m_iMoves == this.TURNS) {
 			return 'last';
 		}
@@ -85,11 +124,15 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		}
 	}
 
+	getBoardIndex() {
+		return Object.keys(KeerOpKeer.BOARDS).indexOf(this.board);
+	}
+
 	getScore() {
 		return {
 			...super.getScore(),
 			score: this.getNumericScore(),
-			level: this.boardIndex,
+			level: this.getBoardIndex(),
 		};
 	}
 
@@ -296,7 +339,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 		$('#next-turn').on('click', e => {
 			if ( this.m_bGameOver ) {
-				location.reload();
+				this.startRandomDifferentGame();
 			}
 			else if ( this.currentTurnIsComplete() ) {
 				this.nextTurn();
