@@ -109,6 +109,8 @@ else if ( isset($_GET['status']) ) {
 
 $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $player->opponent->password;
 
+$replaying = ($_GET['replay'] ?? '') === 'all';
+
 ?>
 <html>
 
@@ -145,35 +147,40 @@ $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $player->o
 	<? endforeach ?>
 </div>
 
-<div id="players">
-	<table class="players">
-		<tr>
-			<th>You</th>
-			<th></td>
-			<th>Turn</th>
-		</tr>
-		<tr class="self">
-			<td class="img"><span class="img self"></span></td>
-			<td>
-				<?= ucfirst($player->color) ?> (<span id="player-balls-left"><?= $player->balls_left ?></span>)
-			</td>
-			<td class="img"><span class="img turn"></span></td>
-		</tr>
-		<tr class="other">
-			<td class="img"><span class="img self"></span></td>
-			<td>
-				<?= ucfirst($player->opponent->color) ?> (<span id="opponent-balls-left"><?= $player->opponent->balls_left ?></span>)
-			</td>
-			<td class="img"><span class="img turn"></span></td>
-		</tr>
-		<tr>
-			<td colspan="3" align="center">
-				<a href="143.php">Log out</a>
-			</td>
-		</tr>
-	</table>
-	<p><button id="replay-last-move">Replay last move</button></p>
-</div>
+<? if (!$replaying): ?>
+	<div id="players">
+		<table class="players">
+			<tr>
+				<th>You</th>
+				<th></td>
+				<th>Turn</th>
+			</tr>
+			<tr class="self">
+				<td class="img"><span class="img self"></span></td>
+				<td>
+					<?= ucfirst($player->color) ?> (<span id="player-balls-left"><?= $player->balls_left ?></span>)
+				</td>
+				<td class="img"><span class="img turn"></span></td>
+			</tr>
+			<tr class="other">
+				<td class="img"><span class="img self"></span></td>
+				<td>
+					<?= ucfirst($player->opponent->color) ?> (<span id="opponent-balls-left"><?= $player->opponent->balls_left ?></span>)
+				</td>
+				<td class="img"><span class="img turn"></span></td>
+			</tr>
+			<tr>
+				<td colspan="3" align="center">
+					<a href="143.php">Log out</a>
+				</td>
+			</tr>
+		</table>
+		<p>
+			<button id="replay-last-move">Replay last move</button>
+			<a href="?login=<?= $login ?>&replay=all">Replay all</a>
+		</p>
+	</div>
+<? endif ?>
 
 <div id="help">
 	<h2>What's this then?</h2>
@@ -187,8 +194,15 @@ $friendURL = 'https://' . $_SERVER['HTTP_HOST'] . '/143.php?login=' . $player->o
 <script src="<?= html_asset('143.js') ?>"></script>
 <script>
 objAbalone = new Abalone($('#board'));
-objAbalone.startGame('<?= $player->color ?>', <?= json_encode(Abalone::ensureAllBalls()) ?>);
-objAbalone.listenControls();
+<? if ($replaying): ?>
+	objAbalone.replayFrom(
+		<?= json_encode(Abalone::initialBallsByCoord()) ?>,
+		<?= json_encode(array_column($player->game->moves, 'move_array')) ?>
+	);
+<? else: ?>
+	objAbalone.startGame('<?= $player->color ?>', <?= json_encode(Abalone::ensureAllBalls()) ?>);
+	objAbalone.listenControls();
+<? endif ?>
 </script>
 
 </body>
@@ -304,6 +318,17 @@ class Abalone {
 			'black' => array('1:1:5', '2:1:4', '3:1:3', '4:1:2', '5:1:1', '1:2:6', '2:2:5', '3:2:4', '4:2:3', '5:2:2', '6:2:1', '3:3:5', '4:3:4', '5:3:3'),
 			'white' => array('5:7:7', '6:7:6', '7:7:5', '4:8:9', '5:8:8', '6:8:7', '7:8:6', '8:8:5', '9:8:4', '5:9:9', '6:9:8', '7:9:7', '8:9:6', '9:9:5'),
 		);
+	}
+
+	static function initialBallsByCoord() {
+		$state = [];
+		foreach ( self::initialBalls() as $color => $coords ) {
+			foreach ( $coords as $coord ) {
+				$state[ str_replace(':', '_', $coord) ] = $color;
+			}
+		}
+
+		return $state;
 	}
 }
 

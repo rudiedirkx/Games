@@ -156,6 +156,19 @@ class Abalone extends GridGame {
 		this.tickStatus();
 	}
 
+	replayFrom(state, moves) {
+		this.populateBoard(state);
+
+		const nextMove = () => {
+			const move = moves.shift();
+			this.playMove(move.balls, move.direction);
+			if (moves.length) {
+				setTimeout(nextMove, 1000);
+			}
+		};
+		setTimeout(nextMove, 500);
+	}
+
 	createStats() {}
 
 	listenControls() {

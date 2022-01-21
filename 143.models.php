@@ -7,7 +7,11 @@ class Game extends Model {
 
 	protected function get_last_move() {
 		$move = Move::first("game_id = ? order by id desc", [$this->id]);
-		return $move ? json_decode($move->move, true) : null;
+		return $move ? $move->move_array : null;
+	}
+
+	protected function relate_moves() {
+		return $this->to_many(Move::class, 'game_id')->order('id asc');
 	}
 
 	static public function newGame() {
@@ -80,4 +84,8 @@ class Ball extends Model {
 
 class Move extends Model {
 	static $_table = 'abalone_moves';
+
+	protected function get_move_array() {
+		return json_decode($this->move, true);
+	}
 }
