@@ -126,7 +126,6 @@ class Abalone extends GridGame {
 	static OFFLINE_AFTER = 120;
 	static INACTIVE_AFTER = 20;
 
-	static UNSELECT_BALLS_TIMEOUT = 600;
 	static SELECT_MAX_BALLS = 4;
 
 	static oppositeColor( color ) {
@@ -134,10 +133,11 @@ class Abalone extends GridGame {
 	}
 
 	reset() {
+		this.unselectBallsAfter = 0;
+		this.removeBallAfter = 0;
+
 		this.playerColor = null;
 		this.opponentColor = null;
-
-		// this.index = null;
 
 		this.previousState = null;
 		this.lastMove = null;
@@ -145,28 +145,38 @@ class Abalone extends GridGame {
 	}
 
 	startGame(playerColor, state) {
+		const time = 500;
+
 		this.playerColor = playerColor;
 		this.opponentColor = Abalone.oppositeColor(this.playerColor);
 
 		document.body.data('player', this.playerColor).addClass('ready');
+		document.body.style.setProperty('--ball-move-time', time);
+
+		this.unselectBallsAfter = 600;
+		this.removeBallAfter = 1000;
 
 		this.populateBoard(state);
-		// this.index = this.createIndex();
 
 		this.tickStatus();
 	}
 
 	replayFrom(state, moves) {
+		const time = 200;
+		document.body.style.setProperty('--ball-move-time', time);
+
+		this.removeBallAfter = 700;
+
 		this.populateBoard(state);
 
 		const nextMove = () => {
 			const move = moves.shift();
 			this.playMove(move.balls, move.direction);
 			if (moves.length) {
-				setTimeout(nextMove, 1000);
+				setTimeout(nextMove, 2 * time);
 			}
 		};
-		setTimeout(nextMove, 500);
+		setTimeout(nextMove, time);
 	}
 
 	createStats() {}
@@ -374,7 +384,7 @@ class Abalone extends GridGame {
 			const posDiff = posHead.subtract(this.getPosition(head.add(dir.reverse())));
 			const ball = this.ball(head);
 			ball.css(posHead.add(posDiff).toCSS());
-			setTimeout(() => ball.remove(), 3 * Abalone.UNSELECT_BALLS_TIMEOUT);
+			setTimeout(() => ball.remove(), this.removeBallAfter);
 		}
 
 		this.moveBalls(movers, dir);
@@ -440,7 +450,7 @@ class Abalone extends GridGame {
 	}
 
 	unselectAllBallsAsync() {
-		setTimeout(() => this.unselectAllBalls(), Abalone.UNSELECT_BALLS_TIMEOUT);
+		setTimeout(() => this.unselectAllBalls(), this.unselectBallsAfter);
 	}
 
 	unselectAllBalls() {

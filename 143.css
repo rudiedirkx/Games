@@ -9,6 +9,7 @@
 }
 
 body {
+	--ball-move-time: 100;
 	max-width: 540px;
 }
 body.my-turn {
@@ -75,7 +76,8 @@ body[data-player="black"] #board {
 	box-shadow: 0 0 10px #666 inset;
 }
 .ball {
-	transition: left 500ms linear, top 500ms linear;
+	transition: left calc(1ms * var(--ball-move-time)) linear;
+	transition-property: left, top;
 }
 .ball[data-color="black"] {
 	background: #666;
