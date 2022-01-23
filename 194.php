@@ -28,7 +28,9 @@ if (!$player) {
 		}
 
 		?>
+		<meta charset="utf-8" />
 		<title>Keer Op Keer MULTI</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<h1>Keer Op Keer MULTIPLAYER</h1>
 		<h2>Join game <?= $game->id ?>?</h2>
 		<p>
@@ -68,7 +70,9 @@ if (!$player) {
 	$boardNames = array_keys($boards);
 
 	?>
+	<meta charset="utf-8" />
 	<title>Keer Op Keer MULTI</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<h1>Keer Op Keer MULTIPLAYER</h1>
 	<h2>Start new game?</h2>
 	<form method="post" action>
