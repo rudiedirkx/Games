@@ -1,5 +1,5 @@
 <?php
-// Keer op keer
+// Keer op keer SOLO
 
 require __DIR__ . '/inc.bootstrap.php';
 [$columns, $boards] = require '191_levels.php';
@@ -16,7 +16,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 
 <head>
 <meta charset="utf-8" />
-<title>Keer Op Keer</title>
+<title>Keer Op Keer SOLO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <? include 'tpl.onerror.php' ?>
 <link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
@@ -61,11 +61,13 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 	<p id="stats"></p>
 
 	<table>
-		<tr>
-			<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
-				<td class="full-color" data-color="<?= $color ?>">5</td>
-			<? endforeach ?>
-		</tr>
+		<? foreach ([5] as $score): ?>
+			<tr>
+				<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
+					<td class="full-color" data-color="<?= $color ?>" data-score="<?= $score ?>"><?= $score ?></td>
+				<? endforeach ?>
+			</tr>
+		<? endforeach ?>
 	</table>
 
 	<p>
@@ -77,7 +79,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 </div>
 
 <script>
-KeerOpKeer.CENTER = <?= $mapCenter ?>;
+KeerOpKeer.CENTER = <?= json_encode($mapCenter) ?>;
 KeerOpKeer.BOARDS = <?= json_encode($boards) ?>;
 var objGame = new SoloKeerOpKeer($('#grid'));
 objGame.startGame(<?= json_encode($board) ?>);

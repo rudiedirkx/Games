@@ -10,6 +10,11 @@ function is_mobile() {
 	return is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
 }
 
+function json_respond( $object ) {
+	header('Content-type: text/json');
+	exit(json_encode($object));
+}
+
 function html_asset( $src ) {
 	$local = is_local();
 	$mobile = is_mobile();
@@ -53,6 +58,16 @@ function shash($str) {
 		$hash = ((($hash << 5) - $hash) + $chr) & 0xFFFFFFFF; // Force to 32b int, bc JS doesn't do 64b
 	}
 	return sprintf('%u', $hash);
+}
+
+function get_random() {
+	$password = '';
+	while (strlen($password) < 30) {
+		$password .= rand();
+	}
+	$password = preg_replace('#[^a-z0-9]#i', '', base64_encode($password));
+	$password = substr($password, rand(0, strlen($password) - 10), 10);
+	return strtoupper($password);
 }
 
 function get_thumbs_positions( &$thumbs = array(), $debug = false ) {

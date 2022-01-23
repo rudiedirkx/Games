@@ -331,8 +331,3 @@ class Abalone {
 		return $state;
 	}
 }
-
-function json_respond( $object ) {
-	header('Content-type: text/json');
-	exit(json_encode($object));
-}

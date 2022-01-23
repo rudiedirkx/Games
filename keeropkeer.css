@@ -10,6 +10,7 @@ body {
 	display: flex;
 	flex-wrap: wrap;
 	column-gap: 20px;
+	align-items: flex-start;
 }
 a {
 	color: inherit;
@@ -41,6 +42,7 @@ tbody tr:last-child .center {
 .star,
 .choosing,
 .chosen,
+.other,
 .self {
 	position: relative;
 }
@@ -71,6 +73,17 @@ tbody tr:last-child .center {
 }
 .chosen:after {
 	font-weight: bold;
+}
+.other:after {
+	content: "";
+	position: absolute;
+	top: 0px;
+	bottom: 0px;
+	left: calc(50% - 1px);
+	width: 2px;
+	background-color: currentColor;
+	transform: rotate(45deg);
+	transform-origin: center;
 }
 .self:after {
 	content: "";
@@ -118,9 +131,11 @@ tbody tr:last-child .center {
 	box-shadow: 0 0 10px white;
 }
 
-#next-turn {
+.dice-cont button,
+.dice-cont em {
 	margin-right: 20px;
 }
+
 #next-turn > * {
 	display: none;
 }

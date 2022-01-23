@@ -68,13 +68,7 @@ class Player extends Model {
 	}
 
 	static public function password() {
-		$password = '';
-		while (strlen($password) < 30) {
-			$password .= rand();
-		}
-		$password = preg_replace('#[^a-z0-9]#i', '', base64_encode($password));
-		$password = substr($password, rand(0, strlen($password) - 10), 10);
-		return strtoupper($password);
+		return get_random();
 	}
 }
 
