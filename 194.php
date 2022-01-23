@@ -232,7 +232,7 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 				(score <?= $plr->score ?>)
 				<? if ($plr->is_turn): ?>(TURN)<? endif ?>
 				(online <span id="online-<?= $plr->id ?>"><?= time() - $plr->online ?></span> sec ago)
-				<? if ($debug): ?>
+				<? if (is_local()): ?>
 					- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
 				<? endif ?>
 			</li>
