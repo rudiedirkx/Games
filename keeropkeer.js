@@ -286,7 +286,6 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		const poll = () => {
 			if (!document.hidden) {
 				$.get(location.search + '&status=1').on('done', (e, rsp) => {
-console.log(rsp.status, rsp.debug);
 					if (!rsp.status) {
 						console.warn(rsp);
 					}

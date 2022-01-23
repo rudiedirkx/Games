@@ -107,7 +107,7 @@ if (isset($_GET['status'])) {
 	$player->touch();
 	return json_respond([
 		'status' => $status->getHash(),
-		'debug' => (string) $status,
+		// 'debug' => (string) $status,
 	]);
 }
 
