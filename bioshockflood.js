@@ -49,16 +49,9 @@ class BioshockFlood extends GridGame {
 		return this.m_objGrid.getElement('[data-full]') || this.m_objGrid.getElement('.start');
 	}
 
-	getCellCoords( cell ) {
-		return new Coords2D(
-			cell.cellIndex,
-			cell.parentNode.sectionRowIndex
-		);
-	}
-
 	getCellDirection( cell ) {
 		if ( cell.hasClass('start') ) {
-			var C = this.getCellCoords(cell);
+			var C = this.getCoord(cell);
 			if ( C.x == 0 ) {
 				return 'r';
 			}
@@ -88,7 +81,7 @@ class BioshockFlood extends GridGame {
 		var currentCell = this.getCurrentCell();
 		var direction = this.getCellDirection(currentCell);
 		var deltaC = this.dir4Coords[ this.dir4Names.indexOf(direction) ];
-		var nextCellC = this.getCellCoords(currentCell).add(deltaC);
+		var nextCellC = this.getCoord(currentCell).add(deltaC);
 		var nextCell = this.m_objGrid.rows[nextCellC.y].cells[nextCellC.x];
 
 		return nextCell;
@@ -112,6 +105,7 @@ class BioshockFlood extends GridGame {
 		if ( this.m_iTicker ) return;
 
 		this.startTime();
+		this.clearFog();
 
 		clearInterval(this.m_iTicker);
 		this.m_iTicker = setInterval(() => {
@@ -183,6 +177,7 @@ class BioshockFlood extends GridGame {
 
 		this.createStartEnd();
 		this.createPipes();
+		this.addFog();
 	}
 
 	createPipe( connectors ) {
@@ -194,6 +189,21 @@ class BioshockFlood extends GridGame {
 			var pipe = parseInt(Math.random() * this.pipes.length);
 			cell.data('pipe', pipe);
 			cell.className = this.pipes[pipe].getClass();
+		});
+	}
+
+	clearFog() {
+		this.m_objGrid.getElements('td.fogged').removeClass('fogged');
+	}
+
+	addFog() {
+		const start = this.getCoord(this.getStartCell());
+		this.m_objGrid.getElements('td').forEach(cell => {
+			const C = this.getCoord(cell);
+			const distance = Math.sqrt(Math.pow(C.x - start.x, 2) + Math.pow(C.y - start.y, 2));
+			if (distance > 2.5) {
+				cell.addClass('fogged');
+			}
 		});
 	}
 

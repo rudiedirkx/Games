@@ -15,6 +15,10 @@ require __DIR__ . '/inc.bootstrap.php';
 * {
 	box-sizing: border-box;
 }
+body {
+	margin: 5px;
+	--size: 48;
+}
 .inside table {
 	border-collapse		: collapse;
 	border				: 0;
@@ -22,8 +26,8 @@ require __DIR__ . '/inc.bootstrap.php';
 .inside th,
 .inside td {
 	padding				: 0;
-	width				: 40px;
-	height				: 40px;
+	width				: calc(1px * var(--size));
+	height				: calc(1px * var(--size));
 	border				: solid 1px #fff;
 }
 .inside td {
@@ -80,6 +84,9 @@ require __DIR__ . '/inc.bootstrap.php';
 }
 [data-full] {
 	background-color: var(--water-color) !important;
+}
+td.fogged {
+	opacity: 0;
 }
 
 [data-full="1"] {
