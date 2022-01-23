@@ -4,9 +4,21 @@ class Model extends db_generic_model {}
 
 class Game extends Model {
 	const COLORS_TO_COMPLETE = 2;
+	const KICKABLE_AFTER = 120;
+
 	const COLOR_COMPLETE_ROUND = 100;
+	const KICKED_ROUND = 110;
 
 	static $_table = 'keeropkeer_games';
+
+	public function getActivePlayer(int $pid) : ?Player {
+		foreach ($this->active_players as $plr) {
+			if ($plr->id == $pid) {
+				return $plr;
+			}
+		}
+		return null;
+	}
 
 	public function touch() : void {
 		$this->update(['changed_on' => time()]);
@@ -33,9 +45,15 @@ class Game extends Model {
 	}
 
 	public function allPlayersTurnReady() : bool {
-		$finisheds = array_count_values(array_column($this->players, 'finished_round'));
+		$finisheds = array_count_values(array_column($this->active_players, 'finished_round'));
 		unset($finisheds[self::COLOR_COMPLETE_ROUND]);
 		return array_keys($finisheds) == [$this->round];
+	}
+
+	public function maybeEndRound() : void {
+		if ($this->allPlayersTurnReady()) {
+			$this->endRound();
+		}
 	}
 
 	public function endRound() : void {
@@ -48,7 +66,10 @@ class Game extends Model {
 		if ($this->is_color_complete) {
 			Player::updateAll([
 				'finished_round' => self::COLOR_COMPLETE_ROUND,
-			], ['game_id' => $this->id]);
+			], [
+				'game_id' => $this->id,
+				'finished_round <> ' . self::KICKED_ROUND,
+			]);
 			$this->update([
 				'turn_player_id' => null,
 			]);
@@ -56,9 +77,13 @@ class Game extends Model {
 	}
 
 	protected function getNextTurnPlayerId() {
-		$pids = array_column($this->players, 'id');
+		$pids = array_column($this->active_players, 'id');
 		$i = array_search($this->turn_player_id, $pids);
 		return $i === false ? $pids[array_rand($pids)] : $pids[($i + 1) % count($pids)];
+	}
+
+	protected function get_free_dice() {
+		return $this->round <= count($this->active_players);
 	}
 
 	protected function get_winner() {
@@ -69,8 +94,12 @@ class Game extends Model {
 		return $players[0];
 	}
 
+	protected function get_active_players() {
+		return array_values(array_filter($this->players, fn($plr) => $plr->finished_round != self::KICKED_ROUND));
+	}
+
 	protected function get_is_color_complete() {
-		foreach ($this->players as $player) {
+		foreach ($this->active_players as $player) {
 			if ($player->finished_round == self::COLOR_COMPLETE_ROUND) {
 				return true;
 			}
@@ -79,7 +108,7 @@ class Game extends Model {
 	}
 
 	protected function get_is_player_complete() {
-		foreach ($this->players as $player) {
+		foreach ($this->active_players as $player) {
 			if ($player->finished_round != self::COLOR_COMPLETE_ROUND) {
 				return false;
 			}
@@ -87,7 +116,7 @@ class Game extends Model {
 		return true;
 	}
 
-	protected function get_sufficient_players() {
+	protected function get_has_sufficient_players() {
 		return count($this->players) > 1;
 	}
 
@@ -124,7 +153,8 @@ class Game extends Model {
 	}
 
 	protected function relate_players() {
-		return $this->to_many(Player::class, 'game_id')->order("id asc");
+		$round = self::KICKED_ROUND;
+		return $this->to_many(Player::class, 'game_id')->order("(finished_round = $round) asc, id asc");
 	}
 
 	protected function relate_num_players() {
@@ -161,13 +191,21 @@ class Game extends Model {
 class Player extends Model {
 	static $_table = 'keeropkeer_players';
 
+	public function kick() {
+		$this->update([
+			'finished_round' => Game::KICKED_ROUND,
+		]);
+		$this->game->touch();
+		unset($this->game->active_players);
+	}
+
 	public function touch() : void {
 		$this->update(['online' => time()]);
 	}
 
 	public function getStatus() : KeerStatus {
 		if ($this->game->round == 0) {
-			if (!$this->game->sufficient_players) {
+			if (!$this->game->has_sufficient_players) {
 				return new KeerStatus($this->game, "Waiting for players to join...");
 			}
 			elseif (!$this->is_turn) {
@@ -264,12 +302,20 @@ class Player extends Model {
 		return [];
 	}
 
+	protected function get_is_kickable() {
+		return !$this->is_kicked && $this->online_ago > Game::KICKABLE_AFTER;
+	}
+
+	protected function get_is_kicked() {
+		return $this->finished_round == Game::KICKED_ROUND;
+	}
+
 	protected function get_online_ago() {
 		return time() - $this->online;
 	}
 
 	protected function get_can_choose() {
-		return $this->can_end_turn && ($this->game->round == 1 || $this->is_turn || !$this->game->turn_player->can_end_turn);
+		return $this->can_end_turn && ($this->game->free_dice || $this->is_turn || !$this->game->turn_player->can_end_turn);
 	}
 
 	protected function get_can_roll() {
@@ -285,7 +331,7 @@ class Player extends Model {
 	}
 
 	protected function get_is_leader() {
-		foreach ($this->game->players as $player) {
+		foreach ($this->game->active_players as $player) {
 			return $this->id == $player->id;
 		}
 	}

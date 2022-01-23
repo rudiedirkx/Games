@@ -357,6 +357,16 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		});
 	}
 
+	handleKick(pid) {
+		if (!confirm('Kick player forever?')) return;
+
+		const data = {pid};
+		$.post(location.search + '&kick=1', $.serialize(data)).on('done', (e, rsp) => {
+			console.log(rsp);
+			if (rsp.reload) location.reload();
+		});
+	}
+
 	listenControls() {
 		this.listenCellClick();
 		this.listenDice();
@@ -366,6 +376,11 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		});
 		$$('#next-turn').on('click', e => {
 			this.handleEndTurn();
+		});
+
+		$$('[data-kick]').on('click', e => {
+			const pid = e.target.data('kick');
+			this.handleKick(pid);
 		});
 	}
 

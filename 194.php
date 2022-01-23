@@ -50,6 +50,7 @@ if (!$player) {
 				<li>
 					<?= do_html($plr->name) ?>
 					(score <?= $plr->score ?>)
+					(online <?= $plr->online_ago ?> sec ago)
 					<? if ($debug || in_array($plr->id, $_SESSION['keeropkeer']['pids'] ?? [])): ?>
 						- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
 					<? endif ?>
@@ -149,15 +150,26 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 			$player->registerFullColumns($_POST['fulls']['columns'] ?? []);
 			$player->registerFullColors($_POST['fulls']['colors'] ?? []);
 
-			if ($player->game->round > 1 && $player->is_turn) {
+			if (!$player->game->free_dice && $player->is_turn) {
 				$player->game->disableDice($_POST['color'], $_POST['number']);
 			}
 
-			if ($player->game->allPlayersTurnReady()) {
-				$player->game->endRound();
-			}
-
+			$player->game->maybeEndRound();
 			$player->game->touch();
+// print_r($db->queries);
+// exit;
+		});
+		return json_respond(['reload' => 1]);
+	}
+	return json_respond(['reload' => 2]);
+}
+
+elseif (isset($_GET['kick'], $_POST['pid'])) {
+	$plr = $player->game->getActivePlayer($_POST['pid']);
+	if ($plr && $plr->is_kickable) {
+		$db->transaction(function($db) use ($plr) {
+			$plr->kick();
+			$plr->game->maybeEndRound();
 // print_r($db->queries);
 // exit;
 		});
@@ -225,13 +237,17 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 	</div>
 
 	<p>Players:</p>
-	<ul>
+	<ul class="players">
 		<? foreach ($player->game->players as $plr): ?>
 			<li <? if ($plr->id == $player->id): ?>style="color: lime"<? endif ?>>
 				<?= do_html($plr->name) ?>
 				(score <?= $plr->score ?>)
 				<? if ($plr->is_turn): ?>(TURN)<? endif ?>
-				(online <span id="online-<?= $plr->id ?>"><?= time() - $plr->online ?></span> sec ago)
+				<? if ($plr->is_kicked): ?>(KICKED)<? endif ?>
+				(online <span id="online-<?= $plr->id ?>"><?= $plr->online_ago ?></span> sec ago)
+				<? if ($player->is_leader && $plr->is_kickable): ?>
+					<button data-kick="<?= $plr->id ?>">KICK</button>
+				<? endif ?>
 				<? if (is_local()): ?>
 					- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
 				<? endif ?>
