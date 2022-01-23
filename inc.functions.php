@@ -6,6 +6,10 @@ function is_local() {
 	return !isset($_SERVER['HTTP_HOST']) || is_int(strpos($_SERVER['HTTP_HOST'], '.home'));
 }
 
+function is_debug_ip() {
+	return defined('DEBUG_IPS') && in_array($_SERVER['REMOTE_ADDR'], DEBUG_IPS);
+}
+
 function is_mobile() {
 	return is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
 }

@@ -4,6 +4,11 @@
 require __DIR__ . '/inc.bootstrap.php';
 require 'inc.db.php';
 require '194_models.php';
+
+session_start();
+
+$debug = is_local() || is_debug_ip();
+
 Model::$_db = $db;
 $db->ensureSchema(require '194_schema.php');
 
@@ -45,7 +50,7 @@ if (!$player) {
 				<li>
 					<?= do_html($plr->name) ?>
 					(score <?= $plr->score ?>)
-					<? if (is_local()): ?>
+					<? if ($debug || in_array($plr->id, $_SESSION['keeropkeer']['pids'] ?? [])): ?>
 						- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
 					<? endif ?>
 				</li>
@@ -81,7 +86,7 @@ if (!$player) {
 		<p>Board: <select name="board"><?= do_html_options(array_combine($boardNames, $boardNames), null, '-- RANDOM') ?></select></p>
 		<p><button name="start" value="1">START GAME</button></p>
 	</form>
-	<? if (is_local()):
+	<? if ($debug):
 		$games = Game::all('1=1 order by id desc');
 		Game::eager('num_players', $games);
 		?>
@@ -101,6 +106,10 @@ if (!$player) {
 }
 
 
+
+if (!in_array($player->id, $_SESSION['keeropkeer']['pids'] ?? [])) {
+	$_SESSION['keeropkeer']['pids'][] = $player->id;
+}
 
 $status = $player->getStatus();
 
@@ -220,10 +229,10 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 		<? foreach ($player->game->players as $plr): ?>
 			<li <? if ($plr->id == $player->id): ?>style="color: lime"<? endif ?>>
 				<?= do_html($plr->name) ?>
-				(score <?= max(0, $plr->score) ?>)
+				(score <?= $plr->score ?>)
 				<? if ($plr->is_turn): ?>(TURN)<? endif ?>
 				(online <span id="online-<?= $plr->id ?>"><?= time() - $plr->online ?></span> sec ago)
-				<? if (is_local()): ?>
+				<? if ($debug): ?>
 					- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
 				<? endif ?>
 			</li>
