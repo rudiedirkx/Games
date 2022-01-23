@@ -292,7 +292,8 @@ class MultiKeerOpKeer extends KeerOpKeer {
 					}
 
 					r.each(rsp.onlines, (sec, id) => {
-						$(`#online-${id}`).setText(sec);
+						const el = $(`#online-${id}`);
+						if (el) el.setText(sec);
 					});
 
 					if (rsp.status !== $('#status').data('hash')) {
