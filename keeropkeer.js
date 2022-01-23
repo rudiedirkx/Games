@@ -288,8 +288,14 @@ class MultiKeerOpKeer extends KeerOpKeer {
 				$.get(location.search + '&status=1').on('done', (e, rsp) => {
 					if (!rsp.status) {
 						console.warn(rsp);
+						return;
 					}
-					else if (rsp.status !== $('#status').data('hash')) {
+
+					r.each(rsp.onlines, (sec, id) => {
+						$(`#online-${id}`).setText(sec);
+					});
+
+					if (rsp.status !== $('#status').data('hash')) {
 						setTimeout(() => location.reload(), 100);
 					}
 				});

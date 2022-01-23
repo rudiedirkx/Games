@@ -15,7 +15,7 @@ $player = Player::get($_GET['player'] ?? null);
 if (!$player) {
 	if ($game = Game::get($_GET['game'] ?? null)) {
 		if (isset($_POST['join'], $_POST['name'])) {
-			$db->transaction(function() use ($game) {
+			$password = $db->transaction(function() use ($game) {
 				$game->touch();
 				Player::insert([
 					'game_id' => $game->id,
@@ -23,6 +23,7 @@ if (!$player) {
 					'password' => $password = get_random(),
 					'name' => $_POST['name'],
 				]);
+				return $password;
 			});
 			return do_redirect("?player=$password");
 		}
@@ -107,7 +108,7 @@ if (isset($_GET['status'])) {
 	$player->touch();
 	return json_respond([
 		'status' => $status->getHash(),
-		// 'debug' => (string) $status,
+		'onlines' => array_column($player->game->players, 'online_ago', 'id'),
 	]);
 }
 
@@ -222,7 +223,7 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 				<?= do_html($plr->name) ?>
 				(score <?= max(0, $plr->score) ?>)
 				<? if ($plr->is_turn): ?>(TURN)<? endif ?>
-				(online <?= time() - $plr->online ?> sec ago)
+				(online <span id="online-<?= $plr->id ?>"><?= time() - $plr->online ?></span> sec ago)
 				<? if (is_local()): ?>
 					- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
 				<? endif ?>

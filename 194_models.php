@@ -264,6 +264,10 @@ class Player extends Model {
 		return [];
 	}
 
+	protected function get_online_ago() {
+		return time() - $this->online;
+	}
+
 	protected function get_can_choose() {
 		return $this->can_end_turn && ($this->game->round == 1 || $this->is_turn || !$this->game->turn_player->can_end_turn);
 	}
@@ -317,7 +321,7 @@ class KeerStatus {
 	}
 
 	public function getHash() : string {
-		return sha1(get_class($this) . "$this->text:{$this->game->num_columns}:{$this->game->num_colors}");
+		return sha1(get_class($this) . "$this->text:{$this->game->num_players}:{$this->game->num_columns}:{$this->game->num_colors}");
 	}
 
 	public function __toString() {
