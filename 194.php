@@ -195,26 +195,25 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 </table>
 
 <div class="meta">
-	<p class="dice-cont">
-		<span id="status" data-hash="<?= $status->getHash() ?>"><?= $status ?></span>
-		<span id="dice"></span>
-	</p>
+	<div id="status" data-hash="<?= $status->getHash() ?>"><?= $status ?></div>
+	<div id="dice"></div>
 
-	<p id="stats">
-		Round: <span class="value" id="stats-round"><?= $player->game->round ?></span><br>
-		Jokers: <span class="value" id="stats-jokers">8 / 8</span><br>
-		Score: <span class="value" id="stats-score">?</span><br>
-	</p>
-
-	<table>
-		<? foreach ([5, 3] as $score): ?>
-			<tr>
-				<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
-					<td class="full-color" data-color="<?= $color ?>" data-score="<?= $score ?>"><?= $score ?></td>
-				<? endforeach ?>
-			</tr>
-		<? endforeach ?>
-	</table>
+	<div class="colors-stats">
+		<table>
+			<? foreach ([5, 3] as $score): ?>
+				<tr>
+					<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
+						<td class="full-color" data-color="<?= $color ?>" data-score="<?= $score ?>"><?= $score ?></td>
+					<? endforeach ?>
+				</tr>
+			<? endforeach ?>
+		</table>
+		<p id="stats">
+			Round: <span class="value" id="stats-round"><?= $player->game->round ?></span><br>
+			Jokers: <span class="value" id="stats-jokers">8 / 8</span><br>
+			Score: <span class="value" id="stats-score">?</span><br>
+		</p>
+	</div>
 
 	<p>Players:</p>
 	<ul>
