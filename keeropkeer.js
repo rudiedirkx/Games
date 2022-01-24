@@ -255,7 +255,7 @@ class KeerOpKeer extends GridGame {
 
 class MultiKeerOpKeer extends KeerOpKeer {
 
-	static STATUS_REQUEST_MS = 800;
+	static STATUS_REQUEST_MS = 1500;
 
 	reset() {
 		super.reset();
@@ -283,9 +283,16 @@ class MultiKeerOpKeer extends KeerOpKeer {
 	}
 
 	startPollingStatus() {
+		var lastPoll = Date.now();
 		const poll = () => {
-			if (!document.hidden) {
+			if (document.hidden) {
+				setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+			}
+			else {
 				$.get(location.search + '&status=1').on('done', (e, rsp) => {
+					setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+					lastPoll = Date.now();
+
 					if (!rsp.status) {
 						console.warn(rsp);
 						return;
@@ -302,7 +309,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 				});
 			}
 		};
-		setInterval(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+		setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
 	}
 
 	importFullColumns(columns) {
