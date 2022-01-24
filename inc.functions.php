@@ -15,7 +15,7 @@ function is_mobile() {
 }
 
 function json_respond( $object ) {
-	header('Content-type: text/json');
+	header('Content-type: text/json; charset=utf-8');
 	exit(json_encode($object));
 }
 

@@ -42,7 +42,7 @@ if (!$player) {
 		<p>
 			In round <?= $game->round ?>.
 			Last change: <?= date('Y-m-d H:i', $game->changed_on) ?>.
-			<? if ($game->is_color_complete): ?><b>COMPLETE!</b> See scores:<? endif ?>
+			<? if ($game->is_player_complete): ?><b>COMPLETE!</b> See scores:<? endif ?>
 		</p>
 		<p>Current players:</p>
 		<ul>
@@ -97,12 +97,17 @@ if (!$player) {
 					<a href="?game=<?= $gm->password ?>"><?= date('j M H:i', $gm->created_on) ?></a> -
 					<?= $gm->board ?> -
 					<?= $gm->num_players ?> players -
-					round <?= $gm->round ?>
+					<? if ($gm->is_player_complete): ?>
+						<b>COMPLETE!</b>
+					<? else: ?>
+						round <?= $gm->round ?>
+					<? endif ?>
 				</li>
 			<? endforeach ?>
 		</ul>
 	<? endif ?>
 	<?php
+	include 'tpl.queries.php';
 	exit;
 }
 
