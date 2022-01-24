@@ -15,17 +15,18 @@ exit('disabled');
 // misc preparation
 session_start();
 
-define( 'BASEPAGE',			'/142' );
+define( 'BASEPAGE',			'/142.php' );
 define( 'S_NAME',			'mpp_142_v2' );
 
-define( 'TABLE_USERS',		'mpp_users' );
-define( 'TABLE_TABLES',		'mpp_tables' );
-define( 'TABLE_PLAYERS',	'mpp_players' );
-define( 'TABLE_BETS',		'mpp_bets' );
-define( 'TABLE_POOLS',		'mpp_pools' );
+define( 'TABLE_USERS',		'p142_users' );
+define( 'TABLE_TABLES',		'p142_tables' );
+define( 'TABLE_PLAYERS',	'p142_players' );
+define( 'TABLE_BETS',		'p142_bets' );
+define( 'TABLE_POOLS',		'p142_pools' );
 define( 'MAX_PLAYERS_EVER',	10 );
 
 require __DIR__ . '/inc.bootstrap.php';
+require __DIR__ . '/inc.db.php';
 
 require_once('inc.cls.cardgame.php');
 require_once('inc.cls.pokertexasholdem.php');
@@ -44,17 +45,15 @@ if ( isset($_GET['card']) ) {
 // Two stages for every user: logged in, not logged in
 
 // not logged in
-if ( !logincheck() ) {
+if ( !loginCheck() ) {
 	if ( isset($_POST['username'], $_POST['password']) ) {
 		$szMessage = 'ERROR';
-		$arrUser = db_select(TABLE_USERS, "username = '".addslashes($_POST['username'])."' AND password = '".addslashes($_POST['password'])."'");
-		if ( 1 == count($arrUser) ) {
+		$arrUser = $db->select(TABLE_USERS, "username = '".addslashes($_POST['username'])."'")->first();
+		if ( $arrUser ) {
 			$arrSession = array(
-				'hash'	=> randString(20),
 				'ip'	=> ifsetor($_SERVER['REMOTE_ADDR'], ""),
-				'uid'	=> $arrUser[0]['id'],
+				'uid'	=> $arrUser['id'],
 			);
-			db_update(TABLE_USERS, 'hash = \''.$arrSession['hash']."'", "id = '".$arrSession['uid']."'");
 			$_SESSION[S_NAME] = $arrSession;
 			$szMessage = 'LOGGED_IN';
 		}
@@ -107,19 +106,23 @@ if ( !logincheck() ) {
 // Two stages for every logged in user: viewing one table, viewing table list
 
 // on a table
-if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_GET['table'])) && 1 == count($arrTable) ) {
-	define( 'TABLE_ID', (int)$arrTable[0]['id'] );
-	$arrTable = getTableDetails($arrTable[0]);
+if ( isset($_GET['table']) && ($arrTable=$db->select(TABLE_TABLES, 'id = '.(int)$_GET['table'])->first()) ) {
+	define( 'TABLE_ID', (int)$arrTable['id'] );
+	// $db->transaction(function($db) use ($arrTable) {
+		$arrTable = getTableDetails($arrTable);
+// print_r($db->queries);
+// exit;
+// 	});
 
-	$bPlaying = 0 < count($arrPlayer=db_select(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID));
-	if ( $bPlaying ) {
-		db_update(TABLE_PLAYERS, 'online = '.time(), 'user_id = '.USER_ID.' AND table_id = '.TABLE_ID);
-		$arrPlayer = $arrPlayer[0];
+	$arrPlayer = $db->select(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID)->first();
+	$bPlaying = !!$arrPlayer;
+	if ( $arrPlayer ) {
+		$db->update(TABLE_PLAYERS, 'online = '.time(), 'user_id = '.USER_ID.' AND table_id = '.TABLE_ID);
 
 		// leave table //
 		if ( isset($_GET['leave_seat']) ) {
-			if ( db_delete(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID.' AND balance = '.(float)$arrPlayer['balance']) && 0 < db_affected_rows() ) {
-				db_update(TABLE_USERS, 'balance=balance+'.(float)$arrPlayer['balance'], 'id = '.USER_ID);
+			if ( $db->delete(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID.' AND balance = '.(float)$arrPlayer['balance']) && 0 < $db->affected_rows() ) {
+				$db->update(TABLE_USERS, 'balance=balance+'.(float)$arrPlayer['balance'], 'id = '.USER_ID);
 			}
 			header('Location: ?table='.TABLE_ID);
 			exit;
@@ -139,10 +142,10 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 						// Filter players with too few chips AND deal cards to the rest
 						foreach ( $arrTable['seats'] AS $iSeat => $p ) {
 							if ( $p['balance'] < $arrTable['big_blind'] ) {
-								db_update(TABLE_PLAYERS, 'sit_out = \'1\'', 'table_id = '.TABLE_ID.' AND user_id = '.$p['user_id']);
+								$db->update(TABLE_PLAYERS, 'sit_out = \'1\'', 'table_id = '.TABLE_ID.' AND user_id = '.$p['user_id']);
 							}
 							else if ( '1' !== $p['sit_out'] ) {
-								db_update(TABLE_PLAYERS, 'in_or_out = \'in\', private_card_1 = '.array_shift($arrDeck).', private_card_2 = '.array_shift($arrDeck), 'table_id = '.TABLE_ID.' AND user_id = '.$p['user_id']);
+								$db->update(TABLE_PLAYERS, 'in_or_out = \'in\', private_card_1 = '.array_shift($arrDeck).', private_card_2 = '.array_shift($arrDeck), 'table_id = '.TABLE_ID.' AND user_id = '.$p['user_id']);
 							}
 						}
 						// Move dealer to next seat
@@ -158,15 +161,15 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 						);
 						// Move player to seat after dealer
 						$arrUpdate['current_seat'] = nextSeat(getSeats(), $arrUpdate['dealer_seat']);
-						db_update(TABLE_TABLES, $arrUpdate, 'id = '.TABLE_ID);
+						$db->update(TABLE_TABLES, $arrUpdate, 'id = '.TABLE_ID);
 						// 'Activate' players
-						db_update(TABLE_PLAYERS, 'in_or_out = \'in\'', 'table_id = '.TABLE_ID.' AND sit_out = \'0\'');
-						db_update(TABLE_PLAYERS, 'last_action = \'\'', 'table_id = '.TABLE_ID);
+						$db->update(TABLE_PLAYERS, 'in_or_out = \'in\'', 'table_id = '.TABLE_ID.' AND sit_out = \'0\'');
+						$db->update(TABLE_PLAYERS, 'last_action = \'\'', 'table_id = '.TABLE_ID);
 						// Remove old pools and add first of this game
-						db_delete(TABLE_POOLS, 'table_id = '.TABLE_ID);
-						db_insert(TABLE_POOLS, array('table_id' => TABLE_ID));
+						$db->delete(TABLE_POOLS, 'table_id = '.TABLE_ID);
+						$db->insert(TABLE_POOLS, array('table_id' => TABLE_ID));
 						// Update last action of USER
-						db_update(TABLE_PLAYERS, 'last_action = \'started game\'', 'user_id = '.USER_ID.' AND table_id = '.TABLE_ID);
+						$db->update(TABLE_PLAYERS, 'last_action = \'started game\'', 'user_id = '.USER_ID.' AND table_id = '.TABLE_ID);
 						exit('OK');
 					}
 				break;
@@ -177,7 +180,7 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 						if ( $fCurrentMaxBet > $arrBets[USER_ID] ) {
 							exit('You can\'t check! It costs you '.($fCurrentMaxBet-$arrBets[USER_ID]).' chips to call!');
 						}
-						db_update(TABLE_PLAYERS, 'ready_for_next_round = \'1\', last_action = \'checked on '.$fCurrentMaxBet.'\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
+						$db->update(TABLE_PLAYERS, 'ready_for_next_round = \'1\', last_action = \'checked on '.$fCurrentMaxBet.'\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
 						if ( !checkAndActOnAllSameBets($arrTable) ) {
 							saveNextSeat($arrTable);
 						}
@@ -194,7 +197,7 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 							if ( !checkAndActOnAllSameBets($arrTable) ) {
 								saveNextSeat($arrTable);
 							}
-							db_update(TABLE_PLAYERS, 'ready_for_next_round = \'1\', last_action = \'called to '.(float)$fTargetBet.'\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
+							$db->update(TABLE_PLAYERS, 'ready_for_next_round = \'1\', last_action = \'called to '.(float)$fTargetBet.'\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
 							exit('OK');
 						}
 						else {
@@ -204,7 +207,7 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 				break;
 				case 'fold':
 					if ( sqlBetween($arrTable['state'], 3, 6) ) {
-						db_update(TABLE_PLAYERS, 'ready_for_next_round = \'1\', in_or_out = \'out\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
+						$db->update(TABLE_PLAYERS, 'ready_for_next_round = \'1\', in_or_out = \'out\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
 						if ( !checkAndActOnAllSameBets($arrTable) ) {
 							saveNextSeat($arrTable);
 						}
@@ -221,7 +224,7 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 							exit($msg);
 						}
 						saveNextSeat($arrTable);
-						db_update(TABLE_PLAYERS, 'last_action = \'raised to '.(float)$fTargetBet.'\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
+						$db->update(TABLE_PLAYERS, 'last_action = \'raised to '.(float)$fTargetBet.'\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
 						exit('OK');
 					}
 				break;
@@ -229,7 +232,7 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 					if ( 1 === $arrTable['state'] ) {
 						addUserBet($arrTable['small_blind']);
 						saveNextSeat($arrTable, 2);
-						db_update(TABLE_PLAYERS, 'last_action = \'posted small blind\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
+						$db->update(TABLE_PLAYERS, 'last_action = \'posted small blind\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
 						exit('OK');
 					}
 				break;
@@ -237,7 +240,7 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 					if ( 2 === $arrTable['state'] ) {
 						addUserBet($arrTable['big_blind']);
 						saveNextSeat($arrTable, 3);
-						db_update(TABLE_PLAYERS, 'last_action = \'posted big blind\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
+						$db->update(TABLE_PLAYERS, 'last_action = \'posted big blind\'', 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID);
 						exit('OK');
 					}
 				break;
@@ -261,8 +264,14 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 		$arrCards = array((int)$arrTable['public_card_1'], (int)$arrTable['public_card_2'], (int)$arrTable['public_card_3'], (int)$arrTable['public_card_4'], (int)$arrTable['public_card_5']);
 		$arrCards = array_slice($arrCards, 0, $iCards, false);
 		$arrSeats[0] = array(
-			'msgs' => '<a href="#" onclick="window.close();return false;">close</a>'.( $bPlaying ? ' &nbsp; | &nbsp; <a href="?table='.TABLE_ID.'&leave_seat=1">leave seat</a>' : '' ).' &nbsp; | &nbsp; Game state: '.$arrGameStates[$arrTable['state']].' ('.$arrTable['state'].')',
-			'cards' => $arrCards,
+			'msgs' => [
+				$bPlaying ? '<a href="?table='.TABLE_ID.'&leave_seat=1">leave seat</a>' : '',
+				'Game state: '.$arrGameStates[$arrTable['state']].' ('.$arrTable['state'].')',
+			],
+			'cards' => array_map(function(int $n) {
+				$card = new Card($n);
+				return [$n, $card->fullname()];
+			}, $arrCards),
 			'dealer' => (int)$arrTable['dealer_seat'],
 			'current' => (int)$arrTable['current_seat'],
 			'player' => $bPlaying ? (int)$arrPlayer['seat'] : null,
@@ -279,28 +288,28 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 				'balance' => number_format($s['balance'], 2),
 				'bet' => number_format((float)$s['total_bet'], 2),
 				'inRound' => 'in' === $s['in_or_out'],
-				'cards' => ((((int)$s['user_id'] === USER_ID && 3 <= $arrTable['state']) || (0 === $arrTable['state'] && 'in' === $s['in_or_out'] && null !== $s['private_card_1'] && null !== $s['private_card_2'])) && ($c1=new Card($s['private_card_1'])) && ($c2=new Card($s['private_card_2']))) ? array(array((int)$s['private_card_1'], $c1->fullname()), array((int)$s['private_card_2'], $c2->fullname())) : false,
+				'cards' => ((((int)$s['user_id'] === USER_ID && 3 <= $arrTable['state']) || (0 === $arrTable['state'] && 'in' === $s['in_or_out'] && null !== $s['private_card_1'] && null !== $s['private_card_2'])) && ($c1=new Card($s['private_card_1'])) && ($c2=new Card($s['private_card_2']))) ? array(array((int)$s['private_card_1'], $c1->fullname()), array((int)$s['private_card_2'], $c2->fullname())) : [],
 			);
 		}
-		exit(json::encode($arrSeats));
+		return json_respond($arrSeats);
 	}
 
 	// join table //
 	if ( isset($_POST['take_seat'], $_POST['balance']) ) {
 		$iSeat = min(MAX_PLAYERS_EVER, max(1, (int)$_POST['take_seat']));
 		// check if user is playing this table already
-		if ( 0 < db_count(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID) ) {
+		if ( 0 < $db->count(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.USER_ID) ) {
 			exit('You already joined this table... Refresh?');
 		}
 		// check if seat is already taken
-		else if ( 0 < db_count(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND seat = \''.$iSeat."'") ) {
+		else if ( 0 < $db->count(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND seat = \''.$iSeat."'") ) {
 			exit('This seat ('.$iSeat.') is already taken!');
 		}
 
 		// seat is free and player is not playing this table -> have a seat!
 		$iBalance = max($arrTable['big_blind']*2, $_POST['balance']);
-		db_update(TABLE_USERS, 'balance = balance-'.(int)$iBalance, 'balance >= '.(int)$iBalance.' AND id = '.USER_ID);
-		if ( 1 > db_affected_rows() ) {
+		$db->update(TABLE_USERS, 'balance = balance-'.(int)$iBalance, 'balance >= '.(int)$iBalance.' AND id = '.USER_ID);
+		if ( 1 > $db->affected_rows() ) {
 			exit('You don\'t have '.$iBalance.' chips! Rebuy real-time, leave another table, or join a cheaper table!');
 		}
 		$arrInsert = array(
@@ -312,11 +321,11 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 			'sit_out'		=> '0',
 			'online'		=> time(),
 		);
-		db_insert(TABLE_PLAYERS, $arrInsert);
-		if ( 1 == ($iPlayers=(int)db_count(TABLE_PLAYERS, 'sit_out = \'0\' AND table_id = '.TABLE_ID)) ) {
-			db_update(TABLE_TABLES, 'dealer_seat = '.$iSeat, 'id = '.TABLE_ID);
+		$db->insert(TABLE_PLAYERS, $arrInsert);
+		if ( 1 == ($iPlayers=(int)$db->count(TABLE_PLAYERS, 'sit_out = \'0\' AND table_id = '.TABLE_ID)) ) {
+			$db->update(TABLE_TABLES, 'dealer_seat = '.$iSeat, 'id = '.TABLE_ID);
 		}
-		echo db_error();
+		echo $db->error();
 		exit('OK');
 	}
 
@@ -325,10 +334,13 @@ if ( isset($_GET['table']) && ($arrTable=db_select(TABLE_TABLES, 'id = '.(int)$_
 
 <head>
 <title>MPP :: T<?php echo TABLE_ID; ?><?php if ( $bPlaying ) { echo ' :: '.$g_arrUser['username']; } ?></title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<script type="text/javascript">
-<!--//
-var TABLE_ID = <?php echo TABLE_ID; ?>, USER_ID = <?php echo USER_ID; ?>, g_objTable = <?php echo json::encode(array('smallBlind' => $arrTable['small_blind'], 'bigBlind' => $arrTable['big_blind'], 'dealer' => (int)$arrTable['dealer_seat'], 'current' => (int)$arrTable['current_seat'])); ?>, g_objUser = <?php echo json::encode(array('balance' => (float)$g_arrUser['balance'])); ?>, g_iPlayerSeat;
+<script src="/js/mootools_1_11.js"></script>
+<script>
+var TABLE_ID = <?php echo TABLE_ID; ?>;
+var USER_ID = <?php echo USER_ID; ?>;
+var g_objTable = <?php echo json_encode(array('smallBlind' => $arrTable['small_blind'], 'bigBlind' => $arrTable['big_blind'], 'dealer' => (int)$arrTable['dealer_seat'], 'current' => (int)$arrTable['current_seat'])); ?>;
+var g_objUser = <?php echo json_encode(array('balance' => (float)$g_arrUser['balance'])); ?>;
+var g_iPlayerSeat;
 var g_noticeTimer = 0;
 function unsetNotice() {
 	$('ajax_msg').innerHTML = '';
@@ -368,9 +380,12 @@ function fetchTable() {
 	}}).request();
 	return false;
 }
+function renderCard(card) {
+	return `<img width="50" height="67" src="?card=${card[0]}" title="${card[1]}" />`;
+}
 function drawCenter(info) {
-	$('msgs').innerHTML = info.msgs;
-	$('cards').innerHTML = 0 < info.cards.length ? '<img width="50" height="67" src="?card=' + info.cards.join('" /><img width="50" height="67" src="?card=') + '" />' : '';
+	$('msgs').innerHTML = info.msgs.join(' &nbsp; | &nbsp; ');
+	$('cards').innerHTML = info.cards.map(renderCard).join('');
 	$('buttons').innerHTML = '';
 	$A(info.buttons).each(function(bt) {
 		$('buttons').innerHTML += '<input type="button" value="' + bt + '" onclick="doAction(this.value);" />';
@@ -406,7 +421,7 @@ function drawSeat(seat, id) {
 		t.rows[1].cells[2].innerHTML = 'bet<br />' + seat.bet;
 		t.rows[2].cells[2].innerHTML = g_objTable.dealer === id ? '<b>dealer</b>' : '';
 		t.rows[2].cells[1].setAttribute('nowrap', '1');
-		t.rows[2].cells[1].innerHTML = seat.cards && 2 == seat.cards.length ? '<img width="50" height="67" src="?card=' + seat.cards[0][0] + '" title="' + seat.cards[0][1] + '" /><img width="50" height="67" src="?card=' + seat.cards[1][0] + '" title="' + seat.cards[1][1] + '" />' : '';
+		t.rows[2].cells[1].innerHTML = seat.cards.map(renderCard).join('');
 		t.rows[1].cells[1].style.borderColor = seat.inRound ? 'green' : 'red';
 		attachSeat(obj, t);
 		delete t;
@@ -458,19 +473,18 @@ function joinTableSeat( f_iSeat ) {
 }
 var g_interval;
 window.onload = function() {
-	Ajax.setGlobalHandlers({
-		onStart : function() { $('seat_0').style.backgroundColor = 'red'; },
-		onComplete : function() { if ( 0 == Ajax.busy ) { $('seat_0').style.backgroundColor = ''; } }
-	});
+	// Ajax.setGlobalHandlers({
+	// 	onStart : function() { $('seat_0').style.backgroundColor = 'red'; },
+	// 	onComplete : function() { if ( 0 == Ajax.busy ) { $('seat_0').style.backgroundColor = ''; } }
+	// });
 	g_interval = setInterval(fetchTable, 5000);
 	if ( !window.console || 'function' != typeof window.console.debug ) {
 		window.console = {debug:function(){}};
 	}
 	fetchTable();
 }
-//-->
 </script>
-<style type="text/css">
+<style>
 * {
 	padding				: 0;
 	margin				: 0;
@@ -548,23 +562,14 @@ if ( isset($_GET['logout']) ) {
 }
 
 // not on a table (print tables)
-$arrTables = db_fetch('SELECT *, (SELECT COUNT(1) FROM '.TABLE_PLAYERS.' WHERE table_id = t.id AND user_id = '.USER_ID.') AS joined FROM '.TABLE_TABLES.' t ORDER BY id ASC');
+$arrTables = $db->fetch('SELECT *, (SELECT COUNT(1) FROM '.TABLE_PLAYERS.' WHERE table_id = t.id AND user_id = '.USER_ID.') AS joined FROM '.TABLE_TABLES.' t ORDER BY id ASC');
 
 ?>
 <html>
 
 <head>
 <title>MPP :: IN</title>
-<script type="text/javascript" src="/js/mootools_1_11.js"></script>
-<script type="text/javascript">
-<!--//
-function openTable( f_iTable ) {
-	window.open('<?php echo BASEPAGE; ?>?table=' + f_iTable, '', 'top=15,left=15,width=950,height=600,statusbar=no');
-	return false;
-}
-//-->
-</script>
-<style type="text/css">
+<style>
 td { text-align:center; }
 </style>
 </head>
@@ -581,7 +586,7 @@ td { text-align:center; }
 </tr>
 <tr>
 	<th width="150">Locked in games</th>
-	<td width="150"><?php echo number_format(db_select_one(TABLE_PLAYERS, 'SUM(balance)', 'user_id = '.USER_ID), 2); ?> chips</td>
+	<td width="150"><?php echo number_format($db->select_one(TABLE_PLAYERS, 'SUM(balance)', 'user_id = '.USER_ID), 2); ?> chips</td>
 </tr>
 <tr>
 	<td width="300" colspan="2"><a href="?logout=1">log out</a></td>
@@ -603,8 +608,8 @@ foreach ( $arrTables AS $arrTable ) {
 	echo '<tr>';
 	echo '<td>Table '.$arrTable['id'].'</td>';
 	echo '<td>'.(float)$arrTable['small_blind'].' / '.(float)$arrTable['big_blind'].'</td>';
-	echo '<td'.( 0 < (int)$arrTable['joined'] ? ' bgcolor="#dddddd"' : '' ).'>'.db_count(TABLE_PLAYERS, 'table_id = '.$arrTable['id']).'</td>';
-	echo '<td><a onclick="return openTable('.$arrTable['id'].');" href="?table='.$arrTable['id'].'">Open table</a></td>';
+	echo '<td'.( 0 < (int)$arrTable['joined'] ? ' bgcolor="#dddddd"' : '' ).'>'.$db->count(TABLE_PLAYERS, 'table_id = '.$arrTable['id']).'</td>';
+	echo '<td><a href="?table='.$arrTable['id'].'">Open table</a></td>';
 	echo '</tr>'."\n";
 }
 
@@ -630,27 +635,28 @@ function sqlBetween($x, $a, $b) {
 }
 
 function checkAndActOnAllSameBets($f_arrTable) {
+	global $db;
 	$arrBets = getUserBets();
 	if ( 1 == count($arrBets) ) {
 		// Only one player left
-		$fTotalPot = db_select_one(TABLE_BETS.' b, '.TABLE_POOLS.' po', 'SUM(bet)', 'b.pool_id = po.id AND po.table_id = '.TABLE_ID);
+		$fTotalPot = $db->select_one(TABLE_BETS.' b, '.TABLE_POOLS.' po', 'SUM(bet)', 'b.pool_id = po.id AND po.table_id = '.TABLE_ID);
 		$iUserId = key($arrBets);
-		db_update(TABLE_PLAYERS, 'balance = balance+'.$iUserId.', last_action = \'Won '.(float)$fTotalPot.'\' due to fold', 'table_id = '.TABLE_ID.' AND user_id = '.$iUserId);
-		db_update(TABLE_TABLES, 'state = 0', 'id = '.TABLE_ID);
+		$db->update(TABLE_PLAYERS, 'balance = balance+'.$iUserId.', last_action = \'Won '.(float)$fTotalPot.'\' due to fold', 'table_id = '.TABLE_ID.' AND user_id = '.$iUserId);
+		$db->update(TABLE_TABLES, 'state = 0', 'id = '.TABLE_ID);
 		return true;
 	}
-	$iReady = db_count(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND in_or_out = \'in\'');
+	$iReady = $db->count(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND in_or_out = \'in\'');
 	if ( $iReady == count($arrBets) && 1 == count(array_flip($arrBets)) ) {
 		if ( 6 === (int)$f_arrTable['state'] ) {
 			// Showdown
-			$fTotalPot = db_select_one(TABLE_BETS.' b, '.TABLE_POOLS.' po', 'SUM(bet)', 'b.pool_id = po.id AND po.table_id = '.TABLE_ID);
+			$fTotalPot = $db->select_one(TABLE_BETS.' b, '.TABLE_POOLS.' po', 'SUM(bet)', 'b.pool_id = po.id AND po.table_id = '.TABLE_ID);
 			$arrPubCards = array(new Card($f_arrTable['public_card_1']), new Card($f_arrTable['public_card_2']), new Card($f_arrTable['public_card_3']), new Card($f_arrTable['public_card_4']), new Card($f_arrTable['public_card_5']));
 			$arrWinners = array();
 			$fMaxScore = 0.0;
 			foreach ( $arrBets AS $iUserId => $b ) {
-				$p = db_select(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.$iUserId);
-				$arrPrivCards = array(new Card($p[0]['private_card_1']), new Card($p[0]['private_card_2']));
-				$fScore = pokertexasholdem::score(array_merge($arrPubCards, $arrPrivCards));
+				$p = $db->select(TABLE_PLAYERS, 'table_id = '.TABLE_ID.' AND user_id = '.$iUserId)->first();
+				$arrPrivCards = array(new Card($p['private_card_1']), new Card($p['private_card_2']));
+				$fScore = PokerTexasHoldem::score(array_merge($arrPubCards, $arrPrivCards));
 				if ( $fScore > (float)$fMaxScore ) {
 					$fMaxScore = $fScore;
 					$arrWinners = array();
@@ -660,11 +666,11 @@ function checkAndActOnAllSameBets($f_arrTable) {
 				}
 			}
 			$fUserWinnings = floor($fTotalPot*100/count($arrWinners))/100;
-			db_update(TABLE_PLAYERS, 'balance = balance+'.$fUserWinnings.', last_action = \'Won ['.$fUserWinnings.'] with a ['.pokertexasholdem::readable_hand($fMaxScore).']\'', 'table_id = '.TABLE_ID.' AND user_id IN ('.implode(',', $arrWinners).')');
-			db_update(TABLE_TABLES, 'state = 0', 'id = '.TABLE_ID);
+			$db->update(TABLE_PLAYERS, 'balance = balance+'.$fUserWinnings.', last_action = \'Won ['.$fUserWinnings.'] with a ['.PokerTexasHoldem::readable_hand($fMaxScore).']\'', 'table_id = '.TABLE_ID.' AND user_id IN ('.implode(',', $arrWinners).')');
+			$db->update(TABLE_TABLES, 'state = 0', 'id = '.TABLE_ID);
 			return true;
 		}
-		db_update(TABLE_PLAYERS, 'ready_for_next_round = \'0\'', 'table_id = '.TABLE_ID);
+		$db->update(TABLE_PLAYERS, 'ready_for_next_round = \'0\'', 'table_id = '.TABLE_ID);
 		$f_arrTable['current_seat'] = $f_arrTable['dealer_seat'];
 		saveNextSeat($f_arrTable, 'state+1');
 		return true;
@@ -673,19 +679,20 @@ function checkAndActOnAllSameBets($f_arrTable) {
 }
 
 function getUserBets() {
-	$arrBets = db_fetch_fields('SELECT pl.user_id, IFNULL(SUM(b.bet), 0) AS bet FROM '.TABLE_POOLS.' po, '.TABLE_PLAYERS.' pl LEFT JOIN '.TABLE_BETS.' b ON b.user_id = pl.user_id WHERE pl.sit_out = \'0\' AND pl.in_or_out = \'in\' AND po.table_id = '.TABLE_ID.' GROUP BY pl.user_id');
+	global $db;
+	$arrBets = $db->fetch_fields('SELECT pl.user_id, IFNULL(SUM(b.bet), 0) AS bet FROM '.TABLE_POOLS.' po, '.TABLE_PLAYERS.' pl LEFT JOIN '.TABLE_BETS.' b ON b.user_id = pl.user_id WHERE pl.sit_out = \'0\' AND pl.in_or_out = \'in\' AND po.table_id = '.TABLE_ID.' GROUP BY pl.user_id');
 	return $arrBets;
 }
 
 function addUserBet($f_iBet) {
-	$arrPool = db_select(TABLE_POOLS, 'table_id = '.TABLE_ID.' ORDER BY id DESC');
-	$arrPool = $arrPool[0];
-	if ( db_update(TABLE_PLAYERS, 'balance = balance-'.$f_iBet, 'balance >= '.$f_iBet.' AND table_id = '.TABLE_ID.' AND user_id = '.USER_ID) && 0 < db_affected_rows() ) {
-		if ( 0 < db_count(TABLE_BETS, 'pool_id = '.$arrPool['id'].' AND user_id = '.USER_ID) ) {
-			db_update(TABLE_BETS, 'bet = bet+'.$f_iBet, 'user_id = '.USER_ID.' AND pool_id = '.$arrPool['id']);
+	global $db;
+	$arrPool = $db->select(TABLE_POOLS, 'table_id = '.TABLE_ID.' ORDER BY id DESC')->first();
+	if ( $db->update(TABLE_PLAYERS, 'balance = balance-'.$f_iBet, 'balance >= '.$f_iBet.' AND table_id = '.TABLE_ID.' AND user_id = '.USER_ID) && 0 < $db->affected_rows() ) {
+		if ( 0 < $db->count(TABLE_BETS, 'pool_id = '.$arrPool['id'].' AND user_id = '.USER_ID) ) {
+			$db->update(TABLE_BETS, 'bet = bet+'.$f_iBet, 'user_id = '.USER_ID.' AND pool_id = '.$arrPool['id']);
 		}
 		else {
-			db_insert(TABLE_BETS, array('pool_id' => $arrPool['id'], 'user_id' => USER_ID, 'bet' => $f_iBet));
+			$db->insert(TABLE_BETS, array('pool_id' => $arrPool['id'], 'user_id' => USER_ID, 'bet' => $f_iBet));
 		}
 		return true;
 	}
@@ -693,8 +700,9 @@ function addUserBet($f_iBet) {
 } // END saveNextSeat()
 
 function getSeatInfo( $f_iSeat ) {
+	global $db;
 	$iSeat = min(MAX_PLAYERS_EVER, max(1, $f_iSeat));
-	return db_fetch("
+	return $db->fetch("
 	SELECT
 		u.*,
 		p.*
@@ -709,8 +717,9 @@ function getSeatInfo( $f_iSeat ) {
 } // END getSeatInfo()
 
 function saveNextSeat($arrTable, $f_szNewState = null) {
+	global $db;
 	$iNextSeat = nextSeat($arrTable['seats'], $arrTable['current_seat']);
-	return db_update(TABLE_TABLES, ( null !== $f_szNewState ? 'state = '.$f_szNewState.', ' : '' ).'current_seat = '.$iNextSeat, 'id = '.$arrTable['id']);
+	return $db->update(TABLE_TABLES, ( null !== $f_szNewState ? 'state = '.$f_szNewState.', ' : '' ).'current_seat = '.$iNextSeat, 'id = '.$arrTable['id']);
 } // END saveNextSeat()
 
 function nextSeat( $f_arrSeats, $f_iCurrentSeat ) {
@@ -731,7 +740,8 @@ function nextSeat( $f_arrSeats, $f_iCurrentSeat ) {
 } // END nextSeat()
 
 function getSeats() {
-	$arrSeats = db_fetch('SELECT *, (SELECT SUM(b.bet) FROM '.TABLE_BETS.' b, '.TABLE_POOLS.' pl WHERE pl.id = b.pool_id AND b.user_id = u.id AND pl.table_id = p.table_id) AS total_bet FROM '.TABLE_USERS.' u, '.TABLE_PLAYERS.' p WHERE u.id = p.user_id AND p.table_id = '.TABLE_ID);
+	global $db;
+	$arrSeats = $db->fetch('SELECT *, (SELECT SUM(b.bet) FROM '.TABLE_BETS.' b, '.TABLE_POOLS.' pl WHERE pl.id = b.pool_id AND b.user_id = u.id AND pl.table_id = p.table_id) AS total_bet FROM '.TABLE_USERS.' u, '.TABLE_PLAYERS.' p WHERE u.id = p.user_id AND p.table_id = '.TABLE_ID);
 	$arrPlayersBySeat = array();
 	foreach ( $arrSeats AS $s ) {
 		$arrPlayersBySeat[(int)$s['seat']] = $s;
@@ -740,18 +750,22 @@ function getSeats() {
 }
 
 function getTableDetails( $arrTable ) {
+	global $db;
 	$arrTable['state'] = (int)$arrTable['state'];
-	$arrTable['seats'] = getSeats();
-	if ( !isset($arrPlayersBySeat[(int)$arrTable['current_seat']]) || '1' === $arrPlayersBySeat[(int)$arrTable['current_seat']]['sit_out'] || 'in' !== $arrPlayersBySeat[(int)$arrTable['current_seat']]['in_or_out'] ) {
-		$arrTable['current_seat'] = db_select_one(TABLE_PLAYERS, 'seat', 'sit_out = \'0\' AND in_or_out = \'in\' AND table_id = '.$arrTable['id'].' ORDER BY seat>='.(int)$arrTable['current_seat'].' DESC, seat ASC');
-		db_update(TABLE_TABLES, 'current_seat = '.(int)$arrTable['current_seat'], 'id = '.$arrTable['id']);
+	$arrTable['seats'] = $arrPlayersBySeat = getSeats();
+// print_r($arrTable);
+// print_r($arrPlayersBySeat);
+// exit;
+	if ( !isset($arrPlayersBySeat[$arrTable['current_seat']]) || $arrPlayersBySeat[$arrTable['current_seat']]['sit_out'] || 'in' !== $arrPlayersBySeat[$arrTable['current_seat']]['in_or_out'] ) {
+		$arrTable['current_seat'] = $db->select_one(TABLE_PLAYERS, 'seat', 'sit_out = \'0\' AND in_or_out = \'in\' AND table_id = '.$arrTable['id'].' ORDER BY seat>='.(int)$arrTable['current_seat'].' DESC, seat ASC');
+		$db->update(TABLE_TABLES, 'current_seat = '.(int)$arrTable['current_seat'], 'id = '.$arrTable['id']);
 	}
-	if ( !isset($arrPlayersBySeat[(int)$arrTable['dealer_seat']]) || '1' === $arrPlayersBySeat[(int)$arrTable['dealer_seat']]['sit_out'] ) {
-		$arrTable['dealer_seat'] = db_select_one(TABLE_PLAYERS, 'seat', 'sit_out = \'0\' AND table_id = '.$arrTable['id'].' ORDER BY seat>='.(int)$arrTable['dealer_seat'].' DESC, seat ASC');
-		db_update(TABLE_TABLES, 'dealer_seat = '.(int)$arrTable['dealer_seat'], 'id = '.$arrTable['id']);
+	if ( !isset($arrPlayersBySeat[$arrTable['dealer_seat']]) || $arrPlayersBySeat[$arrTable['dealer_seat']]['sit_out'] ) {
+		$arrTable['dealer_seat'] = $db->select_one(TABLE_PLAYERS, 'seat', 'sit_out = \'0\' AND table_id = '.$arrTable['id'].' ORDER BY seat>='.(int)$arrTable['dealer_seat'].' DESC, seat ASC');
+		$db->update(TABLE_TABLES, 'dealer_seat = '.(int)$arrTable['dealer_seat'], 'id = '.$arrTable['id']);
 	}
 	return $arrTable;
-} // END getTableDetails()
+}
 
 function printSeats($f_seats) {
 	echo '<td class="open" id="seat_'.implode('"></td><td class="open" id="seat_', (array)$f_seats).'"></td>';
@@ -771,6 +785,7 @@ function randString( $f_iLength = 8 ) {
 } // END randString()
 
 function loginCheck() {
+	global $db;
 	if ( defined('USER_ID') ) {
 		return true;
 	}
@@ -780,7 +795,7 @@ function loginCheck() {
 	}
 	$arrSession = $_SESSION[S_NAME];
 	// variables
-	if ( !is_array($arrSession) || !isset($arrSession['uid'], $arrSession['ip'], $arrSession['hash']) ) {
+	if ( !is_array($arrSession) || !isset($arrSession['uid'], $arrSession['ip']) ) {
 		return false;
 	}
 	// ip check
@@ -788,14 +803,14 @@ function loginCheck() {
 		return false;
 	}
 	// user check in db
-	$arrUser = db_select(TABLE_USERS, 'id = '.(int)$arrSession['uid'].' AND hash = \''.addslashes($arrSession['hash'])."'");
-	if ( 1 !== count($arrUser) ) {
+	$arrUser = $db->select(TABLE_USERS, 'id = '.(int)$arrSession['uid'])->first();
+	if ( !$arrUser ) {
 		return false;
 	}
 	global $g_arrUser;
-	$g_arrUser = $arrUser[0];
+	$g_arrUser = $arrUser;
 	// update online time
-	db_update(TABLE_USERS, 'online = '.time(), 'id = '.(int)$arrSession['uid']);
+	$db->update(TABLE_USERS, 'online = '.time(), 'id = '.(int)$arrSession['uid']);
 	if ( !defined('USER_ID') ) {
 		define( 'USER_ID', (int)$arrSession['uid'] );
 	}
@@ -817,5 +832,3 @@ function ifsetor( &$f_mvFirst, $f_mvSecond = null )
 	return isset($f_mvFirst) ? $f_mvFirst : $f_mvSecond;
 
 } // END ifsetor()
-
-?>
