@@ -32,8 +32,8 @@ foreach ($hands as $hand) {
 
 	echo "<hr>" . implode(' ', $hand) . ' ';
 
-	$score = pokertexasholdem::score($cards, $o);
-	echo $score . ' (' . pokertexasholdem::readable_hand($score) . ")\n";
+	$score = PokerTexasHoldem::score($cards, $o);
+	echo $score . ' (' . PokerTexasHoldem::readable_hand($score) . ")\n";
 
 	echo '<details><summary>Details</summary>';
 	echo 'one pair     ' . ( $o->one_pair() ? 'Y' : 'N' ) . "\n";

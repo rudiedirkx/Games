@@ -28,11 +28,11 @@ for ( $i=0; $i<$iRounds; $i++ ) {
 
 	$arrPublic[5] = $arrPlayers[0][0];
 	$arrPublic[6] = $arrPlayers[0][1];
-	$a = pokertexasholdem::score($arrPublic);
+	$a = PokerTexasHoldem::score($arrPublic);
 
 	$arrPublic[5] = $arrPlayers[1][0];
 	$arrPublic[6] = $arrPlayers[1][1];
-	$b = pokertexasholdem::score($arrPublic);
+	$b = PokerTexasHoldem::score($arrPublic);
 
 	$arrWinner[ $a > $b ? 0 : 1 ]++;
 

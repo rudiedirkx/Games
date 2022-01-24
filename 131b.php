@@ -44,7 +44,7 @@ $bNothingWorthy = true;
 $fMaxHand = 0;
 $arrHands = array();
 foreach ( $arrPlayers AS $k => $arrPlayer ) {
-	$fHand = pokertexasholdem::score(array_merge($arrPublic, $arrPlayer));
+	$fHand = PokerTexasHoldem::score(array_merge($arrPublic, $arrPlayer));
 	$arrHands[$k] = $fHand;
 
 	if ( (float) $fHand > $fMaxHand ) {
@@ -102,9 +102,9 @@ foreach ( $arrPlayers AS $k => $arrPlayer ) {
 	echo '<td>&nbsp;=&nbsp;</td>';
 	echo '<td>'.$szHand.'</td>';
 	echo '<td>&nbsp;=&nbsp;</td>';
-	echo '<td>'.pokertexasholdem::readable_hand($fHand).'</td></tr>';
+	echo '<td>'.PokerTexasHoldem::readable_hand($fHand).'</td></tr>';
 }
-echo '<tr><td colspan="7" align="center"><b'.( $bNothingWorthy ? '' : ' style="color:yellow;"' ).'>Winner</b>: '.pokertexasholdem::readable_hand($m=max($arrHands)).' ('.$m.')</td></tr>';
+echo '<tr><td colspan="7" align="center"><b'.( $bNothingWorthy ? '' : ' style="color:yellow;"' ).'>Winner</b>: '.PokerTexasHoldem::readable_hand($m=max($arrHands)).' ('.$m.')</td></tr>';
 echo '</table>';
 
 ?><style type="text/css">.worthy{color:red;}table tr td b.h<?php echo str_replace('.', '_', (float)$m); ?>{color:yellow;}</style><?php
