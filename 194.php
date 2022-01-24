@@ -198,7 +198,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 </head>
 
-<body>
+<body style="--color: <?= $boards[$player->game->board]['color'] ?>">
 
 <table class="board">
 	<thead>
