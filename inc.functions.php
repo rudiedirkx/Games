@@ -14,6 +14,17 @@ function is_mobile() {
 	return is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
 }
 
+function get_time_ago(int $sec) {
+	$hours = floor($sec / 3600);
+	$sec -= $hours * 3600;
+	$mins = floor($sec / 60);
+	$sec -= $mins * 60;
+	if ($hours) {
+		return $hours . ':' . str_pad($mins, 2, '0', STR_PAD_LEFT) . ':' . str_pad($sec, 2, '0', STR_PAD_LEFT);
+	}
+	return $mins . ':' . str_pad($sec, 2, '0', STR_PAD_LEFT);
+}
+
 function json_respond( $object ) {
 	header('Content-type: text/json; charset=utf-8');
 	exit(json_encode($object));

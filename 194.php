@@ -50,7 +50,7 @@ if (!$player) {
 				<li>
 					<?= do_html($plr->name) ?>
 					(score <?= $plr->score ?>)
-					(online <?= $plr->online_ago ?> sec ago)
+					(online <?= get_time_ago($plr->online_ago) ?> ago)
 					<? if ($debug || in_array($plr->id, $_SESSION['keeropkeer']['pids'] ?? [])): ?>
 						- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
 					<? endif ?>
@@ -123,7 +123,7 @@ if (isset($_GET['status'])) {
 	$player->touch();
 	return json_respond([
 		'status' => $status->getHash(),
-		'onlines' => array_column($player->game->players, 'online_ago', 'id'),
+		'onlines' => array_map('get_time_ago', array_column($player->game->players, 'online_ago', 'id')),
 	]);
 }
 
@@ -249,7 +249,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 				(score <?= $plr->score ?>)
 				<? if ($plr->is_turn): ?>(TURN)<? endif ?>
 				<? if ($plr->is_kicked): ?>(KICKED)<? endif ?>
-				(online <span id="online-<?= $plr->id ?>"><?= $plr->online_ago ?></span> sec ago)
+				(online <span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></span> ago)
 				<? if ($player->is_leader && $plr->is_kickable): ?>
 					<button data-kick="<?= $plr->id ?>">KICK</button>
 				<? endif ?>
