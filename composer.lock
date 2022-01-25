@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/rudiedirkx/db_generic.git",
-                "reference": "904eb093842d4d1d831cd3bc8533ce5e823eb890"
+                "reference": "e7c47662649ce5b97b0700a8bad18873babeb163"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rudiedirkx/db_generic/zipball/904eb093842d4d1d831cd3bc8533ce5e823eb890",
-                "reference": "904eb093842d4d1d831cd3bc8533ce5e823eb890",
+                "url": "https://api.github.com/repos/rudiedirkx/db_generic/zipball/e7c47662649ce5b97b0700a8bad18873babeb163",
+                "reference": "e7c47662649ce5b97b0700a8bad18873babeb163",
                 "shasum": ""
             },
             "default-branch": true,
@@ -45,7 +45,7 @@
                 "issues": "https://github.com/rudiedirkx/db_generic/issues",
                 "source": "https://github.com/rudiedirkx/db_generic/tree/master"
             },
-            "time": "2022-01-22T15:06:07+00:00"
+            "time": "2022-01-25T23:31:13+00:00"
         }
     ],
     "packages-dev": [],
