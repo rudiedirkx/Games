@@ -16,6 +16,7 @@ function is_mobile() {
 
 function get_time_ago(int $sec) {
 	$hours = floor($sec / 3600);
+	if ($hours >= 2) return $hours . 'h';
 	$sec -= $hours * 3600;
 	$mins = floor($sec / 60);
 	$sec -= $mins * 60;

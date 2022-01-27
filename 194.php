@@ -5,8 +5,6 @@ require __DIR__ . '/inc.bootstrap.php';
 require 'inc.db.php';
 require '194_models.php';
 
-session_start();
-
 $debug = is_local() || is_debug_ip();
 
 Model::$_db = $db;
@@ -17,6 +15,49 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 $maxJokers = 8;
 
 $player = Player::get($_GET['player'] ?? null);
+
+function printPlayersTable(Game $game, ?Player $player) {
+	global $debug, $maxJokers;
+	?>
+	<table class="players">
+		<tr>
+			<th>Name</th>
+			<th>Score</th>
+			<th>Jokers</th>
+			<th></th>
+			<th align="right">Online</th>
+			<th></th>
+			<th></th>
+		</tr>
+		<? foreach ($game->players as $plr): ?>
+			<tr class="<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>">
+				<td><?= do_html($plr->name) ?></td>
+				<td><?= $plr->score ?></td>
+				<td nowrap><?= $maxJokers - $plr->used_jokers ?> / <?= $maxJokers ?></td>
+				<td>
+					<? if ($plr->is_turn): ?>TURN<? endif ?>
+					<? if ($plr->is_kicked): ?>OUT<? endif ?>
+				</td>
+				<td align="right">
+					<? if (!$plr->is_kicked): ?>
+						<span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></span> ago
+					<? endif ?>
+				</td>
+				<td>
+					<? if (($player->is_leader ?? false) && $plr->is_kickable): ?>
+						<button data-kick="<?= $plr->id ?>">KICK</button>
+					<? endif ?>
+				</td>
+				<td>
+					<? if ($plr->id != ($player->id ?? 0) && ($debug || Player::inHistory($plr->id))): ?>
+						<a href="?player=<?= do_html($plr->password) ?>">play</a>
+					<? endif ?>
+				</td>
+			</tr>
+		<? endforeach ?>
+	</table>
+	<?php
+}
 
 if (!$player) {
 	if ($game = Game::get($_GET['game'] ?? null)) {
@@ -37,6 +78,7 @@ if (!$player) {
 		?>
 		<meta charset="utf-8" />
 		<title>Keer Op Keer MULTI</title>
+		<style>body { font-family: sans-serif }</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<h1>Keer Op Keer MULTIPLAYER</h1>
 		<h2>Join game <?= $game->id ?>?</h2>
@@ -46,18 +88,7 @@ if (!$player) {
 			<? if ($game->is_player_complete): ?><b>COMPLETE!</b> See scores:<? endif ?>
 		</p>
 		<p>Current players:</p>
-		<ul>
-			<? foreach ($game->players as $plr): ?>
-				<li>
-					<?= do_html($plr->name) ?>
-					(score <?= $plr->score ?>)
-					(online <?= get_time_ago($plr->online_ago) ?> ago)
-					<? if ($debug || in_array($plr->id, $_SESSION['keeropkeer']['pids'] ?? [])): ?>
-						- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
-					<? endif ?>
-				</li>
-			<? endforeach ?>
-		</ul>
+		<? printPlayersTable($game, null) ?>
 		<? if ($game->round < 3): ?>
 			<form method="post" action>
 				<p>Your name: <input name="name" required autofocus /></p>
@@ -80,6 +111,7 @@ if (!$player) {
 	?>
 	<meta charset="utf-8" />
 	<title>Keer Op Keer MULTI</title>
+	<style>body { font-family: sans-serif }</style>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<h1>Keer Op Keer MULTIPLAYER</h1>
 	<h2>Start new game?</h2>
@@ -114,10 +146,7 @@ if (!$player) {
 
 
 
-if (!in_array($player->id, $_SESSION['keeropkeer']['pids'] ?? [])) {
-	$_SESSION['keeropkeer']['pids'][] = $player->id;
-}
-
+Player::addHistory($player->id);
 $status = $player->getStatus();
 
 if (isset($_GET['status'])) {
@@ -223,7 +252,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 
 <div class="meta">
 	<div id="status" data-hash="<?= $status->getHash() ?>"><?= $status ?></div>
-	<div id="dice"></div>
+	<div id="dice" class="dice-line"></div>
 
 	<div class="colors-stats">
 		<table class="colors game">
@@ -243,39 +272,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 	</div>
 
 	<p style="margin-bottom: 0">Players:</p>
-	<table class="players">
-		<tr>
-			<th>Name</th>
-			<th>Score</th>
-			<th>Jokers</th>
-			<th>Status</th>
-			<th align="right">Online</th>
-			<th></th>
-			<? if (is_local()): ?>
-				<th></th>
-			<? endif ?>
-		</tr>
-		<? foreach ($player->game->players as $plr): ?>
-			<tr class="<? if ($plr->id == $player->id): ?>me<? endif ?>">
-				<td><?= do_html($plr->name) ?></td>
-				<td><?= $plr->score ?></td>
-				<td nowrap><?= $maxJokers - $plr->used_jokers ?> / <?= $maxJokers ?></td>
-				<td>
-					<? if ($plr->is_turn): ?>TURN<? endif ?>
-					<? if ($plr->is_kicked): ?>KICKED<? endif ?>
-				</td>
-				<td align="right"><span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></span> ago</td>
-				<td>
-					<? if ($player->is_leader && $plr->is_kickable): ?>
-						<button data-kick="<?= $plr->id ?>">KICK</button>
-					<? endif ?>
-				</td>
-				<? if (is_local()): ?>
-					<td><a href="?player=<?= do_html($plr->password) ?>">play as</a></td>
-				<? endif ?>
-			</tr>
-		<? endforeach ?>
-	</table>
+	<? printPlayersTable($player->game, $player) ?>
 	<p>Share <a href="<?= do_html($player->game->url) ?>"><?= do_html($player->game->url) ?></a> to invite players.</p>
 </div>
 

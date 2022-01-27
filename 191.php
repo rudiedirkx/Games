@@ -27,7 +27,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 
 <body>
 
-<table class="board">
+<table class="board game">
 	<thead>
 		<tr>
 			<? foreach ($columns[0] as $i => $cell): ?>
@@ -60,7 +60,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 
 	<p id="stats"></p>
 
-	<table>
+	<table class="colors game">
 		<? foreach ([5] as $score): ?>
 			<tr>
 				<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
