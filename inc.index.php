@@ -98,6 +98,7 @@ return [
 	['190',				'Bridges',										'From Android'],
 	['191',				'Keer Op Keer SOLO',							'Speel Play Solo Keer Op Keer online'],
 	['192',				'Hitomezashi',									'Hitomezashi Stitch Pattern'],
-	['193',				'INDEX grid concept',							'A prototype games index'],
+//	['193',				'INDEX grid concept',							'A prototype games index'],
 	['194',				'Keer Op Keer MULTI',							'Speel Play Keer Op Keer samen multiplayer'],
+	['195',				"TEXAS HOLD'EM v3",								"Multi-player Poker Texas Hold'em"],
 ];

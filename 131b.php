@@ -2,7 +2,7 @@
 
 require_once('inc.cls.cardgame.php');
 
-card::$__tostring = function ($c) {
+Card::$__tostring = function ($c) {
 	return '<img src="images/' . $c->suit . '.gif" /> ' . strtoupper($c->short);
 };
 
