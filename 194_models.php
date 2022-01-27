@@ -45,9 +45,15 @@ class Game extends Model {
 	}
 
 	public function allPlayersTurnReady() : bool {
+		return count($this->getUnTurnReadyPlayers()) == 0;
+	}
+
+	public function getUnTurnReadyPlayers() : array {
 		$finisheds = array_count_values(array_column($this->active_players, 'finished_round'));
-		unset($finisheds[self::COLOR_COMPLETE_ROUND]);
-		return array_keys($finisheds) == [$this->round];
+		unset($finisheds[self::COLOR_COMPLETE_ROUND], $finisheds[$this->round]);
+		return array_values(array_filter($this->active_players, function($plr) use ($finisheds) {
+			return isset($finisheds[$plr->finished_round]);
+		}));
 	}
 
 	public function maybeEndRound() : void {
@@ -63,7 +69,7 @@ class Game extends Model {
 			'dice' => null,
 		]);
 
-		if ($this->is_color_complete) {
+		if ($this->isColorComplete()) {
 			Player::updateAll([
 				'finished_round' => self::COLOR_COMPLETE_ROUND,
 			], [
@@ -74,6 +80,24 @@ class Game extends Model {
 				'turn_player_id' => null,
 			]);
 		}
+	}
+
+	public function isColorComplete() : bool {
+		foreach ($this->active_players as $player) {
+			if ($player->finished_round == self::COLOR_COMPLETE_ROUND) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function isPlayerComplete() : bool {
+		foreach ($this->active_players as $player) {
+			if ($player->finished_round != self::COLOR_COMPLETE_ROUND) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	protected function getNextTurnPlayerId() {
@@ -96,24 +120,6 @@ class Game extends Model {
 
 	protected function get_active_players() {
 		return array_values(array_filter($this->players, fn($plr) => $plr->finished_round != self::KICKED_ROUND));
-	}
-
-	protected function get_is_color_complete() {
-		foreach ($this->active_players as $player) {
-			if ($player->finished_round == self::COLOR_COMPLETE_ROUND) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	protected function get_is_player_complete() {
-		foreach ($this->active_players as $player) {
-			if ($player->finished_round != self::COLOR_COMPLETE_ROUND) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	protected function get_has_sufficient_players() {
@@ -221,7 +227,7 @@ class Player extends Model {
 		elseif ($this->can_end_turn) {
 			if ($this->game->dice) {
 				if ($this->can_choose) {
-					$label = $this->game->is_color_complete ? "End LAST turn" : "End turn";
+					$label = $this->game->isColorComplete() ? "End LAST turn" : "End turn";
 					return new KeerStatusButton($this->game, "next-turn", $label);
 				}
 				else {
@@ -232,8 +238,8 @@ class Player extends Model {
 				return new KeerStatus($this->game, "Waiting for '{$this->game->turn_player}' to roll...");
 			}
 		}
-		elseif ($this->game->is_color_complete) {
-			if ($this->game->is_player_complete) {
+		elseif ($this->game->isColorComplete()) {
+			if ($this->game->isPlayerComplete()) {
 				return new KeerStatus($this->game, "GAME OVER! '{$this->game->winner}' won, with score {$this->game->winner->score}.");
 			}
 			else {
@@ -241,7 +247,13 @@ class Player extends Model {
 			}
 		}
 		else {
-			return new KeerStatus($this->game, "Waiting for players to finish turn...");
+			$unready = $this->game->getUnTurnReadyPlayers();
+			if (count($unready) == 1) {
+				return new KeerStatus($this->game, "Waiting for '" . $unready[0] . "' to finish turn...");
+			}
+			else {
+				return new KeerStatus($this->game, "Waiting for " . count($unready) . " players to finish turn...");
+			}
 		}
 	}
 
@@ -288,7 +300,7 @@ class Player extends Model {
 
 		if (count($colors) >= Game::COLORS_TO_COMPLETE) {
 			$this->update([
-				'finished_round' => 100,
+				'finished_round' => Game::COLOR_COMPLETE_ROUND,
 			]);
 		}
 	}

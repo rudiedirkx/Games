@@ -69,6 +69,7 @@ if (!$player) {
 					'online' => time(),
 					'password' => $password = get_random(),
 					'name' => $_POST['name'],
+					'finished_round' => $game->round,
 				]);
 				return $password;
 			});
@@ -85,11 +86,11 @@ if (!$player) {
 		<p>
 			In round <?= $game->round ?>.
 			Last change: <?= date('Y-m-d H:i', $game->changed_on) ?>.
-			<? if ($game->is_player_complete): ?><b>COMPLETE!</b> See scores:<? endif ?>
+			<? if ($game->isPlayerComplete()): ?><b>COMPLETE!</b> See scores:<? endif ?>
 		</p>
 		<p>Current players:</p>
 		<? printPlayersTable($game, null) ?>
-		<? if ($game->round < 3): ?>
+		<? if ($game->round < count($game->active_players)): ?>
 			<form method="post" action>
 				<p>Your name: <input name="name" required autofocus /></p>
 				<p><button name="join" value="1">JOIN GAME</button></p>
@@ -130,7 +131,7 @@ if (!$player) {
 					<a href="?game=<?= $gm->password ?>"><?= date('j M H:i', $gm->created_on) ?></a> -
 					<?= $gm->board ?> -
 					<?= $gm->num_players ?> players -
-					<? if ($gm->is_player_complete): ?>
+					<? if ($gm->isPlayerComplete()): ?>
 						<b>COMPLETE!</b>
 					<? else: ?>
 						round <?= $gm->round ?>
@@ -147,9 +148,9 @@ if (!$player) {
 
 
 Player::addHistory($player->id);
-$status = $player->getStatus();
 
 if (isset($_GET['status'])) {
+	$status = $player->getStatus();
 	$player->touch();
 	return json_respond([
 		'status' => $status->getHash(),
@@ -212,6 +213,8 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 	}
 	return json_respond(['reload' => 2]);
 }
+
+$status = $player->getStatus();
 
 ?>
 <!doctype html>
