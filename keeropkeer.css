@@ -15,27 +15,30 @@ body {
 a {
 	color: inherit;
 }
+th:not([align]) {
+	text-align: left;
+}
 
-table {
+table.game {
 	/*border-spacing: 0px;*/
 	border-collapse: collapse;
 }
-td {
+.game td {
 	width: var(--size);
 	height: var(--size);
 	padding: 0;
 	border: solid 1px var(--color);
 	text-align: center;
 }
-tbody td {
+.game tbody td {
 	color: black;
 }
-tbody .center {
+.game tbody .center {
 	border-left: var(--center-border);
 	border-right: var(--center-border);
 }
-thead .center,
-tbody tr:last-child .center {
+.game thead .center,
+.game tbody tr:last-child .center {
 	border-bottom: var(--center-border);
 }
 
@@ -98,7 +101,7 @@ tbody tr:last-child .center {
 
 #status {
 	margin-top: 0.5em;
-	margin-bottom: 1em;
+	margin-bottom: 0;
 }
 #status button {
 	padding: 8px 16px;
@@ -110,6 +113,7 @@ tbody tr:last-child .center {
 .colors-stats > * {
 	margin-top: 1em;
 	margin-right: 1em;
+	margin-bottom: 0;
 }
 .dice-cont {
 	display: flex;
@@ -181,6 +185,14 @@ body[data-state="done"] #next-turn > .restart {
 }
 [data-color="o"] {
 	background-color: orange;
+}
+
+table.players {
+	border-spacing: 0;
+}
+table.players th,
+table.players td {
+	padding: 3px;
 }
 
 @media (max-width: 480px) {

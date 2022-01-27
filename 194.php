@@ -200,7 +200,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 
 <body style="--color: <?= $boards[$player->game->board]['color'] ?>">
 
-<table class="board">
+<table class="board game">
 	<thead>
 		<tr>
 			<? foreach ($columns[0] as $i => $cell): ?>
@@ -225,7 +225,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 	<div id="dice"></div>
 
 	<div class="colors-stats">
-		<table>
+		<table class="colors game">
 			<? foreach ([5, 3] as $score): ?>
 				<tr>
 					<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
@@ -241,24 +241,38 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 		</p>
 	</div>
 
-	<p>Players:</p>
-	<ul class="players">
+	<p style="margin-bottom: 0">Players:</p>
+	<table class="players">
+		<tr>
+			<th>Name</th>
+			<th>Score</th>
+			<th>Status</th>
+			<th align="right">Online</th>
+			<th></th>
+			<? if (is_local()): ?>
+				<th></th>
+			<? endif ?>
+		</tr>
 		<? foreach ($player->game->players as $plr): ?>
-			<li <? if ($plr->id == $player->id): ?>style="color: lime"<? endif ?>>
-				<?= do_html($plr->name) ?>
-				(score <?= $plr->score ?>)
-				<? if ($plr->is_turn): ?>(TURN)<? endif ?>
-				<? if ($plr->is_kicked): ?>(KICKED)<? endif ?>
-				(online <span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></span> ago)
-				<? if ($player->is_leader && $plr->is_kickable): ?>
-					<button data-kick="<?= $plr->id ?>">KICK</button>
-				<? endif ?>
+			<tr class="<? if ($plr->id == $player->id): ?>me<? endif ?>">
+				<td><?= do_html($plr->name) ?></td>
+				<td><?= $plr->score ?></td>
+				<td>
+					<? if ($plr->is_turn): ?>TURN<? endif ?>
+					<? if ($plr->is_kicked): ?>KICKED<? endif ?>
+				</td>
+				<td align="right"><span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></span> ago</td>
+				<td>
+					<? if ($player->is_leader && $plr->is_kickable): ?>
+						<button data-kick="<?= $plr->id ?>">KICK</button>
+					<? endif ?>
+				</td>
 				<? if (is_local()): ?>
-					- <a href="?player=<?= do_html($plr->password) ?>">play as</a>
+					<td><a href="?player=<?= do_html($plr->password) ?>">play as</a></td>
 				<? endif ?>
-			</li>
+			</tr>
 		<? endforeach ?>
-	</ul>
+	</table>
 	<p>Share <a href="<?= do_html($player->game->url) ?>"><?= do_html($player->game->url) ?></a> to invite players.</p>
 </div>
 
