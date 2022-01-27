@@ -126,6 +126,7 @@ table.game {
 #dice {
 	/*display: contents;*/
 	user-select: none;
+	margin-top: 0.75em;
 }
 #dice > * {
 	display: inline-block;

@@ -14,6 +14,7 @@ $db->ensureSchema(require '194_schema.php');
 
 [$columns, $boards] = require '191_levels.php';
 $mapCenter = ceil(count($columns[0]) / 2) - 1;
+$maxJokers = 8;
 
 $player = Player::get($_GET['player'] ?? null);
 
@@ -246,6 +247,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 		<tr>
 			<th>Name</th>
 			<th>Score</th>
+			<th>Jokers</th>
 			<th>Status</th>
 			<th align="right">Online</th>
 			<th></th>
@@ -257,6 +259,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 			<tr class="<? if ($plr->id == $player->id): ?>me<? endif ?>">
 				<td><?= do_html($plr->name) ?></td>
 				<td><?= $plr->score ?></td>
+				<td nowrap><?= $maxJokers - $plr->used_jokers ?> / <?= $maxJokers ?></td>
 				<td>
 					<? if ($plr->is_turn): ?>TURN<? endif ?>
 					<? if ($plr->is_kicked): ?>KICKED<? endif ?>
@@ -277,6 +280,7 @@ elseif (isset($_GET['kick'], $_POST['pid'])) {
 </div>
 
 <script>
+KeerOpKeer.JOKERS = <?= json_encode($maxJokers) ?>;
 KeerOpKeer.CENTER = <?= json_encode($mapCenter) ?>;
 KeerOpKeer.BOARDS = <?= json_encode($boards) ?>;
 var objGame = new MultiKeerOpKeer($('#grid'));
