@@ -65,12 +65,12 @@ class Table extends Model {
 			if ($w) {
 				$update = [
 					'balance' => $plr->balance + $winnings,
-					'log' => "Won showdown $ $winnings with $winner",
+					'log' => "Won showdown [money:$winnings] with [hand:$winner]",
 				];
 			}
 			elseif (isset($scores[$plr->id])) {
 				$score = $scores[$plr->id];
-				$update = ['log' => "Lost showdown with $score"];
+				$update = ['log' => "Lost showdown with [hand:$score]"];
 			}
 			$plr->update($update + [
 				'bet' => 0,
@@ -90,7 +90,7 @@ class Table extends Model {
 			$w = $pid == $plr->id;
 			$update = $w ? [
 				'balance' => $plr->balance + $winnings,
-				'log' => "Won $ $winnings by default",
+				'log' => "Won [money:$winnings] by default",
 			] : [];
 			$plr->update($update + [
 				'bet' => 0,
@@ -258,7 +258,7 @@ class Table extends Model {
 	}
 
 	protected function get_raise() {
-		return $this->small_blind;
+		return $this->big_blind;
 	}
 
 	protected function get_small_blind() {
@@ -352,7 +352,7 @@ class Player extends Model {
 		$max = $this->table->getMaxBet();
 		$this->update([
 			'state' => Player::STATE_FOLDED,
-			'log' => "Folded at $ $max",
+			'log' => "Folded at [money:$max]",
 		]);
 	}
 
@@ -428,6 +428,18 @@ class Player extends Model {
 
 	public function touch() : void {
 		$this->update(['online' => time()]);
+	}
+
+	protected function get_log_markup() {
+		if (!$this->log) return '';
+		$text = $this->log;
+		$text = preg_replace_callback('#\[money:(\d+)\]#', function($match) {
+			return '$ ' . $match[1];
+		}, $text);
+		$text = preg_replace_callback('#\[hand:([\d\.]+[a-z]*)\]#', function($match) {
+			return PokerTexasHoldem::readable_hand($match[1]);
+		}, $text);
+		return $text;
 	}
 
 	protected function get_all_open_card_objects() {

@@ -173,7 +173,7 @@ elseif ($action == 'bb') {
 elseif ($action == 'check') {
 	if ($player->table->isBettingState() && $player->is_turn && $player->bet == $player->table->getMaxBet()) {
 		$db->transaction(function($db) use ($player) {
-			$player->manualBet(0, "Checked $ {$player->bet}");
+			$player->manualBet(0, "Checked [money:{$player->bet}]");
 			$player->table->maybeEndBetting();
 			$player->touch();
 // print_r($db->queries);
@@ -187,7 +187,7 @@ elseif ($action == 'call') {
 	if ($player->table->isBettingState() && $player->is_turn && $player->bet < $player->table->getMaxBet()) {
 		$db->transaction(function($db) use ($player) {
 			$max = $player->table->getMaxBet();
-			$player->betTo($max, "Called to $ $max");
+			$player->betTo($max, "Called to [money:$max]");
 			$player->table->maybeEndBetting();
 			$player->touch();
 // print_r($db->queries);
@@ -201,7 +201,7 @@ elseif ($action == 'raise') {
 	if ($player->table->isBettingState() && $player->is_turn) {
 		$db->transaction(function($db) use ($player) {
 			$bet = $player->table->getMaxBet() + $player->table->raise;
-			$player->betTo($bet, "Raised to $ $bet");
+			$player->betTo($bet, "Raised to [money:$bet]");
 			$player->table->maybeEndBetting();
 			$player->touch();
 // print_r($db->queries);
@@ -323,7 +323,7 @@ tr.self {
 			<? if ($showdowned): ?>
 				<td nowrap><?= $plr->state == Player::STATE_FOLDED ? '' : implode(' ', $plr->cards_objects) ?></td>
 			<? endif ?>
-			<td><?= do_html($plr->log) ?></td>
+			<td><?= do_html($plr->log_markup) ?></td>
 		</tr>
 	<? endforeach ?>
 </table>
