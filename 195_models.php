@@ -210,6 +210,10 @@ class Table extends Model {
 		$this->update(['changed_on' => time()]);
 	}
 
+	protected function get_has_showdowned() {
+		return $this->state == Table::STATE_IDLE && $this->winning_hand;
+	}
+
 	protected function get_winning_state() {
 		return $this->log_array['state'] ?? Table::STATE_RIVER;
 	}

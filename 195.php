@@ -246,6 +246,9 @@ a {
 button {
 	padding: 6px 9px;
 }
+.table-wrapper {
+	overflow-x: auto;
+}
 table {
 	border-spacing: 0;
 }
@@ -256,12 +259,16 @@ th, td {
 	padding: 6px 8px;
 	border: solid 0px #aaa;
 	border-width: 0 0 2px 0;
+	vertical-align: top;
 }
 th {
 	border-width: 2px 0 3px 0;
 }
 tr.self {
 	background-color: #222;
+}
+#state {
+	height: 3em;
 }
 </style>
 </head>
@@ -280,53 +287,53 @@ tr.self {
 </p>
 <p>
 	Your cards:
-	<?= implode(' ', array_slice($player->cards_objects, 0, $player->show_cards)) ?> |
-	<?= $player->table->state > Table::STATE_PREFLOP ? PokerTexasHoldem::readable_hand($score = PokerTexasHoldem::score($player->all_open_card_objects)) . " ($score)" : '' ?>
+	<?= implode(' ', array_slice($player->cards_objects, 0, $player->show_cards)) ?>
+	<? if ($player->table->state > Table::STATE_PREFLOP): ?>
+		| <?= PokerTexasHoldem::readable_hand(PokerTexasHoldem::score($player->all_open_card_objects)) ?>
+	<? endif ?>
 </p>
 
-<form method="post" action>
+<form id="state" method="post" action>
 	<p><?= $player->getStatus() ?></p>
 </form>
 
-<br>
-
-<? $showdowned = $player->table->state == Table::STATE_IDLE && $player->table->winning_hand ?>
-
-<table>
-	<tr>
-		<th>Name</th>
-		<th>Balance</th>
-		<th>Bet</th>
-		<th>Trn</th>
-		<th>Role</th>
-		<th>State</th>
-		<? if ($showdowned): ?>
-			<th>Hand</th>
-		<? endif ?>
-		<th>Log</th>
-	</tr>
-	<? foreach ($player->table->players as $plr): ?>
-		<tr class="<?= $player == $plr ? 'self' : '' ?>">
-			<td nowrap>
-				<?= $plr->id ?>.
-				<? if (is_local()): ?>
-					<a href="?player=<?= do_html($plr->password) ?>"><?= do_html($plr) ?></a>
-				<? else: ?>
-					<?= do_html($plr) ?>
-				<? endif ?>
-			</td>
-			<td nowrap>$ <?= $plr->balance ?></td>
-			<td nowrap>$ <?= $plr->bet ?></td>
-			<td align="center"><?= $plr->is_turn ? 'x' : '' ?></td>
-			<td><?= implode(', ', $plr->roles) ?></td>
-			<td><?= do_html($plr->state_label) ?></td>
-			<? if ($showdowned): ?>
-				<td nowrap><?= $plr->state == Player::STATE_FOLDED ? '' : implode(' ', $plr->cards_objects) ?></td>
+<div class="table-wrapper">
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>Bal</th>
+			<th>Bet</th>
+			<th>Trn</th>
+			<th>Role</th>
+			<th>State</th>
+			<? if ($player->table->has_showdowned): ?>
+				<th>Hand</th>
 			<? endif ?>
-			<td><?= do_html($plr->log_markup) ?></td>
+			<th>Log</th>
 		</tr>
-	<? endforeach ?>
-</table>
+		<? foreach ($player->table->players as $plr): ?>
+			<tr class="<?= $player == $plr ? 'self' : '' ?>">
+				<td nowrap>
+					<!-- <?= $plr->id ?>. -->
+					<? if (is_local()): ?>
+						<a href="?player=<?= do_html($plr->password) ?>"><?= do_html($plr) ?></a>
+					<? else: ?>
+						<?= do_html($plr) ?>
+					<? endif ?>
+				</td>
+				<td nowrap>$ <?= $plr->balance ?></td>
+				<td nowrap>$ <?= $plr->bet ?></td>
+				<td align="center"><?= $plr->is_turn ? 'x' : '' ?></td>
+				<td><?= implode('<br>', $plr->roles) ?></td>
+				<td><?= do_html($plr->state_label) ?></td>
+				<? if ($player->table->has_showdowned): ?>
+					<td nowrap><?= $plr->state == Player::STATE_FOLDED ? '' : implode(' ', $plr->cards_objects) ?></td>
+				<? endif ?>
+				<td nowrap><?= do_html($plr->log_markup) ?></td>
+			</tr>
+		<? endforeach ?>
+	</table>
+</div>
 
 <p>Share <a href="<?= do_html($player->table->url) ?>"><?= do_html($player->table->url) ?></a> to invite players.</p>
 
