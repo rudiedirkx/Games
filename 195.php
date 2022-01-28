@@ -226,6 +226,8 @@ elseif ($action == 'fold') {
 
 header('Content-type: text/html; charset=utf-8');
 
+$player->touch();
+
 ?>
 <!doctype html>
 <html>
@@ -267,6 +269,9 @@ th {
 tr.self {
 	background-color: #222;
 }
+.totals {
+	font-weight: bold;
+}
 #state {
 	height: 3em;
 }
@@ -301,15 +306,16 @@ tr.self {
 	<table>
 		<tr>
 			<th>Name</th>
-			<th>Bal</th>
+			<th>Balance</th>
 			<th>Bet</th>
-			<th>Trn</th>
+			<th>Turn</th>
 			<th>Role</th>
-			<th>State</th>
+			<!-- <th>State</th> -->
 			<? if ($player->table->has_showdowned): ?>
 				<th>Hand</th>
 			<? endif ?>
 			<th>Log</th>
+			<th>Online</th>
 		</tr>
 		<? foreach ($player->table->players as $plr): ?>
 			<tr class="<?= $player == $plr ? 'self' : '' ?>">
@@ -325,13 +331,20 @@ tr.self {
 				<td nowrap>$ <?= $plr->bet ?></td>
 				<td align="center"><?= $plr->is_turn ? 'x' : '' ?></td>
 				<td><?= implode('<br>', $plr->roles) ?></td>
-				<td><?= do_html($plr->state_label) ?></td>
+				<!-- <td><?= do_html($plr->state_label) ?></td> -->
 				<? if ($player->table->has_showdowned): ?>
 					<td nowrap><?= $plr->state == Player::STATE_FOLDED ? '' : implode(' ', $plr->cards_objects) ?></td>
 				<? endif ?>
 				<td nowrap><?= do_html($plr->log_markup) ?></td>
+				<td nowrap><?= get_time_ago($plr->online_ago) ?></td>
 			</tr>
 		<? endforeach ?>
+		<tr class="totals">
+			<td></td>
+			<td align="right">Pot:</td>
+			<td nowrap>$ <?= $player->table->pot ?></td>
+			<td colspan="5"></td>
+		</tr>
 	</table>
 </div>
 
