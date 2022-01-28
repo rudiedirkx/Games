@@ -136,8 +136,9 @@ function change_focus( e, i )
 if (isset($_GET['goforplay']) && (isset($_GET['vakje']) || (isset($_GET['id']) && is_numeric($_GET['id']))))
 {
 	// ingevulde veldjes (stuk of 25)
-	$vakje = (isset($_GET['id'])) ? unserialize(mysql_result(mysql_query("SELECT inhoud FROM sudoku WHERE id='".$_GET['id']."';"),0,'inhoud')) : $_GET['vakje'];
-	$vakje = explode(".",implode(".",$vakje));
+	// $vakje = (isset($_GET['id'])) ? unserialize(mysql_result(mysql_query("SELECT inhoud FROM sudoku WHERE id='".$_GET['id']."';"),0,'inhoud')) : $_GET['vakje'];
+	// $vakje = explode(".",implode(".",$vakje));
+	$vakje = $_GET['vakje'];
 	for ($i=0;$i<9*9;$i++)
 	{
 		if (isset($vakje[$i]))	$vakje[$i]=(int)$vakje[$i];
@@ -146,7 +147,7 @@ if (isset($_GET['goforplay']) && (isset($_GET['vakje']) || (isset($_GET['id']) &
 //	print_r($vakje);
 //	echo implode(",",$vakje);
 
-	echo "<table border=0 cellpadding=0 cellspacing=0 style='border:solid 4px black;'><form name=oplossing method=post><input type=hidden name=oplossen value=1><input type=hidden name=sudoku_id value=".((isset($_GET['id']))?$_GET['id']:mysql_insert_id())."><tr>";
+	echo "<table border=0 cellpadding=0 cellspacing=0 style='border:solid 4px black;'><form name=oplossing method=post><input type=hidden name=oplossen value=1><input type=hidden name=sudoku_id value=><tr>";
 	for ($i=0;$i<9*9;$i++)
 	{
 		$a=$i+1;
@@ -192,12 +193,12 @@ else
 		{
 			$style .= "border-right:solid 4px black;";
 		}
-		if ( in_array($a, array(11,12,13, 15,16,17, 47,48,49, 51,52,53,
-								20,21,22, 24,25,26, 56,57,58, 60,61,62,
-								29,30,31, 33,34,35, 65,66,67, 69,70,71 )) )
-		{
-			$style2 .= "background-color:#aaa;";
-		}
+		// if ( in_array($a, array(11,12,13, 15,16,17, 47,48,49, 51,52,53,
+		// 						20,21,22, 24,25,26, 56,57,58, 60,61,62,
+		// 						29,30,31, 33,34,35, 65,66,67, 69,70,71 )) )
+		// {
+		// 	$style2 .= "background-color:#aaa;";
+		// }
 		echo "<td height=60 width=60 style='$style'><input type=text name=\"vakje[$i]\" style='".$style2."' id='nlv".$i."' OnKeyDown=\"change_focus( '$i' );\"></td>\n";
 		echo (floor($i/9)==ceil($i/9)) ? "</tr><tr>\n" : "";
 		unset($style);
@@ -205,8 +206,3 @@ else
 	echo "</table><select name=graad><option value='medium'>DIFFICULTY<option value='easy'>EASY<option value='medium'>MEDIUM<option value='hard'>HARD</select><br><br><input type=submit value=\"SAVE & PLAY\"></form><br><br><br><input type=reset value='reset' /><br>";
 
 }
-
-var_dump( urldecode($_SERVER['QUERY_STRING']) );
-
-
-?>

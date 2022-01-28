@@ -1,4 +1,5 @@
 <?php
+// SWITCH BOARD
 
 require __DIR__ . '/inc.bootstrap.php';
 

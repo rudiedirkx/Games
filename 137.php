@@ -2,6 +2,7 @@
 // 4*4 SUDOKU
 
 require __DIR__ . '/inc.bootstrap.php';
+require __DIR__ . '/inc.db.php';
 
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
@@ -123,11 +124,11 @@ table.s td.bb { border-bottom	: solid 5px black; }
 
 if ( isset($_GET['goforplay'], $_GET['id']) ) {
 	// ingevulde veldjes (stuk of 25)
-	$q = mysql_query("SELECT inhoud FROM sudoku WHERE type = 4 AND id = ".(int)$_GET['id'].";");
-	if ( !$q || !mysql_num_rows($q) ) {
+	$r = $db->select_one("sudoku", "inhoud", "type = 4 AND id = ".(int)$_GET['id'].";");
+	if ( !$r ) {
 		exit('Is no puzzle!');
 	}
-	$arrSudoku = explode(',', mysql_result($q, 0));
+	$arrSudoku = explode(',', $r);
 	printSudokuField($arrSudoku);
 	echo '<br /><input type="button" value="check" onclick="checkSudoku(getSudoku($(\'sudtab\')), '.(int)$_GET['id'].');" /><br />';
 }
@@ -138,8 +139,8 @@ else {
 
 echo '<br /><table border="1" cellpadding="4">';
 echo '<tr><th colspan="3">Play existing Sudoku:</td></tr>';
-$q = mysql_query("SELECT * FROM sudoku WHERE 0 < oplosbaar AND 4 = type ORDER BY graad ASC, time DESC;") or die(mysql_error());
-while ( $r = mysql_fetch_assoc($q) ) {
+$q = $db->select("sudoku", "0 < oplosbaar AND 4 = type ORDER BY graad ASC, time DESC");
+foreach ($q as $r) {
 	echo '<tr>';
 	echo '<td align="right">'.$r['id'].'</td>';
 	echo '<td><a href="?goforplay=1&id='.$r['id'].'">'.$r['graad'].'</a></td>';
@@ -391,5 +392,3 @@ class StateSolver
 		return (($bitSet & (1 << $bit - 1)) == 0) ? false : true;
 	}
 }
-
-?>

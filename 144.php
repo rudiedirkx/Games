@@ -7,6 +7,7 @@ if ( isset($_GET['code']) )
 }
 
 ?>
+<title>KEYPAD</title>
 <style type="text/css">
 #kp td input {
 	width		: 38px;

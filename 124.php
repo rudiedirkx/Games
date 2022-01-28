@@ -1,5 +1,5 @@
 <?php
-//SAFE CRACKING
+// SPLINTER CELL SAFE CRACKING
 
 session_start();
 error_reporting(2047);
@@ -185,7 +185,7 @@ maak_foute_codes();
 				</select>
 			</td>
 			<td>
-				<iframe src="?pagina=voorbeeldcode" style="overflow: hide;" width="115" height="30" border="0" style="border: 0px;"></iframe>
+				<iframe src="?pagina=voorbeeldcode" style="overflow: hide;" width="145" height="30" border="0" style="border: 0px;"></iframe>
 			</td>
 		</tr>
 	</table>

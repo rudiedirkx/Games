@@ -2,6 +2,7 @@
 // SUDOKU
 
 require __DIR__ . '/inc.bootstrap.php';
+require __DIR__ . '/inc.db.php';
 
 class StateSolver
 {
@@ -261,7 +262,7 @@ function change_focus(i)
 if (isset($_GET['goforplay']) && (isset($_GET['vakje']) || (isset($_GET['id']) && is_numeric($_GET['id']))))
 {
 	// ingevulde veldjes (stuk of 25)
-	$vakje = (isset($_GET['id'])) ? unserialize(mysql_result(mysql_query("SELECT inhoud FROM sudoku WHERE id='".$_GET['id']."';"),0,'inhoud')) : $_GET['vakje'];
+	$vakje = isset($_GET['id']) ? explode(',', $db->select_one("sudoku", "inhoud", "id='".(int)$_GET['id']."';")) : $_GET['vakje'];
 	$vakje = explode(".",implode(".",$vakje));
 	for ($i=0;$i<9*9;$i++)
 		$vakje[$i]=(int)$vakje[$i];
@@ -303,15 +304,14 @@ else
 	}
 	echo "</table><select name=graad><option value='medium'>DIFFICULTY<option value='easy'>EASY<option value='medium'>MEDIUM<option value='hard'>HARD</select><br><br><input type=submit value=\"SAVE & PLAY\"></form><br><br><br>";
 	echo "Or open an old one:<br>";
-	$q = mysql_query("SELECT id,graad,time FROM sudoku WHERE graad!='' ORDER BY graad,time DESC;") or die(mysql_error());
+	$q = $db->select("sudoku", "type = '9' AND graad != '' ORDER BY graad,time DESC");
 	$a = array();
-	while ($r = mysql_fetch_assoc($q))
-	{
+	foreach ($q as $r) {
 		if (isset($a[$r['graad']]))
 			$a[$r['graad']]++;
 		else
 			$a[$r['graad']]=1;
-		echo "<--".$a[$r['graad']].".-->(".$r['id'].") ".$r['graad']." - <a href=\"?goforplay=1&graad=".$r['graad']."&id=".$r['id']."\">open</a> (".date("d-m-Y",$r['time']).")<br>";
+		echo "<!--".$a[$r['graad']].".-->(".$r['id'].") ".$r['graad']." - <a href=\"?goforplay=1&graad=".$r['graad']."&id=".$r['id']."\">open</a> (".date("d-m-Y",$r['time']).")<br>";
 	}
 }
 
