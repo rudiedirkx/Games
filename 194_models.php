@@ -29,14 +29,16 @@ class Game extends Model {
 
 		$i = array_search($_POST['color'], $dice['colors']);
 		if (strlen($_POST['color']) && $i !== false) {
-			unset($dice['colors'][$i]);
-			$dice['colors'] = array_values($dice['colors']);
+			// unset($dice['colors'][$i]);
+			// $dice['colors'] = array_values($dice['colors']);
+			$dice['disabled']['color'] = $i;
 		}
 
 		$i = array_search($_POST['number'], $dice['numbers']);
 		if (strlen($_POST['number']) && $i !== false) {
-			unset($dice['numbers'][$i]);
-			$dice['numbers'] = array_values($dice['numbers']);
+			// unset($dice['numbers'][$i]);
+			// $dice['numbers'] = array_values($dice['numbers']);
+			$dice['disabled']['number'] = $i;
 		}
 
 		$this->update([

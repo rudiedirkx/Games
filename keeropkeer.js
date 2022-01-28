@@ -184,10 +184,13 @@ class KeerOpKeer extends GridGame {
 		});
 	}
 
-	printDice({colors, numbers}) {
+	printDice({colors, numbers, disabled}) {
+		const dis = (type, i) => {
+			return disabled && disabled[type] === i ? 'disabled' : '';
+		};
 		const html = [
-			...colors.map(c => `<span class="color" data-color="${c}">${c == '?' ? '?' : '&nbsp;'}</span>`),
-			...numbers.map(n => `<span class="number" data-number="${n == 0 ? '?' : n}">${n == 0 ? '?' : n}</span>`),
+			...colors.map((c, i) => `<span class="color ${dis('color', i)}" data-color="${c}">${c == '?' ? '?' : '&nbsp;'}</span>`),
+			...numbers.map((n, i) => `<span class="number ${dis('number', i)}" data-number="${n == 0 ? '?' : n}">${n == 0 ? '?' : n}</span>`),
 		];
 		$('#dice').setHTML(html.join(' '));
 	}
@@ -223,7 +226,7 @@ class KeerOpKeer extends GridGame {
 	}
 
 	selectColor( el ) {
-		if ( el.hasClass('selected') ) return;
+		if ( el.hasClass('selected') || el.hasClass('disabled') ) return;
 		if ( el.dataset.color == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
 
 		$$(`#dice > [data-color="${this.turnColor}"]`).removeClass('selected');
@@ -233,7 +236,7 @@ class KeerOpKeer extends GridGame {
 	}
 
 	selectNumber( el ) {
-		if ( el.hasClass('selected') ) return;
+		if ( el.hasClass('selected') || el.hasClass('disabled') ) return;
 		if ( el.dataset.number == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
 
 		$$(`#dice > [data-number="${this.turnNumber}"]`).removeClass('selected');
