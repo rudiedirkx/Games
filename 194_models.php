@@ -245,7 +245,13 @@ class Player extends Model {
 				return new KeerStatus($this->game, "GAME OVER! '{$this->game->winner}' won, with score {$this->game->winner->score}.");
 			}
 			else {
-				return new KeerStatus($this->game, "GAME OVER! Waiting for players' last round.");
+				$unready = $this->game->getUnTurnReadyPlayers();
+				if (count($unready) == 1) {
+					return new KeerStatus($this->game, "GAME OVER! Waiting for '" . $unready[0] . "'s last round.");
+				}
+				else {
+					return new KeerStatus($this->game, "GAME OVER! Waiting for players' last round.");
+				}
 			}
 		}
 		else {
@@ -254,7 +260,7 @@ class Player extends Model {
 				return new KeerStatus($this->game, "Waiting for '" . $unready[0] . "' to finish turn...");
 			}
 			else {
-				return new KeerStatus($this->game, "Waiting for " . count($unready) . " players to finish turn...");
+				return new KeerStatus($this->game, "Waiting for players to finish turn...");
 			}
 		}
 	}
