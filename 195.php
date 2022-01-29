@@ -122,7 +122,35 @@ if (!in_array($player->id, $_SESSION['p195']['pids'] ?? [])) {
 
 
 
+$player->touch();
+
 $action = $_POST['action'] ?? '';
+
+if (isset($_GET['status'])) {
+	$status = $player->getStatus();
+	$hash = $status->getHash();
+
+	$details = [];
+	// if ($hash !== $_GET['status']) {
+	// 	if ($status->shouldReload()) {
+	// 		$details = [
+	// 			'reload' => true,
+	// 		];
+	// 	}
+	// 	else {
+	// 		$details = [
+	// 			'html' => (string) $status,
+	// 			'pubcards' => $player->table->printCards(),
+	// 			'owncards' => $player->printCards(),
+	// 		];
+	// 	}
+	// }
+
+	return json_respond($details + [
+		'hash' => $hash,
+		'onlines' => array_map('get_time_ago', array_column($player->table->players, 'online_ago', 'id')),
+	]);
+}
 
 if ($action == 'start') {
 	if ($player->table->state == Table::STATE_IDLE && $player->is_dealer) {
@@ -226,7 +254,7 @@ elseif ($action == 'fold') {
 
 header('Content-type: text/html; charset=utf-8');
 
-$player->touch();
+$status = $player->getStatus();
 
 ?>
 <!doctype html>
@@ -278,7 +306,7 @@ tr.self {
 </style>
 </head>
 
-<body>
+<body data-status="<?= $status->getHash() ?>">
 
 <p>
 	Round: <?= $player->table->round ?> |
@@ -286,20 +314,11 @@ tr.self {
 	Pot: $ <?= $player->table->pot ?> |
 	<code><?= do_html($player->table->log) ?></code>
 </p>
-<p>
-	Public cards:
-	<?= implode(', ', array_slice($player->table->cards_objects, 0, $player->table->show_cards)) ?: '-' ?>
-</p>
-<p>
-	Your cards:
-	<?= implode(' ', array_slice($player->cards_objects, 0, $player->show_cards)) ?>
-	<? if ($player->table->state > Table::STATE_PREFLOP): ?>
-		| <?= PokerTexasHoldem::readable_hand(PokerTexasHoldem::score($player->all_open_card_objects)) ?>
-	<? endif ?>
-</p>
+<p>Public cards: <span id="pubcards"><?= $player->table->printCards() ?></span></p>
+<p>Your cards: <span id="owncards"><?= $player->printCards() ?></span></p>
 
 <form id="state" method="post" action>
-	<p><?= $player->getStatus() ?></p>
+	<p><?= $status ?></p>
 </form>
 
 <div class="table-wrapper">
@@ -336,7 +355,7 @@ tr.self {
 					<td nowrap><?= $plr->state == Player::STATE_FOLDED ? '' : implode(' ', $plr->cards_objects) ?></td>
 				<? endif ?>
 				<td nowrap><?= do_html($plr->log_markup) ?></td>
-				<td nowrap><?= get_time_ago($plr->online_ago) ?></td>
+				<td nowrap id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></td>
 			</tr>
 		<? endforeach ?>
 		<tr class="totals">
@@ -352,6 +371,31 @@ tr.self {
 
 <?php include 'tpl.queries.php'; ?>
 
+<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script>
+setInterval(() => {
+	if (document.hidden) return;
+	$.get(`${location.search}&status=${document.body.dataset.status}`).on('done', (e, rsp) => {
+		if (rsp.hash != document.body.dataset.status) {
+// console.log(rsp);
+			// document.body.dataset.status = rsp.hash;
+			// if (rsp.reload) {
+				location.reload();
+			// }
+			// else {
+			// 	$('#state').setHTML(rsp.html);
+			// }
+		}
+
+		// if (rsp.owncards) $('#owncards').setHTML(rsp.owncards);
+		// if (rsp.pubcards) $('#pubcards').setHTML(rsp.pubcards);
+		if (rsp.onlines) $.each(rsp.onlines, (time, id) => {
+			const el = $(`#online-${id}`);
+			if (el) el.setText(time);
+		});
+	});
+}, 1000);
+</script>
 </body>
 
 </html>

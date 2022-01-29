@@ -40,6 +40,10 @@ class Table extends Model {
 
 	static $_table = 'p195_tables';
 
+	public function printCards() : string {
+		return implode(', ', array_slice($this->cards_objects, 0, $this->show_cards)) ?: '-';
+	}
+
 	protected function finishRound(array $log) : void {
 		$this->update([
 			'state' => self::STATE_IDLE,
@@ -352,6 +356,16 @@ class Player extends Model {
 
 	static $_table = 'p195_players';
 
+	public function printCards() : string {
+		$html = [
+			implode(' ', array_slice($this->cards_objects, 0, $this->show_cards)),
+		];
+		if ($this->table->state > Table::STATE_PREFLOP) {
+			$html[] = '| ' . PokerTexasHoldem::readable_hand(PokerTexasHoldem::score($this->all_open_card_objects));
+		}
+		return implode(' ', $html);
+	}
+
 	public function fold() : void {
 		$max = $this->table->getMaxBet();
 		$this->update([
@@ -515,6 +529,10 @@ class PokerStatus {
 		return sha1(get_class($this) . "$this->text:{$this->table->num_players}:{$this->table->round}:{$this->table->state}:{$this->table->turn_player_id}");
 	}
 
+	public function shouldReload() : bool {
+		return false;
+	}
+
 	public function __toString() {
 		return '<em>' . do_html($this->text) . '</em>';
 	}
@@ -526,6 +544,10 @@ class PokerStatusActions extends PokerStatus {
 	public function __construct(Table $table, array $actions) {
 		parent::__construct($table, implode(' / ', $actions));
 		$this->actions = $actions;
+	}
+
+	public function shouldReload() : bool {
+		return true;
 	}
 
 	public function __toString() {
