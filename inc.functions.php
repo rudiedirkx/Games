@@ -14,7 +14,10 @@ function is_mobile() {
 	return is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
 }
 
-function get_time_ago(int $sec) {
+function get_time_ago(?int $sec) {
+	if ($sec === null) return null;
+	$days = $sec / 86400;
+	if ($days > 3) return round($days) . 'd';
 	$hours = floor($sec / 3600);
 	if ($hours >= 2) return $hours . 'h';
 	$sec -= $hours * 3600;

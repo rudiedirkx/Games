@@ -14,6 +14,10 @@ class Game extends Model {
 		return $this->to_many(Move::class, 'game_id')->order('id asc');
 	}
 
+	protected function relate_players() {
+		return $this->to_many(Player::class, 'game_id')->order('color desc');
+	}
+
 	static public function newGame() {
 		return self::$_db->transaction(function() {
 			$turn = rand(0, 1) ? 'white' : 'black';
@@ -58,6 +62,10 @@ class Player extends Model {
 
 	protected function relate_game() {
 		return $this->to_one(Game::class, 'game_id');
+	}
+
+	protected function get_online_ago() {
+		return $this->online ? time() - $this->online : null;
 	}
 
 	protected function get_opponent() {

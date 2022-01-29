@@ -7,6 +7,8 @@ require '143.models.php';
 Model::$_db = $db;
 $db->ensureSchema(require '143.schema.php');
 
+$debug = is_local() || is_debug_ip();
+
 $login = $_GET['login'] ?? null;
 
 if ( !$login ) {
@@ -32,6 +34,23 @@ if ( !$login ) {
 	</form>
 
 	<p><a href="?newgame=1">Start a new game for 2</a></p>
+
+	<? if ($debug):
+		$games = Game::all('1=1 order by id desc limit 10');
+		Game::eager('players', $games);
+		?>
+		<ul>
+			<? foreach ($games as $gm): ?>
+				<li>
+					# <?= $gm->id ?>
+					<? foreach ($gm->players as $plr): ?>
+						- <a href="?login=<?= $plr->password ?>"><?= $plr->color ?></a>
+						(<?= get_time_ago($plr->online_ago) ?? '?' ?> ago)
+					<? endforeach ?>
+				</li>
+			<? endforeach ?>
+		</ul>
+	<? endif ?>
 	<?php
 
 	exit;
