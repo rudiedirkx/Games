@@ -50,10 +50,10 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <div class="meta">
 	<p class="dice-cont">
 		<button id="next-turn">
-			<span class="start">Start game</span>
-			<span class="turn">Next round</span>
-			<span class="end">End game</span>
-			<span class="restart">New game</span>
+			<span class="state start">Start game</span>
+			<span class="state turn">End turn <span class="not-choosing">WITHOUT SELECTION</span></span>
+			<span class="state end">End game</span>
+			<span class="state restart">New game</span>
 		</button>
 		<span id="dice"></span>
 	</p>

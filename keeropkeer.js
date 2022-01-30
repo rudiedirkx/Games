@@ -50,6 +50,8 @@ class KeerOpKeer extends GridGame {
 	evalNextReady() {
 		const el = $('#next-turn');
 		if (el) el.disabled = !this.currentTurnIsComplete();
+
+		document.body.toggleClass('with-choosing', this.getChoosing().length > 0);
 	}
 
 	currentTurnIsComplete() {
@@ -96,8 +98,21 @@ class KeerOpKeer extends GridGame {
 		return all;
 	}
 
+	getChoosing() {
+		return this.m_objGrid.getElements('.choosing');
+	}
+
 	lockInChoosing() {
-		return this.m_objGrid.getElements('.choosing').removeClass('choosing').addClass('chosen');
+		return this.getChoosing().removeClass('choosing').addClass('chosen');
+	}
+
+	maybeConfirmWithoutSelection() {
+		if (this.getChoosing().length == 0) {
+			if (!confirm('Do you want to END YOUR TURN without choosing any fields?')) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	evalFulls() {
@@ -345,6 +360,8 @@ class MultiKeerOpKeer extends KeerOpKeer {
 	}
 
 	handleEndTurn() {
+		if (!this.maybeConfirmWithoutSelection()) return;
+
 		const choosing = this.lockInChoosing().length;
 		const fulls = this.evalFulls();
 
@@ -364,6 +381,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		$.post(location.search + '&endturn=1', $.serialize(data)).on('done', (e, rsp) => {
 			console.log(rsp);
 			if (rsp.reload) location.reload();
+			document.body.removeClass('with-choosing');
 		});
 	}
 
@@ -492,6 +510,8 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	finishTurn() {
+		document.body.removeClass('with-choosing');
+
 		const choosing = this.lockInChoosing();
 
 		if ( this.turnColor == '?' && choosing.length ) this.useJoker();
@@ -507,10 +527,15 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		}
 	}
 
-	nextTurn() {
+	handleEndTurn() {
 		if ( this.m_bGameOver ) return;
 
-		if ( this.m_iMoves ) this.finishTurn();
+		if ( this.m_iMoves ) {
+			if (!this.maybeConfirmWithoutSelection()) return;
+
+			this.finishTurn();
+		}
+
 		if ( this.m_bGameOver ) return;
 
 		this.setMoves(this.m_iMoves + 1);
@@ -528,7 +553,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 				this.startRandomDifferentGame();
 			}
 			else if ( this.currentTurnIsComplete() ) {
-				this.nextTurn();
+				this.handleEndTurn();
 			}
 		});
 	}

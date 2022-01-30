@@ -173,14 +173,17 @@ table.game {
 	margin-right: 20px;
 }
 
-#next-turn > * {
+#next-turn > .state {
 	display: none;
 }
-body:not([data-state]) #next-turn > .start,
-body[data-state="turn"] #next-turn > .turn,
-body[data-state="last"] #next-turn > .end,
-body[data-state="done"] #next-turn > .restart {
+body:not([data-state]) #next-turn > .state.start,
+body[data-state="turn"] #next-turn > .state.turn,
+body[data-state="last"] #next-turn > .state.end,
+body[data-state="done"] #next-turn > .state.restart {
 	display: inline;
+}
+body.with-choosing #next-turn .not-choosing {
+	display: none;
 }
 
 [data-color="?"],
