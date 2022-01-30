@@ -24,6 +24,7 @@ class Game extends Model {
 			$gid = Game::insert([
 				'turn' => $turn,
 				'password' => '',
+				'created_on' => time(),
 			]);
 
 			$balls = Abalone::initialBalls();

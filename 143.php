@@ -14,7 +14,7 @@ $login = $_GET['login'] ?? null;
 if ( !$login ) {
 
 	// New game
-	if ( isset($_GET['newgame']) ) {
+	if ( isset($_POST['newgame']) ) {
 		$login = Game::newGame();
 
 		header("Location: 143.php?login=$login");
@@ -33,7 +33,8 @@ if ( !$login ) {
 		<p><button>Log in</button></p>
 	</form>
 
-	<p><a href="?newgame=1">Start a new game for 2</a></p>
+	<hr />
+	<form method="post" action><p><button name="newgame" value="1">Start a new game for 2</button></p></form>
 
 	<? if ($debug):
 		$games = Game::all('1=1 order by id desc limit 10');
@@ -42,7 +43,11 @@ if ( !$login ) {
 		<ul>
 			<? foreach ($games as $gm): ?>
 				<li>
-					# <?= $gm->id ?>
+					<? if ($gm->created_on): ?>
+						<?= date('Y-m-d H:i', $gm->created_on) ?>
+					<? else: ?>
+						# <?= $gm->id ?>
+					<? endif ?>
 					<? foreach ($gm->players as $plr): ?>
 						- <a href="?login=<?= $plr->password ?>"><?= $plr->color ?></a>
 						(<?= get_time_ago($plr->online_ago) ?? '?' ?> ago)
