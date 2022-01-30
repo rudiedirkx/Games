@@ -21,6 +21,8 @@ trait HasPassword {
 class Table extends Model {
 	use HasPassword, HasCards;
 
+	const MAX_RAISE = 5;
+
 	const STATE_IDLE = 0;
 	const STATE_SB = 1;
 	const STATE_BB = 2;
@@ -423,17 +425,24 @@ class Player extends Model {
 			case Table::STATE_TURN:
 			case Table::STATE_RIVER:
 				if ($this->is_turn) {
+					$actions = [];
 					if ($this->bet < ($max = $this->table->getMaxBet())) {
-						$actions = ['call' => "Call $ $max"];
+						$actions[] = new PokerStatusAction($this->table, 'call', "Call $ $max");
 					}
 					else {
-						$actions = ['check' => "Check"];
+						$actions[] = new PokerStatusAction($this->table, 'check', "Check");
 					}
 					$raise = $max + $this->table->raise;
-					return new PokerStatusActions($this->table, $actions + [
-						'raise' => "Raise to $ $raise",
-						'fold' => "Fold",
+					$actions[] = new PokerStatusActionInput($this->table, 'raise', "Raise to:", [
+						'type' => 'number',
+						'name' => 'raise',
+						'value' => $raise,
+						'min' => $raise,
+						'step' => $this->table->raise,
+						'max' => $max + Table::MAX_RAISE * $this->table->raise,
 					]);
+					$actions[] = new PokerStatusAction($this->table, 'fold', "Fold");
+					return new PokerStatusActions($this->table, $actions);
 				}
 				elseif ($this->state == self::STATE_FOLDED) {
 					return new PokerStatus($this->table, "Waiting for this round to end...");
@@ -538,11 +547,42 @@ class PokerStatus {
 	}
 }
 
+class PokerStatusAction extends PokerStatus {
+	protected $action;
+
+	public function __construct(Table $table, string $action, string $label) {
+		parent::__construct($table, $label);
+		$this->action = $action;
+	}
+
+	public function shouldReload() : bool {
+		return true;
+	}
+
+	public function __toString() {
+		return '<button name="action" value="' . $this->action . '">' . do_html($this->text) . '</button>';
+	}
+}
+
+class PokerStatusActionInput extends PokerStatusAction {
+	protected $attrs = [];
+	public function __construct(Table $table, string $action, string $label, array $attrs) {
+		parent::__construct($table, $action, $label);
+		$this->attrs = $attrs;
+	}
+
+	public function __toString() {
+		$input = ' <input' . html_attributes($this->attrs) . ' />';
+		return parent::__toString() . $input;
+	}
+}
+
 class PokerStatusActions extends PokerStatus {
 	protected $actions;
 
 	public function __construct(Table $table, array $actions) {
-		parent::__construct($table, implode(' / ', $actions));
+		$labels = array_column($actions, 'text');
+		parent::__construct($table, implode(' / ', $labels));
 		$this->actions = $actions;
 	}
 
@@ -551,16 +591,6 @@ class PokerStatusActions extends PokerStatus {
 	}
 
 	public function __toString() {
-		$html = [];
-		foreach ($this->actions as $action => $text) {
-			$html[] = '<button name="action" value="' . $action . '">' . do_html($text) . '</button>';
-		}
-		return implode(' ', $html);
-	}
-}
-
-class PokerStatusAction extends PokerStatusActions {
-	public function __construct(Table $table, string $action, string $label) {
-		parent::__construct($table, [$action => $label]);
+		return implode(' ', $this->actions);
 	}
 }

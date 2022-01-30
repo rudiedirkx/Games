@@ -225,10 +225,10 @@ elseif ($action == 'call') {
 	return do_redirect(BASE);
 }
 
-elseif ($action == 'raise') {
+elseif ($action == 'raise' && isset($_POST['raise'])) {
 	if ($player->table->isBettingState() && $player->is_turn) {
 		$db->transaction(function($db) use ($player) {
-			$bet = $player->table->getMaxBet() + $player->table->raise;
+			$bet = max($_POST['raise'], $player->table->getMaxBet() + $player->table->raise);
 			$player->betTo($bet, "Raised to [money:$bet]");
 			$player->table->maybeEndBetting();
 			$player->touch();
@@ -273,8 +273,11 @@ body {
 a {
 	color: lightblue;
 }
-button {
+button, input[type="number"] {
 	padding: 6px 9px;
+}
+input[type="number"] {
+	width: 4em;
 }
 .table-wrapper {
 	overflow-x: auto;
