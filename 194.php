@@ -122,15 +122,15 @@ if (!$player) {
 		<p><button name="start" value="1">START GAME</button></p>
 	</form>
 	<? if ($debug):
-		$games = Game::all('1=1 order by id desc');
-		Game::eager('num_players', $games);
+		$games = Game::all('1=1 order by id desc limit 20');
+		Game::eager('players', $games);
 		?>
 		<ul>
 			<? foreach ($games as $gm): ?>
 				<li>
 					<a href="?game=<?= $gm->password ?>"><?= date('j M H:i', $gm->created_on) ?></a> -
 					<?= $gm->board ?> -
-					<?= $gm->num_players ?> players -
+					<?= count($gm->players) ?> players -
 					<? if ($gm->isPlayerComplete()): ?>
 						<b>COMPLETE!</b>
 					<? else: ?>
