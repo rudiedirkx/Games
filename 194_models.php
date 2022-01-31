@@ -229,8 +229,8 @@ class Player extends Model {
 		elseif ($this->can_end_turn) {
 			if ($this->game->dice) {
 				if ($this->can_choose) {
-					$label = $this->game->isColorComplete() ? "End LAST turn" : "End turn";
-					return new KeerStatusButton($this->game, "next-turn", "$label <span class='not-choosing'>WITHOUT SELECTION</span>");
+					$label = $this->game->isColorComplete() ? "LAST turn" : "turn";
+					return new KeerStatusButton($this->game, "next-turn", "<span class='choosing'>End $label</span><span class='not-choosing'>SKIP $label</span>");
 				}
 				else {
 					return new KeerStatus($this->game, "Waiting for '{$this->game->turn_player}' to choose...");

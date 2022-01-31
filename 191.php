@@ -25,7 +25,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 </head>
 
-<body>
+<body class="solo">
 
 <table class="board game">
 	<thead>
@@ -51,7 +51,10 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 	<p class="dice-cont">
 		<button id="next-turn">
 			<span class="state start">Start game</span>
-			<span class="state turn">End turn <span class="not-choosing">WITHOUT SELECTION</span></span>
+			<span class="state turn">
+				<span class="choosing">End turn</span>
+				<span class="not-choosing">SKIP turn</span>
+			</span>
 			<span class="state end">End game</span>
 			<span class="state restart">New game</span>
 		</button>

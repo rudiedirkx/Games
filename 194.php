@@ -231,7 +231,7 @@ $status = $player->getStatus();
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 </head>
 
-<body style="--color: <?= $boards[$player->game->board]['color'] ?>">
+<body class="multi" style="--color: <?= $boards[$player->game->board]['color'] ?>">
 
 <table class="board game">
 	<thead>

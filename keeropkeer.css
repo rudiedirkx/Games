@@ -42,22 +42,22 @@ table.game {
 	border-bottom: var(--center-border);
 }
 
-.star,
-.choosing,
-.chosen,
-.other,
-.self {
+.game .star,
+.game .choosing,
+.game .chosen,
+.game .other,
+.game .self {
 	position: relative;
 }
-.star:before,
-.choosing:after,
-.chosen:after {
+.game .star:before,
+.game .choosing:after,
+.game .chosen:after {
 	display: block;
 	position: absolute;
 	line-height: 1;
 	text-align: center;
 }
-.star:before {
+.game .star:before {
 	content: "\2606";
 	top: 1px;
 	left: 1px;
@@ -65,8 +65,8 @@ table.game {
 	height: calc(var(--size) - 2px);
 	font-size: calc(var(--size) - 2px);
 }
-.choosing:after,
-.chosen:after {
+.game .choosing:after,
+.game .chosen:after {
 	content: "\274C";
 	top: 7px;
 	left: 7px;
@@ -74,7 +74,7 @@ table.game {
 	height: calc(var(--size) - 14px);
 	font-size: calc(var(--size) - 14px);
 }
-.chosen:after {
+.game .chosen:after {
 	font-weight: bold;
 }
 .other:after {
@@ -126,7 +126,7 @@ table.game {
 .dice-cont button {
 	height: 36px;
 	line-height: 36px;
-	padding: 0 6px;
+	padding: 0 16px;
 }
 #dice {
 	user-select: none;
@@ -173,17 +173,23 @@ table.game {
 	margin-right: 20px;
 }
 
-#next-turn > .state {
+body.solo #next-turn > .state {
 	display: none;
 }
-body:not([data-state]) #next-turn > .state.start,
-body[data-state="turn"] #next-turn > .state.turn,
-body[data-state="last"] #next-turn > .state.end,
-body[data-state="done"] #next-turn > .state.restart {
-	display: inline;
+body.solo:not([data-state]) #next-turn > .state.start,
+body.solo[data-state="turn"] #next-turn > .state.turn,
+body.solo[data-state="last"] #next-turn > .state.end,
+body.solo[data-state="done"] #next-turn > .state.restart,
+body.multi #next-turn {
+	display: grid;
 }
-body.with-choosing #next-turn .not-choosing {
-	display: none;
+body.solo #next-turn > .state.turn > *,
+body.multi #next-turn > * {
+	grid-area: 1 / 1;
+}
+body.with-choosing #next-turn .not-choosing,
+body:not(.with-choosing) #next-turn .choosing {
+	visibility: hidden;
 }
 
 [data-color="?"],
