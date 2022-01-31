@@ -316,7 +316,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 						return;
 					}
 
-					r.each(rsp.onlines, (sec, id) => {
+					if (rsp.onlines) r.each(rsp.onlines, (sec, id) => {
 						const el = $(`#online-${id}`);
 						if (el) el.setText(sec);
 					});
@@ -361,6 +361,8 @@ class MultiKeerOpKeer extends KeerOpKeer {
 
 	handleEndTurn() {
 		if (!this.maybeConfirmWithoutSelection()) return;
+
+		$('#next-turn').disabled = true;
 
 		const choosing = this.lockInChoosing().length;
 		const fulls = this.evalFulls();
