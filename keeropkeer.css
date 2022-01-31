@@ -157,7 +157,7 @@ table.game {
 }
 #dice > .disabled {
 	transform: scale(0.8) translate(0, -10px);
-	opacity: 0.75;
+	opacity: 0.9;
 	border-color: transparent;
 	color: #999;
 }
