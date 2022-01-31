@@ -311,7 +311,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 					setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
 					lastPoll = Date.now();
 
-					if (!rsp.status) {
+					if (!rsp || !rsp.status) {
 						console.warn(rsp);
 						return;
 					}
