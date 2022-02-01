@@ -140,7 +140,7 @@ table.game {
 	text-align: center;
 	font-size: 24px;
 	line-height: 30px;
-	margin-right: 8px;
+	margin-right: 5px;
 	cursor: pointer;
 	box-sizing: border-box;
 }
@@ -150,7 +150,7 @@ table.game {
 }
 #dice > .color + .number:not(.disabled),
 #dice > .color + .number.disabled + .number {
-	margin-left: 16px;
+	margin-left: 10px;
 }
 #dice > .selected {
 	border-color: white;
@@ -233,14 +233,53 @@ table.players {
 	font-weight: bold;
 }
 
+@media (max-width: 495px) {
+	:root {
+		--size: 29px;
+	}
+}
 @media (max-width: 480px) {
+	:root {
+		--size: 28px;
+	}
+}
+@media (max-width: 465px) {
+	:root {
+		--size: 27px;
+	}
+}
+@media (max-width: 450px) {
 	:root {
 		--size: 26px;
 	}
 }
-
-@media (max-width: 430px) {
+@media (max-width: 435px) {
+	:root {
+		--size: 25px;
+	}
+}
+@media (max-width: 420px) {
+	:root {
+		--size: 24px;
+	}
+}
+@media (max-width: 405px) {
+	:root {
+		--size: 23px;
+	}
+}
+@media (max-width: 390px) {
 	:root {
 		--size: 22px;
+	}
+}
+@media (max-width: 375px) {
+	:root {
+		--size: 21px;
+	}
+}
+@media (max-width: 360px) {
+	:root {
+		--size: 20px;
 	}
 }
