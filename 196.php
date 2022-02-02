@@ -17,11 +17,19 @@ html, body {
 	margin: 0;
 	padding: 8;
 }
+body {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+}
 canvas {
 	display: block;
 	background-color: #eee;
 	max-width: 100vw;
 	max-height: 100vh;
+}
+canvas#key {
+	background-color: #eee;
 }
 </style>
 <? include 'tpl.onerror.php' ?>
@@ -34,8 +42,13 @@ canvas {
 
 <canvas></canvas>
 
+<div class="meta">
+	<div><canvas id="key"></canvas></div>
+	<p><button id="create">Create random</button></p>
+</div>
+
 <script>
-objGame = new Labyrinth($('canvas'));
+objGame = new Labyrinth($('canvas'), $('#key'));
 objGame.startGame();
 objGame.listenControls();
 objGame.startPainting();

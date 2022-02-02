@@ -85,14 +85,21 @@ class Labyrinth extends CanvasGame {
 	static FIX_WALL_COLOR = '#bbb';
 	static DYN_WALL_COLOR = '#ddd';
 
+	constructor(canvas, keyCanvas) {
+		super(canvas);
+
+		this.keyGame = keyCanvas ? new Labyrinth(keyCanvas) : null;
+
+		this.shapeStraight = new LabyrinthTileShapeStraight();
+		this.shapeCorner = new LabyrinthTileShapeCorner();
+		this.shapeIntersect = new LabyrinthTileShapeIntersect();
+
+		this.fixedTiles = this.makeFixedTiles();
+	}
+
 	reset() {
 		super.reset();
 
-		this.shapeStraight = null;
-		this.shapeCorner = null;
-		this.shapeIntersect = null;
-
-		this.fixedTiles = {};
 		this.dynamicTiles = [];
 		this.tiles = [];
 		this.keyTile = null;
@@ -102,20 +109,27 @@ class Labyrinth extends CanvasGame {
 
 	drawContent() {
 		this.drawTiles();
+		this.drawKeyTile();
 	}
 
 	drawTiles() {
 		for ( let y = 0; y < Labyrinth.SIZE; y++ ) {
 			for ( let x = 0; x < Labyrinth.SIZE; x++ ) {
-				this.drawTile(new Coords2D(x, y));
+				const C = new Coords2D(x, y);
+				const tile = this.tiles[C.y][C.x];
+				const topleft = this.scale(C).add(this.makeTileWobble());
+				this.drawTile(topleft, tile);
 			}
 		}
 	}
 
-	drawTile(C) {
-		const tile = this.tiles[C.y][C.x];
+	drawKeyTile() {
+		const MARGIN = 2;
+		this.keyGame.canvas.width = this.keyGame.canvas.height = MARGIN + Labyrinth.SQUARE + MARGIN;
+		this.keyGame.drawTile(new Coords2D(MARGIN, MARGIN), this.keyTile);
+	}
 
-		const topleft = this.scale(C).add(this.makeTileWobble());
+	drawTile(topleft, tile) {
 		const rect = this.prepareRoundedRectangle(
 			topleft,
 			topleft.add(new Coords2D(Labyrinth.SQUARE, Labyrinth.SQUARE)),
@@ -173,11 +187,6 @@ class Labyrinth extends CanvasGame {
 	startGame() {
 		this.reset();
 
-		this.shapeStraight = new LabyrinthTileShapeStraight();
-		this.shapeCorner = new LabyrinthTileShapeCorner();
-		this.shapeIntersect = new LabyrinthTileShapeIntersect();
-
-		this.fixedTiles = this.makeFixedTiles();
 		this.dynamicTiles = this.randomizeTiles(this.makeDyanmicTiles());
 		this.tiles = this.gridTiles();
 		this.keyTile = this.dynamicTiles.pop();
@@ -231,8 +240,6 @@ class Labyrinth extends CanvasGame {
 	makeDyanmicTiles() {
 		const tiles = [];
 
-		// @todo Correct treasures
-
 		for ( let i = 0; i < 12; i++ ) {
 			tiles.push(new LabyrinthTile(this.shapeStraight, 0));
 		}
@@ -257,6 +264,12 @@ class Labyrinth extends CanvasGame {
 		// Fixed:
 		// 4x corner
 		// 12x intersect
+	}
+
+	listenControls() {
+		$('#create').on('click', e => {
+			this.startGame();
+		});
 	}
 
 }
