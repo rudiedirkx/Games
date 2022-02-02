@@ -1,3 +1,5 @@
+"use strict";
+
 class KeerOpKeer extends GridGame {
 
 	static BOARDS = [];
