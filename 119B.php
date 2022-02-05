@@ -10,7 +10,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>PICROSS BUILDER</title>
-	<link rel="stylesheet" href="119.css" />
+	<link rel="stylesheet" href="<?= html_asset('119.css') ?>" />
 </head>
 
 <body>
@@ -40,7 +40,9 @@ require __DIR__ . '/inc.bootstrap.php';
 		</tbody>
 	</table>
 
-	<script src="119.js"></script>
+	<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+	<script src="<?= html_asset('gridgame.js') ?>"></script>
+	<script src="<?= html_asset('119.js') ?>"></script>
 	<script>
 	var ACTIVES = 0.55;
 
@@ -58,10 +60,10 @@ require __DIR__ . '/inc.bootstrap.php';
 
 	document.querySelector('#play').addEventListener('click', function(e) {
 		var map = g119.map(tbody);
-		location = '119.php?play=' + encodeURIComponent(map);
+		location = '119.php#' + encodeURIComponent(map);
 	});
 
-	localStorage.picrossDifficulty && localStorage.picrossDifficulty.match(/^\d+\-\d+$/) || (localStorage.picrossDifficulty = '10-15');
+	localStorage.picrossDifficulty && localStorage.picrossDifficulty.match(/^\d+\-\d+$/) || (localStorage.picrossDifficulty = '13-18');
 	var randomAttempt;
 	function tryRandom() {
 		[].forEach.call(tbody.querySelectorAll('td'), function(cell) {

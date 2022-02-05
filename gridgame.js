@@ -117,7 +117,7 @@ class RgbColor {
 
 class GameGrid {
 	constructor(width, height) {
-		this.width = width;
+		this.width = parseInt(width);
 		this.content = height instanceof Uint8Array ? height : new Uint8Array(width * height);
 		this.length = this.content.length;
 		this.height = this.length / this.width;
@@ -141,6 +141,22 @@ class GameGrid {
 
 	getIndex(i) {
 		return this.content[i];
+	}
+
+	getRow(y) {
+		const content = new Uint8Array(this.width);
+		for ( let i = 0; i < this.width; i++ ) {
+			content[i] = this.get(i, y);
+		}
+		return content;
+	}
+
+	getCol(x) {
+		const content = new Uint8Array(this.height);
+		for ( let i = 0; i < this.height; i++ ) {
+			content[i] = this.get(x, i);
+		}
+		return content;
 	}
 
 	set(x, y, value) {

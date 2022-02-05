@@ -4,12 +4,9 @@
 require __DIR__ . '/inc.bootstrap.php';
 
 $g_arrMaps = getMaps();
-if (!($level = getLevelFromInput($map))) {
-	$level = getLevel();
-	$map = prepareMap($g_arrMaps[$level]);
-}
-
-$levelName = $level == 999 ? hashMap($map) : $level;
+$level = isset($_GET['level'], $g_arrMaps[$_GET['level']]) ? $_GET['level'] : 1;
+$map = $g_arrMaps[$level];
+$serialized = strlen($map[0]) . '.' . strtr(implode('', $map), ['x' => 1, '_' => 0]);
 
 if (isset($_POST['cheat'])) {
 	header('Content-type: text/json');
@@ -22,48 +19,24 @@ if (isset($_POST['cheat'])) {
 
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>PICROSS <?= $levelName ?></title>
+	<title>PICROSS</title>
 	<link rel="stylesheet" href="<?= html_asset('119.css') ?>" />
 	<? include 'tpl.onerror.php' ?>
 </head>
 
 <body>
-	<table id="picross">
-		<thead>
-			<tr>
-				<th colspan="40">
-					<button id="reset">reset</button>
-					<!-- <button id="cheat1">cheat 1<span class="loading"> ...</span></button> -->
-					<button id="cheat2">cheat 2</button>
-					<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a>
-					Level <?= $levelName ?> (<span id="difficulty">?</span>)
-					<a class="<?= !isset($g_arrMaps[$level+1]) ? 'disabled' : '' ?>" href="?level=<?= $level+1 ?>">&gt;&gt;</a>
-				</th>
-			</tr>
-		</thead>
-		<tbody>
-			<? for ($y = 0; $y < count($map['hor']); $y++): ?>
-				<tr>
-					<? for ($x = 0; $x < count($map['ver']); $x++): ?>
-						<td><a></a></td>
-					<? endfor ?>
-					<th class="meta hor" data-hints="<?= implode(',', $map['hor'][$y]) ?>">
-						<span><?= implode('</span> <span>', $map['hor'][$y]) ?></span>
-					</th>
-				</tr>
-			<? endfor ?>
-			<tr class="meta">
-				<? for ($x = 0; $x < count($map['ver']); $x++): ?>
-					<th class="meta ver" data-hints="<?= implode(',', $map['ver'][$x]) ?>">
-						<span><?= implode('</span> <span>', $map['ver'][$x]) ?></span>
-					</th>
-				<? endfor ?>
-				<th>
-					<button id="undo">undo (<span id="undo-steps">0</span>)</button>
-				</th>
-			</tr>
-		</tbody>
-	</table>
+	<p>
+		<a class="<?= !isset($g_arrMaps[$level-1]) ? 'disabled' : '' ?>" href="?level=<?= $level-1 ?>">&lt;&lt;</a>
+		Level <span id="levelname"></span> (<span id="difficulty">?</span>&starf;)
+		<a class="<?= !isset($g_arrMaps[$level+1]) ? 'disabled' : '' ?>" href="?level=<?= $level+1 ?>">&gt;&gt;</a>
+		&nbsp;
+		<button id="undo">undo (<span id="undo-steps">0</span>)</button>
+		&nbsp;
+		<!-- <button id="cheat1">cheat 1<span class="loading"> ...</span></button> -->
+		<button id="cheat2">cheat 2</button>
+		<button id="reset">reset</button>
+	</p>
+	<table id="picross"></table>
 
 	<p><a href="119B.php">Build your own</a></p>
 
@@ -75,14 +48,25 @@ if (isset($_POST['cheat'])) {
 		| <a id="load" href="#" title="Load from the public cloud">load</a>
 	</p>
 
-	<script src="119.js"></script>
+	<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+	<script src="<?= html_asset('gridgame.js') ?>"></script>
+	<script src="<?= html_asset('119.js') ?>"></script>
 	<script>
-	g119.solution = '<?= hashMap($map) ?>';
+	const tbody = document.querySelector('table');
+	g119.serialized = location.hash.substr(1) || <?= json_encode($serialized) ?>;
+
+	const grid = g119.serToGrid(g119.serialized);
+	g119.buildEmptyTable(tbody, grid);
+	// g119.gridToTable(tbody, grid);
+	const groups = g119.gridToGroups(grid);
+	g119.groupsToTable(tbody, groups);
+
+	g119.solution = g119.shash(g119.serialized);
+	document.title += ' ' + g119.solution;
 
 	var $undoSteps = document.querySelector('#undo-steps');
 
 	var states = ['', 'active', 'inactive'];
-	var tbody = document.querySelector('tbody');
 	var winner;
 	var handle = function(e) {
 		if (e.target.nodeName == 'A') {
@@ -176,7 +160,7 @@ if (isset($_POST['cheat'])) {
 		document.activeElement.blur();
 	});
 
-	var difficulty = <? if (isset($map['map'])): ?>g119.difficulty(tbody)<? else: ?>'?'<? endif ?>;
+	var difficulty = g119.difficulty(tbody);
 	document.querySelector('#difficulty').textContent = difficulty;
 	document.title += ' (' + difficulty + ')';
 
@@ -324,8 +308,11 @@ if (isset($_POST['cheat'])) {
 	}
 
 	setTimeout(function() {
+		console.time('validateTable');
 		g119.validateTable(tbody);
+		console.timeEnd('validateTable');
 
+		console.time('hints');
 		var w = tbody.rows[0].querySelectorAll('td').length;
 		var h = tbody.rows.length - 1;
 		[].forEach.call(tbody.querySelectorAll('th[data-hints]'), function(cell) {
@@ -333,6 +320,7 @@ if (isset($_POST['cheat'])) {
 			var options = g119.options(length, g119.getHintsForCell(cell)).length;
 			cell.title = options + ' possible lines';
 		});
+		console.timeEnd('hints');
 	});
 	</script>
 

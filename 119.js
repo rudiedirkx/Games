@@ -451,3 +451,63 @@ g119.shash = function(str) {
 	}
 	return String(hash>>>0);
 };
+
+g119.serToGrid = function(str) {
+	const [width, map] = str.split('.');
+	const height = Math.ceil(map.length / width);
+// console.log(width, height, map);
+	const grid = new GameGrid(parseInt(width), height);
+	for ( let i = 0; i < map.length; i++ ) {
+		grid.setIndex(i, parseInt(map[i]));
+	}
+	return grid;
+};
+
+g119.buildEmptyTable = function(tbody, grid) {
+	const html = [];
+	for ( let y = 0; y < grid.height; y++ ) {
+		html.push('<tr>');
+		for ( let x = 0; x < grid.width; x++ ) {
+			html.push(`<td><a href="#"></a></td>`);
+		}
+		html.push(`<th class="meta hor"></th>`);
+		html.push('</tr>');
+	}
+	for ( let x = 0; x < grid.width; x++ ) {
+		html.push(`<th class="meta ver"></th>`);
+	}
+	tbody.innerHTML = html.join('');
+};
+
+g119.gridToTable = function(tbody, grid) {
+	const cells = tbody.querySelectorAll('td');
+	cells.forEach((td, i) => td.dataset.state = grid.getIndex(i) ? 'active' : 'inactive');
+};
+
+g119.gridToGroups = function(grid) {
+	const groups = {hor: [], ver: []};
+	for ( let y = 0; y < grid.height; y++ ) {
+		const line = grid.getRow(y).join('');
+		const grps = line.replace(/0+/g, ' ').trim().split(' ');
+		groups.hor[y] = grps.map(grp => grp.length);
+	}
+	for ( let x = 0; x < grid.width; x++ ) {
+		const line = grid.getCol(x).join('');
+		const grps = line.replace(/0+/g, ' ').trim().split(' ');
+		groups.ver[x] = grps.map(grp => grp.length);
+	}
+	return groups;
+};
+
+g119.groupsToTable = function(tbody, groups) {
+	const hors = tbody.querySelectorAll('.meta.hor');
+	const vers = tbody.querySelectorAll('.meta.ver');
+	hors.forEach((th, y) => {
+		th.innerHTML = groups.hor[y].map(n => `<span>${n}</span> `).join(' ');
+		th.dataset.hints = groups.hor[y].join(',');
+	});
+	vers.forEach((th, y) => {
+		th.innerHTML = groups.ver[y].map(n => `<span>${n}</span> `).join(' ');
+		th.dataset.hints = groups.ver[y].join(',');
+	});
+};
