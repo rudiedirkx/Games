@@ -13,9 +13,12 @@ require __DIR__ . '/inc.bootstrap.php';
 <title>Labyrinth</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
+* {
+	user-select: none;
+}
 html, body {
 	margin: 0;
-	padding: 8;
+	padding: 0;
 }
 body {
 	display: flex;
@@ -24,12 +27,8 @@ body {
 }
 canvas {
 	display: block;
-	background-color: #eee;
 	max-width: 100vw;
 	max-height: 100vh;
-}
-canvas#key {
-	background-color: #eee;
 }
 </style>
 <? include 'tpl.onerror.php' ?>

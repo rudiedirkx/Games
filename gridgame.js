@@ -162,6 +162,42 @@ class GameGrid {
 
 class Game {
 
+	static b64(int) {
+		if (int < 0 || int >= 64) {
+			throw new Error('Invalid b64 range');
+		}
+		const chars = this._b64();
+		return chars[int];
+	}
+
+	static unb64(char) {
+		const chars = this._b64();
+		const int = chars.indexOf(char);
+		if (int == -1) {
+			throw new Error('Invalid b64 range');
+		}
+		return int;
+	}
+
+	static _b64() {
+		if (!Game._b64chars) {
+			const chars = [];
+			for ( let i = 0; i < 26; i++ ) {
+				chars.push(String.fromCharCode(65 + i));
+			}
+			for ( let i = 0; i < 10; i++ ) {
+				chars.push(String(i));
+			}
+			for ( let i = 0; i < 26; i++ ) {
+				chars.push(String.fromCharCode(97 + i));
+			}
+			chars.push('-');
+			chars.push('_');
+			Game._b64chars = chars.join('');
+		}
+		return Game._b64chars;
+	}
+
 	constructor() {
 		this.ALERT_DELAY = 50;
 
