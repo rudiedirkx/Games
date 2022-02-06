@@ -22,20 +22,29 @@ html {
 table {
 	border-collapse: collapse;
 }
+th, td {
+	border: solid 1px #999;
+}
 td {
-	width: var(--cell-size);
-	height: var(--cell-size);
 	background-color: #bbb;
 	padding: 0;
 }
-th, td {
-	border: solid 1px #999;
+td > span {
+	display: block;
+	width: var(--cell-size);
+	height: var(--cell-size);
+}
+td.hilite {
+	background-color: #aaa;
 }
 td[data-state="1"] {
 	background-color: #000;
 }
 td[data-state="2"] {
 	background-color: #fff;
+}
+th.hilite {
+	background-color: rgba(0, 0, 0, 0.15);
 }
 th.meta.hor {
 	padding: 0 4px;
@@ -69,6 +78,7 @@ th.meta.ver span {
 	<button id="create">Create</button>
 	<button id="cheat">Cheat</button>
 	<button id="reset">Reset</button>
+	<span id="stats-time"></span>
 </p>
 
 <table></table>
@@ -76,7 +86,7 @@ th.meta.ver span {
 <script>
 objGame = new Picross($('table'));
 objGame.listenControls();
-objGame.startRandomGame(parseInt(localStorage.picrossLastSize || 12));
+objGame.loadSavedGame() || objGame.startRandomGame();
 </script>
 </body>
 

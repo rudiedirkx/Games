@@ -189,8 +189,17 @@ class GameGrid {
 		return this.content.includes(value);
 	}
 
+	serialize64() {
+		return [...this.content].map(n => Game.b64(n)).join('');
+	}
+
 	copy() {
 		return new this.constructor(this.width, this.content.slice(0));
+	}
+
+	static unserialize64(width, str) {
+		const arr = [...str].map(n => Game.unb64(n));
+		return new this(width, new Uint8Array(arr));
 	}
 }
 

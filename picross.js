@@ -45,6 +45,15 @@ class PicrossGroups {
 
 		return groups;
 	}
+
+	static unserialize(str) {
+		const unser = line => line.split('.').map(ns => [...ns].map(n => Game.unb64(n)));
+		const [hor, ver] = str.split('-');
+		const groups = new PicrossGroups();
+		groups.hor = unser(hor);
+		groups.ver = unser(ver);
+		return groups;
+	}
 }
 
 class Picross extends GridGame {
@@ -52,8 +61,7 @@ class Picross extends GridGame {
 	static ON = 1;
 	static OFF = 2;
 	static ON_CHANCE = 0.5;
-	static MIN_DIFFICULTY = 10;
-	static MAX_DIFFICULTY = 18;
+	static DEFAULT_SIZE = 12;
 
 	reset() {
 		super.reset();
@@ -70,7 +78,7 @@ class Picross extends GridGame {
 		for ( let y = 0; y < height; y++ ) {
 			html.push('<tr>');
 			for ( let x = 0; x < width; x++ ) {
-				html.push(`<td></td>`);
+				html.push(`<td><span></span></td>`);
 			}
 			html.push(`<th class="meta hor"></th>`);
 			html.push('</tr>');
@@ -107,22 +115,50 @@ class Picross extends GridGame {
 		return cell.getElements('span').map(el => parseInt(el.textContent));
 	}
 
-	startRandomGame(size) {
+	startGame(groups) {
 		this.reset();
 
-		$('#create').disabled = true;
+		$('#size').value = groups.width;
+
+		this.buildEmptyGrid(groups.width, groups.height);
+
+		this.groups = groups;
+		this.resetGrid();
+		this.printGroups(groups);
+	}
+
+	loadSavedGame(size) {
+		if (localStorage.picrossGroups) {
+			try {
+				const groups = PicrossGroups.unserialize(localStorage.picrossGroups);
+				this.startGame(groups);
+				if (localStorage.picrossGrid) {
+					const grid = GameGrid.unserialize64(groups.width, localStorage.picrossGrid);
+					this.printGrid(grid);
+				}
+				return true;
+			}
+			catch (ex) {}
+		}
+
+		return false;
+	}
+
+	startRandomGame(size = null) {
+		if (size == null) {
+			size = parseInt(localStorage.picrossLastSize || Picross.DEFAULT_SIZE);
+		}
+		localStorage.picrossLastSize = size;
+
 		this.buildEmptyGrid(size, size);
 
-		// this.width = size;
-		// this.height = size;
-		localStorage.picrossLastSize = size;
-		$('#size').value = size;
-
+		$('#create').disabled = true;
 		this.createRandomGame(size).then(groups => {
 			$('#create').disabled = false;
-			this.groups = groups;
-			this.resetGrid();
-			this.printGroups(groups);
+			localStorage.picrossGroups = groups.serialize();
+			localStorage.removeItem('picrossGrid');
+
+			this.startGame(groups);
 		});
 	}
 
@@ -136,7 +172,7 @@ class Picross extends GridGame {
 				const groups = PicrossGroups.fromGrid(grid);
 				const diff = this.getDifficulty(groups);
 				if (diff >= size - 3 && diff <= size + 3) {
-					// console.log('attempts', attempts);
+console.log('attempts', attempts);
 					resolve(groups);
 				}
 				else {
@@ -149,10 +185,10 @@ class Picross extends GridGame {
 	}
 
 	getDifficulty(groups) {
-// console.time('getDifficulty');
+console.time('getDifficulty');
 		const solver = new PicrossSolver(groups);
 		const solved = solver.solve();
-// console.timeEnd('getDifficulty');
+console.timeEnd('getDifficulty');
 		const overs = solver.leftOvers();
 		return overs > 10 ? 0 : solver.passes + Math.max(0, overs - 6) / 2;
 	}
@@ -207,6 +243,10 @@ class Picross extends GridGame {
 
 	win() {
 		this.fillInEmpty();
+
+		localStorage.removeItem('picrossGroups');
+		localStorage.removeItem('picrossGrid');
+
 		super.win();
 	}
 
@@ -217,6 +257,11 @@ class Picross extends GridGame {
 		};
 	}
 
+	hiliteLinesFrom(C) {
+		this.m_objGrid.getElements('.hilite').removeClass('hilite');
+		this.m_objGrid.getElements(`tr:nth-child(${C.y+1}) > *, tr > :nth-child(${C.x+1})`).addClass('hilite');
+	}
+
 	handleCellClick(td) {
 		this.startTime();
 
@@ -224,11 +269,22 @@ class Picross extends GridGame {
 		const i = states.indexOf(td.dataset.state || '');
 		td.dataset.state = states[(i + 1) % 3];
 
-		this.startWinCheck();
+		localStorage.picrossGrid = this.exportGrid().serialize64();
+
+		if (this.m_bGameOver) {
+			this.startRandomGame(this.groups.width);
+		}
+		else {
+			this.startWinCheck();
+		}
 	}
 
 	listenControls() {
 		this.listenCellClick();
+
+		this.m_objGrid.on('mouseover', 'td', e => {
+			this.hiliteLinesFrom(this.getCoord(e.subject));
+		});
 
 		$('#cheat').on('click', e => {
 			this.cheatOne();
