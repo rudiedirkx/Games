@@ -21,8 +21,8 @@ return [
 	['115',				'MASTERMIND',									'Its old, but its stil good! Its a braincracker'],
 	['116',				'CIJFERS',										'Thats me playing. Try it out, might be fun'],
 	['117',				'QUIZ',											'For the brainiacs among us. A few questions you can bust your head on'],
-	['119',				'PICROSS',										'Tricky puzzle. You can make it as big as you want though'],
-	['119B',			'PICROSS - Editor',								'Level editor for PICROSS'],
+	// ['119',				'PICROSS',										'Tricky puzzle. You can make it as big as you want though'],
+	// ['119B',			'PICROSS - Editor',								'Level editor for PICROSS'],
 	['120',				'WORDMIX',										'Just a few mixed words and a sentence. Get it right and you wiiiiiin'],
 	['121',				'POKER',										'Play poker on your own'],
 	['123',				'Stepping stones',								'Eliminate all stones but one, to reach the ultimate score: 1'],
@@ -102,4 +102,5 @@ return [
 	['194',				'Keer Op Keer MULTI',							'Speel Play Keer Op Keer samen multiplayer'],
 	['195',				"TEXAS HOLD'EM v3",								"Multi-player Poker Texas Hold'em"],
 	['196',				'Labyrinth / Betoverde Doolhof',				"Speel De Betoverde Doolhof. Play Labyrinth"],
+	['197',				'Picross 2',									"Picross, but better"],
 ];

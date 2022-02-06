@@ -171,6 +171,24 @@ class GameGrid {
 		this.content[i] = value;
 	}
 
+	setRow(y, values) {
+		const L = Math.min(values.length, this.width);
+		for ( let i = 0; i < L; i++ ) {
+			this.content[y * this.width + i] = values[i];
+		}
+	}
+
+	setCol(x, values) {
+		const L = Math.min(values.length, this.height);
+		for ( let i = 0; i < L; i++ ) {
+			this.content[x + i * this.width] = values[i];
+		}
+	}
+
+	includes(value) {
+		return this.content.includes(value);
+	}
+
 	copy() {
 		return new this.constructor(this.width, this.content.slice(0));
 	}
