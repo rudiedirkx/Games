@@ -147,6 +147,7 @@ class Labyrinth extends CanvasGame {
 	static FIX_WALL_COLOR = 'saddlebrown';
 	static DYN_WALL_COLOR = 'peru';
 	static ARROW_COLOR = 'gold';
+	static PLAYER_COLORS = ['red', 'green', 'blue', 'yellow'];
 
 	constructor(canvas, keyCanvas) {
 		super(canvas);
@@ -311,8 +312,7 @@ class Labyrinth extends CanvasGame {
 		this.gridTiles(dynamicTiles);
 		this.tiles.push(this.keyTile = keyTile);
 
-		const pos = this.getRandomStartPosition();
-		this.player = new LabyrinthPlayer(this.getTile(pos), 'red', this.getRandomCornerOffset(-1));
+		this.player = this.getRandomPlayer();
 
 		this.canvas.width = this.canvas.height = Labyrinth.OFFSET + Labyrinth.SIZE * (Labyrinth.SQUARE + Labyrinth.MARGIN) - Labyrinth.MARGIN + Labyrinth.OFFSET;
 		this.changed = true;
@@ -336,17 +336,25 @@ class Labyrinth extends CanvasGame {
 		return tiles.sort(() => Math.random() > 0.5 ? -1 : 1);
 	}
 
-	getRandomCornerOffset(min = 0) {
+	getCornerOffsets(min = 0) {
 		return [
 			new Coords2D(1, min),
 			new Coords2D(1, 1),
 			new Coords2D(min, 1),
 			new Coords2D(min, min),
-		][this.randInt(4)];
+		];
 	}
 
-	getRandomStartPosition() {
-		return objGame.getRandomCornerOffset(0).multiply(Labyrinth.SIZE - 1);
+	getRandomPlayer() {
+		const i = this.randInt(4);
+		const starts = this.getCornerOffsets(0);
+		const offsets = this.getCornerOffsets(-1);
+		const pos = starts[i].multiply(Labyrinth.SIZE - 1);
+		return new LabyrinthPlayer(
+			this.getTile(pos),
+			Labyrinth.PLAYER_COLORS[i],
+			offsets[i]
+		);
 	}
 
 	makeFixedTiles() {
@@ -478,7 +486,6 @@ this.changed = true;
 		const oldKeyTile = this.keyTile;
 		oldKeyTile.loc = C;
 		this.keyTile = null;
-		this.changed = true;
 
 		const head = slide.head;
 		const newKeyTile = this.getTile(head);
@@ -486,20 +493,23 @@ this.changed = true;
 		const line = this.tiles.filter(tile => slide.inline(tile));
 		const PARTS = 20;
 		let iters = 0;
-		const timer = setInterval(() => {
-			line.forEach(tile => slide.move(tile, PARTS));
-			if (++iters >= PARTS) {
-				line.forEach(tile => tile.loc = tile.loc.round());
-				clearInterval(timer);
-				newKeyTile.loc = null;
-				this.keyTile = newKeyTile;
-				this.keyTile.wobble = this.makeTileWobble();
-				if (this.player.tile == newKeyTile) {
-					this.player.tile = oldKeyTile;
+		setTimeout(() => {
+			const timer = setInterval(() => {
+				line.forEach(tile => slide.move(tile, PARTS));
+				if (++iters >= PARTS) {
+					line.forEach(tile => tile.loc = tile.loc.round());
+					clearInterval(timer);
+					newKeyTile.loc = null;
+					this.keyTile = newKeyTile;
+					this.keyTile.wobble = this.makeTileWobble();
+					if (this.player.tile == newKeyTile) {
+						this.player.tile = oldKeyTile;
+					}
 				}
-			}
-			this.changed = true;
-		}, 20);
+				this.changed = true;
+			}, 20);
+		}, 200);
+		this.changed = true;
 	}
 
 	handleKeyTileClick() {
