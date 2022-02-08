@@ -256,7 +256,7 @@ class Game {
 		this.checker = 0;
 		this.stopTime();
 		this.m_iStartTime = 0;
-		this.m_iTimer = 0;
+		this.m_iTimer = null;
 		this.m_iMoves = 0;
 
 		this.setTime('0:00');
@@ -288,7 +288,7 @@ class Game {
 	}
 
 	startTime() {
-		if ( this.m_iStartTime != 0 ) return;
+		if ( this.m_iTimer !== null ) return;
 
 		this.stopTime();
 		this.m_iStartTime = Date.now();
@@ -301,6 +301,7 @@ class Game {
 
 	stopTime() {
 		clearInterval(this.m_iTimer);
+		this.m_iTimer = null;
 	}
 
 	setTime( time ) {

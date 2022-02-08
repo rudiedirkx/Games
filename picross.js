@@ -70,6 +70,7 @@ class Picross extends GridGame {
 		// this.width = 0;
 		// this.height = 0;
 
+		this.undo = [];
 		this.optionsCache = {};
 	}
 
@@ -90,8 +91,17 @@ class Picross extends GridGame {
 		this.m_objGrid.innerHTML = html.join('');
 	}
 
-	resetGrid() {
+	resetGrid(manual) {
 		this.printGrid(new GameGrid(this.groups.width, this.groups.height));
+
+		this.undo = [];
+		$('#undo-count').setText(this.undo.length);
+
+		if (manual) {
+			this.setLastToggle();
+			this.stopTime();
+			this.startTime();
+		}
 	}
 
 	printGrid(grid) {
@@ -262,21 +272,44 @@ console.timeEnd('getDifficulty');
 		this.m_objGrid.getElements(`tr:nth-child(${C.y+1}) > *, tr > :nth-child(${C.x+1})`).addClass('hilite');
 	}
 
-	handleCellClick(td) {
-		this.startTime();
+	setLastToggle(td) {
+		this.m_objGrid.getElements('.last-toggle').removeClass('last-toggle');
+		if (td) {
+			td.addClass('last-toggle');
+		}
+	}
 
+	toggleCell(td, offset) {
 		const states = ['', String(Picross.ON), String(Picross.OFF)];
 		const i = states.indexOf(td.dataset.state || '');
-		td.dataset.state = states[(i + 1) % 3];
+		td.dataset.state = states[(i + offset) % 3];
+
+		this.setLastToggle(td);
 
 		localStorage.picrossGrid = this.exportGrid().serialize64();
+	}
 
+	handleUndo() {
+		const td = this.undo.pop();
+		if (td) {
+			this.toggleCell(td, 2);
+			$('#undo-count').setText(this.undo.length);
+		}
+	}
+
+	handleCellClick(td) {
 		if (this.m_bGameOver) {
-			this.startRandomGame(this.groups.width);
+			return this.startRandomGame(this.groups.width);
 		}
-		else {
-			this.startWinCheck();
-		}
+
+		this.startTime();
+
+		this.toggleCell(td, 1);
+
+		this.undo.push(td);
+		$('#undo-count').setText(this.undo.length);
+
+		this.startWinCheck();
 	}
 
 	listenControls() {
@@ -290,8 +323,12 @@ console.timeEnd('getDifficulty');
 			this.cheatOne();
 		});
 
+		$('#undo').on('click', e => {
+			this.handleUndo();
+		});
+
 		$('#reset').on('click', e => {
-			this.resetGrid();
+			this.resetGrid(true);
 		});
 
 		$('#create').on('click', e => {
