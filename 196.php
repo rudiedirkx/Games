@@ -30,6 +30,15 @@ canvas {
 	max-width: 100vw;
 	max-height: 100vh;
 }
+.target {
+	display: inline-block;
+	border: solid 1px black;
+	padding: 1px 3px;
+	background-color: #fff;
+}
+.target.found {
+	background-color: #afa;
+}
 </style>
 <? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
@@ -43,6 +52,13 @@ canvas {
 
 <div class="meta">
 	<div><canvas id="key"></canvas></div>
+	<p>
+		Targets: <span id="targets"></span>
+	</p>
+	<p>
+		Time: <span id="stats-time"></span><br>
+		Moves: <span id="stats-moves"></span><br>
+	</p>
 	<p><button id="create">Create random</button></p>
 </div>
 

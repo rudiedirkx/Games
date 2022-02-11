@@ -137,6 +137,7 @@ class Labyrinth extends CanvasGame {
 	static FIX_TREAS_INTERSECT = 12;
 	static DYN_TREAS_CORNER = 6;
 	static DYN_TREAS_INTERSECT = 6;
+	static TARGET_TREAS = 8;
 
 	static OFFSET = 60;
 	static SQUARE = 80;
@@ -168,6 +169,8 @@ class Labyrinth extends CanvasGame {
 		this.tiles = [];
 		this.keyTile = null;
 		this.player = null;
+		this.targets = [];
+		this.targetsFound = [];
 
 		this.paintingTiming = true;
 	}
@@ -214,6 +217,7 @@ class Labyrinth extends CanvasGame {
 		const C = this.player.tile.loc.add(new Coords2D(0.5, 0.5));
 		const P = this.scale(C).add(this.player.offset.multiply(RADIUS));
 		this.drawDot(P, {radius: RADIUS, color: this.player.color});
+		this.drawCircle(P, RADIUS, {width: 1, color: '#000'});
 	}
 
 	drawKeyTile() {
@@ -263,6 +267,18 @@ class Labyrinth extends CanvasGame {
 		return new Coords2D(this.randInt(T) - lean, this.randInt(T) - lean);
 	}
 
+	printTargets() {
+		$('#targets').setHTML(this.makeTargetsHtml());
+	}
+
+	makeTargetsHtml() {
+		const html = this.targets.map((n, i) => {
+			const found = this.targetsFound.includes(i) ? 'found' : '';
+			return `<span class="target ${found}">${n}</span>`;
+		});
+		return html.join(' ');
+	}
+
 	scale( source ) {
 		if ( source instanceof Coords2D ) {
 			return new Coords2D(this.scale(source.x), this.scale(source.y));
@@ -290,7 +306,7 @@ class Labyrinth extends CanvasGame {
 	}
 
 	exportTiles() {
-		return this.serializeTiles([].concat(...this.createIndex()));
+		return this.serializeTiles([].concat(...this.index));
 	}
 
 	importTiles(chars) {
@@ -312,10 +328,21 @@ class Labyrinth extends CanvasGame {
 		this.gridTiles(dynamicTiles);
 		this.tiles.push(this.keyTile = keyTile);
 
-		this.player = this.getRandomPlayer();
+		this.player = this.makePlayer(this.randInt(4));
+		this.updateIndex();
+
+		this.targets = this.createRandomTargets();
+		this.printTargets();
 
 		this.canvas.width = this.canvas.height = Labyrinth.OFFSET + Labyrinth.SIZE * (Labyrinth.SQUARE + Labyrinth.MARGIN) - Labyrinth.MARGIN + Labyrinth.OFFSET;
 		this.changed = true;
+
+console.log(this.findPathsFrom(this.player.tile));
+	}
+
+	createRandomTargets() {
+		const all = (new Array(Labyrinth.FIX_TREAS_INTERSECT + Labyrinth.DYN_TREAS_CORNER + Labyrinth.DYN_TREAS_INTERSECT)).fill(0).map((x, i) => i + 1).sort((a, b) => Math.random() < 0.5 ? 1 : -1);
+		return all.slice(0, Labyrinth.TARGET_TREAS);
 	}
 
 	gridTiles(dynamicTiles) {
@@ -345,13 +372,13 @@ class Labyrinth extends CanvasGame {
 		];
 	}
 
-	getRandomPlayer() {
-		const i = this.randInt(4);
+	makePlayer(i) {
 		const starts = this.getCornerOffsets(0);
+		const loc = starts[i].multiply(Labyrinth.SIZE - 1);
 		const offsets = this.getCornerOffsets(-1);
-		const pos = starts[i].multiply(Labyrinth.SIZE - 1);
+		const offset = offsets[i];
 		return new LabyrinthPlayer(
-			this.getTile(pos),
+			this.getTile(loc),
 			Labyrinth.PLAYER_COLORS[i],
 			offsets[i]
 		);
@@ -427,15 +454,36 @@ class Labyrinth extends CanvasGame {
 		return tiles;
 	}
 
-	createIndex() {
-		const index = [];
+	findPathsFrom(tile) {
+		console.log(tile.getExits());
+		console.log(this.findPathOptions(tile));
+		const paths = [];
+	}
+
+	findPathOptions(tile) {
+		return tile.getExits().filter(dir => this.getNextTile(tile, dir));
+	}
+
+	getNextTile(from, dir) {
+		const O = Coords2D.dir4Coords[dir];
+		const nbC = from.loc.add(O);
+		const to = this.index[nbC.y] && this.index[nbC.y][nbC.x];
+		return to && to.getExits().includes((dir + 2) % 4);
+	}
+
+	extendPath(path) {
+
+	}
+
+	updateIndex() {
+		this.index = [];
 		for ( let y = 0; y < Labyrinth.SIZE; y++ ) {
-			index.push([]);
+			this.index.push([]);
 		}
 		this.tiles.forEach(tile => {
-			if (tile.loc) index[tile.loc.y][tile.loc.x] = tile;
+			if (tile.loc) this.index[tile.loc.y][tile.loc.x] = tile;
 		});
-		return index;
+		return this.index;
 	}
 
 	isEnterableEdge(C) {
@@ -458,8 +506,26 @@ class Labyrinth extends CanvasGame {
 		}
 	}
 
+	haveWon() {
+		return this.targets.length == this.targetsFound.length;
+	}
+
+	maybeFindTreasure(tile) {
+		if (!tile.treasure) return;
+
+		const needIndex = this.targets.indexOf(tile.treasure);
+		if (needIndex != -1 && !this.targetsFound.includes(needIndex)) {
+			this.targetsFound.push(needIndex);
+			this.printTargets();
+			this.startWinCheck();
+		}
+	}
+
 	handleClick(C) {
 		if (!this.keyTile) return;
+		if (this.m_bGameOver) return;
+
+		this.startTime();
 
 		C = this.unscale(C);
 		const slide = this.isEnterableEdge(C);
@@ -475,17 +541,21 @@ class Labyrinth extends CanvasGame {
 	handleMoveClick(C) {
 		console.log('find path to', C);
 
+		this.setMoves(this.m_iMoves + 1);
+
 this.player.tile = this.getTile(C);
+this.maybeFindTreasure(this.player.tile);
 this.changed = true;
 
-		const index = this.createIndex();
-		console.log(index);
+console.log(this.findPathsFrom(this.player.tile));
 	}
 
 	handleSlideClick(C, slide) {
 		const oldKeyTile = this.keyTile;
 		oldKeyTile.loc = C;
 		this.keyTile = null;
+
+		this.setMoves(this.m_iMoves + 1);
 
 		const head = slide.head;
 		const newKeyTile = this.getTile(head);
@@ -505,6 +575,7 @@ this.changed = true;
 					if (this.player.tile == newKeyTile) {
 						this.player.tile = oldKeyTile;
 					}
+					this.updateIndex();
 				}
 				this.changed = true;
 			}, 20);
@@ -513,10 +584,13 @@ this.changed = true;
 	}
 
 	handleKeyTileClick() {
-		if (this.keyTile) {
-			this.keyTile.rotation = (this.keyTile.rotation + 1) % 4;
-			this.changed = true;
-		}
+		if (!this.keyTile) return;
+		if (this.m_bGameOver) return;
+
+		this.startTime();
+
+		this.keyTile.rotation = (this.keyTile.rotation + 1) % 4;
+		this.changed = true;
 	}
 
 	listenControls() {
