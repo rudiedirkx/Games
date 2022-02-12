@@ -54,6 +54,10 @@ canvas {
 	<div><canvas id="key"></canvas></div>
 	<p>
 		Targets: <span id="targets"></span>
+		<select id="treasurestrategy">
+			<option value="InOrder">In Order</option>
+			<option value="AnyOrder">Any Order</option>
+		</select>
 	</p>
 	<p>
 		Time: <span id="stats-time"></span><br>
@@ -64,7 +68,7 @@ canvas {
 
 <script>
 objGame = new Labyrinth($('canvas'), $('#key'));
-objGame.startGame();
+objGame.startGame('InOrder');
 objGame.listenControls();
 objGame.startPainting();
 </script>

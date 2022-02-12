@@ -1,12 +1,5 @@
 "use strict";
 
-// - Pick cards
-// - Show cards
-// - Path finding
-//   - Animation?
-// - Use strategy (InOrder or AnyOrder) to fulfil cards
-// - Keep time & moves
-
 class LabyrinthTileShapeCorner {
 	constructor() {
 		this.points = [
@@ -130,6 +123,37 @@ class LabyrinthPlayer {
 	}
 }
 
+class LabyrinthTreasures {
+	constructor(targets, targetsFound = []) {
+		this.targets = targets;
+		this.targetsFound = targetsFound;
+	}
+
+	canChange() {
+		return this.targetsFound.length == 0;
+	}
+}
+
+class LabyrinthTreasuresInOrder extends LabyrinthTreasures {
+	findTreasure(treasure) {
+		const needIndex = this.targets.indexOf(treasure);
+		if (needIndex === this.targetsFound.length) {
+			this.targetsFound.push(needIndex);
+			return true;
+		}
+	}
+}
+
+class LabyrinthTreasuresAnyOrder extends LabyrinthTreasures {
+	findTreasure(treasure) {
+		const needIndex = this.targets.indexOf(treasure);
+		if (needIndex > -1 && !this.targetsFound.includes(needIndex)) {
+			this.targetsFound.push(needIndex);
+			return true;
+		}
+	}
+}
+
 class Labyrinth extends CanvasGame {
 
 	static SIZE = 7;
@@ -161,6 +185,8 @@ class Labyrinth extends CanvasGame {
 
 		Labyrinth.fixedTiles = this.makeFixedTiles();
 		Labyrinth.dynamicTiles = this.makeDyanmicTiles();
+
+		// this.paintingTiming = true;
 	}
 
 	reset() {
@@ -169,10 +195,9 @@ class Labyrinth extends CanvasGame {
 		this.tiles = [];
 		this.keyTile = null;
 		this.player = null;
-		this.targets = [];
-		this.targetsFound = [];
 
-		this.paintingTiming = true;
+		this.treasureStrategy = null;
+		this.foundTreasure = null;
 	}
 
 	drawContent() {
@@ -237,7 +262,7 @@ class Labyrinth extends CanvasGame {
 		rect().fill(tile.fixed ? Labyrinth.FIX_WALL_COLOR : Labyrinth.DYN_WALL_COLOR);
 
 		this.drawShape(topleft, tile.shape, tile.rotation);
-		this.ctx.fillStyle = '#fff';
+		this.ctx.fillStyle = this.foundTreasure == tile ? '#afa' : '#fff';
 		this.ctx.fill();
 
 		rect().stroke('#888', 1);
@@ -245,6 +270,20 @@ class Labyrinth extends CanvasGame {
 		this.ctx.textAlign = 'center';
 		this.ctx.textBaseline = 'middle';
 		this.drawText(topleft.add(new Coords2D(Labyrinth.SQUARE / 2, Labyrinth.SQUARE / 2)), tile.getTreasureLabel(), {size: 20});
+	}
+
+	drawPaths(paths, color = '#aaa') {
+		paths.forEach(path => this.drawPath(path, color));
+	}
+
+	drawPath(path, color) {
+		for ( let i = 1; i < path.length; i++ ) {
+			this.drawLine(
+				this.scale(path[i-1].loc.add(new Coords2D(0.5, 0.5))),
+				this.scale(path[i].loc.add(new Coords2D(0.5, 0.5))),
+				{color}
+			);
+		}
 	}
 
 	drawShape(topleft, shape, rotation) {
@@ -272,8 +311,8 @@ class Labyrinth extends CanvasGame {
 	}
 
 	makeTargetsHtml() {
-		const html = this.targets.map((n, i) => {
-			const found = this.targetsFound.includes(i) ? 'found' : '';
+		const html = this.treasureStrategy.targets.map((n, i) => {
+			const found = this.treasureStrategy.targetsFound.includes(i) ? 'found' : '';
 			return `<span class="target ${found}">${n}</span>`;
 		});
 		return html.join(' ');
@@ -316,13 +355,13 @@ class Labyrinth extends CanvasGame {
 		this.startGameWith(dynamicTiles, keyTile);
 	}
 
-	startGame() {
+	startGame(treasureStrategy) {
 		const dynamicTiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
 		const keyTile = dynamicTiles[0];
-		this.startGameWith(dynamicTiles, keyTile);
+		this.startGameWith(dynamicTiles, keyTile, treasureStrategy);
 	}
 
-	startGameWith(dynamicTiles, keyTile) {
+	startGameWith(dynamicTiles, keyTile, treasureStrategy) {
 		this.reset();
 
 		this.gridTiles(dynamicTiles);
@@ -331,13 +370,30 @@ class Labyrinth extends CanvasGame {
 		this.player = this.makePlayer(this.randInt(4));
 		this.updateIndex();
 
-		this.targets = this.createRandomTargets();
+		this.treasureStrategy = new LabyrinthTreasuresInOrder(this.createRandomTargets());
+		this.changeStrategy(treasureStrategy);
 		this.printTargets();
 
 		this.canvas.width = this.canvas.height = Labyrinth.OFFSET + Labyrinth.SIZE * (Labyrinth.SQUARE + Labyrinth.MARGIN) - Labyrinth.MARGIN + Labyrinth.OFFSET;
 		this.changed = true;
 
-console.log(this.findPathsFrom(this.player.tile));
+setTimeout(() => this.drawPaths(this.findPathsFrom(this.player.tile)), 100);
+	}
+
+	changeStrategy(key) {
+		key === 'AnyOrder' || (key = 'InOrder');
+		$('#treasurestrategy').value = key;
+		if (this.treasureStrategy.canChange()) {
+			this.treasureStrategy = this.makeTreasureStrategy(key);
+		}
+		else {
+			this.startGame(key);
+		}
+	}
+
+	makeTreasureStrategy(key) {
+		const cls = key == 'AnyOrder' ? LabyrinthTreasuresAnyOrder : LabyrinthTreasuresInOrder;
+		return new cls(this.treasureStrategy.targets, this.treasureStrategy.targetsFound);
 	}
 
 	createRandomTargets() {
@@ -455,24 +511,46 @@ console.log(this.findPathsFrom(this.player.tile));
 	}
 
 	findPathsFrom(tile) {
-		console.log(tile.getExits());
-		console.log(this.findPathOptions(tile));
+console.time('findPathsFrom');
 		const paths = [];
+		this.findPathOptions(tile).forEach(dir => {
+			const path = [tile];
+			paths.push(path);
+			this.extendPath(paths, path, dir);
+		});
+console.timeEnd('findPathsFrom');
+		return paths;
 	}
 
-	findPathOptions(tile) {
-		return tile.getExits().filter(dir => this.getNextTile(tile, dir));
+	findPathOptions(tile, notIn = []) {
+		return tile.getExits().filter(dir => {
+			const next = this.getNextTile(tile, dir);
+			return next && !notIn.includes(next);
+		});
 	}
 
 	getNextTile(from, dir) {
 		const O = Coords2D.dir4Coords[dir];
 		const nbC = from.loc.add(O);
 		const to = this.index[nbC.y] && this.index[nbC.y][nbC.x];
-		return to && to.getExits().includes((dir + 2) % 4);
+		return to && to.getExits().includes((dir + 2) % 4) ? to : null;
 	}
 
-	extendPath(path) {
-
+	extendPath(paths, path, dir) {
+		const next = this.getNextTile(path[path.length - 1], dir);
+// console.log('extendPath', path, dir, next);
+		path.push(next);
+		const L = path.length;
+		this.findPathOptions(next, path).forEach((dir, i) => {
+			if (i == 0) {
+				this.extendPath(paths, path, dir);
+			}
+			else {
+				const newPath = path.slice(0, L);
+				paths.push(newPath);
+				this.extendPath(paths, newPath, dir);
+			}
+		});
 	}
 
 	updateIndex() {
@@ -507,17 +585,20 @@ console.log(this.findPathsFrom(this.player.tile));
 	}
 
 	haveWon() {
-		return this.targets.length == this.targetsFound.length;
+		return this.treasureStrategy.targets.length == this.treasureStrategy.targetsFound.length;
 	}
 
 	maybeFindTreasure(tile) {
 		if (!tile.treasure) return;
 
-		const needIndex = this.targets.indexOf(tile.treasure);
-		if (needIndex != -1 && !this.targetsFound.includes(needIndex)) {
-			this.targetsFound.push(needIndex);
+		if (this.treasureStrategy.findTreasure(tile.treasure)) {
 			this.printTargets();
 			this.startWinCheck();
+			this.foundTreasure = tile;
+			setTimeout(() => {
+				this.foundTreasure = null;
+				this.changed = true;
+			}, 1000);
 		}
 	}
 
@@ -539,15 +620,32 @@ console.log(this.findPathsFrom(this.player.tile));
 	}
 
 	handleMoveClick(C) {
-		console.log('find path to', C);
+		const tile = this.getTile(C);
+		if (this.player.tile == tile) return;
 
-		this.setMoves(this.m_iMoves + 1);
+		const paths = this.findPathsFrom(this.player.tile);
+		const reaches = paths.filter(path => path.includes(tile));
+		if (!reaches.length) return;
 
-this.player.tile = this.getTile(C);
-this.maybeFindTreasure(this.player.tile);
-this.changed = true;
+		const untils = reaches.map(path => {
+			const i = path.findIndex(node => node == tile);
+			return path.slice(0, i + 1);
+		});
+		const shortest = [...untils].sort((a, b) => a.length - b.length)[0];
+// console.log(paths.length, reaches, untils, shortest);
 
-console.log(this.findPathsFrom(this.player.tile));
+setTimeout(() => {
+	this.drawPaths(paths, '#aaa');
+	untils.forEach(path => this.drawPath(path, 'red'));
+	this.drawPath(shortest, 'lime');
+}, 100);
+
+		if (reaches.length) {
+			this.player.tile = this.getTile(C);
+			this.maybeFindTreasure(this.player.tile);
+			this.setMoves(this.m_iMoves + 1);
+			this.changed = true;
+		}
 	}
 
 	handleSlideClick(C, slide) {
@@ -595,6 +693,10 @@ console.log(this.findPathsFrom(this.player.tile));
 
 	listenControls() {
 		this.listenClick();
+
+		$('#treasurestrategy').on('change', e => {
+			this.changeStrategy(e.subject.value);
+		});
 
 		$('#create').on('click', e => {
 			this.startGame();
