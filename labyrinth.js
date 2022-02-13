@@ -195,6 +195,7 @@ class Labyrinth extends CanvasGame {
 		this.tiles = [];
 		this.keyTile = null;
 		this.player = null;
+		this.canMove = false;
 
 		this.treasureStrategy = null;
 		this.foundTreasure = null;
@@ -357,7 +358,7 @@ class Labyrinth extends CanvasGame {
 
 	startGame(treasureStrategy) {
 		const dynamicTiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
-		const keyTile = dynamicTiles[0];
+		const keyTile = dynamicTiles.shift();
 		this.startGameWith(dynamicTiles, keyTile, treasureStrategy);
 	}
 
@@ -374,10 +375,24 @@ class Labyrinth extends CanvasGame {
 		this.changeStrategy(treasureStrategy);
 		this.printTargets();
 
+		this.printStatus();
+
 		this.canvas.width = this.canvas.height = Labyrinth.OFFSET + Labyrinth.SIZE * (Labyrinth.SQUARE + Labyrinth.MARGIN) - Labyrinth.MARGIN + Labyrinth.OFFSET;
 		this.changed = true;
 
 setTimeout(() => this.drawPaths(this.findPathsFrom(this.player.tile)), 100);
+	}
+
+	printStatus() {
+		$('#status').setText(this.getStatus());
+	}
+
+	getStatus() {
+		if (this.canMove) {
+			return "You can move yourself now, along current paths. Or don't, and slide again.";
+		}
+
+		return 'Slide the key tile into the board at a yellow arrow. Click on the key tile first to rotate it.';
 	}
 
 	changeStrategy(key) {
@@ -620,6 +635,8 @@ console.timeEnd('findPathsFrom');
 	}
 
 	handleMoveClick(C) {
+		if (!this.canMove) return;
+
 		const tile = this.getTile(C);
 		if (this.player.tile == tile) return;
 
@@ -644,6 +661,8 @@ setTimeout(() => {
 			this.player.tile = this.getTile(C);
 			this.maybeFindTreasure(this.player.tile);
 			this.setMoves(this.m_iMoves + 1);
+			this.canMove = false;
+			this.printStatus();
 			this.changed = true;
 		}
 	}
@@ -674,6 +693,8 @@ setTimeout(() => {
 						this.player.tile = oldKeyTile;
 					}
 					this.updateIndex();
+					this.canMove = true;
+					this.printStatus();
 				}
 				this.changed = true;
 			}, 20);
