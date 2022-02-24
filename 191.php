@@ -76,7 +76,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 	<p>
 		Boards:
 		<?= implode(' | ', array_map(function($board) {
-			return '<a href="?board=' . do_html($board) . '">' . do_html($board) . '</a>';
+			return '<a data-board="' . do_html($board) . '" href="?board=' . do_html($board) . '">' . do_html($board) . '</a>';
 		}, array_keys($boards))) ?>
 	</p>
 </div>

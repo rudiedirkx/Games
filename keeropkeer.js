@@ -463,6 +463,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	startGame(boardName) {
 		this.reset();
 		this.printGameState();
+		$('#dice').setHTML('');
 
 		this.board = boardName;
 		const board = KeerOpKeer.BOARDS[boardName];
@@ -559,6 +560,11 @@ class SoloKeerOpKeer extends KeerOpKeer {
 			else if ( this.currentTurnIsComplete() ) {
 				this.handleEndTurn();
 			}
+		});
+
+		$$('a[data-board]').on('click', e => {
+			e.preventDefault();
+			this.startGame(e.subject.dataset.board);
 		});
 	}
 
