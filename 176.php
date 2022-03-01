@@ -68,6 +68,9 @@ var clicks = 0;
 				});
 				setTimeout(function() {
 					alert("You win!\n\n" + clicks + " clicks");
+					setTimeout(function() {
+						location.reload();
+					}, 50);
 				}, 50);
 			}
 			return;
