@@ -10,6 +10,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <head>
 <meta charset="utf-8" />
 <title>PICROSS</title>
+<meta name="theme-color" content="yellow" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
 :root {

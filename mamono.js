@@ -116,6 +116,7 @@ class Mamono extends GridGame {
 		this.reset();
 		this.size = size;
 		document.body.data('size', size);
+		$('meta[name="theme-color"]').prop('content', document.body.css('--bg'));
 
 		this.createSizeSelect(size);
 

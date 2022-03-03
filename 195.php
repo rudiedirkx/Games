@@ -262,6 +262,7 @@ $status = $player->getStatus();
 
 <head>
 <meta charset="utf-8" />
+<meta name="theme-color" content="#444" />
 <title>Poker Texas Hold'em MULTI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
