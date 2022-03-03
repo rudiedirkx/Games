@@ -18,6 +18,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <meta charset="utf-8" />
 <title>Keer Op Keer SOLO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#333" />
 <? include 'tpl.onerror.php' ?>
 <link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>

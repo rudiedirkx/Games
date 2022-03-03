@@ -218,6 +218,7 @@ class KeerOpKeer extends GridGame {
 
 	printBoard(board) {
 		document.body.css('--color', board.color);
+		$('meta[name="theme-color"]').prop('content', board.color);
 
 		const html = [];
 		board.map.forEach(line => {
