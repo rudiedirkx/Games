@@ -60,6 +60,15 @@ function printPlayersTable(Game $game, ?Player $player) {
 }
 
 if (!$player) {
+	if ($debug && isset($_GET['delete'])) {
+		if ($game = Game::get($_GET['delete'])) {
+			if ($game->is_deletable) {
+				$game->delete();
+			}
+		}
+		return do_redirect('194.php');
+	}
+
 	if ($game = Game::get($_GET['game'] ?? null)) {
 		if (isset($_POST['join'], $_POST['name'])) {
 			$password = $db->transaction(function() use ($game) {
@@ -135,6 +144,9 @@ if (!$player) {
 						<b>COMPLETE!</b>
 					<? else: ?>
 						round <?= $gm->round ?>
+						<? if ($gm->is_deletable): ?>
+							- <a href="?delete=<?= $gm->password ?>">delete</a>
+						<? endif ?>
 					<? endif ?>
 				</li>
 			<? endforeach ?>

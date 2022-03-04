@@ -108,6 +108,10 @@ class Game extends Model {
 		return $i === false ? $pids[array_rand($pids)] : $pids[($i + 1) % count($pids)];
 	}
 
+	protected function get_is_deletable() {
+		return $this->round == 0 && count($this->players) < 3;
+	}
+
 	protected function get_free_dice() {
 		return $this->round <= count($this->active_players);
 	}
