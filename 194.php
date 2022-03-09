@@ -189,7 +189,7 @@ elseif (isset($_GET['roll'], $_POST['colors'], $_POST['numbers'])) {
 elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'], $_POST['number'])) {
 	if ($player->can_end_turn) {
 		$db->transaction(function($db) use ($player) {
-			$jokers = $player->getUseJokersUpdate($_POST['color'] === '?', $_POST['number'] === '?');
+			$jokers = $player->getUseJokersUpdate($_POST['color'] === '?', $_POST['number'] === '0');
 			$player->update($jokers + [
 				'finished_round' => $player->game->round,
 				'board' => $_POST['state'],
