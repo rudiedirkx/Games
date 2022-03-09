@@ -390,7 +390,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		const color = choosing ? this.turnColor : '';
 		const number = choosing ? (this.turnNumber === '?' ? 0 : this.turnNumber) : '';
 
-		if ( color === '?' ) this.useJoker();
+		if ( color === 0 ) this.useJoker();
 		if ( number === '?' ) this.useJoker();
 
 		this.printScore();
