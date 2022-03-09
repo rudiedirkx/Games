@@ -305,5 +305,5 @@ objGame.startGame(
 	<?= json_encode($player->getOthersColors()) ?>,
 );
 objGame.listenControls();
-<? if ($player->game->dice): ?>objGame.printDice(<?= json_encode($player->game->dice_array) ?>);<? endif ?>
+<? if ($player->game->dice): ?>objGame.importDice(<?= json_encode($player->game->dice_array) ?>);<? endif ?>
 </script>

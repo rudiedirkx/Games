@@ -194,6 +194,7 @@ class KeerOpKeer extends GridGame {
 				}
 				else {
 					setTimeout(() => button.disabled = false, 1000);
+					this.selectUniques();
 					resolve({colors, numbers});
 				}
 			};
@@ -241,6 +242,17 @@ class KeerOpKeer extends GridGame {
 	resetChoosing() {
 		this.m_objGrid.getElements('.choosing').removeClass('choosing');
 		this.evalNextReady();
+	}
+
+	selectUniques() {
+		const colors = $$('#dice > .color:not(.disabled)');
+		if (colors.map(el => el.dataset.color).unique().length == 1) {
+			this.selectColor(colors[0]);
+		}
+		const numbers = $$('#dice > .number:not(.disabled)');
+		if (numbers.map(el => el.dataset.number).unique().length == 1) {
+			this.selectNumber(numbers[0]);
+		}
 	}
 
 	selectColor( el ) {
@@ -333,6 +345,11 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
 	}
 
+	importDice(dice) {
+		this.printDice(dice);
+		this.selectUniques();
+	}
+
 	importFullColumns(columns) {
 		columns.forEach(n => $(`.full-column:nth-child(${n+1})`).addClass('other'));
 	}
@@ -371,7 +388,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		const fulls = this.evalFulls();
 
 		const color = choosing ? this.turnColor : '';
-		const number = choosing ? this.turnNumber : '';
+		const number = choosing ? (this.turnNumber === '?' ? 0 : this.turnNumber) : '';
 
 		if ( color === '?' ) this.useJoker();
 		if ( number === '?' ) this.useJoker();
