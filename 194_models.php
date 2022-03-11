@@ -388,6 +388,10 @@ class Player extends Model {
 	static public function get(?string $password) : ?self {
 		return $password ? self::first(['password' => $password]) : null;
 	}
+
+	static function presave( array &$data ) {
+		self::presaveTrim($data);
+	}
 }
 
 class FullColumn extends Model {
