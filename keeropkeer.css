@@ -104,6 +104,10 @@ table.game {
 	margin-bottom: 0;
 	height: 2.0em;
 }
+#status.hilite {
+	color: black;
+	transition: color 200ms linear;
+}
 #status button {
 	padding: 8px 16px;
 }

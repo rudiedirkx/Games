@@ -239,6 +239,9 @@ class KeerOpKeer extends GridGame {
 		return cell.toUpperCase() == cell;
 	}
 
+	hiliteCantSelect() {
+	}
+
 	resetChoosing() {
 		this.m_objGrid.getElements('.choosing').removeClass('choosing');
 		this.evalNextReady();
@@ -258,6 +261,7 @@ class KeerOpKeer extends GridGame {
 	selectColor( el ) {
 		if ( el.hasClass('selected') || el.hasClass('disabled') ) return;
 		if ( el.dataset.color == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
+		if ( !$('#next-turn') ) return this.hiliteCantSelect();
 
 		$$(`#dice > [data-color="${this.turnColor}"]`).removeClass('selected');
 		this.turnColor = el.dataset.color;
@@ -268,6 +272,7 @@ class KeerOpKeer extends GridGame {
 	selectNumber( el ) {
 		if ( el.hasClass('selected') || el.hasClass('disabled') ) return;
 		if ( el.dataset.number == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
+		if ( !$('#next-turn') ) return this.hiliteCantSelect();
 
 		$$(`#dice > [data-number="${this.turnNumber}"]`).removeClass('selected');
 		this.turnNumber = el.dataset.number == '?' ? '?' : parseInt(el.dataset.number);
@@ -347,7 +352,9 @@ class MultiKeerOpKeer extends KeerOpKeer {
 
 	importDice(dice) {
 		this.printDice(dice);
-		this.selectUniques();
+		if ($('#next-turn')) {
+			this.selectUniques();
+		}
 	}
 
 	importFullColumns(columns) {
@@ -356,6 +363,11 @@ class MultiKeerOpKeer extends KeerOpKeer {
 
 	importFullColors(colors) {
 		colors.forEach(color => $(`.full-color[data-color="${color}"]`).addClass('other'));
+	}
+
+	hiliteCantSelect() {
+		$('#status').addClass('hilite');
+		setTimeout(() => $('#status').removeClass('hilite'), 1000);
 	}
 
 	importBoardState(state) {
