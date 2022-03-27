@@ -31,14 +31,14 @@ class KeerOpKeer extends GridGame {
 	gridClickAllowedNumber( cell ) {
 		if ( cell.hasClass('choosing') ) return true;
 
-		const max = this.turnNumber == '?' ? 5 : this.turnNumber;
+		const max = this.turnNumber == 0 ? 5 : this.turnNumber;
 		return max > this.m_objGrid.getElements('.choosing').length;
 	}
 
 	handleCellClick( cell ) {
 		if ( this.m_bGameOver ) return;
 
-		if ( !this.turnColor || !this.turnNumber ) return;
+		if ( this.turnColor == null || this.turnNumber == null ) return;
 		if ( !cell.hasClass('choosing') && !this.gridClickAllowedCoord(this.getCoord(cell)) ) return;
 		if ( !this.gridClickAllowedColor(cell) ) return;
 		if ( !this.gridClickAllowedNumber(cell) ) return;
@@ -61,12 +61,12 @@ class KeerOpKeer extends GridGame {
 
 		// Verify number of choosing
 		if ( choosing.length > 0 ) {
-			const needJokers = Number(this.turnNumber == '?') + Number(this.turnColor == '?');
-			if ( needJokers > this.JOKERS - this.useJoker ) {
+			const needJokers = Number(this.turnNumber == 0) + Number(this.turnColor == '?');
+			if ( needJokers > KeerOpKeer.JOKERS - this.usedJokers ) {
 				return false;
 			}
 
-			if ( this.turnNumber != '?' && choosing.length != this.turnNumber ) {
+			if ( this.turnNumber != 0 && choosing.length != this.turnNumber ) {
 				return false;
 			}
 
@@ -207,8 +207,8 @@ class KeerOpKeer extends GridGame {
 			return disabled && disabled[type] === i ? 'disabled' : '';
 		};
 		const html = [
-			...colors.map((c, i) => `<span class="color ${dis('color', i)}" data-color="${c}">${c == '?' ? '?' : '&nbsp;'}</span>`),
-			...numbers.map((n, i) => `<span class="number ${dis('number', i)}" data-number="${n == 0 ? '?' : n}">${n == 0 ? '?' : n}</span>`),
+			...colors.map((c, i) => `<span class="color ${dis('color', i)}" data-color="${c}"></span>`),
+			...numbers.map((n, i) => `<span class="number ${dis('number', i)}" data-number="${n}"></span>`),
 		];
 		$('#dice').setHTML(html.join(' '));
 	}
@@ -271,11 +271,11 @@ class KeerOpKeer extends GridGame {
 
 	selectNumber( el ) {
 		if ( el.hasClass('selected') || el.hasClass('disabled') ) return;
-		if ( el.dataset.number == '?' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
+		if ( el.dataset.number == '0' && this.usedJokers >= KeerOpKeer.JOKERS ) return;
 		if ( !$('#next-turn') ) return this.hiliteCantSelect();
 
 		$$(`#dice > [data-number="${this.turnNumber}"]`).removeClass('selected');
-		this.turnNumber = el.dataset.number == '?' ? '?' : parseInt(el.dataset.number);
+		this.turnNumber = parseInt(el.dataset.number);
 		el.addClass('selected');
 		this.resetChoosing();
 	}
@@ -400,10 +400,10 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		const fulls = this.evalFulls();
 
 		const color = choosing ? this.turnColor : '';
-		const number = choosing ? (this.turnNumber === '?' ? 0 : this.turnNumber) : '';
+		const number = choosing ? String(this.turnNumber) : '';
 
-		if ( color === 0 ) this.useJoker();
-		if ( number === '?' ) this.useJoker();
+		if ( color === '?' ) this.useJoker();
+		if ( number === '0' ) this.useJoker();
 
 		this.printScore();
 
@@ -549,8 +549,8 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 		const choosing = this.lockInChoosing();
 
-		if ( this.turnColor == '?' && choosing.length ) this.useJoker();
-		if ( this.turnNumber == '?' && choosing.length ) this.useJoker();
+		if ( this.turnColor === '?' && choosing.length ) this.useJoker();
+		if ( this.turnNumber === 0 && choosing.length ) this.useJoker();
 
 		this.evalFulls();
 
@@ -723,8 +723,8 @@ class KeerOpKeerCheater {
 		const els = $$('#dice .number');
 		const values = [];
 		if (els.length != 2) return values;
-		values.push(parseInt(els[0].dataset.number) || 0);
-		values.push(parseInt(els[1].dataset.number) || 0);
+		values.push(parseInt(els[0].dataset.number));
+		values.push(parseInt(els[1].dataset.number));
 		return values;
 	}
 }

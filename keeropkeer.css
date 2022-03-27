@@ -204,8 +204,15 @@ body:not(.with-choosing) #next-turn .choosing {
 	visibility: hidden;
 }
 
+[data-number]:after {
+	content: attr(data-number);
+}
+[data-color="?"]:after,
+[data-number="0"]:after {
+	content: '?';
+}
 [data-color="?"],
-#dice > [data-number="?"] {
+#dice > [data-number="0"] {
 	background-color: black;
 	color: white;
 }

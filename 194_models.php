@@ -365,7 +365,7 @@ class Player extends Model {
 	}
 
 	public function __toString() {
-		return $this->name ?? '?';
+		return $this->name ?? '???';
 	}
 
 	static public function addHistory(int $pid) : void {
