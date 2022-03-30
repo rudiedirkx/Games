@@ -1,6 +1,8 @@
 <?php
 // NUMBER GUESSING
 
+require __DIR__ . '/inc.bootstrap.php';
+
 ?>
 <!doctype html>
 <html>
@@ -63,10 +65,12 @@ var game = {
 			var off = this.game.guess(number);
 			if (off == 0) {
 				this.win();
-				return this.alert("You win!\n\nIn " + this.game.guesses + " guesses.\n\nPlay another round?");
+				this.alert("You win!\n\nIn " + this.game.guesses + " guesses.\n\nPlay another round?");
 			}
-
-			this.alert("You're too " + (off > 0 ? "low" : "high") + ".");
+			else {
+				this.alert("You're too " + (off > 0 ? "low" : "high") + ".");
+			}
+			$number.select();
 		},
 		win: function() {
 			$number.value = '';

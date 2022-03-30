@@ -1,6 +1,8 @@
 <?php
 // HOW FAST ARE YOU?
 
+require __DIR__ . '/inc.bootstrap.php';
+
 ?>
 <!doctype html>
 <html>
