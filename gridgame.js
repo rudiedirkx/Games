@@ -315,6 +315,10 @@ class Game {
 		return m + ':' + ('0' + s).slice(-2);
 	}
 
+	randomColor() {
+		return '#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6);
+	}
+
 	setMoves( f_iMoves ) {
 		if ( f_iMoves != null ) {
 			this.m_iMoves = f_iMoves;

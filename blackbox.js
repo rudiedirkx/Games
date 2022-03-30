@@ -97,10 +97,6 @@ class Blackbox extends GridGame {
 		return corners;
 	}
 
-	randomColor() {
-		return '#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6);
-	}
-
 	getNextMove(cur) {
 		const next = this.getNext(cur.loc, cur.dir);
 		const left = this.getLeft(next, cur.dir);
