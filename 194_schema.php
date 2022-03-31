@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'version' => 'keeropkeer:1',
+	'version' => 'keeropkeer:2',
 	'tables' => [
 		'keeropkeer_games' => [
 			'id' => ['pk' => true],
@@ -12,6 +12,7 @@ return [
 			'turn_player_id' => ['unsigned' => true, 'references' => ['keeropkeer_players', 'id', 'cascade']],
 			'round' => ['unsigned' => true, 'null' => false, 'default' => 0],
 			'dice',
+			'see_all' => ['unsigned' => true, 'null' => false, 'default' => 0],
 		],
 		'keeropkeer_players' => [
 			'id' => ['pk' => true],

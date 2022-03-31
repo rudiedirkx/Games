@@ -118,19 +118,30 @@ class KeerOpKeer extends GridGame {
 	}
 
 	evalFulls() {
-		// Full columns
+		const columns = this.evalFullColumns();
+		const colors = this.evalFullColors();
+		return {columns, colors};
+	}
+
+	evalFullColumns(grid) {
+		grid || (grid = this.m_objGrid);
+		const table = grid.closest('table');
+
 		const columns = [];
 		for ( let n = 0, cols = KeerOpKeer.CENTER * 2; n <= cols; n++ ) {
-			const cells = this.m_objGrid.getElements(`tr > :nth-child(${n+1}):not(.chosen)`);
+			const cells = grid.getElements(`tr > :nth-child(${n+1}):not(.chosen)`);
 			if ( cells.length == 0 ) {
 				columns.push(n);
-				const [self, other] = $$(`.full-column:nth-child(${n+1})`);
+				const [self, other] = table.getElements(`.full-column:nth-child(${n+1})`);
 				if (!self.hasClass('other')) self.addClass('self');
 				else if (other) other.addClass('self');
 			}
 		}
 
-		// Full colors
+		return columns;
+	}
+
+	evalFullColors() {
 		const colors = [];
 		KeerOpKeer.COLORS.forEach(color => {
 			if ( this.m_objGrid.getElements(`[data-color="${color}"]:not(.chosen)`).length == 0 ) {
@@ -141,7 +152,7 @@ class KeerOpKeer extends GridGame {
 			}
 		});
 
-		return {columns, colors};
+		return colors;
 	}
 
 	useJoker() {
@@ -158,7 +169,8 @@ class KeerOpKeer extends GridGame {
 	}
 
 	getNumericScore() {
-		const cols = $$('.full-column.self').reduce((T, cell) => {
+		const table = this.m_objGrid.closest('table');
+		const cols = table.getElements('.full-column.self').reduce((T, cell) => {
 			return T + parseInt(cell.dataset.score);
 		}, 0);
 		const colors = $$('.full-color.self').reduce((T, cell) => {
@@ -308,6 +320,9 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		const board = KeerOpKeer.BOARDS[boardName];
 		this.printBoard(board);
 
+		const emptyBoard = $('#board').outerHTML;
+		this.importOtherPlayersBoardState(emptyBoard);
+
 		this.importBoardState(state);
 		this.importFullColumns(othersColumns);
 		this.importFullColors(othersColors);
@@ -357,8 +372,9 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		}
 	}
 
-	importFullColumns(columns) {
-		columns.forEach(n => $(`.full-column:nth-child(${n+1})`).addClass('other'));
+	importFullColumns(columns, container) {
+		const cont = (container || this.m_objGrid).closest('table');
+		columns.forEach(n => cont.getElement(`.full-column:nth-child(${n+1})`).addClass('other'));
 	}
 
 	importFullColors(colors) {
@@ -370,8 +386,18 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		setTimeout(() => $('#status').removeClass('hilite'), 1000);
 	}
 
-	importBoardState(state) {
-		this.m_objGrid.getElements('td').forEach((td, i) => {
+	importOtherPlayersBoardState(emptyBoard) {
+		$$('.other-player-board').forEach(el => {
+			el.setHTML(emptyBoard);
+			const grid = el.getElement('#grid');
+			this.importBoardState(JSON.parse(el.dataset.board), grid);
+			this.importFullColumns(JSON.parse(el.dataset.columns), grid);
+			this.evalFullColumns(grid);
+		});
+	}
+
+	importBoardState(state, container) {
+		(container || this.m_objGrid).getElements('td').forEach((td, i) => {
 			if (state[i] === 'x') {
 				td.addClass('chosen');
 			}

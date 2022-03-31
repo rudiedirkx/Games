@@ -173,13 +173,14 @@ class Game extends Model {
 		return $this->to_count(Player::$_table, 'game_id');
 	}
 
-	static public function createNew(string $board, string $playerName) : Player {
-		return self::$_db->transaction(function() use ($board, $playerName) {
+	static public function createNew(string $board, string $playerName, int $seeAll) : Player {
+		return self::$_db->transaction(function() use ($board, $playerName, $seeAll) {
 			$gid = self::insert([
 				'created_on' => time(),
 				'changed_on' => time(),
 				'board' => $board,
 				'password' => get_random(),
+				'see_all' => $seeAll,
 			]);
 
 			$pid = Player::insert([

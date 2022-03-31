@@ -22,7 +22,9 @@ function printPlayersTable(Game $game, ?Player $player) {
 	<table class="players">
 		<tr>
 			<th>Name</th>
-			<th>Score</th>
+			<? if (is_local() || !$game->see_all): ?>
+				<th>Score</th>
+			<? endif ?>
 			<th>Jokers</th>
 			<th></th>
 			<th align="right">Online</th>
@@ -32,7 +34,9 @@ function printPlayersTable(Game $game, ?Player $player) {
 		<? foreach ($game->players as $plr): ?>
 			<tr class="<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>">
 				<td><?= do_html($plr->name) ?></td>
-				<td><?= $plr->score ?></td>
+				<? if (is_local() || !$game->see_all): ?>
+					<td><?= $plr->score ?></td>
+				<? endif ?>
 				<td nowrap><?= $maxJokers - $plr->used_jokers ?> / <?= $maxJokers ?></td>
 				<td>
 					<? if ($plr->is_turn): ?>TURN<? endif ?>
@@ -111,8 +115,8 @@ if (!$player) {
 		exit;
 	}
 
-	if (isset($_POST['start'], $_POST['name'], $_POST['board'])) {
-		$player = Game::createNew($_POST['board'] ?: array_rand($boards), $_POST['name']);
+	if (isset($_POST['start'], $_POST['name'], $_POST['board'], $_POST['see_all'])) {
+		$player = Game::createNew($_POST['board'] ?: array_rand($boards), $_POST['name'], $_POST['see_all']);
 		return do_redirect("?player=$player->password");
 	}
 
@@ -128,6 +132,7 @@ if (!$player) {
 	<form method="post" action>
 		<p>Your name: <input name="name" required autofocus /></p>
 		<p>Board: <select name="board"><?= do_html_options(array_combine($boardNames, $boardNames), null, '-- RANDOM') ?></select></p>
+		<p>See all players? <select name="see_all"><?= do_html_options(['0' => 'No', '1' => 'Yes']) ?></select></p>
 		<p><button name="start" value="1">START GAME</button></p>
 	</form>
 	<? if ($debug):
@@ -246,7 +251,7 @@ $status = $player->getStatus();
 
 <body class="multi" style="--color: <?= $boards[$player->game->board]['color'] ?>">
 
-<table class="board game">
+<table id="board" class="board game">
 	<thead>
 		<tr>
 			<? foreach ($columns[0] as $i => $cell): ?>
@@ -291,6 +296,20 @@ $status = $player->getStatus();
 	<? printPlayersTable($player->game, $player) ?>
 	<p>Share <a href="<?= do_html($player->game->url) ?>"><?= do_html($player->game->url) ?></a> to invite players.</p>
 </div>
+
+<? if ($player->game->see_all): ?>
+	<? foreach ($player->game->players as $plr): if ($player->id != $plr->id): ?>
+		<div>
+			<h2 style="margin-bottom: 0"><?= do_html($plr) ?></h2>
+			<div
+				class="other-player-board"
+				data-board='<?= json_encode(do_html($plr->board ?: '')) ?>'
+				data-columns='<?= json_encode($plr->getOthersColumns()) ?>'
+				data-colors='<?= json_encode($plr->getOthersColors()) ?>'
+			></div>
+		</div>
+	<? endif; endforeach ?>
+<? endif ?>
 
 <script>
 KeerOpKeer.JOKERS = <?= json_encode($maxJokers) ?>;
