@@ -54,7 +54,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 				</td>
 				<td>
 					<? if ($plr->id != ($player->id ?? 0) && ($debug || Player::inHistory($plr->id))): ?>
-						<a href="?player=<?= do_html($plr->password) ?>">play</a>
+						<a href="?player=<?= do_html($plr->password) ?>">PLAY</a>
 					<? endif ?>
 				</td>
 			</tr>
@@ -74,7 +74,7 @@ if (!$player) {
 	}
 
 	if ($game = Game::get($_GET['game'] ?? null)) {
-		if (isset($_POST['join'], $_POST['name'])) {
+		if (isset($_POST['join'], $_POST['name']) && $game->is_joinable) {
 			$password = $db->transaction(function() use ($game) {
 				$game->touch();
 				Player::insert([
@@ -103,7 +103,7 @@ if (!$player) {
 		</p>
 		<p>Current players:</p>
 		<? printPlayersTable($game, null) ?>
-		<? if ($game->round < count($game->active_players)): ?>
+		<? if ($game->is_joinable): ?>
 			<form method="post" action>
 				<p>Your name: <input name="name" required autofocus /></p>
 				<p><button name="join" value="1">JOIN GAME</button></p>
