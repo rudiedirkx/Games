@@ -5,6 +5,8 @@ require __DIR__ . '/inc.bootstrap.php';
 require 'inc.db.php';
 require '194_models.php';
 
+header('Cache-Control: no-store, no-cache, must-revalidate');
+
 $debug = is_local() || is_debug_ip();
 
 Model::$_db = $db;
