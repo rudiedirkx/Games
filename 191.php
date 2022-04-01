@@ -26,7 +26,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 </head>
 
-<body class="solo">
+<body class="layout solo">
 
 <table class="board game">
 	<thead>

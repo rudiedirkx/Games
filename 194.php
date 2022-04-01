@@ -94,6 +94,9 @@ if (!$player) {
 		<title>Keer Op Keer MULTI</title>
 		<style>body { font-family: sans-serif }</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
+		<body style="--color: <?= $boards[$game->board]['color'] ?>">
+
 		<h1>Keer Op Keer MULTIPLAYER</h1>
 		<h2>Join game <?= $game->id ?>?</h2>
 		<p>
@@ -127,6 +130,7 @@ if (!$player) {
 	<title>Keer Op Keer MULTI</title>
 	<style>body { font-family: sans-serif }</style>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
 	<h1>Keer Op Keer MULTIPLAYER</h1>
 	<h2>Start new game?</h2>
 	<form method="post" action>
@@ -249,7 +253,7 @@ $status = $player->getStatus();
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 </head>
 
-<body class="multi" style="--color: <?= $boards[$player->game->board]['color'] ?>">
+<body class="layout multi" style="--color: <?= $boards[$player->game->board]['color'] ?>">
 
 <table id="board" class="board game">
 	<thead>
