@@ -1,11 +1,51 @@
 "use strict";
 
+class KOKChallengeColor {
+	constructor(color) {
+		this.color = color;
+	}
+
+	get message() {
+		const i = KeerOpKeer.COLORS.indexOf(this.color);
+		return `Fill all of color ${KeerOpKeer.COLOR_NAMES[i]}`;
+	}
+}
+
+class KOKChallengeColorWithoutColor {
+	constructor(color) {
+		this.color = color;
+	}
+
+	get message() {
+		const i = KeerOpKeer.COLORS.indexOf(this.color);
+		return `Fill any color without using ${KeerOpKeer.COLOR_NAMES[i]}`;
+	}
+}
+
+class KOKChallengeColumns {
+	constructor(columns) {
+		this.columns = columns.sort((a, b) => a - b);
+	}
+
+	get message() {
+		const names = $$(this.columns.map(i => `thead [data-col="${i}"]`).join(',')).map(el => el.getText());
+		return `Fill columns ${names.join(', ')}`;
+	}
+}
+
+class KOKChallengeNoMistakes {
+	get message() {
+		return `Make 0 mistakes/corrections in selection`;
+	}
+}
+
 class KeerOpKeer extends GridGame {
 
 	static BOARDS = [];
 
 	static CENTER = 7;
 	static COLORS = ['g', 'y', 'b', 'p', 'o'];
+	static COLOR_NAMES = ['Green', 'Yellow', 'Blue', 'Pink', 'Orange'];
 	static JOKERS = 8;
 
 	gridClickAllowedCoord( C, choosing = true ) {
@@ -489,6 +529,8 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		this.usedJokers = 0;
 		this.turnColor = null;
 		this.turnNumber = null;
+
+		this.challenge = null;
 	}
 
 	statTypes() {
@@ -528,6 +570,37 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		$$('.full-color, .full-column').removeClass('self');
 		this.printJokers();
 		this.printScore();
+
+		this.challenge = this.makeRandomChallenge();
+		this.printChallenge();
+	}
+
+	makeRandomChallenge() {
+		const types = [
+			() => new KOKChallengeColor(KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length - 1)]),
+			() => new KOKChallengeColumns([0, KeerOpKeer.CENTER * 2]),
+			() => {
+				const cols = [];
+				while (cols.length < 4) {
+					const col = 1 + this.randInt(KeerOpKeer.CENTER * 2 - 2);
+					cols.includes(col) || cols.push(col);
+				}
+				return new KOKChallengeColumns(cols);
+			},
+			() => new KOKChallengeColorWithoutColor(KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length - 1)]),
+			// () => new KOKChallengeNoMistakes(),
+		];
+		return types[this.randInt(types.length - 1)]();
+	}
+
+	printChallenge() {
+		if (this.challenge) {
+			const nope = this.m_iMoves ? '' : '- <a href id="nope">NOPE</a>';
+			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message} ${nope}`);
+		}
+		else {
+			$('#challenge').setText('');
+		}
 	}
 
 	endGame() {
@@ -601,6 +674,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 		this.setMoves(this.m_iMoves + 1);
 		this.printGameState();
+		this.printChallenge();
 
 		this.roll($('#next-turn'));
 	}
@@ -616,6 +690,12 @@ class SoloKeerOpKeer extends KeerOpKeer {
 			else if ( this.currentTurnIsComplete() ) {
 				this.handleEndTurn();
 			}
+		});
+
+		$('#challenge').on('click', '#nope', e => {
+			e.preventDefault();
+			this.challenge = null;
+			this.printChallenge();
 		});
 
 		$$('a[data-board]').on('click', e => {

@@ -22,7 +22,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 	<table class="players">
 		<tr>
 			<th>Name</th>
-			<? if (is_local() || !$game->see_all): ?>
+			<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
 				<th>Score</th>
 			<? endif ?>
 			<th>Jokers</th>
@@ -34,7 +34,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 		<? foreach ($game->players as $plr): ?>
 			<tr class="<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>">
 				<td><?= do_html($plr->name) ?></td>
-				<? if (is_local() || !$game->see_all): ?>
+				<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
 					<td><?= $plr->score ?></td>
 				<? endif ?>
 				<td nowrap><?= $maxJokers - $plr->used_jokers ?> / <?= $maxJokers ?></td>

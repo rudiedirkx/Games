@@ -62,6 +62,8 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 		<span id="dice"></span>
 	</p>
 
+	<p id="challenge"></p>
+
 	<p id="stats"></p>
 
 	<table class="colors game">
