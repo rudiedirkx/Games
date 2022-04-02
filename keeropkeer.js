@@ -595,7 +595,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 
 	printChallenge() {
 		if (this.challenge) {
-			const nope = this.m_iMoves ? '' : '- <a href id="nope">NOPE</a>';
+			const nope = '- <a href id="nope">NOPE</a>';
 			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message} ${nope}`);
 		}
 		else {
@@ -636,6 +636,8 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	getScore() {
+		if (this.challenge) return null;
+
 		return {
 			...super.getScore(),
 			score: this.getNumericScore(),

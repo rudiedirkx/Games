@@ -20,6 +20,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <style>
 canvas {
 	background-color: #eee;
+	max-width: 100%;
 }
 </style>
 </head>
