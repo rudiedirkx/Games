@@ -1,18 +1,18 @@
-name: CI
+name: Deploy
 
 on: [push]
 
 jobs:
-  build:
+  deploy:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Copy privkey
       env:
         PRIVKEY: ${{ secrets.PRIVKEY }}
       run: echo "$PRIVKEY" > ~/privkey && chmod 0600 ~/privkey
-    - name: Deploy to hoblox
+    - name: Deploy to server
       env:
         SSH_HOST: ${{ secrets.SSH_HOST }}
         SSH_TARGET_DIR: ${{ secrets.SSH_TARGET_DIR }}

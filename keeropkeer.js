@@ -1,7 +1,18 @@
 "use strict";
 
-class KOKChallengeColor {
+class KOKChallenge {
+	won() {
+		return false;
+	}
+
+	lost() {
+		return false;
+	}
+}
+
+class KOKChallengeColor extends KOKChallenge {
 	constructor(color) {
+		super();
 		this.color = color;
 	}
 
@@ -9,10 +20,15 @@ class KOKChallengeColor {
 		const i = KeerOpKeer.COLORS.indexOf(this.color);
 		return `Fill all of color ${KeerOpKeer.COLOR_NAMES[i]}`;
 	}
+
+	won(game) {
+		return $(`.full-color.self[data-color="${this.color}"]`) != null;
+	}
 }
 
-class KOKChallengeColorWithoutColor {
+class KOKChallengeAnyColorWithoutColor extends KOKChallenge {
 	constructor(color) {
+		super();
 		this.color = color;
 	}
 
@@ -20,10 +36,19 @@ class KOKChallengeColorWithoutColor {
 		const i = KeerOpKeer.COLORS.indexOf(this.color);
 		return `Fill any color without using ${KeerOpKeer.COLOR_NAMES[i]}`;
 	}
+
+	won(game) {
+		return !this.lost(game) && $('.full-color.self') != null;
+	}
+
+	lost(game) {
+		return game.m_objGrid.getElement(`.chosen[data-color="${this.color}"]`) != null;
+	}
 }
 
-class KOKChallengeColumns {
+class KOKChallengeColumns extends KOKChallenge {
 	constructor(columns) {
+		super();
 		this.columns = columns.sort((a, b) => a - b);
 	}
 
@@ -33,9 +58,20 @@ class KOKChallengeColumns {
 	}
 }
 
-class KOKChallengeNoMistakes {
+class KOKChallengeNoMistakes extends KOKChallenge {
+	constructor(columns) {
+		super();
+		this.chosen = 0;
+	}
+
 	get message() {
 		return `Make 0 mistakes/corrections in selection`;
+	}
+
+	lost(game) {
+		const chosen = game.m_objGrid.getElements('.chosen, .choosing').length;
+		if (chosen < this.chosen) return true;
+		this.chosen = chosen;
 	}
 }
 
@@ -86,7 +122,16 @@ class KeerOpKeer extends GridGame {
 
 		cell.toggleClass('choosing');
 		cell.data('turn', cell.hasClass('choosing') ? this.m_iMoves : null);
+		// this.winOrLose();
 		this.evalNextReady();
+	}
+
+	haveWon() {
+		return this.challenge ? this.challenge.won(this) : false;
+	}
+
+	haveLost() {
+		return this.challenge ? (this.m_bGameOver || this.challenge.lost(this)) : false;
 	}
 
 	evalNextReady() {
@@ -587,7 +632,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 				}
 				return new KOKChallengeColumns(cols);
 			},
-			() => new KOKChallengeColorWithoutColor(KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length - 1)]),
+			() => new KOKChallengeAnyColorWithoutColor(KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length - 1)]),
 			// () => new KOKChallengeNoMistakes(),
 		];
 		return types[this.randInt(types.length - 1)]();
@@ -670,9 +715,14 @@ class SoloKeerOpKeer extends KeerOpKeer {
 			if (!this.maybeConfirmWithoutSelection()) return;
 
 			this.finishTurn();
+			this.winOrLose();
 		}
 
-		if ( this.m_bGameOver ) return;
+		if ( this.m_bGameOver ) {
+			this.printGameState();
+			this.printChallenge();
+			return;
+		}
 
 		this.setMoves(this.m_iMoves + 1);
 		this.printGameState();
