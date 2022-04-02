@@ -4,7 +4,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: rudiedirkx/deploy-git-action@v01
+      - uses: rudiedirkx/deploy-git-action@v02
         with:
           privkey: ${{ secrets.PRIVKEY }}
           host: ${{ secrets.SSH_HOST }}
