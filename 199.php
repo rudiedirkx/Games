@@ -1,5 +1,5 @@
 <?php
-// TICKET TO RIDE
+// TRACK SWITCHER
 // https://www.youtube.com/watch?v=EU6JBeIe390
 
 require __DIR__ . '/inc.bootstrap.php';
@@ -10,7 +10,7 @@ require __DIR__ . '/inc.bootstrap.php';
 
 <head>
 <meta charset="utf-8" />
-<title>Ticket To Ride</title>
+<title>Track Switcher / De Spoorwerf</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#333" />
 <? include 'tpl.onerror.php' ?>

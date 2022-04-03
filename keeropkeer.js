@@ -56,6 +56,12 @@ class KOKChallengeColumns extends KOKChallenge {
 		const names = $$(this.columns.map(i => `thead [data-col="${i}"]`).join(',')).map(el => el.getText());
 		return `Fill columns ${names.join(', ')}`;
 	}
+
+	won(game) {
+		const cols = $$(this.columns.map(i => `.full-column[data-col="${i}"]`).join(','));
+		const fulls = cols.filter(col => col.hasClass('self'));
+		return fulls.length == this.columns.length;
+	}
 }
 
 class KOKChallengeNoMistakes extends KOKChallenge {
