@@ -517,6 +517,11 @@ class CanvasGame extends Game {
 	drawContent() {
 	}
 
+	drawFill( color ) {
+		this.ctx.fillStyle = color;
+		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+	}
+
 	drawDot( coord, {radius = 3, color = '#000'} = {} ) {
 		this.drawCircle(coord, radius, {color, fill: true});
 	}

@@ -19,7 +19,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <script src="<?= html_asset('trackswitcher.js') ?>"></script>
 <style>
 canvas {
-	background-color: #eee;
+	/*background-color: #eee;*/
 	max-width: 100%;
 }
 </style>
@@ -28,6 +28,8 @@ canvas {
 <body class="solo">
 
 <canvas></canvas>
+
+<p><label><input type="checkbox" id="show-names" /> Show names?</label></p>
 
 <script>
 var objGame = new TrackSwitcher($('canvas'));
