@@ -647,10 +647,10 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	printChallenge() {
 		if (this.challenge) {
 			const nope = '- <a href id="nope">NOPE</a>';
-			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message} ${nope}`);
+			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message} ${nope}`).toggleClass('hilite', this.m_iMoves >= 25 && this.m_iMoves % 2 == 0);
 		}
 		else {
-			$('#challenge').setText('');
+			$('#challenge').setText('').removeClass('hilite');
 		}
 	}
 

@@ -113,6 +113,10 @@ table.game {
 #status button {
 	padding: 8px 16px;
 }
+#challenge.hilite {
+	color: black;
+	font-weight: bold;
+}
 .colors-stats {
 	display: flex;
 	align-items: flex-start;
