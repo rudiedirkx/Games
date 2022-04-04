@@ -16,7 +16,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <? include 'tpl.onerror.php' ?>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
-<script src="<?= html_asset('tickettoride.js') ?>"></script>
+<script src="<?= html_asset('trackswitcher.js') ?>"></script>
 <style>
 canvas {
 	background-color: #eee;
@@ -30,7 +30,7 @@ canvas {
 <canvas></canvas>
 
 <script>
-var objGame = new TicketToRide($('canvas'));
+var objGame = new TrackSwitcher($('canvas'));
 objGame.startGame();
 objGame.listenControls();
 objGame.startPainting();
