@@ -3,6 +3,8 @@
 class Model extends db_generic_model {}
 
 class Game extends Model {
+	use WithMultiplayerPassword;
+
 	const COLORS_TO_COMPLETE = 2;
 	const KICKABLE_AFTER = 120;
 
@@ -199,13 +201,13 @@ class Game extends Model {
 			return Player::find($pid);
 		});
 	}
-
-	static public function get(?string $password) : ?self {
-		return $password ? self::first(['password' => $password]) : null;
-	}
 }
 
 class Player extends Model {
+	use WithMultiplayerPassword, WithMultiplayerHistory;
+
+	const HISTORY_COOKIE_NAME = 'kok_pids';
+
 	static $_table = 'keeropkeer_players';
 
 	public function kick() {
@@ -371,31 +373,6 @@ class Player extends Model {
 
 	public function __toString() {
 		return $this->name ?? '???';
-	}
-
-	static public function addHistory(int $pid) : void {
-		if (!self::inHistory($pid)) {
-			$pids = self::getHistory();
-			$pids[] = $pid;
-			setcookie('kok_pids', implode(',', $pids), time() + 7 * 86400);
-		}
-	}
-
-	static public function inHistory(int $pid) : bool {
-		return in_array($pid, self::getHistory());
-	}
-
-	static public function getHistory() : array {
-		if (!isset($_COOKIE['kok_pids'])) return [];
-		return explode(',', $_COOKIE['kok_pids']);
-	}
-
-	static public function get(?string $password) : ?self {
-		return $password ? self::first(['password' => $password]) : null;
-	}
-
-	static function presave( array &$data ) {
-		self::presaveTrim($data);
 	}
 }
 

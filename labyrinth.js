@@ -356,12 +356,6 @@ class Labyrinth extends CanvasGame {
 		this.startGameWith(dynamicTiles, keyTile);
 	}
 
-	startGame(treasureStrategy) {
-		const dynamicTiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
-		const keyTile = dynamicTiles.shift();
-		this.startGameWith(dynamicTiles, keyTile, treasureStrategy);
-	}
-
 	startGameWith(dynamicTiles, keyTile, treasureStrategy) {
 		this.reset();
 
@@ -711,6 +705,14 @@ setTimeout(() => {
 		this.keyTile.rotation = (this.keyTile.rotation + 1) % 4;
 		this.changed = true;
 	}
+}
+
+class SoloLabyrinth extends Labyrinth {
+	startGame(treasureStrategy) {
+		const dynamicTiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
+		const keyTile = dynamicTiles.shift();
+		this.startGameWith(dynamicTiles, keyTile, treasureStrategy);
+	}
 
 	listenControls() {
 		this.listenClick();
@@ -727,5 +729,9 @@ setTimeout(() => {
 			this.handleKeyTileClick();
 		});
 	}
+}
 
+class MultiLabyrinth extends Labyrinth {
+	startGame() {
+	}
 }

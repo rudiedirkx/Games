@@ -12,14 +12,8 @@ trait HasCards {
 	}
 }
 
-trait HasPassword {
-	static public function get(?string $password) : ?self {
-		return $password ? self::first(['password' => $password]) : null;
-	}
-}
-
 class Table extends Model {
-	use HasPassword, HasCards;
+	use WithMultiplayerPassword, HasCards;
 
 	const MAX_RAISE = 5;
 
@@ -345,7 +339,7 @@ class Table extends Model {
 }
 
 class Player extends Model {
-	use HasPassword, HasCards;
+	use WithMultiplayerPassword, HasCards;
 
 	const STATE_UNBET = 0;
 	const STATE_BET = 1;

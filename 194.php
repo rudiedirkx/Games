@@ -117,6 +117,7 @@ if (!$player) {
 		<hr />
 		<p>No, <a href="194.php">start a new game</a>.</p>
 		<?php
+		include 'tpl.queries.php';
 		exit;
 	}
 

@@ -1,0 +1,51 @@
+* {
+	user-select: none;
+}
+html, body {
+	margin: 0;
+	padding: 0;
+}
+body {
+	display: flex;
+	flex-wrap: wrap;
+	/*gap: 20px;*/
+	font-family: sans-serif;
+}
+canvas {
+	display: block;
+	max-width: 100%;
+	max-height: 100vh;
+}
+.meta {
+	margin-top: 20px;
+	margin-left: 20px;
+	max-width: 80vh;
+}
+.key-stats {
+	display: flex;
+	gap: 20px;
+	align-items: flex-start;
+}
+.key-stats p:first-child {
+	margin-top: 0;
+}
+.key-stats p:last-child {
+	margin-bottom: 0;
+}
+#status {
+	font-style: italic;
+}
+.target {
+	display: inline-block;
+	border: solid 1px black;
+	padding: 1px 3px;
+	background-color: #fff;
+}
+.target.found {
+	background-color: #afa;
+}
+
+.players .me {
+	color: lime;
+	font-weight: bold;
+}
