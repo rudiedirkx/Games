@@ -177,7 +177,12 @@ class Labyrinth extends CanvasGame {
 	constructor(canvas, keyCanvas) {
 		super(canvas);
 
-		this.keyGame = keyCanvas ? new Labyrinth(keyCanvas) : null;
+		this.keyCanvas = keyCanvas;
+		this.keyCtx = keyCanvas.getContext('2d');
+	}
+
+	createGame() {
+		super.createGame();
 
 		this.shapeStraight = new LabyrinthTileShapeStraight();
 		this.shapeCorner = new LabyrinthTileShapeCorner();
@@ -199,6 +204,13 @@ class Labyrinth extends CanvasGame {
 
 		this.treasureStrategy = null;
 		this.foundTreasure = null;
+	}
+
+	drawOn(ctx, callback) {
+		const _ctx = this.ctx;
+		this.ctx = ctx;
+		callback();
+		this.ctx = _ctx;
 	}
 
 	drawContent() {
@@ -248,10 +260,12 @@ class Labyrinth extends CanvasGame {
 
 	drawKeyTile() {
 		const MARGIN = 2;
-		this.keyGame.canvas.width = this.keyGame.canvas.height = MARGIN + Labyrinth.SQUARE + MARGIN;
-		if (this.keyTile) {
-			this.keyGame.drawTile(new Coords2D(MARGIN, MARGIN), this.keyTile);
-		}
+		this.drawOn(this.keyCtx, () => {
+			this.keyCanvas.width = this.keyCanvas.height = MARGIN + Labyrinth.SQUARE + MARGIN;
+			if (this.keyTile) {
+				this.drawTile(new Coords2D(MARGIN, MARGIN), this.keyTile);
+			}
+		});
 	}
 
 	drawTile(topleft, tile) {
@@ -360,6 +374,7 @@ class Labyrinth extends CanvasGame {
 		this.reset();
 
 		this.gridTiles(dynamicTiles);
+		keyTile.loc = null;
 		this.tiles.push(this.keyTile = keyTile);
 
 		this.player = this.makePlayer(this.randInt(4));
