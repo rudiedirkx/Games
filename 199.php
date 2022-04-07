@@ -29,11 +29,18 @@ canvas {
 
 <canvas></canvas>
 
-<p><label><input type="checkbox" id="show-names" /> Show names?</label></p>
+<p>
+	Level <select id="levels"></select>
+	<button id="restart">Restart</button>
+	&nbsp;
+	<label><input type="checkbox" id="show-names" /> Show names?</label>
+	&nbsp;
+	<label><input type="checkbox" id="show-solution" /> Show solution?</label>
+</p>
 
 <script>
 var objGame = new TrackSwitcher($('canvas'));
-objGame.startGame();
+objGame.startGame(location.hash ? parseInt(location.hash.substr(1)) : 0);
 objGame.listenControls();
 objGame.startPainting();
 </script>

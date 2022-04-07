@@ -319,6 +319,20 @@ class Game {
 		return '#' + ('000000' + (Math.random()*0xFFFFFF<<0).toString(16)).slice(-6);
 	}
 
+	log(msg) {
+		console.log(msg);
+
+		var log = $('#log');
+		if (!log) {
+			document.body.append(log = document.el('div', {id: 'log'}));
+		}
+
+		if (msg instanceof Coords2D) {
+			msg = JSON.stringify(msg);
+		}
+		log.prepend(document.el('pre').setText(msg));
+	}
+
 	setMoves( f_iMoves ) {
 		if ( f_iMoves != null ) {
 			this.m_iMoves = f_iMoves;
@@ -486,11 +500,12 @@ class CanvasGame extends Game {
 		this.canvas = canvas;
 		this.ctx = canvas.getContext('2d');
 
-		this.paintingTiming = false;
+		this.dragging = null;
 		this.changed = true;
 	}
 
 	createGame() {
+		this.paintingTiming = false;
 	}
 
 	startPainting() {
@@ -593,6 +608,10 @@ class CanvasGame extends Game {
 		this.ctx.fillText(text, coord.x, coord.y);
 	}
 
+	fixEventCoordScale(C) {
+		return C.multiply(this.canvas.width / this.canvas.offsetWidth);
+	}
+
 	listenControls() {
 		this.listenClick();
 	}
@@ -605,7 +624,56 @@ class CanvasGame extends Game {
 		});
 	}
 
+	listenDragAndClick() {
+		var touchstart = null;
+		var touchpos = null;
+
+		this.canvas.on(['mousedown', 'touchstart'], e => {
+			e.preventDefault();
+			touchstart = e.subjectXY;
+
+			if (this.handleDragStart(this.fixEventCoordScale(e.subjectXY))) {
+				this.dragging = 1;
+			}
+		});
+		this.canvas.on(['mousemove', 'touchmove'], e => {
+			touchpos = e.subjectXY;
+			if ( this.m_bGameOver ) return;
+
+			if ( this.dragging >= 1 ) {
+				this.dragging = 2;
+				this.handleDragMove(this.fixEventCoordScale(e.subjectXY));
+			}
+		});
+		document.on(['mouseup', 'touchend'], e => {
+			if (touchstart && (!touchpos || touchstart.distance(touchpos) < 10)) {
+				this.dragging = 0;
+				const C = this.fixEventCoordScale(touchpos || touchstart);
+				this.handleDragEnd();
+				this.handleClick(C);
+				touchstart = null;
+				touchpos = null;
+				return;
+			}
+
+			if ( this.dragging ) {
+				this.handleDragEnd();
+			}
+
+			this.dragging = 0;
+		});
+	}
+
 	handleClick( coord ) {
+	}
+
+	handleDragStart( coord ) {
+	}
+
+	handleDragMove( coord ) {
+	}
+
+	handleDragEnd( coord ) {
 	}
 
 }
