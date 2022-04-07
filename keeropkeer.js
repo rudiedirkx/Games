@@ -34,7 +34,7 @@ class KOKChallengeAnyColorWithoutColor extends KOKChallenge {
 
 	get message() {
 		const i = KeerOpKeer.COLORS.indexOf(this.color);
-		return `Fill any color without using ${KeerOpKeer.COLOR_NAMES[i]}`;
+		return `Fill any color without using any ${KeerOpKeer.COLOR_NAMES[i]}`;
 	}
 
 	won(game) {
@@ -61,6 +61,27 @@ class KOKChallengeColumns extends KOKChallenge {
 		const cols = $$(this.columns.map(i => `.full-column[data-col="${i}"]`).join(','));
 		const fulls = cols.filter(col => col.hasClass('self'));
 		return fulls.length == this.columns.length;
+	}
+}
+
+class KOKChallengeEnds extends KOKChallengeColumns {
+	constructor() {
+		super([0, 14]);
+	}
+
+	get message() {
+		return `Fill the far left and far right columns`;
+	}
+}
+
+class KOKChallengeSide extends KOKChallengeColumns {
+	constructor(columns, side) {
+		super(side ? [8, 9, 10, 11, 12, 13, 14] : [0, 1, 2, 3, 4, 5, 6]);
+		this.side = side;
+	}
+
+	get message() {
+		return `Fill the entire ${this.side ? 'right' : 'left'} side, with center optional`;
 	}
 }
 
@@ -629,7 +650,8 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	makeRandomChallenge() {
 		const types = [
 			() => new KOKChallengeColor(KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length - 1)]),
-			() => new KOKChallengeColumns([0, KeerOpKeer.CENTER * 2]),
+			() => new KOKChallengeEnds(),
+			() => new KOKChallengeSide(this.randInt(1)),
 			() => {
 				const cols = [];
 				while (cols.length < 4) {
