@@ -356,7 +356,7 @@ class TrackSwitcher extends CanvasGame {
 	}
 
 	createLevelSelect() {
-		const html = TrackSwitcher.PROBLEMS.map((P, n) => `<option value="${n}">${n+1}</option>`).join('');
+		const html = TrackSwitcher.PROBLEMS.map((P, n) => `<option value="${n}">${n+1} (${P.moves} mv)</option>`).join('');
 		this.$levels.setHTML(html);
 	}
 

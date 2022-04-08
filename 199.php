@@ -33,9 +33,10 @@ canvas {
 	Level <select id="levels"></select>
 	<button id="restart">Restart</button>
 	&nbsp;
-	<label><input type="checkbox" id="show-names" /> Show names?</label>
-	&nbsp;
-	<label><input type="checkbox" id="show-solution" /> Show solution?</label>
+	<label><input type="checkbox" id="show-solution" /> Show solution</label>
+</p>
+<p>
+	<label><input type="checkbox" id="show-names" /> Show names</label>
 </p>
 
 <script>
