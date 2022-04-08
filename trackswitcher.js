@@ -20,9 +20,9 @@ class EngineShape extends Shape {
 	constructor(points) {
 		super(points || [
 			new Coords2D(-1, -0.4),
-			new Coords2D(0.8, -0.4),
+			new Coords2D(0.7, -0.4),
 			new Coords2D(1.0, 0.0),
-			new Coords2D(0.8, 0.4),
+			new Coords2D(0.7, 0.4),
 			new Coords2D(-1, 0.4),
 		]);
 	}
@@ -47,12 +47,9 @@ class Track {
 		if (x1 > x2 /*|| (x1 == x2 && y1 > y2)*/) {
 			[this.from, this.to] = [this.to, this.from];
 		}
+		this.center = new Coords2D((this.from.x + this.to.x) / 2, (this.from.y + this.to.y) / 2);
 		this.angle = angle;
 		this.stoppable = stoppable;
-	}
-
-	get center() {
-		return new Coords2D((this.from.x + this.to.x) / 2, (this.from.y + this.to.y) / 2);
 	}
 
 	get slope() {
@@ -119,18 +116,17 @@ class Track {
 }
 
 class CircularTrack extends Track {
-	constructor(center, radius, startAngle, endAngle) {
-		super();
-		this.center = center;
+	constructor(name, x1, y1, x2, y2, angle, cx, cy, dcx, dcy, radius, startAngle, endAngle) {
+		super(name, x1, y1, x2, y2, angle);
+		this.center = new Coords2D(cx, cy);
+		this.drawCenter = new Coords2D(dcx, dcy);
 		this.radius = radius;
 		this.startAngle = startAngle;
 		this.endAngle = endAngle;
 	}
 
-	drawTrack(game, color, width) {
-		color || (color = TrackSwitcher.TRACK_COLOR); // game.randomColor();
-		width || (width = TrackSwitcher.TRACK_WIDTH);
-		const C = game.scale(this.center);
+	drawArc(game, color, width) {
+		const C = game.scale(this.drawCenter);
 
 		game.ctx.strokeStyle = color;
 		game.ctx.lineWidth = width;
@@ -138,6 +134,18 @@ class CircularTrack extends Track {
 		game.ctx.beginPath();
 		game.ctx.arc(C.x, C.y, this.radius * TrackSwitcher.SQUARE, this.startAngle, this.endAngle);
 		game.ctx.stroke();
+	}
+
+	drawRoute(game) {
+		this.drawArc(game, TrackSwitcher.ROUTE_COLOR, TrackSwitcher.ROUTE_WIDTH);
+	}
+
+	drawTrackOuter(game) {
+		this.drawArc(game, TrackSwitcher.TRACK_COLOR, TrackSwitcher.TRACK_WIDTH);
+	}
+
+	drawTrackInner(game) {
+		this.drawArc(game, TrackSwitcher.BGCOLOR, TrackSwitcher.TRACK_INNER);
 	}
 }
 
@@ -208,9 +216,9 @@ class Route {
 	moveCar(car, before) {
 		car.location = this.last.name;
 
-		const bla = before.angle;
-		const la = this.last.angle;
-		if ((bla < 0 && la > 0) || (bla > 0 && la < 0)) {
+		const bla = before;
+		const la = this.last;
+		if (TrackSwitcher.REVERSERS.includes(`${bla.name}:${la.name}`) || TrackSwitcher.REVERSERS.includes(`${la.name}:${bla.name}`)) {
 			car.reverse();
 		}
 	}
@@ -298,7 +306,7 @@ class TrackSwitcher extends CanvasGame {
 		new Track('2', 8, 1, 6, 3, -45),
 		new Track('3-1', 6, 3, 8, 3, 0), new Track('3-2', 8, 3, 10, 3, 0),
 		new Track('4-1', 6, 3, 4, 5, -45), new Track('4-2', 10, 3, 12, 5, 45),
-		new Track('ct', 8, 3, 9, 5, 60, false), new Track('cb', 9, 5, 8, 7, -60, false),
+		new CircularTrack('c', 8, 3, 8, 7, 90, 8.65, 5, 5.7, 5, 3, -Math.PI * .23, Math.PI * .23),
 		new Track('5-1', 0, 5, 2, 5, 0), new Track('5-2', 2, 5, 4, 5, 0), new Track('5-3', 12, 5, 14, 5, 0), new Track('5-4', 14, 5, 16, 5, 0),
 		new Track('6-1', 6, 7, 4, 5, 45), new Track('6-2', 10, 7, 12, 5, -45),
 		new Track('7-1', 6, 7, 8, 7, 0), new Track('7-2', 8, 7, 10, 7, 0),
@@ -314,7 +322,8 @@ class TrackSwitcher extends CanvasGame {
 	// 	new TrackConn('6-1', '7-1', 6.1, 6.3), new TrackConn('cb', '7-1', 7.7, 6.4), new TrackConn('6-2', '7-2', 9.8, 6.4),
 	// 	new TrackConn('7-1', 'lb-1', 6.2, 7.5), new TrackConn('7-1', 'rb-1', 7.8, 7.5),
 	// ];
-	static UNBENDABLES = ['lb-1:6-1', '6-1:4-1', '3-1:2', '1-4:2', 'rb-1:7-2', 'rb-1:cb', 'cb:7-2', '4-2:6-2', '3-2:ct'];
+	static UNBENDABLES = ['lb-1:6-1', '6-1:4-1', '3-1:2', '1-4:2', 'rb-1:7-2', 'rb-1:c', 'c:7-2', '4-2:6-2', '3-2:c'];
+	static REVERSERS = ['c:7-1'];
 
 	static SHAPE_ENGINE = new EngineShape();
 	static SHAPE_WAGON = new WagonShape();
@@ -330,7 +339,7 @@ class TrackSwitcher extends CanvasGame {
 		),
 		new Problem(3, // 3
 			[new Engine(0, '1-7', -1), new Wagon(1, '1-8'), new Wagon(2, '5-4')],
-			[new Engine(0, 'lb-2', 1), new Wagon(1, 'lb-1'), new Wagon(2, '7-1')],
+			[new Engine(0, 'lb-2', -1), new Wagon(1, 'lb-1'), new Wagon(2, '7-1')],
 		),
 		new Problem(5, // 4
 			[new Engine(0, '3-1', 1), new Wagon(1, '5-1'), new Wagon(2, '7-1'), new Wagon(3, 'rb-3')],
@@ -339,6 +348,10 @@ class TrackSwitcher extends CanvasGame {
 		new Problem(3, // 5
 			[new Engine(0, '5-1', -1), new Engine(0, '5-4', 1), new Wagon(1, '3-1')],
 			[new Engine(0, 'rb-1', -1), new Engine(0, 'rb-3', -1), new Wagon(1, 'rb-2')],
+		),
+		new Problem(3, // 6
+			[new Engine(0, '5-1', -1), new Engine(0, 'rb-3', -1), new Wagon(1, 'c'), new Wagon(2, '7-1')],
+			[new Engine(0, '5-4', 1), new Engine(0, '7-2', -1), new Wagon(1, '6-2'), new Wagon(2, '5-3')],
 		),
 	];
 
