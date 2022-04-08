@@ -101,7 +101,9 @@ return [
 //	['193',				'INDEX grid concept',							'A prototype games index'],
 	['194',				'Keer Op Keer MULTI',							'Speel Play Keer Op Keer samen multiplayer'],
 	['195',				"TEXAS HOLD'EM v3",								"Multi-player Poker Texas Hold'em"],
-	['196',				'Labyrinth / Betoverde Doolhof',				"Speel De Betoverde Doolhof. Play Labyrinth"],
+	['196',				'Labyrinth / Betoverde Doolhof SOLO',				"Speel De Betoverde Doolhof. Play Labyrinth"],
 	['197',				'Picross 2',									"Picross, but better"],
 	['199',				'Track Switcher / De Spoorwerf',				"Move trains on a train yard"],
+//	['200',				'Project L SOLO',								"Tetris puzzler for points, against the computer"],
+	['201',				'Labyrinth / Betoverde Doolhof MULTI',			"Play Labyrinth Speel Betoverde Doolhof online"],
 ];

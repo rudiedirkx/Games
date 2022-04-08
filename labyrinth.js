@@ -161,7 +161,6 @@ class Labyrinth extends CanvasGame {
 	static FIX_TREAS_INTERSECT = 12;
 	static DYN_TREAS_CORNER = 6;
 	static DYN_TREAS_INTERSECT = 6;
-	static TARGET_TREAS = 8;
 
 	static OFFSET = 60;
 	static SQUARE = 80;
@@ -214,6 +213,7 @@ class Labyrinth extends CanvasGame {
 	}
 
 	drawContent() {
+		this.drawFill('#fff');
 		this.drawArrows();
 		this.drawTiles();
 		this.drawPlayer();
@@ -364,24 +364,21 @@ class Labyrinth extends CanvasGame {
 	}
 
 	importTiles(chars) {
-		const dynamicTiles = this.unserializeTiles(chars).reverse();
-		const dynamicIndexes = dynamicTiles.map(tile => tile.dynamicIndex);
-		const keyTile = Labyrinth.dynamicTiles.find(tile => !dynamicIndexes.includes(tile.dynamicIndex));
-		this.startGameWith(dynamicTiles, keyTile);
+		// const dynamicTiles = this.unserializeTiles(chars).reverse();
+		// const dynamicIndexes = dynamicTiles.map(tile => tile.dynamicIndex);
+		// const keyTile = Labyrinth.dynamicTiles.find(tile => !dynamicIndexes.includes(tile.dynamicIndex));
+		// this.startGameWith(dynamicTiles, keyTile);
 	}
 
-	startGameWith(dynamicTiles, keyTile, treasureStrategy) {
+	startGameWith(tiles, treasures) {
 		this.reset();
 
-		this.gridTiles(dynamicTiles);
-		keyTile.loc = null;
-		this.tiles.push(this.keyTile = keyTile);
+		this.gridTiles(tiles);
 
 		this.player = this.makePlayer(this.randInt(4));
 		this.updateIndex();
 
-		this.treasureStrategy = new LabyrinthTreasuresInOrder(this.createRandomTargets());
-		this.changeStrategy(treasureStrategy);
+		this.treasureStrategy = treasures;
 		this.printTargets();
 
 		this.printStatus();
@@ -404,34 +401,27 @@ setTimeout(() => this.drawPaths(this.findPathsFrom(this.player.tile)), 100);
 		return 'Slide the key tile into the board at a yellow arrow. Click on the key tile first to rotate it.';
 	}
 
-	changeStrategy(key) {
-		key === 'AnyOrder' || (key = 'InOrder');
-		$('#treasurestrategy').value = key;
-		if (this.treasureStrategy.canChange()) {
-			this.treasureStrategy = this.makeTreasureStrategy(key);
-		}
-		else {
-			this.startGame(key);
-		}
-	}
-
-	makeTreasureStrategy(key) {
+	makeTreasureStrategy(key, targets, found = []) {
 		const cls = key == 'AnyOrder' ? LabyrinthTreasuresAnyOrder : LabyrinthTreasuresInOrder;
-		return new cls(this.treasureStrategy.targets, this.treasureStrategy.targetsFound);
+		return new cls(targets, found);
+		// return new cls(this.treasureStrategy.targets, this.treasureStrategy.targetsFound);
 	}
 
-	createRandomTargets() {
-		const all = (new Array(Labyrinth.FIX_TREAS_INTERSECT + Labyrinth.DYN_TREAS_CORNER + Labyrinth.DYN_TREAS_INTERSECT)).fill(0).map((x, i) => i + 1).sort((a, b) => Math.random() < 0.5 ? 1 : -1);
-		return all.slice(0, Labyrinth.TARGET_TREAS);
-	}
-
-	gridTiles(dynamicTiles) {
+	gridTiles(tiles) {
 		for ( let y = 0; y < Labyrinth.SIZE; y++ ) {
 			for ( let x = 0; x < Labyrinth.SIZE; x++ ) {
-				const tile = Labyrinth.fixedTiles[`${x}_${y}`] || dynamicTiles.pop();
-				tile.loc = new Coords2D(x, y);
-				this.tiles.push(tile);
+				const tile = Labyrinth.fixedTiles[`${x}_${y}`] || tiles.pop();
+				if (tile) {
+					tile.loc = new Coords2D(x, y);
+					this.tiles.push(tile);
+				}
 			}
+		}
+
+		this.keyTile = tiles.pop();
+		if (this.keyTile) {
+			this.keyTile.loc = null;
+			this.tiles.push(this.keyTile);
 		}
 	}
 
@@ -723,10 +713,28 @@ setTimeout(() => {
 }
 
 class SoloLabyrinth extends Labyrinth {
-	startGame(treasureStrategy) {
-		const dynamicTiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
-		const keyTile = dynamicTiles.shift();
-		this.startGameWith(dynamicTiles, keyTile, treasureStrategy);
+	static TARGET_TREAS = 8;
+
+	startGame(treasuresName) {
+		const tiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
+		const treasures = this.makeTreasureStrategy(treasuresName, this.createRandomTargets());
+		this.startGameWith(tiles, treasures);
+	}
+
+	createRandomTargets() {
+		const all = (new Array(Labyrinth.FIX_TREAS_INTERSECT + Labyrinth.DYN_TREAS_CORNER + Labyrinth.DYN_TREAS_INTERSECT)).fill(0).map((x, i) => i + 1).sort((a, b) => Math.random() < 0.5 ? 1 : -1);
+		return all.slice(0, SoloLabyrinth.TARGET_TREAS);
+	}
+
+	changeStrategy(key) {
+		key === 'AnyOrder' || (key = 'InOrder');
+		$('#treasurestrategy').value = key;
+		if (this.treasureStrategy.canChange()) {
+			this.treasureStrategy = this.makeTreasureStrategy(key, this.treasureStrategy.targets, this.treasureStrategy.targetsFound);
+		}
+		else {
+			this.startGame(key);
+		}
 	}
 
 	listenControls() {
@@ -747,6 +755,15 @@ class SoloLabyrinth extends Labyrinth {
 }
 
 class MultiLabyrinth extends Labyrinth {
-	startGame() {
+	startGame(treasuresName, board) {
+		if (!board) {
+			const treasures = this.makeTreasureStrategy(treasuresName, []);
+			this.startGameWith([], treasures);
+			return;
+		}
+
+		const dynamicTiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
+		const keyTile = dynamicTiles.shift();
+		this.startGameWith(dynamicTiles, keyTile, treasuresName);
 	}
 }

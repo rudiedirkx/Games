@@ -11,6 +11,12 @@ body {
 	/*gap: 20px;*/
 	font-family: sans-serif;
 }
+a {
+	color: inherit;
+}
+th:not([align]) {
+	text-align: left;
+}
 canvas {
 	display: block;
 	max-width: 100%;

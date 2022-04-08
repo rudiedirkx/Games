@@ -27,7 +27,7 @@ require __DIR__ . '/inc.bootstrap.php';
 	<div class="key-stats">
 		<canvas id="key"></canvas>
 		<div>
-			<p id="status">Eeeeehhh</p>
+			<p id="status">??</p>
 			<p>
 				Time: <span id="stats-time"></span><br>
 				Moves: <span id="stats-moves"></span><br>
