@@ -582,10 +582,18 @@ class TrackSwitcher extends CanvasGame {
 	// }
 
 	haveWon() {
-		const tos = TrackSwitcher.PROBLEMS[this.level].tos;
-		if (tos.length == this.cars.length) {
-			return this.cars.every((car, i) => {
-				return car.equal(tos[i]);
+		const sort = (a, b) => {
+			var cmp = a.id - b.id;
+			if (cmp != 0) return cmp;
+
+			cmp = a.location < b.location ? -1 : 1;
+			return cmp;
+		};
+		const goal = [...TrackSwitcher.PROBLEMS[this.level].tos].sort(sort);
+		const real = [...this.cars].sort(sort);
+		if (goal.length == real.length) {
+			return real.every((car, i) => {
+				return car.equal(goal[i]);
 			});
 		}
 	}
@@ -613,6 +621,7 @@ class TrackSwitcher extends CanvasGame {
 	handleDragStart(C) {
 		if (this.m_bGameOver) return;
 
+		clearTimeout(this.checker);
 		this.startTime();
 
 		const track = this.findClosestTrack(C);
@@ -639,7 +648,7 @@ class TrackSwitcher extends CanvasGame {
 		}
 
 		if (this.draggingRoute.last != track) {
-			if (this.draggingRoute.connectsTo(track)) {
+			if (this.draggingRoute.connectsTo(track) && !this.getCar(track)) {
 				if (this.canBendTo(this.draggingRoute.last, track)) {
 					this.draggingRoute.add(track);
 					this.changed = true;
