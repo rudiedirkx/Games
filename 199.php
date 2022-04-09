@@ -17,6 +17,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('trackswitcher.js') ?>"></script>
+<script src="<?= html_asset('trackswitcher_levels.js') ?>"></script>
 <style>
 canvas {
 	/*background-color: #eee;*/

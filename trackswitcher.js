@@ -39,8 +39,35 @@ class WagonShape extends Shape {
 	}
 }
 
+class BlockShape extends Shape {
+	constructor(points) {
+		super(points || [
+			// Cross
+			// new Coords2D(-0.8, -0.3),
+			// new Coords2D(0.0, -0.1),
+			// new Coords2D(0.8, -0.3),
+			// new Coords2D(1.0, -0.2),
+			// new Coords2D(0.1, 0.0),
+			// new Coords2D(1.0, 0.2),
+			// new Coords2D(0.8, 0.3),
+			// new Coords2D(0.0, 0.1),
+			// new Coords2D(-0.8, 0.3),
+			// new Coords2D(-1.0, 0.2),
+			// new Coords2D(-0.1, 0.0),
+			// new Coords2D(-1.0, -0.2),
+			// Bar
+			new Coords2D(-0.8, -0.25),
+			new Coords2D(0.8, -0.25),
+			new Coords2D(0.8, 0.25),
+			new Coords2D(-0.8, 0.25),
+		]);
+	}
+}
+
 class Track {
-	constructor(name, x1, y1, x2, y2, angle, stoppable = true) {
+	static SF = 0.85;
+
+	constructor(name, x1, y1, x2, y2, angle) {
 		this.name = name;
 		this.from = new Coords2D(x1, y1);
 		this.to = new Coords2D(x2, y2);
@@ -49,7 +76,6 @@ class Track {
 		}
 		this.center = new Coords2D((this.from.x + this.to.x) / 2, (this.from.y + this.to.y) / 2);
 		this.angle = angle;
-		this.stoppable = stoppable;
 	}
 
 	get slope() {
@@ -87,31 +113,45 @@ class Track {
 		const center = game.scale(this.center);
 		const angle = this.angle + (reverse ? 180 : 0);
 		const shape = model.rotate(angle / 180 * Math.PI);
-		const SF = 0.85;
 
 		game.ctx.fillStyle = color;
 		game.ctx.beginPath();
 		shape.points.forEach((point, i) => {
-			const C = center.add(point.multiply(TrackSwitcher.SQUARE * SF));
+			const C = center.add(point.multiply(TrackSwitcher.SQUARE * Track.SF));
 			game.ctx[i == 0 ? 'moveTo' : 'lineTo'](C.x, C.y);
 		});
 		game.ctx.closePath();
 		game.ctx.fill();
+	}
 
-		const front = center.add(shape.front.multiply(TrackSwitcher.SQUARE * SF));
+	drawEnds(game, model) {
+		const center = game.scale(this.center);
+		const angle = this.angle;
+		const shape = model.rotate(angle / 180 * Math.PI);
+
+		const front = center.add(shape.front.multiply(TrackSwitcher.SQUARE * Track.SF));
 		game.drawDot(front);
-		const rear = center.add(shape.rear.multiply(TrackSwitcher.SQUARE * SF));
+		const rear = center.add(shape.rear.multiply(TrackSwitcher.SQUARE * Track.SF));
 		game.drawDot(rear);
 	}
 
 	drawEngine(game, car) {
 		const color = car ? TrackSwitcher.CAR_COLORS[car.id] : TrackSwitcher.WAGON_COLOR;
-		return this.drawShape(game, TrackSwitcher.SHAPE_ENGINE, color, car ? car.direction == -1 : false);
+		this.drawShape(game, TrackSwitcher.SHAPE_ENGINE, color, car ? car.direction == -1 : false);
+		this.drawEnds(game, TrackSwitcher.SHAPE_ENGINE);
 	}
 
 	drawWagon(game, car) {
 		const color = car ? TrackSwitcher.CAR_COLORS[car.id] : TrackSwitcher.WAGON_COLOR;
-		return this.drawShape(game, TrackSwitcher.SHAPE_WAGON, color);
+		this.drawShape(game, TrackSwitcher.SHAPE_WAGON, color);
+		this.drawEnds(game, TrackSwitcher.SHAPE_WAGON);
+	}
+
+	drawBlock(game) {
+		this.drawShape(game, TrackSwitcher.SHAPE_BLOCK, TrackSwitcher.BLOCK_COLOR);
+		// const from = game.scale(this.from);
+		// const to = game.scale(this.to);
+		// game.drawLine(from, to, {color: TrackSwitcher.BLOCK_COLOR, width: TrackSwitcher.TRACK_WIDTH});
 	}
 }
 
@@ -238,6 +278,10 @@ class Wagon {
 		this.location = location;
 	}
 
+	get movable() {
+		return true;
+	}
+
 	draw(game) {
 		const track = game.getTrack(this.location);
 		track.drawWagon(game, this);
@@ -247,7 +291,7 @@ class Wagon {
 	}
 
 	equal(car) {
-		return car.id == this.id && car.location == this.location;
+		return this.constructor == car.constructor && car.id == this.id && car.location == this.location;
 	}
 
 	clone() {
@@ -256,8 +300,8 @@ class Wagon {
 }
 
 class Engine extends Wagon {
-	constructor(id, location, direction) {
-		super(id, location);
+	constructor(location, direction) {
+		super(0, location);
 		this.direction = direction;
 	}
 
@@ -275,7 +319,30 @@ class Engine extends Wagon {
 	}
 
 	clone() {
-		return new Engine(this.id, this.location, this.direction);
+		return new Engine(this.location, this.direction);
+	}
+}
+
+class Block extends Wagon {
+	constructor(location) {
+		super(Math.random(), location);
+	}
+
+	get movable() {
+		return false;
+	}
+
+	draw(game) {
+		const track = game.getTrack(this.location);
+		track.drawBlock(game);
+	}
+
+	equal(car) {
+		return this.constructor == car.constructor;
+	}
+
+	clone() {
+		return new Block(this.location);
 	}
 }
 
@@ -288,6 +355,7 @@ class TrackSwitcher extends CanvasGame {
 	static STOP_RADIUS = 12;
 	static STOP_WIDTH = 3;
 	static STOP_COLOR = '#aaa';
+	static BLOCK_COLOR = '#000';
 	static BGCOLOR = '#eee';
 	static TRACK_WIDTH = 14;
 	static TRACK_INNER = 6;
@@ -327,33 +395,9 @@ class TrackSwitcher extends CanvasGame {
 
 	static SHAPE_ENGINE = new EngineShape();
 	static SHAPE_WAGON = new WagonShape();
+	static SHAPE_BLOCK = new BlockShape();
 
-	static PROBLEMS = [
-		new Problem(3, // 1
-			[new Engine(0, '1-8', -1), new Wagon(1, '5-1')],
-			[new Engine(0, '5-4', 1), new Wagon(1, '5-3')],
-		),
-		new Problem(3, // 2
-			[new Engine(0, '5-4', -1), new Wagon(1, '5-3')],
-			[new Engine(0, '5-4', 1), new Wagon(1, '5-3')],
-		),
-		new Problem(3, // 3
-			[new Engine(0, '1-7', -1), new Wagon(1, '1-8'), new Wagon(2, '5-4')],
-			[new Engine(0, 'lb-2', -1), new Wagon(1, 'lb-1'), new Wagon(2, '7-1')],
-		),
-		new Problem(5, // 4
-			[new Engine(0, '3-1', 1), new Wagon(1, '5-1'), new Wagon(2, '7-1'), new Wagon(3, 'rb-3')],
-			[new Engine(0, '1-8', 1), new Wagon(1, '1-6'), new Wagon(2, 'lb-2'), new Wagon(3, '1-7')],
-		),
-		new Problem(3, // 5
-			[new Engine(0, '5-1', -1), new Engine(0, '5-4', 1), new Wagon(1, '3-1')],
-			[new Engine(0, 'rb-1', -1), new Engine(0, 'rb-3', -1), new Wagon(1, 'rb-2')],
-		),
-		new Problem(3, // 6
-			[new Engine(0, '5-1', -1), new Engine(0, 'rb-3', -1), new Wagon(1, 'c'), new Wagon(2, '7-1')],
-			[new Engine(0, '5-4', 1), new Engine(0, '7-2', -1), new Wagon(1, '6-2'), new Wagon(2, '5-3')],
-		),
-	];
+	static PROBLEMS = [];
 
 	createGame() {
 		super.createGame();
@@ -369,7 +413,7 @@ class TrackSwitcher extends CanvasGame {
 	}
 
 	createLevelSelect() {
-		const html = TrackSwitcher.PROBLEMS.map((P, n) => `<option value="${n}">${n+1} (${P.moves} mv)</option>`).join('');
+		const html = TrackSwitcher.PROBLEMS.map((P, n) => !P ? '' : `<option value="${n}">${n+1} (${P.moves} mv)</option>`).join('');
 		this.$levels.setHTML(html);
 	}
 
@@ -426,7 +470,7 @@ class TrackSwitcher extends CanvasGame {
 	drawStops() {
 		TrackSwitcher.TRACKS.map(T => {
 			const C = T.center;
-			if (T.stoppable) {
+			if (this.shouldDrawStop(T)) {
 				this.drawCircle(this.scale(C), TrackSwitcher.STOP_RADIUS, {
 					color: TrackSwitcher.STOP_COLOR,
 					width: TrackSwitcher.STOP_WIDTH,
@@ -437,6 +481,11 @@ class TrackSwitcher extends CanvasGame {
 			// 	this.drawLine(this.scale(C).add(new Coords2D(-7, 7)), this.scale(C).add(new Coords2D(7, -7)));
 			// }
 		});
+	}
+
+	shouldDrawStop(track) {
+		const car = this.getCar(track);
+		return !car || car.movable;
 	}
 
 	drawTracks() {
@@ -556,7 +605,6 @@ class TrackSwitcher extends CanvasGame {
 			.filter(([d, i]) => {
 				return d < 20;
 			});
-			// .filter(([d, i]) => TrackSwitcher.TRACKS[i].stoppable);
 		return sorted.length ? TrackSwitcher.TRACKS[sorted[0][1]] : null;
 	}
 
@@ -627,7 +675,7 @@ class TrackSwitcher extends CanvasGame {
 		const track = this.findClosestTrack(C);
 		if (track) {
 			const car = this.getCar(track);
-			if (car) {
+			if (car && car.movable) {
 				this.draggingRoute = new Route(this, track);
 				this.changed = true;
 				return true;
