@@ -205,13 +205,6 @@ class Labyrinth extends CanvasGame {
 		this.foundTreasure = null;
 	}
 
-	drawOn(ctx, callback) {
-		const _ctx = this.ctx;
-		this.ctx = ctx;
-		callback();
-		this.ctx = _ctx;
-	}
-
 	drawContent() {
 		this.drawFill('#fff');
 		this.drawArrows();

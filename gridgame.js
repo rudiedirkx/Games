@@ -532,6 +532,13 @@ class CanvasGame extends Game {
 	drawContent() {
 	}
 
+	drawOn( ctx, callback ) {
+		const _ctx = this.ctx;
+		this.ctx = ctx;
+		callback();
+		this.ctx = _ctx;
+	}
+
 	drawFill( color ) {
 		this.ctx.fillStyle = color;
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);

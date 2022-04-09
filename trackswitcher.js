@@ -399,21 +399,31 @@ class TrackSwitcher extends CanvasGame {
 
 	static PROBLEMS = [];
 
+	constructor(canvas, solutionCanvas) {
+		super(canvas);
+
+		this.solutionCanvas = solutionCanvas;
+		this.solutionCtx = solutionCanvas.getContext('2d');
+	}
+
 	createGame() {
 		super.createGame();
 
 		this.paintingTiming = true;
 
 		this.$levels = $('#levels');
+		this.$levelPrev = $('#prev');
+		this.$levelNext = $('#next');
 		this.$showNames = $('#show-names');
-		this.$showSolution = $('#show-solution');
+		// this.$showSolution = $('#show-solution');
 
 		this.createLevelSelect();
 		this.interTracks = this.createInterTracks();
 	}
 
 	createLevelSelect() {
-		const html = TrackSwitcher.PROBLEMS.map((P, n) => !P ? '' : `<option value="${n}">${n+1} (${P.moves} mv)</option>`).join('');
+		const L = TrackSwitcher.PROBLEMS.length;
+		const html = TrackSwitcher.PROBLEMS.map((P, n) => !P ? '' : `<option value="${n}">${n+1} / ${L}</option>`).join('');
 		this.$levels.setHTML(html);
 	}
 
@@ -429,6 +439,7 @@ class TrackSwitcher extends CanvasGame {
 	reset() {
 		super.reset();
 
+		this.drawingSolution = false;
 		this.level = 0;
 		this.cars = [];
 
@@ -529,8 +540,8 @@ class TrackSwitcher extends CanvasGame {
 		return TrackSwitcher.TRACKS.find(T => T.name == location);
 	}
 
-	getCars() {
-		if (this.$showSolution.checked) {
+	getCars(solution) {
+		if (this.drawingSolution /*this.$showSolution.checked*/) {
 			return [
 				...TrackSwitcher.PROBLEMS[this.level].tos.filter(car => car.movable),
 				...TrackSwitcher.PROBLEMS[this.level].froms.filter(car => !car.movable),
@@ -571,17 +582,27 @@ class TrackSwitcher extends CanvasGame {
 	startGame(level = 0) {
 		this.reset();
 
-		this.canvas.width = TrackSwitcher.OFFSET + TrackSwitcher.WIDTH * (TrackSwitcher.SQUARE + TrackSwitcher.MARGIN) - TrackSwitcher.MARGIN + TrackSwitcher.OFFSET;
-		this.canvas.height = TrackSwitcher.OFFSET + TrackSwitcher.HEIGHT * (TrackSwitcher.SQUARE + TrackSwitcher.MARGIN) - TrackSwitcher.MARGIN + TrackSwitcher.OFFSET;
+		this.canvas.width = this.solutionCanvas.width = TrackSwitcher.OFFSET + TrackSwitcher.WIDTH * (TrackSwitcher.SQUARE + TrackSwitcher.MARGIN) - TrackSwitcher.MARGIN + TrackSwitcher.OFFSET;
+		this.canvas.height = this.solutionCanvas.height = TrackSwitcher.OFFSET + TrackSwitcher.HEIGHT * (TrackSwitcher.SQUARE + TrackSwitcher.MARGIN) - TrackSwitcher.MARGIN + TrackSwitcher.OFFSET;
 
-		this.$showSolution.checked = false;
+		// this.$showSolution.checked = false;
 		this.loadLevel(level);
 		this.changed = true;
+
+		this.drawOn(this.solutionCtx, () => {
+			this.drawingSolution = true;
+			this.drawStructure();
+			this.drawContent();
+			this.drawingSolution = false;
+		});
 	}
 
 	loadLevel(n) {
 		this.level = n;
 		this.$levels.value = n;
+
+		this.$levelPrev.disabled = n == 0;
+		this.$levelNext.disabled = n == TrackSwitcher.PROBLEMS.length - 1;
 
 		this.cars = TrackSwitcher.PROBLEMS[this.level].froms.map(car => car.clone());
 	}
@@ -740,6 +761,12 @@ class TrackSwitcher extends CanvasGame {
 		this.$levels.on('change', e => {
 			this.startGame(parseInt(e.target.value));
 		});
+		this.$levelPrev.on('click', e => {
+			this.startGame(parseInt(this.$levels.selectedOptions[0].previousElementSibling.value));
+		});
+		this.$levelNext.on('click', e => {
+			this.startGame(parseInt(this.$levels.selectedOptions[0].nextElementSibling.value));
+		});
 
 		$('#restart').on('click', e => {
 			this.startGame(this.level);
@@ -749,9 +776,9 @@ class TrackSwitcher extends CanvasGame {
 			this.changed = true;
 		});
 
-		this.$showSolution.on('change', e => {
-			this.changed = true;
-		});
+		// this.$showSolution.on('change', e => {
+		// 	this.changed = true;
+		// });
 	}
 
 }
