@@ -530,7 +530,14 @@ class TrackSwitcher extends CanvasGame {
 	}
 
 	getCars() {
-		return this.$showSolution.checked ? TrackSwitcher.PROBLEMS[this.level].tos : this.cars;
+		if (this.$showSolution.checked) {
+			return [
+				...TrackSwitcher.PROBLEMS[this.level].tos.filter(car => car.movable),
+				...TrackSwitcher.PROBLEMS[this.level].froms.filter(car => !car.movable),
+			];
+		}
+
+		return this.cars;
 	}
 
 	getCar(track) {
@@ -630,6 +637,7 @@ class TrackSwitcher extends CanvasGame {
 	// }
 
 	haveWon() {
+		const filter = car => car.movable;
 		const sort = (a, b) => {
 			var cmp = a.id - b.id;
 			if (cmp != 0) return cmp;
@@ -637,8 +645,8 @@ class TrackSwitcher extends CanvasGame {
 			cmp = a.location < b.location ? -1 : 1;
 			return cmp;
 		};
-		const goal = [...TrackSwitcher.PROBLEMS[this.level].tos].sort(sort);
-		const real = [...this.cars].sort(sort);
+		const goal = TrackSwitcher.PROBLEMS[this.level].tos.filter(filter).sort(sort);
+		const real = this.cars.filter(filter).sort(sort);
 		if (goal.length == real.length) {
 			return real.every((car, i) => {
 				return car.equal(goal[i]);

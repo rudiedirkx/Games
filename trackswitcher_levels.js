@@ -25,11 +25,11 @@ TrackSwitcher.PROBLEMS = [
 	),
 	new Problem(4, // 7
 		[new Engine('lb-2', -1), new Wagon(1, '7-1'), new Wagon(2, 'rb-3'), new Block('3-1')],
-		[new Engine('5-1', -1), new Wagon(1, '6-1'), new Wagon(2, '5-2'), new Block('3-1')],
+		[new Engine('5-1', -1), new Wagon(1, '6-1'), new Wagon(2, '5-2')],
 	),
 	new Problem(7, // 8
 		[new Engine('5-1', 1), new Engine('5-3', 1), new Wagon(1, '3-1'), new Wagon(2, '5-4'), new Block('lb-1')],
-		[new Engine('5-1', -1), new Engine('rb-3', 1), new Wagon(1, 'rb-2'), new Wagon(2, '5-2'), new Block('lb-1')],
+		[new Engine('5-1', -1), new Engine('rb-3', 1), new Wagon(1, 'rb-2'), new Wagon(2, '5-2')],
 	),
 	null,
 	null,
