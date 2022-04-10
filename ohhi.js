@@ -234,6 +234,8 @@ class Ohhi extends CanvasGame {
 
 	static ONE_USER = 1;
 	static TWO_USER = 2;
+	static ONE_SYSTEM = 3;
+	static TWO_SYSTEM = 4;
 
 	static OFFSET = 20;
 	static SQUARE = 40;
@@ -261,7 +263,7 @@ class Ohhi extends CanvasGame {
 		for ( let y = 0; y < this.size; y++ ) {
 			for ( let x = 0; x < this.size; x++ ) {
 				const v = this.grid[y] && this.grid[y][x];
-				const color = v == 2 ? Ohhi.COLOR_TWO : (v == 1 ? Ohhi.COLOR_ONE : '#ddd');
+				const color = v == Ohhi.TWO_USER || v == Ohhi.TWO_SYSTEM ? Ohhi.COLOR_TWO : (v == Ohhi.ONE_USER || v == Ohhi.ONE_SYSTEM ? Ohhi.COLOR_ONE : '#ddd');
 
 				if (this.lastChange && this.lastChange.x == x && this.lastChange.y == y) {
 					this.ctx.fillStyle = 'black';
@@ -297,6 +299,8 @@ class Ohhi extends CanvasGame {
 	}
 
 	handleClick( coord ) {
+		if (this.m_bGameOver) return;
+
 		const C = this.unscale(coord);
 		const v = this.getState(C);
 		if (v == null) return;
@@ -389,11 +393,31 @@ class Ohhi extends CanvasGame {
 	loadMap(grid) {
 		this.reset();
 
-		this.grid = grid;
+		this.grid = Ohhi.userToSystems(grid);
 		this.size = this.grid.length;
 		this.gridBackup = JSON.stringify(this.grid);
 		this.canvas.width = this.canvas.height = Ohhi.OFFSET + this.size * (Ohhi.SQUARE + Ohhi.MARGIN) - Ohhi.MARGIN + Ohhi.OFFSET;
 		this.changed = true;
+	}
+
+	static userToSystems(grid) {
+		return grid.map(line => line.map(v => this.userToSystem(v)));
+	}
+
+	static userToSystem(v) {
+		if (v == Ohhi.ONE_USER) return Ohhi.ONE_SYSTEM;
+		if (v == Ohhi.TWO_USER) return Ohhi.TWO_SYSTEM;
+		return v;
+	}
+
+	static systemToUsers(grid) {
+		return grid.map(line => line.map(v => this.systemToUser(v)));
+	}
+
+	static systemToUser(v) {
+		if (v == Ohhi.ONE_SYSTEM) return Ohhi.ONE_USER;
+		if (v == Ohhi.TWO_SYSTEM) return Ohhi.TWO_USER;
+		return v;
 	}
 
 	debugGrid(grid) {
@@ -517,7 +541,7 @@ class OhhiSolver {
 
 	constructor(grid) {
 		this.size = grid.length;
-		this.grid = grid.map(cells => [...cells]);
+		this.grid = Ohhi.systemToUsers(grid);
 
 		this.threeStarts = OhhiSolver.makeCoords(this.grid);
 
