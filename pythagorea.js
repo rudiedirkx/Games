@@ -163,6 +163,16 @@ class Pythagorea extends CanvasGame {
 
 	saveUndoState() {
 		this.undoState.push([this.vertices.length, this.edges.length]);
+		this.printUndoState();
+	}
+
+	undoUndoState() {
+		this.undoState.pop();
+		this.printUndoState();
+	}
+
+	printUndoState() {
+		$('#undo-num').setText(this.undoState.length);
 	}
 
 	undo() {
@@ -173,6 +183,7 @@ class Pythagorea extends CanvasGame {
 		this.vertices.length = vertices;
 		this.edges.length = edges;
 
+		this.printUndoState();
 		this.changed = true;
 	}
 
@@ -214,7 +225,9 @@ class Pythagorea extends CanvasGame {
 		if ( !this.hasVertex(coord) || coord.explicit == Pythagorea.WINNER ) {
 			this.vertices.push(coord);
 			this.changed = true;
+			return true;
 		}
+		return false;
 	}
 
 	addEdge( line ) {
@@ -459,7 +472,9 @@ class Pythagorea extends CanvasGame {
 
 		if ( this.withinBounds(V) ) {
 			this.saveUndoState();
-			this.addVertex(new Vertex(V.x, V.y));
+			if (!this.addVertex(new Vertex(V.x, V.y))) {
+				this.undoUndoState();
+			}
 			this.startWinCheck();
 		}
 	}

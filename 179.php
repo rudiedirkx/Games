@@ -40,11 +40,11 @@ button:disabled {
 <canvas></canvas>
 
 <p>
-	<button id="undo">Undo</button>
-	|
 	<button id="prev">&lt;&lt;</button>
 	<strong id="level-num"></strong>
 	<button id="next">&gt;&gt;</button>
+	|
+	<button id="undo">Undo (<span id="undo-num">0</span>)</button>
 </p>
 
 <script>
