@@ -22,10 +22,12 @@ require __DIR__ . '/inc.db.php';
 <style>
 body {
 	font-family: sans-serif;
+	background-color: #e7e7e7;
+}
+.flex {
 	display: flex;
 	flex-flow: row wrap;
 	justify-content: space-between;
-	background-color: #e7e7e7;
 }
 canvas {
 	/*background-color: #eee;*/
@@ -39,33 +41,35 @@ button:disabled {
 
 <body class="solo">
 
-<div class="panel">
-	<!-- <h2>Reality:</h2> -->
-	<canvas></canvas>
+<div class="flex">
+	<div class="panel">
+		<!-- <h2>Reality:</h2> -->
+		<canvas></canvas>
 
-	<p>
-		<button id="prev">&lt;&lt;</button>
-		<select id="levels"></select>
-		<button id="next">&gt;&gt;</button>
-		<button id="restart">Restart</button>
-		|
-		<span id="stats-time"></span>
-		|
-		<span id="stats-moves"></span> moves
-		(very best = <span id="best-moves">?</span>)
-		<!-- &nbsp; -->
-		<!-- <label><input type="checkbox" id="show-solution" /> Show solution</label> -->
-	</p>
-	<? if (is_local()): ?>
 		<p>
-			<label><input type="checkbox" id="show-names" /> Show names</label>
+			<button id="prev">&lt;&lt;</button>
+			<select id="levels"></select>
+			<button id="next">&gt;&gt;</button>
+			<button id="restart">Restart</button>
+			|
+			<span id="stats-time"></span>
+			|
+			<span id="stats-moves"></span> moves
+			(very best = <span id="best-moves">?</span>)
+			<!-- &nbsp; -->
+			<!-- <label><input type="checkbox" id="show-solution" /> Show solution</label> -->
 		</p>
-	<? endif ?>
-</div>
+		<? if (is_local()): ?>
+			<p>
+				<label><input type="checkbox" id="show-names" /> Show names</label>
+			</p>
+		<? endif ?>
+	</div>
 
-<div class="panel">
-	<h2>Solution:</h2>
-	<canvas></canvas>
+	<div class="panel">
+		<h2>Targets:</h2>
+		<canvas></canvas>
+	</div>
 </div>
 
 <script>
