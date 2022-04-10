@@ -461,6 +461,7 @@ class TrackSwitcher extends CanvasGame {
 
 	static WIDTH = 16;
 	static HEIGHT = 10;
+	static LEVEL_LABEL = new Coords2D(6.5, 5);
 	static TRACKS = [
 		new Track('1-1', 0, 1, 2, 1, 0), new Track('1-2', 2, 1, 4, 1, 0), new Track('1-3', 4, 1, 6, 1, 0), new Track('1-4', 6, 1, 8, 1, 0),
 		new Track('1-5', 8, 1, 10, 1, 0), new Track('1-6', 10, 1, 12, 1, 0), new Track('1-7', 12, 1, 14, 1, 0), new Track('1-8', 14, 1, 16, 1, 0),
@@ -516,7 +517,7 @@ class TrackSwitcher extends CanvasGame {
 
 	createLevelSelect() {
 		const L = TrackSwitcher.PROBLEMS.length;
-		const html = TrackSwitcher.PROBLEMS.map((P, n) => !P ? '' : `<option value="${n}">${n+1} / ${L}</option>`).join('');
+		const html = TrackSwitcher.PROBLEMS.map((P, n) => !P ? '' : `<option value="${n}">${this.levelLabel(n)} / ${L}</option>`).join('');
 		this.$levels.setHTML(html);
 	}
 
@@ -555,6 +556,7 @@ class TrackSwitcher extends CanvasGame {
 		this.drawDragging();
 		this.drawCars();
 		this.drawTrainLinks();
+		this.drawLevelNumber();
 
 		if (this.$showNames.checked) {
 			this.drawTrackNames();
@@ -652,6 +654,15 @@ class TrackSwitcher extends CanvasGame {
 		TrackSwitcher.TRACKS.map(track => this.drawTrackName(track));
 	}
 
+	drawLevelNumber() {
+		this.ctx.textAlign = 'center';
+		this.ctx.textBaseline = 'middle';
+		this.drawText(this.scale(TrackSwitcher.LEVEL_LABEL), this.levelLabel(this.level), {
+			size: 50,
+			style: 'bold',
+		});
+	}
+
 	drawTrackName(track) {
 		this.ctx.textAlign = 'left';
 		this.ctx.textBaseline = 'bottom';
@@ -721,6 +732,10 @@ class TrackSwitcher extends CanvasGame {
 			this.drawContent();
 			this.drawingSolution = false;
 		});
+	}
+
+	levelLabel(n) {
+		return String(n + 1);
 	}
 
 	loadLevel(n) {
