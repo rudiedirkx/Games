@@ -24,6 +24,7 @@ body {
 	display: flex;
 	flex-flow: row wrap;
 	justify-content: space-between;
+	background-color: #e7e7e7;
 }
 canvas {
 	/*background-color: #eee;*/
@@ -64,8 +65,10 @@ button:disabled {
 </div>
 
 <script>
+TrackSwitcher.BGCOLOR = '#e7e7e7';
+TrackSwitcher.BGCOLOR_DRAGGING = '#ddd';
 var objGame = new TrackSwitcher(...$$('canvas'));
-objGame.startGame(location.hash ? parseInt(location.hash.substr(1)) : 0);
+objGame.startGame(location.hash ? parseInt(location.hash.substr(1)) - 1 : 0);
 objGame.listenControls();
 objGame.startPainting();
 </script>

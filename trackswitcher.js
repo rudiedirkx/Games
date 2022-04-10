@@ -82,6 +82,20 @@ class Track {
 		return Math.round((this.from.y - this.to.y) / (this.from.x - this.to.x) * 100) / 100;
 	}
 
+	getShape(model) {
+		const angle = this.angle;
+		return model.rotate(angle / 180 * Math.PI);
+	}
+
+	getEnds(game, model) {
+		const center = game.scale(this.center);
+		const shape = this.getShape(model);
+
+		const front = center.add(shape.front.multiply(TrackSwitcher.SQUARE * Track.SF));
+		const rear = center.add(shape.rear.multiply(TrackSwitcher.SQUARE * Track.SF));
+		return [front, rear];
+	}
+
 	touchesTrack(other) {
 		return other.touchesCoord(this.from) || other.touchesCoord(this.to);
 	}
@@ -90,23 +104,32 @@ class Track {
 		return C.equal(this.from) || C.equal(this.to);
 	}
 
-	drawRoute(game) {
-		game.drawLine(game.scale(this.from), game.scale(this.to), {
-			color: TrackSwitcher.ROUTE_COLOR,
-			width: TrackSwitcher.ROUTE_WIDTH,
+	drawLine(game, color, width) {
+		game.drawLine(game.scale(this.from), game.scale(this.to), {color, width});
+	}
+
+	drawTrainBacklight(game) {
+		this.drawLine(game, TrackSwitcher.TRAIN_COLOR, TrackSwitcher.TRAIN_WIDTH);
+		game.drawDot(game.scale(this.from), {
+			color: TrackSwitcher.TRAIN_COLOR,
+			radius: TrackSwitcher.TRAIN_WIDTH/2,
+		});
+		game.drawDot(game.scale(this.to), {
+			color: TrackSwitcher.TRAIN_COLOR,
+			radius: TrackSwitcher.TRAIN_WIDTH/2,
 		});
 	}
 
+	drawRoute(game) {
+		this.drawLine(game, TrackSwitcher.ROUTE_COLOR, TrackSwitcher.ROUTE_WIDTH);
+	}
+
 	drawTrackOuter(game) {
-		const from = game.scale(this.from);
-		const to = game.scale(this.to);
-		game.drawLine(from, to, {color: TrackSwitcher.TRACK_COLOR, width: TrackSwitcher.TRACK_WIDTH});
+		this.drawLine(game, TrackSwitcher.TRACK_COLOR, TrackSwitcher.TRACK_WIDTH);
 	}
 
 	drawTrackInner(game) {
-		const from = game.scale(this.from);
-		const to = game.scale(this.to);
-		game.drawLine(from, to, {color: TrackSwitcher.BGCOLOR, width: TrackSwitcher.TRACK_INNER});
+		this.drawLine(game, TrackSwitcher.BGCOLOR, TrackSwitcher.TRACK_INNER);
 	}
 
 	drawShape(game, model, color, reverse = false) {
@@ -125,14 +148,9 @@ class Track {
 	}
 
 	drawEnds(game, model) {
-		const center = game.scale(this.center);
-		const angle = this.angle;
-		const shape = model.rotate(angle / 180 * Math.PI);
-
-		const front = center.add(shape.front.multiply(TrackSwitcher.SQUARE * Track.SF));
-		game.drawDot(front);
-		const rear = center.add(shape.rear.multiply(TrackSwitcher.SQUARE * Track.SF));
-		game.drawDot(rear);
+		const [front, rear] = this.getEnds(game, model);
+		game.drawDot(front, {radius: 3});
+		game.drawDot(rear, {radius: 3});
 	}
 
 	drawEngine(game, car) {
@@ -174,6 +192,18 @@ class CircularTrack extends Track {
 		game.ctx.beginPath();
 		game.ctx.arc(C.x, C.y, this.radius * TrackSwitcher.SQUARE, this.startAngle, this.endAngle);
 		game.ctx.stroke();
+	}
+
+	drawTrainBacklight(game) {
+		this.drawArc(game, TrackSwitcher.TRAIN_COLOR, TrackSwitcher.TRAIN_WIDTH);
+		game.drawDot(game.scale(this.from), {
+			color: TrackSwitcher.TRAIN_COLOR,
+			radius: TrackSwitcher.TRAIN_WIDTH/2,
+		});
+		game.drawDot(game.scale(this.to), {
+			color: TrackSwitcher.TRAIN_COLOR,
+			radius: TrackSwitcher.TRAIN_WIDTH/2,
+		});
 	}
 
 	drawRoute(game) {
@@ -239,28 +269,76 @@ class Route {
 		return this.tracks.includes(track);
 	}
 
+	clone() {
+		const route = new Route(this.game, null);
+		route.tracks = [...this.tracks];
+		return route;
+	}
+
+	reverse() {
+		const route = this.clone();
+		route.tracks.reverse();
+		return route;
+	}
+
 	add(track) {
-		const last = this.last;
-		const car = this.game.getCar(last);
 		this.tracks.push(track);
-		this.moveCar(car, last);
 	}
 
-	undo() {
-		const last = this.last;
-		const car = this.game.getCar(last);
+	forward(track, train) {
+		const fromTracks = this.tracks.slice(-train.length).map(T => T.name);
+		this.tracks.push(track);
+		this.moveCars(train, fromTracks);
+	}
+
+	backward(train) {
+		const fromTracks = this.tracks.slice(-train.length).map(T => T.name);
 		this.tracks.pop();
-		this.moveCar(car, last);
+		this.moveCars(train, fromTracks);
 	}
 
-	moveCar(car, before) {
-		car.location = this.last.name;
+	moveCars(train, fromTracks) {
+		const toTracks = this.tracks.slice(-train.length).map(T => T.name);
+// console.log(fromTracks, toTracks);
+		train.cars.forEach(car => {
+			const i = fromTracks.indexOf(car.location);
+			this.moveCar(car, car.location, toTracks[i]);
+		});
+	}
 
-		const bla = before;
-		const la = this.last;
-		if (TrackSwitcher.REVERSERS.includes(`${bla.name}:${la.name}`) || TrackSwitcher.REVERSERS.includes(`${la.name}:${bla.name}`)) {
+	moveCar(car, fromTrack, toTrack) {
+		car.location = toTrack;
+
+		if (TrackSwitcher.REVERSERS.includes(`${fromTrack}:${toTrack}`) || TrackSwitcher.REVERSERS.includes(`${toTrack}:${fromTrack}`)) {
 			car.reverse();
 		}
+	}
+}
+
+class Train {
+	constructor(route, car) {
+		this.route = route;
+		this.cars = [car];
+	}
+
+	get length() {
+		return this.cars.length;
+	}
+
+	connectsTo(track) {
+		return this.route.connectsTo(track);
+	}
+
+	add(car, track) {
+		if (!this.cars.includes(car)) {
+			this.cars.push(car);
+			this.route.add(track);
+			return true;
+		}
+	}
+
+	canMove() {
+		return this.cars.some(car => car instanceof Engine);
 	}
 }
 
@@ -276,6 +354,10 @@ class Wagon {
 	constructor(id, location) {
 		this.id = id;
 		this.location = location;
+	}
+
+	get model() {
+		return TrackSwitcher.SHAPE_WAGON;
 	}
 
 	get movable() {
@@ -305,6 +387,10 @@ class Engine extends Wagon {
 		this.direction = direction;
 	}
 
+	get model() {
+		return TrackSwitcher.SHAPE_ENGINE;
+	}
+
 	draw(game) {
 		const track = game.getTrack(this.location);
 		track.drawEngine(game, this);
@@ -326,6 +412,10 @@ class Engine extends Wagon {
 class Block extends Wagon {
 	constructor(location) {
 		super(Math.random(), location);
+	}
+
+	get model() {
+		return TrackSwitcher.SHAPE_BLOCK;
 	}
 
 	get movable() {
@@ -356,10 +446,13 @@ class TrackSwitcher extends CanvasGame {
 	static STOP_WIDTH = 3;
 	static STOP_COLOR = '#aaa';
 	static BLOCK_COLOR = '#000';
-	static BGCOLOR = '#eee';
+	static BGCOLOR = '';
+	static BGCOLOR_DRAGGING = '';
 	static TRACK_WIDTH = 14;
 	static TRACK_INNER = 6;
 	static TRACK_COLOR = '#aaa';
+	static TRAIN_COLOR = '#fff';
+	static TRAIN_WIDTH = 44;
 	static ROUTE_COLOR = '#000';
 	static ROUTE_WIDTH = 4;
 	static CONNECTOR_RADIUS = 8;
@@ -409,7 +502,7 @@ class TrackSwitcher extends CanvasGame {
 	createGame() {
 		super.createGame();
 
-		this.paintingTiming = true;
+		// this.paintingTiming = true;
 
 		this.$levels = $('#levels');
 		this.$levelPrev = $('#prev');
@@ -445,21 +538,23 @@ class TrackSwitcher extends CanvasGame {
 
 		this.dragging = 0;
 		// this.draggingFrom = null;
+		this.draggingTrain = null;
 		this.draggingRoute = null;
 
 		this.connecteds = [];
 	}
 
-	drawStructure() {
-		this.drawFill(TrackSwitcher.BGCOLOR);
+	drawContent() {
+		this.drawFill(this.dragging ? TrackSwitcher.BGCOLOR_DRAGGING : TrackSwitcher.BGCOLOR);
+
+		this.drawTrainBacklight();
 		this.drawStops();
 		this.drawTracks();
 		// this.drawConnectors();
-	}
 
-	drawContent() {
-		this.drawCars();
 		this.drawDragging();
+		this.drawCars();
+		this.drawTrainLinks();
 
 		if (this.$showNames.checked) {
 			this.drawTrackNames();
@@ -470,6 +565,33 @@ class TrackSwitcher extends CanvasGame {
 		this.getCars().forEach(car => {
 			car.draw(this);
 		});
+	}
+
+	drawTrainBacklight() {
+		if (this.draggingTrain) {
+			this.draggingTrain.cars.forEach(car => this.getTrack(car).drawTrainBacklight(this));
+		}
+	}
+
+	drawTrainLinks() {
+		if (this.draggingTrain) {
+			for (let i = 1; i < this.draggingTrain.cars.length; i++) {
+				const fromCar = this.draggingTrain.cars[i - 1];
+				const fromTrack = this.getTrack(fromCar.location);
+				const toCar = this.draggingTrain.cars[i];
+				const toTrack = this.getTrack(toCar.location);
+				if (fromCar && toCar) {
+					this.drawTrainLink(fromTrack, fromCar, toTrack, toCar);
+				}
+			}
+		}
+	}
+
+	drawTrainLink(fromTrack, fromCar, toTrack, toCar) {
+		const inter = this.scale(this.getInter(fromTrack, toTrack));
+		const ends = [...fromTrack.getEnds(this, fromCar.model), ...toTrack.getEnds(this, toCar.model)];
+		ends.sort((a, b) => a.distance(inter) < b.distance(inter) ? -1 : 1);
+		this.drawLine(ends[0], ends[1], {width: 4});
 	}
 
 	drawDragging() {
@@ -537,6 +659,10 @@ class TrackSwitcher extends CanvasGame {
 	}
 
 	getTrack(location) {
+		if (location instanceof Wagon) {
+			location = location.location;
+		}
+
 		return TrackSwitcher.TRACKS.find(T => T.name == location);
 	}
 
@@ -676,11 +802,22 @@ class TrackSwitcher extends CanvasGame {
 	}
 
 	getScore() {
-		return null;
+		return {
+			...super.getScore(),
+			level: this.level + 1,
+		};
 	}
 
 	handleClick(C) {
 		if (this.m_bGameOver) return;
+
+		const track = this.findClosestTrack(C);
+		if (track) return;
+
+		if (this.draggingTrain) {
+			this.draggingTrain = null;
+		}
+		this.changed = true;
 
 		// const R = TrackSwitcher.CONNECTOR_RADIUS * 1.5;
 		// const conn = TrackSwitcher.TRACK_CONNECTORS.find(conn => this.scale(conn.button).distance(C) < R);
@@ -702,14 +839,29 @@ class TrackSwitcher extends CanvasGame {
 		this.startTime();
 
 		const track = this.findClosestTrack(C);
-		if (track) {
-			const car = this.getCar(track);
-			if (car && car.movable) {
-				this.draggingRoute = new Route(this, track);
-				this.changed = true;
-				return true;
+		if (!track) return;
+
+		const car = this.getCar(track);
+		if (!car || !car.movable) return;
+
+		if (!this.draggingTrain) {
+			this.draggingTrain = new Train(new Route(this, track), car);
+		}
+		else {
+			const route = this.draggingTrain.route;
+			if (track == route.first) {
+				this.draggingRoute = route.reverse();
+			}
+			else if (track == route.last) {
+				this.draggingRoute = route.clone();
+			}
+			else {
+				return;
 			}
 		}
+
+		this.changed = true;
+		return true;
 	}
 
 	handleDragMove(C) {
@@ -717,17 +869,44 @@ class TrackSwitcher extends CanvasGame {
 
 		const track = this.findClosestTrack(C);
 		if (!track) return;
+		const car = this.getCar(track);
 
-		if (this.draggingRoute.beforeLast === track) {
-			this.draggingRoute.undo();
-			this.changed = true;
+		if (!this.draggingRoute) {
+			if (!car && this.draggingTrain.length == 1 && this.draggingTrain.canMove()) {
+				this.draggingRoute = this.draggingTrain.route;
+				this.moveTrain(track, car);
+				return;
+			}
+
+			if (car && car.movable) {
+				this.extendTrain(track, car);
+			}
 			return;
 		}
 
+		if (this.draggingRoute.beforeLast === track) {
+			this.reverseTrain(track, car);
+			return;
+		}
+
+		this.moveTrain(track, car);
+	}
+
+	extendTrain(track, car) {
+		if (this.draggingTrain.connectsTo(track)) {
+			if (this.canBendTo(this.draggingTrain.route.last, track)) {
+				if (this.draggingTrain.add(car, track)) {
+					this.changed = true;
+				}
+			}
+		}
+	}
+
+	moveTrain(track, car) {
 		if (this.draggingRoute.last != track) {
 			if (this.draggingRoute.connectsTo(track) && !this.getCar(track)) {
 				if (this.canBendTo(this.draggingRoute.last, track)) {
-					this.draggingRoute.add(track);
+					this.draggingRoute.forward(track, this.draggingTrain);
 					this.changed = true;
 					return;
 				}
@@ -735,24 +914,37 @@ class TrackSwitcher extends CanvasGame {
 		}
 	}
 
+	reverseTrain(track, car) {
+		if (this.draggingRoute.length > this.draggingTrain.length) {
+			this.draggingRoute.backward(this.draggingTrain);
+			this.changed = true;
+		}
+	}
+
 	handleDragEnd() {
 		if (this.m_bGameOver) return;
 
-		this.setMoves(this.m_iMoves + 1);
+		if (!this.draggingTrain && !this.draggingRoute) return;
 
-// console.log(this.draggingRoute);
-		// setTimeout(() => {
-			this.draggingRoute = null;
+		if (!this.draggingRoute) {
+			if (!this.draggingTrain.canMove()) {
+				this.draggingTrain = null;
+			}
 			this.changed = true;
+			return;
+		}
 
-			this.startWinCheck();
-		// }, 1000);
+		if (this.draggingRoute.length > this.draggingTrain.length) {
+			this.setMoves(this.m_iMoves + 1);
+		}
 
-// this.unbendables || (this.unbendables = []);
-// const i1 = /*TrackSwitcher.TRACKS.indexOf(*/this.draggingRoute.tracks[0].name/*)*/;
-// const i2 = /*TrackSwitcher.TRACKS.indexOf(*/this.draggingRoute.tracks[1].name/*)*/;
-// this.unbendables.push(`${i1}:${i2}`);
-// console.log(this.unbendables.join(', '));
+		if (this.draggingRoute) {
+			this.draggingTrain = null;
+		}
+		this.draggingRoute = null;
+		this.changed = true;
+
+		this.startWinCheck();
 	}
 
 	listenControls() {
