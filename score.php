@@ -3,8 +3,8 @@
 require __DIR__ . '/inc.bootstrap.php';
 require __DIR__ . '/inc.db.php';
 
-$ip = $_SERVER['REMOTE_ADDR'];
-$local = preg_match('#^(192\.168\.|10\.0\.|127\.0\.)#', $ip) > 0;
+$ip = get_ip();
+$local = is_debug_ip();
 
 $ok = function($line) use ($local) {
 	return 'OK' . ( $local ? $line : '' );

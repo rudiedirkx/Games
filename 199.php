@@ -3,6 +3,7 @@
 // https://www.youtube.com/watch?v=EU6JBeIe390
 
 require __DIR__ . '/inc.bootstrap.php';
+require __DIR__ . '/inc.db.php';
 
 ?>
 <!doctype html>
@@ -51,12 +52,15 @@ button:disabled {
 		<span id="stats-time"></span>
 		|
 		<span id="stats-moves"></span> moves
+		(very best = <span id="best-moves">?</span>)
 		<!-- &nbsp; -->
 		<!-- <label><input type="checkbox" id="show-solution" /> Show solution</label> -->
 	</p>
-	<p>
-		<label><input type="checkbox" id="show-names" /> Show names</label>
-	</p>
+	<? if (is_local()): ?>
+		<p>
+			<label><input type="checkbox" id="show-names" /> Show names</label>
+		</p>
+	<? endif ?>
 </div>
 
 <div class="panel">
@@ -65,6 +69,7 @@ button:disabled {
 </div>
 
 <script>
+TrackSwitcher.BEST_SCORES = <?= json_encode(get_best_moves($db, 199)) ?>;
 TrackSwitcher.BGCOLOR = '#e7e7e7';
 TrackSwitcher.BGCOLOR_DRAGGING = '#ddd';
 var objGame = new TrackSwitcher(...$$('canvas'));
@@ -72,3 +77,5 @@ objGame.startGame(location.hash ? parseInt(location.hash.substr(1)) - 1 : 0);
 objGame.listenControls();
 objGame.startPainting();
 </script>
+
+<? include 'tpl.queries.php' ?>

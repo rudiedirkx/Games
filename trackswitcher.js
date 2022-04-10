@@ -438,10 +438,13 @@ class Block extends Wagon {
 
 class TrackSwitcher extends CanvasGame {
 
+	static BEST_SCORES = {all: {}};
+
 	static OFFSET = 1;
 	static SQUARE = 40;
 	static SQUARE = 40;
 	static MARGIN = 0;
+
 	static STOP_RADIUS = 12;
 	static STOP_WIDTH = 3;
 	static STOP_COLOR = '#aaa';
@@ -558,7 +561,7 @@ class TrackSwitcher extends CanvasGame {
 		this.drawTrainLinks();
 		this.drawLevelNumber();
 
-		if (this.$showNames.checked) {
+		if (this.$showNames && this.$showNames.checked) {
 			this.drawTrackNames();
 		}
 	}
@@ -745,6 +748,8 @@ class TrackSwitcher extends CanvasGame {
 		this.$levelPrev.disabled = n == 0;
 		this.$levelNext.disabled = n == TrackSwitcher.PROBLEMS.length - 1;
 
+		this.printBestScore(n + 1);
+
 		this.cars = TrackSwitcher.PROBLEMS[this.level].froms.map(car => car.clone());
 	}
 
@@ -817,10 +822,26 @@ class TrackSwitcher extends CanvasGame {
 	}
 
 	getScore() {
+		const lvl = this.level + 1;
+
+		const best = this.getBestScore(lvl);
+		if (this.m_iMoves && (!best || this.m_iMoves < best)) {
+			TrackSwitcher.BEST_SCORES.all[lvl] = this.m_iMoves;
+			this.printBestScore(lvl);
+		}
+
 		return {
 			...super.getScore(),
-			level: this.level + 1,
+			level: lvl,
 		};
+	}
+
+	getBestScore(lvl) {
+		return TrackSwitcher.BEST_SCORES.all[lvl] || 0;
+	}
+
+	printBestScore(lvl) {
+		$('#best-moves').setText(this.getBestScore(lvl) || '?');
 	}
 
 	handleClick(C) {
@@ -979,7 +1000,7 @@ class TrackSwitcher extends CanvasGame {
 			this.startGame(this.level);
 		});
 
-		this.$showNames.on('change', e => {
+		this.$showNames && this.$showNames.on('change', e => {
 			this.changed = true;
 		});
 

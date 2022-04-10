@@ -2,16 +2,28 @@
 
 define('THUMB_SIZE', 91);
 
+function get_ip() {
+	return $_SERVER['REMOTE_ADDR'] ?? '';
+}
+
 function is_local() {
 	return !isset($_SERVER['HTTP_HOST']) || is_int(strpos($_SERVER['HTTP_HOST'], '.home'));
 }
 
 function is_debug_ip() {
-	return defined('DEBUG_IPS') && in_array($_SERVER['REMOTE_ADDR'], DEBUG_IPS);
+	return defined('DEBUG_IPS') && in_array(get_ip(), DEBUG_IPS);
 }
 
 function is_mobile() {
 	return is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
+}
+
+function get_best_moves(db_generic $db, int $game) : array {
+	$all = $db->select_fields('scores', 'level, min(moves)', "game = ? and moves > 0 group by level", [$game]);
+	$all = array_map(fn($n) => intval($n), $all);
+	$yours = $db->select_fields('scores', 'level, min(moves)', "game = ? and moves > 0 and ip = ? group by level", [$game, get_ip()]);
+	$yours = array_map(fn($n) => intval($n), $yours);
+	return compact('all', 'yours');
 }
 
 function get_time_ago(?int $sec) {
