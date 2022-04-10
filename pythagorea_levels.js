@@ -116,3 +116,35 @@ Pythagorea.levels.push(new PythagoreaLevel('Connect three of the given points to
 }, function(game) {
 	this.drawEdges(game, this.winner);
 }));
+
+Pythagorea.levels.push(new PythagoreaLevel('Construct the triangle given its centroid and one of its sides.', function(game) {
+	this.size = 6;
+
+	game.addVertex(this.vertex(3, 3));
+	const a = this.vertex(0, 5);
+	const b = this.vertex(5, 3);
+	game.addEdge(this.edge(a, b));
+
+	const c = this.vertex(4, 1);
+	this.winner = this.createVerticesEdges([a, b, c]);
+}, function(game) {
+	return this.allEdgesExist(game, this.winner);
+}, function(game) {
+	this.drawEdges(game, this.winner);
+}));
+
+Pythagorea.levels.push(new PythagoreaLevel('Construct the triangle given its centroid and one of its sides.', function(game) {
+	this.size = 6;
+
+	game.addVertex(this.vertex(3, 3));
+	const a = this.vertex(1, 3 + 3/5);
+	const b = this.vertex(0 + 10/3, 5);
+	game.addEdge(this.edge(a, b, Pythagorea.EXPLICIT | Pythagorea.INITIAL));
+
+	const c = this.vertex(10, 10);
+	this.winner = this.createVerticesEdges([a, b, c]);
+}, function(game) {
+	return this.allEdgesExist(game, this.winner);
+}, function(game) {
+	this.drawEdges(game, this.winner);
+}));

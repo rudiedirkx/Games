@@ -7,7 +7,7 @@
  * @property {Edge[]} edges
  */
 class Vertex extends Coords2D {
-	constructor( x, y, explicit = 1 ) {
+	constructor( x, y, explicit = Pythagorea.EXPLICIT ) {
 		super(x, y);
 		this.explicit = explicit;
 	}
@@ -21,7 +21,7 @@ class Vertex extends Coords2D {
 		return R(coord.x) == R(this.x) && R(coord.y) == R(this.y);
 	}
 
-	static fromEdges( line1, line2, explicit = 1 ) {
+	static fromEdges( line1, line2, explicit = Pythagorea.EXPLICIT ) {
 		const x1 = line1.from.x;
 		const y1 = line1.from.y;
 		const a1 = line1.to.x - line1.from.x;
@@ -56,7 +56,7 @@ class Vertex extends Coords2D {
  * @property {int} explicit
  */
 class Edge {
-	constructor( from, to, explicit = 1 ) {
+	constructor( from, to, explicit = Pythagorea.EXPLICIT ) {
 		this.from = from;
 		this.to = to;
 		this.explicit = explicit;
@@ -92,7 +92,7 @@ class Pythagorea extends CanvasGame {
 		};
 
 		this.dotProps = {
-			"explicit": ['#666', 3],
+			"explicit": ['blue', 3],
 			"initial": ['#000', 3],
 			"winner": ['orange', 4],
 			"dragging": ['#f00', 3],
@@ -156,7 +156,7 @@ class Pythagorea extends CanvasGame {
 			level: this.levelNum + 1,
 			moves: this.undoState.length,
 			score: Math.round(100 * this.edges.reduce(function(length, E) {
-				return length + (E.explicit == 1 ? E.length : 0);
+				return length + (E.explicit & Pythagorea.INITIAL ? 0 : E.length);
 			}, 0)) / 100,
 		};
 	}
@@ -270,7 +270,7 @@ class Pythagorea extends CanvasGame {
 	}
 
 	explicitToType( explicit ) {
-		return explicit == Pythagorea.WINNER ? 'winner' : (explicit == Pythagorea.INITIAL ? 'initial' : 'explicit');
+		return explicit == Pythagorea.WINNER ? 'winner' : (explicit & Pythagorea.INITIAL ? 'initial' : 'explicit');
 	}
 
 	drawStructure() {
@@ -278,16 +278,16 @@ class Pythagorea extends CanvasGame {
 
 		for (var x = 0; x <= this._size; x++) {
 			this.drawLine(
-				new Coords2D(this.scale(x), 0),
-				new Coords2D(this.scale(x), this.canvas.height),
+				new Coords2D(this.scale(x), this._scale / 2),
+				new Coords2D(this.scale(x), this.canvas.height - this._scale / 2),
 				'structure'
 			);
 		}
 
 		for (var y = 0; y <= this._size; y++) {
 			this.drawLine(
-				new Coords2D(0, this.scale(y)),
-				new Coords2D(this.canvas.width, this.scale(y)),
+				new Coords2D(this._scale / 2, this.scale(y)),
+				new Coords2D(this.canvas.width - this._scale / 2, this.scale(y)),
 				'structure'
 			);
 		}
@@ -301,8 +301,16 @@ class Pythagorea extends CanvasGame {
 	drawEdges() {
 		// console.time('drawEdges');
 
-		this.edges.forEach((E) => E.explicit == 1 && !this.alongStructure(E) && this.drawEdgeExtensions(E));
-		this.edges.forEach((E) => E.explicit && this.drawEdge(E, this.explicitToType(E.explicit)));
+		this.edges.forEach(E => {
+			if (E.explicit & Pythagorea.EXPLICIT && !this.alongStructure(E)) {
+				this.drawEdgeExtensions(E);
+			}
+		});
+		this.edges.forEach(E => {
+			if (E.explicit) {
+				this.drawEdge(E, this.explicitToType(E.explicit));
+			}
+		});
 
 		// console.timeEnd('drawEdges');
 	}
@@ -491,7 +499,7 @@ Pythagorea.levels = [];
 Pythagorea.IMPLICIT = 0;
 Pythagorea.EXPLICIT = 1;
 Pythagorea.INITIAL = 2;
-Pythagorea.WINNER = 3;
+Pythagorea.WINNER = 4;
 
 class PythagoreaLevel {
 	constructor( desc, init, check, win ) {
@@ -513,8 +521,8 @@ class PythagoreaLevel {
 		return this._win.call(this, game);
 	}
 
-	edge( from, to ) {
-		return new Edge(from, to, Pythagorea.INITIAL);
+	edge( from, to, explicit = null ) {
+		return new Edge(from, to, explicit == null ? Pythagorea.INITIAL : explicit);
 	}
 
 	vertex( x, y ) {
