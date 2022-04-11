@@ -15,11 +15,6 @@ require __DIR__ . '/inc.bootstrap.php';
 
 $g_iStartBalance = 0;
 
-define('S_NAME', 'ft_157');
-
-if ( empty($_COOKIE[S_NAME.'_balance']) ) {
-	setcookie(S_NAME.'_balance', $g_iStartBalance);
-}
 $g_arrCards = array_merge(array(0,0,0,0),range(1,7),range(1,7),range(1,7),range(1,7),range(1,7),range(1,7),range(1,7),range(1,7));
 shuffle($g_arrCards);
 
@@ -73,8 +68,16 @@ function asyncAlert(msg, after) {
 	}, 50);
 }
 
-var ROWS = 8, COOKIENAME = '<?php echo S_NAME.'_balance'; ?>', g_iBalance = Cookie.get(COOKIENAME).toInt();
-var g_iBetBase = <?php echo max(1, min(10, isset($_GET['base'])?(int)$_GET['base']:1)); ?>, g_arrCards = <?php echo json_encode($arrCards); ?>, g_iMultiplier = 1, g_iRow = 0, g_bGateCard = true, g_bGameOver = false;
+var ROWS = 8;
+var COOKIENAME = 'ft157balance';
+var g_iBalance = parseInt(localStorage.getItem(COOKIENAME) || <?= $g_iStartBalance ?>);
+var g_iBetBase = <?php echo max(1, min(10, isset($_GET['base'])?(int)$_GET['base']:1)); ?>;
+var g_arrCards = <?php echo json_encode($arrCards); ?>;
+var g_iMultiplier = 1;
+var g_iRow = 0;
+var g_bGateCard = true;
+var g_bGameOver = false;
+
 function nextRow() {
 	if ( 0 === g_iRow ) {
 		return initTower();
@@ -238,7 +241,7 @@ function initTower() {
 	$('bet').innerHTML = g_iBetBase*15;
 	g_iBalance -= g_iBetBase*15;
 	$('balance').innerHTML = g_iBalance;
-	Cookie.set(COOKIENAME, g_iBalance);
+	localStorage.setItem(COOKIENAME, g_iBalance);
 	fillAndShowRow(0);
 	return fillAndShowRow(1);
 }
@@ -264,7 +267,7 @@ function cashOut(jp) {
 	var iWins = $('x_pays_y_y').innerHTML.toInt();
 	g_iBalance += iWins ? iWins : 0;
 	$('balance').innerHTML = g_iBalance;
-	Cookie.set(COOKIENAME, g_iBalance);
+	localStorage.setItem(COOKIENAME, g_iBalance);
 	asyncAlert((jp ? 'Jackpot! ' : '') + 'You win: ' + $('x_pays_y_y').innerHTML, 'document.location.reload()');
 	return false;
 }
@@ -275,7 +278,7 @@ function cashOut(jp) {
 <table id="buttons" border="0" cellpadding="4" cellspacing="0">
 <tr>
 	<td align="center" colspan="2">
-		Balance: <span ondblclick="Cookie.set(COOKIENAME, <?php echo $g_iStartBalance; ?>);document.location.reload();" id="balance"><?php echo (int) @$_COOKIE[S_NAME.'_balance']; ?></span>,
+		Balance: <span ondblclick="localStorage.setItem(COOKIENAME, <?php echo $g_iStartBalance; ?>);document.location.reload();" id="balance">?</span>,
 		You bet: <span id="bet">0</span>
 	</td>
 </tr>
@@ -300,6 +303,7 @@ for ( $iRow=0; $iRow<8; $iRow++ ) {
 
 <script>
 $('buttons').setAttribute('width', $('tower').offsetWidth);
+$('balance').textContent = g_iBalance;
 </script>
 </body>
 
