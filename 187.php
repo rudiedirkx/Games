@@ -20,12 +20,12 @@ require __DIR__ . '/inc.bootstrap.php';
 
 <body style="padding: 8px">
 
-<table id="blackbox" style="margin: 0; width: auto; height: auto"></table>
+<table id="blackbox"></table>
 
-<p>
+<p style="text-align: center">
 	<span id="stats"></span>
 </p>
-<p>
+<p style="text-align: center">
 	Size: <select id="board-size"></select>
 	Atoms: <select id="board-atoms"></select>
 	<button id="newgame">New game</button>

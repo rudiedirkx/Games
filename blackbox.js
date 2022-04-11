@@ -214,8 +214,8 @@ class Blackbox extends GridGame {
 
 	listenControls() {
 		this.listenCellClick();
-
-		this.listenContextDrag();
+		this.listenContextClick();
+		this.listenTouchDrag();
 
 		$('#newgame').on('click', e => {
 			this.createMap();
@@ -239,11 +239,34 @@ class Blackbox extends GridGame {
 		});
 	}
 
-	listenContextDrag() {
+	listenContextClick() {
 		this.m_objGrid.on('contextmenu', '#' + this.m_objGrid.idOrRnd() + ' td', (e) => {
 			e.preventDefault();
 
 			e.subject.removeClass('hilite').toggleClass('impossible');
+		});
+	}
+
+	listenTouchDrag() {
+		var toggle = null;
+		var last = null;
+		this.m_objGrid.on('touchstart', e => {
+			// e.preventDefault();
+			const td = e.target.closest('td');
+			toggle = !td.hasClass('impossible');
+		});
+		this.m_objGrid.on('touchmove', e => {
+			if (toggle == null) return;
+
+			const td2 = document.elementFromPoint(e.pageX, e.pageY);
+			if (last != td2) {
+				td2.toggleClass('impossible', toggle);
+			}
+
+			last = td2;
+		});
+		document.on('touchend', e => {
+			toggle = last = null;
 		});
 	}
 
