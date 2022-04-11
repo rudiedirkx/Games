@@ -51,7 +51,11 @@ button:disabled {
 			<select id="levels"></select>
 			<button id="next">&gt;&gt;</button>
 			<button id="restart">Restart</button>
-			|
+			<? if (is_local()): ?>
+				| <label><input type="checkbox" id="show-names" /> Show names</label>
+			<? endif ?>
+		</p>
+		<p>
 			<span id="stats-time"></span>
 			|
 			<span id="stats-moves"></span> moves
@@ -59,11 +63,6 @@ button:disabled {
 			<!-- &nbsp; -->
 			<!-- <label><input type="checkbox" id="show-solution" /> Show solution</label> -->
 		</p>
-		<? if (is_local()): ?>
-			<p>
-				<label><input type="checkbox" id="show-names" /> Show names</label>
-			</p>
-		<? endif ?>
 	</div>
 
 	<div class="panel">
