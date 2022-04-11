@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'version' => 'games:4',
+	'version' => 'games:5',
 	'tables' => [
 		'scores' => [
 			'id' => ['pk' => true],
@@ -13,6 +13,7 @@ return [
 			'score' => ['type' => 'float'],
 			'moves' => ['unsigned' => 'int'],
 			'more',
+			'cookie',
 		],
 	],
 ];

@@ -36,6 +36,7 @@ $columns = array_intersect_key($data, array_flip(['level', 'score', 'time', 'mov
 $columns['game'] = $game;
 $columns['ip'] = $ip;
 $columns['utc'] = time();
+$columns['cookie'] = $_COOKIE['games'] ?? null;
 
 $more = array_diff_key($data, $columns);
 $columns['more'] = json_encode((object) $more);

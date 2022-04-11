@@ -91,13 +91,13 @@ function shash($str) {
 	return sprintf('%u', $hash);
 }
 
-function get_random() {
+function get_random(int $size = 10) {
 	$password = '';
-	while (strlen($password) < 30) {
+	while (strlen($password) < $size * 4) {
 		$password .= rand();
 	}
 	$password = preg_replace('#[^a-z0-9]#i', '', base64_encode($password));
-	$password = substr($password, rand(0, strlen($password) - 10), 10);
+	$password = substr($password, rand(0, strlen($password) - $size), $size);
 	return strtoupper($password);
 }
 
