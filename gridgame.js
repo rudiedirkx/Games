@@ -501,6 +501,8 @@ class CanvasGame extends Game {
 		this.ctx = canvas.getContext('2d');
 
 		this.dragging = null;
+		this.draggingObject = null;
+
 		this.changed = true;
 	}
 
@@ -671,16 +673,42 @@ class CanvasGame extends Game {
 		});
 	}
 
+	getObjectAt( coord ) {
+	}
+
 	handleClick( coord ) {
+		const object = this.getObjectAt(coord);
+		if ( object ) {
+			this.handleClickObject(object);
+		}
+	}
+
+	handleClickObject( object ) {
 	}
 
 	handleDragStart( coord ) {
+		const object = this.getObjectAt(coord);
+		if ( object ) {
+			this.draggingObject = object;
+			return this.handleDragStartObject(object);
+		}
+	}
+
+	handleDragStartObject( object ) {
 	}
 
 	handleDragMove( coord ) {
+		const object = this.getObjectAt(coord);
+		if ( object && object != this.draggingObject ) {
+			this.draggingObject = object;
+			this.handleDragMoveObject(object);
+		}
 	}
 
-	handleDragEnd( coord ) {
+	handleDragMoveObject( object ) {
+	}
+
+	handleDragEnd() {
 	}
 
 }

@@ -844,6 +844,10 @@ class TrackSwitcher extends CanvasGame {
 		$('#best-moves').setText(this.getBestScore(lvl) || '?');
 	}
 
+	getObjectAt(C) {
+		return this.findClosestTrack(C);
+	}
+
 	handleClick(C) {
 		if (this.m_bGameOver) return;
 
@@ -868,14 +872,11 @@ class TrackSwitcher extends CanvasGame {
 		// }
 	}
 
-	handleDragStart(C) {
+	handleDragStartObject(track) {
 		if (this.m_bGameOver) return;
 
 		clearTimeout(this.checker);
 		this.startTime();
-
-		const track = this.findClosestTrack(C);
-		if (!track) return;
 
 		const car = this.getCar(track);
 		if (!car || !car.movable) return;
@@ -900,11 +901,9 @@ class TrackSwitcher extends CanvasGame {
 		return true;
 	}
 
-	handleDragMove(C) {
+	handleDragMoveObject(track) {
 		if (this.m_bGameOver) return;
 
-		const track = this.findClosestTrack(C);
-		if (!track) return;
 		const car = this.getCar(track);
 
 		if (!this.draggingRoute) {
