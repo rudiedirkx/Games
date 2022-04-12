@@ -4,30 +4,29 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "66c673b226c1feb591229df02ee34799",
+    "content-hash": "a1f32057cad71a464a57723809e51d8a",
     "packages": [
         {
             "name": "rdx/db",
-            "version": "dev-master",
+            "version": "1.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rudiedirkx/db_generic.git",
-                "reference": "e7c47662649ce5b97b0700a8bad18873babeb163"
+                "reference": "2e4f73216638dc8e49c55c9e4f31cd8b013ad44e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rudiedirkx/db_generic/zipball/e7c47662649ce5b97b0700a8bad18873babeb163",
-                "reference": "e7c47662649ce5b97b0700a8bad18873babeb163",
+                "url": "https://api.github.com/repos/rudiedirkx/db_generic/zipball/2e4f73216638dc8e49c55c9e4f31cd8b013ad44e",
+                "reference": "2e4f73216638dc8e49c55c9e4f31cd8b013ad44e",
                 "shasum": ""
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
-                "exclude-from-classmap": [
-                    "/test/"
-                ],
                 "classmap": [
                     "./"
+                ],
+                "exclude-from-classmap": [
+                    "/test/"
                 ]
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -43,20 +42,18 @@
             "description": "Simple MySQL/SQLite wrapper",
             "support": {
                 "issues": "https://github.com/rudiedirkx/db_generic/issues",
-                "source": "https://github.com/rudiedirkx/db_generic/tree/master"
+                "source": "https://github.com/rudiedirkx/db_generic/tree/1.21"
             },
-            "time": "2022-01-25T23:31:13+00:00"
+            "time": "2022-03-25T14:02:33+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "rdx/db": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.2.0"
 }
