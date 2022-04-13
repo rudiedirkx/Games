@@ -37,9 +37,9 @@ function printPlayersTable(Game $game, ?Player $player) {
 			<tr class="<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>">
 				<td><?= do_html($plr->name) ?></td>
 				<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
-					<td><?= $plr->score ?></td>
+					<td><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>
 				<? endif ?>
-				<td nowrap><?= $maxJokers - $plr->used_jokers ?> / <?= $maxJokers ?></td>
+				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= $maxJokers - $plr->used_jokers ?></span> / <?= $maxJokers ?></td>
 				<td>
 					<? if ($plr->is_turn): ?>TURN<? endif ?>
 					<? if ($plr->is_kicked): ?>OUT<? endif ?>
@@ -178,7 +178,18 @@ if (isset($_GET['status'])) {
 	$player->touch();
 	return json_respond([
 		'status' => $status->getHash(),
-		'onlines' => array_map('get_time_ago', array_column($player->game->players, 'online_ago', 'id')),
+		'interactive' => $status->isInteractive(),
+		'message' => (string) $status,
+		'dice' => $player->game->dice_array,
+		'others_columns' => $player->getOthersColumns(),
+		'others_colors' => $player->getOthersColors(),
+		'players' => array_map(function(Player $plr) use ($maxJokers) {
+			return [
+				'online' => get_time_ago($plr->online_ago),
+				'jokers_left' => $maxJokers - $plr->used_jokers,
+				'score' => (int) $plr->score,
+			];
+		}, $player->game->players),
 	]);
 }
 

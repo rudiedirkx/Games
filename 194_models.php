@@ -397,6 +397,10 @@ class KeerStatus {
 		return sha1(get_class($this) . "$this->text:{$this->game->num_players}:{$this->game->num_columns}:{$this->game->num_colors}");
 	}
 
+	public function isInteractive() : bool {
+		return false;
+	}
+
 	public function __toString() {
 		return '<em>' . do_html($this->text) . '</em>';
 	}
@@ -408,6 +412,10 @@ class KeerStatusButton extends KeerStatus {
 	public function __construct(Game $game, string $id, string $label) {
 		parent::__construct($game, $label);
 		$this->id = $id;
+	}
+
+	public function isInteractive() : bool {
+		return true;
 	}
 
 	public function __toString() {

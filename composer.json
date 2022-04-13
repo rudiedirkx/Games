@@ -2,7 +2,8 @@
     "name": "rdx/games",
     "type": "project",
     "require": {
-        "rdx/db": "^1.21"
+        "rdx/db": "^1.21",
+        "symfony/var-dumper": "^6.0"
     },
     "autoload": {
         "files": ["inc.functions.php"]

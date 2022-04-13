@@ -468,18 +468,47 @@ class MultiKeerOpKeer extends KeerOpKeer {
 						return;
 					}
 
-					if (rsp.onlines) r.each(rsp.onlines, (sec, id) => {
-						const el = $(`#online-${id}`);
-						if (el) el.setText(sec);
-					});
+					if (rsp.players) {
+						this.updatePlayersFromStatus(rsp.players);
+					}
 
 					if (rsp.status !== $('#status').data('hash')) {
-						setTimeout(() => location.reload(), 100);
+						if (rsp.interactive) {
+							setTimeout(() => location.reload(), 100);
+						}
+						else {
+							$('#status').data('hash', rsp.status);
+							this.updateFromStatus(rsp);
+						}
 					}
 				});
 			}
 		};
 		setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+	}
+
+	updatePlayersFromStatus(players) {
+		r.each(players, (plr, id) => {
+			const online = $(`#online-${id}`);
+			if (online) online.setText(plr.online);
+			const jokers = $(`#jokers-left-${id}`);
+			if (jokers) jokers.setText(plr.jokers_left);
+			const score = $(`#score-${id}`);
+			if (score) score.setText(plr.score);
+		});
+	}
+
+	updateFromStatus(rsp) {
+console.log('no reload, but update', rsp);
+		$('#status').setHTML(rsp.message);
+
+		$('#dice').setHTML('');
+		if (rsp.dice && rsp.dice.colors && rsp.dice.colors) {
+			this.importDice(rsp.dice);
+		}
+
+		this.importFullColumns(rsp.others_columns);
+		this.importFullColors(rsp.others_colors);
 	}
 
 	importDice(dice) {
