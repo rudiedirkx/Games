@@ -52,9 +52,12 @@ class KOKChallengeColumns extends KOKChallenge {
 		this.columns = columns.sort((a, b) => a - b);
 	}
 
+	get names() {
+		return $$(this.columns.map(i => `thead [data-col="${i}"]`).join(',')).map(el => el.getText());
+	}
+
 	get message() {
-		const names = $$(this.columns.map(i => `thead [data-col="${i}"]`).join(',')).map(el => el.getText());
-		return `Fill columns ${names.join(', ')}`;
+		return `Fill columns ${this.names.join(', ')}`;
 	}
 
 	won(game) {
@@ -70,7 +73,8 @@ class KOKChallengeEnds extends KOKChallengeColumns {
 	}
 
 	get message() {
-		return `Fill the far left and far right columns`;
+		const nms = this.names;
+		return `Fill the far left and far right columns (${nms[0]} & ${nms[1]})`;
 	}
 }
 
@@ -81,7 +85,8 @@ class KOKChallengeSide extends KOKChallengeColumns {
 	}
 
 	get message() {
-		return `Fill the entire ${this.side ? 'right' : 'left'} side, with center optional`;
+		const nms = this.names;
+		return `Fill the entire ${this.side ? 'right' : 'left'} of the center (${nms[0]} - ${nms[nms.length-1]})`;
 	}
 }
 
@@ -669,7 +674,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	printChallenge() {
 		if (this.challenge) {
 			const nope = '- <a href id="nope">NOPE</a>';
-			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message} ${nope}`).toggleClass('hilite', this.m_iMoves >= 25 && this.m_iMoves % 2 == 0);
+			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message} ${nope}`).toggleClass('hilite', this.m_iMoves % 2 == 0);
 		}
 		else {
 			$('#challenge').setText('').removeClass('hilite');
