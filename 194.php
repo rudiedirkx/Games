@@ -40,7 +40,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 					<td><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>
 				<? endif ?>
 				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= $maxJokers - $plr->used_jokers ?></span> / <?= $maxJokers ?></td>
-				<td>
+				<td id="turn-<?= $plr->id ?>">
 					<? if ($plr->is_turn): ?>TURN<? endif ?>
 					<? if ($plr->is_kicked): ?>OUT<? endif ?>
 				</td>
@@ -188,8 +188,9 @@ if (isset($_GET['status'])) {
 				'online' => get_time_ago($plr->online_ago),
 				'jokers_left' => $maxJokers - $plr->used_jokers,
 				'score' => (int) $plr->score,
+				'turn' => (int) $plr->is_turn,
 			];
-		}, $player->game->players),
+		}, array_column($player->game->active_players, null, 'id')),
 	]);
 }
 
@@ -211,7 +212,7 @@ elseif (isset($_GET['roll'], $_POST['colors'], $_POST['numbers'])) {
 
 elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'], $_POST['number'])) {
 	if ($player->can_end_turn) {
-		$db->transaction(function($db) use ($player) {
+		$ended = $db->transaction(function($db) use ($player) {
 			$jokers = $player->getUseJokersUpdate($_POST['color'] === '?', $_POST['number'] === '0');
 			$player->update($jokers + [
 				'finished_round' => $player->game->round,
@@ -225,12 +226,13 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 				$player->game->disableDice($_POST['color'], $_POST['number']);
 			}
 
-			$player->game->maybeEndRound();
+			$ended = $player->game->maybeEndRound();
 			$player->game->touch();
 // print_r($db->queries);
 // exit;
+			return $ended;
 		});
-		return json_respond(['reload' => 1]);
+		return json_respond(['reload' => $ended && $player->id == $player->game->turn_player_id ? 1 : 0]);
 	}
 	return json_respond(['reload' => 2]);
 }
@@ -268,6 +270,10 @@ $status = $player->getStatus();
 </head>
 
 <body class="layout multi" style="--color: <?= $boards[$player->game->board]['color'] ?>">
+
+<? if (is_local()): ?>
+	<div style="position: fixed; right: 5px; top: 5px"><?= rand(1, 99) ?></div>
+<? endif ?>
 
 <table id="board" class="board game">
 	<thead>

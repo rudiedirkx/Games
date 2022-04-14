@@ -495,6 +495,8 @@ class MultiKeerOpKeer extends KeerOpKeer {
 			if (jokers) jokers.setText(plr.jokers_left);
 			const score = $(`#score-${id}`);
 			if (score) score.setText(plr.score);
+			const turn = $(`#turn-${id}`);
+			if (turn) turn.setText(plr.turn ?  'TURN' : '');
 		});
 	}
 

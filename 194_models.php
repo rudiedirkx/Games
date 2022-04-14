@@ -60,10 +60,12 @@ class Game extends Model {
 		}));
 	}
 
-	public function maybeEndRound() : void {
+	public function maybeEndRound() : bool {
 		if ($this->allPlayersTurnReady()) {
 			$this->endRound();
+			return true;
 		}
+		return false;
 	}
 
 	public function endRound() : void {
