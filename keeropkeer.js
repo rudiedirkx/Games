@@ -477,7 +477,6 @@ class MultiKeerOpKeer extends KeerOpKeer {
 							setTimeout(() => location.reload(), 100);
 						}
 						else {
-							$('#status').data('hash', rsp.status);
 							this.updateFromStatus(rsp);
 						}
 					}
@@ -500,17 +499,18 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		});
 	}
 
-	updateFromStatus(rsp) {
-console.log('no reload, but update', rsp);
-		$('#status').setHTML(rsp.message);
+	updateFromStatus(status) {
+console.log('no reload, but update', status);
+		$('#status').data('hash', status.status);
+		$('#status').setHTML(status.message);
 
 		$('#dice').setHTML('');
-		if (rsp.dice && rsp.dice.colors && rsp.dice.colors) {
-			this.importDice(rsp.dice);
+		if (status.dice && status.dice.colors && status.dice.colors) {
+			this.importDice(status.dice);
 		}
 
-		this.importFullColumns(rsp.others_columns);
-		this.importFullColors(rsp.others_colors);
+		this.importFullColumns(status.others_columns);
+		this.importFullColors(status.others_colors);
 	}
 
 	importDice(dice) {
@@ -587,9 +587,15 @@ console.log('no reload, but update', rsp);
 		const data = {state, score, color, number, fulls};
 
 		$.post(location.search + '&endturn=1', $.serialize(data)).on('done', (e, rsp) => {
-			console.log(rsp);
-			if (rsp.reload) location.reload();
+console.log(rsp);
 			document.body.removeClass('with-choosing');
+			if (rsp.reload) {
+				location.reload();
+			}
+			else if (rsp.status) {
+				this.updateFromStatus(rsp.status);
+				this.updatePlayersFromStatus(rsp.status.players);
+			}
 		});
 	}
 

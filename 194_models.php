@@ -5,6 +5,8 @@ class Model extends db_generic_model {}
 class Game extends Model {
 	use WithMultiplayerPassword;
 
+	const MAX_JOKERS = 8;
+
 	const COLORS_TO_COMPLETE = 2;
 	const KICKABLE_AFTER = 120;
 
@@ -227,53 +229,53 @@ class Player extends Model {
 	public function getStatus() : KeerStatus {
 		if ($this->game->round == 0) {
 			if (!$this->game->has_sufficient_players) {
-				return new KeerStatus($this->game, "Waiting for players to join...");
+				return new KeerStatus($this, "Waiting for players to join...");
 			}
 			elseif (!$this->is_turn) {
-				return new KeerStatus($this->game, "Waiting for '{$this->game->turn_player}' to start game...");
+				return new KeerStatus($this, "Waiting for '{$this->game->turn_player}' to start game...");
 			}
 			else {
-				return new KeerStatusButton($this->game, "roll", "Start game");
+				return new KeerStatusButton($this, "roll", "Start game");
 			}
 		}
 		elseif ($this->can_roll) {
-			return new KeerStatusButton($this->game, "roll", "Roll dice");
+			return new KeerStatusButton($this, "roll", "Roll dice");
 		}
 		elseif ($this->can_end_turn) {
 			if ($this->game->dice) {
 				if ($this->can_choose) {
 					$label = $this->game->isColorComplete() ? "LAST turn" : "turn";
-					return new KeerStatusButton($this->game, "next-turn", "<span class='choosing'>End $label</span><span class='not-choosing'>SKIP $label</span>");
+					return new KeerStatusButton($this, "next-turn", "<span class='choosing'>End $label</span><span class='not-choosing'>SKIP $label</span>");
 				}
 				else {
-					return new KeerStatus($this->game, "Waiting for '{$this->game->turn_player}' to choose...");
+					return new KeerStatus($this, "Waiting for '{$this->game->turn_player}' to choose...");
 				}
 			}
 			else {
-				return new KeerStatus($this->game, "Waiting for '{$this->game->turn_player}' to roll...");
+				return new KeerStatus($this, "Waiting for '{$this->game->turn_player}' to roll...");
 			}
 		}
 		elseif ($this->game->isColorComplete()) {
 			if ($this->game->isPlayerComplete()) {
-				return new KeerStatus($this->game, "GAME OVER! '{$this->game->winner}' won, with score {$this->game->winner->score}.");
+				return new KeerStatus($this, "GAME OVER! '{$this->game->winner}' won, with score {$this->game->winner->score}.");
 			}
 			else {
 				$unready = $this->game->getUnTurnReadyPlayers();
 				if (count($unready) == 1) {
-					return new KeerStatus($this->game, "GAME OVER! Waiting for '" . $unready[0] . "'s last round.");
+					return new KeerStatus($this, "GAME OVER! Waiting for '" . $unready[0] . "'s last round.");
 				}
 				else {
-					return new KeerStatus($this->game, "GAME OVER! Waiting for players' last round.");
+					return new KeerStatus($this, "GAME OVER! Waiting for players' last round.");
 				}
 			}
 		}
 		else {
 			$unready = $this->game->getUnTurnReadyPlayers();
 			if (count($unready) == 1) {
-				return new KeerStatus($this->game, "Waiting for '" . $unready[0] . "' to finish turn...");
+				return new KeerStatus($this, "Waiting for '" . $unready[0] . "' to finish turn...");
 			}
 			else {
-				return new KeerStatus($this->game, "Waiting for players to finish turn...");
+				return new KeerStatus($this, "Waiting for players to finish turn...");
 			}
 		}
 	}
@@ -387,11 +389,13 @@ class FullColor extends Model {
 }
 
 class KeerStatus {
+	protected $player;
 	protected $game;
 	protected $text;
 
-	public function __construct(Game $game, string $text) {
-		$this->game = $game;
+	public function __construct(Player $player, string $text) {
+		$this->player = $player;
+		$this->game = $player->game;
 		$this->text = $text;
 	}
 
@@ -403,6 +407,25 @@ class KeerStatus {
 		return false;
 	}
 
+	public function toResponseArray() : array {
+		return [
+			'status' => $this->getHash(),
+			'interactive' => $this->isInteractive(),
+			'message' => (string) $this,
+			'dice' => $this->game->dice_array,
+			'others_columns' => $this->player->getOthersColumns(),
+			'others_colors' => $this->player->getOthersColors(),
+			'players' => array_map(function(Player $plr) {
+				return [
+					'online' => get_time_ago($plr->online_ago),
+					'jokers_left' => Game::MAX_JOKERS - $plr->used_jokers,
+					'score' => (int) $plr->score,
+					'turn' => (int) $plr->is_turn,
+				];
+			}, array_column($this->game->active_players, null, 'id')),
+		];
+	}
+
 	public function __toString() {
 		return '<em>' . do_html($this->text) . '</em>';
 	}
@@ -411,8 +434,8 @@ class KeerStatus {
 class KeerStatusButton extends KeerStatus {
 	protected $id;
 
-	public function __construct(Game $game, string $id, string $label) {
-		parent::__construct($game, $label);
+	public function __construct(Player $player, string $id, string $label) {
+		parent::__construct($player, $label);
 		$this->id = $id;
 	}
 

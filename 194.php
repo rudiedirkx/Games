@@ -14,12 +14,11 @@ $db->ensureSchema(require '194_schema.php');
 
 [$columns, $boards] = require '191_levels.php';
 $mapCenter = ceil(count($columns[0]) / 2) - 1;
-$maxJokers = 8;
 
 $player = Player::get($_GET['player'] ?? null);
 
 function printPlayersTable(Game $game, ?Player $player) {
-	global $debug, $maxJokers;
+	global $debug;
 	?>
 	<table class="players">
 		<tr>
@@ -39,7 +38,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 				<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
 					<td><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>
 				<? endif ?>
-				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= $maxJokers - $plr->used_jokers ?></span> / <?= $maxJokers ?></td>
+				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= Game::MAX_JOKERS - $plr->used_jokers ?></span> / <?= Game::MAX_JOKERS ?></td>
 				<td id="turn-<?= $plr->id ?>">
 					<? if ($plr->is_turn): ?>TURN<? endif ?>
 					<? if ($plr->is_kicked): ?>OUT<? endif ?>
@@ -176,22 +175,7 @@ Player::addHistory($player->id);
 if (isset($_GET['status'])) {
 	$status = $player->getStatus();
 	$player->touch();
-	return json_respond([
-		'status' => $status->getHash(),
-		'interactive' => $status->isInteractive(),
-		'message' => (string) $status,
-		'dice' => $player->game->dice_array,
-		'others_columns' => $player->getOthersColumns(),
-		'others_colors' => $player->getOthersColors(),
-		'players' => array_map(function(Player $plr) use ($maxJokers) {
-			return [
-				'online' => get_time_ago($plr->online_ago),
-				'jokers_left' => $maxJokers - $plr->used_jokers,
-				'score' => (int) $plr->score,
-				'turn' => (int) $plr->is_turn,
-			];
-		}, array_column($player->game->active_players, null, 'id')),
-	]);
+	return json_respond($status->toResponseArray());
 }
 
 elseif (isset($_GET['roll'], $_POST['colors'], $_POST['numbers'])) {
@@ -226,13 +210,21 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 				$player->game->disableDice($_POST['color'], $_POST['number']);
 			}
 
-			$ended = $player->game->maybeEndRound();
+			if ($ended = $player->game->maybeEndRound()) {
+				$player->clear();
+			}
 			$player->game->touch();
+// var_dump($ended, $player->is_turn);
+// print_r($player->getStatus()->toResponseArray());
 // print_r($db->queries);
 // exit;
 			return $ended;
 		});
-		return json_respond(['reload' => $ended && $player->id == $player->game->turn_player_id ? 1 : 0]);
+		$reload = $ended && $player->is_turn;
+		return json_respond([
+			'reload' => $reload,
+			'status' => $reload ? null : $player->getStatus()->toResponseArray(),
+		]);
 	}
 	return json_respond(['reload' => 2]);
 }
@@ -272,7 +264,7 @@ $status = $player->getStatus();
 <body class="layout multi" style="--color: <?= $boards[$player->game->board]['color'] ?>">
 
 <? if (is_local()): ?>
-	<div style="position: fixed; right: 5px; top: 5px"><?= rand(1, 99) ?></div>
+	<div style="position: fixed; right: 5px; top: 5px; background: #000"><?= rand(10, 99) ?></div>
 <? endif ?>
 
 <table id="board" class="board game">
@@ -336,7 +328,7 @@ $status = $player->getStatus();
 <? endif ?>
 
 <script>
-KeerOpKeer.JOKERS = <?= json_encode($maxJokers) ?>;
+KeerOpKeer.JOKERS = <?= json_encode(Game::MAX_JOKERS) ?>;
 KeerOpKeer.CENTER = <?= json_encode($mapCenter) ?>;
 KeerOpKeer.BOARDS = <?= json_encode($boards) ?>;
 var objGame = new MultiKeerOpKeer($('#grid'));
