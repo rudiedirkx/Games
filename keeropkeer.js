@@ -677,7 +677,6 @@ class SoloKeerOpKeer extends KeerOpKeer {
 		this.printJokers();
 		this.printScore();
 
-		this.challenge = this.makeRandomChallenge();
 		this.printChallenge();
 	}
 
@@ -701,12 +700,14 @@ class SoloKeerOpKeer extends KeerOpKeer {
 	}
 
 	printChallenge() {
-		if (this.challenge) {
-			const nope = '- <a href id="nope">NOPE</a>';
-			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message} ${nope}`).toggleClass('hilite', this.m_iMoves % 2 == 0);
+		if (this.m_iMoves == 0 && !this.challenge) {
+			$('#challenge').setHTML('CHALLENGE? <a href id="yes">YES</a>');
+		}
+		else if (this.challenge) {
+			$('#challenge').setHTML(`CHALLENGE: ${this.challenge.message}`);
 		}
 		else {
-			$('#challenge').setText('').removeClass('hilite');
+			$('#challenge').setHTML('');
 		}
 	}
 
@@ -806,9 +807,9 @@ class SoloKeerOpKeer extends KeerOpKeer {
 			}
 		});
 
-		$('#challenge').on('click', '#nope', e => {
+		$('#challenge').on('click', '#yes', e => {
 			e.preventDefault();
-			this.challenge = null;
+			this.challenge = this.makeRandomChallenge();
 			this.printChallenge();
 		});
 
