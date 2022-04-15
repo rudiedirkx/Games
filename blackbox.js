@@ -50,6 +50,7 @@ class Blackbox extends GridGame {
 		return {
 			...super.getScore(),
 			level: Blackbox.SIZE << 8 | Blackbox.ATOMS,
+			score: this.getNumericalScore(),
 		};
 	}
 
