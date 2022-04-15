@@ -160,19 +160,14 @@ canvas {
 		-moz-transform: translateZ(0);
 		transform: translateZ(0);
 	}
-	#tiles:hover .img {
-		opacity: 0.75;
+	#tiles:hover .img,
+	#tiles:focus-within .img {
+		opacity: 0.65;
 	}
 	#tiles a:hover .img,
 	#tiles a:focus .img {
 		box-shadow: 0 0 45px #fff;
 		opacity: 1.0;
-		position: relative;
-		z-index: 2;
-
-		width: 121px;
-		height: 121px;
-		margin: -15px 0 0 -15px;
 	}
 	#tiles h2, #tiles p {
 		display: none;
