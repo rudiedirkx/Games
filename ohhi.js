@@ -243,6 +243,8 @@ class Ohhi extends CanvasGame {
 
 	static COLOR_ONE = 'green';
 	static COLOR_TWO = 'gold';
+	static SHADE_ONE = '#2c462c';
+	static SHADE_TWO = 'orange';
 
 	reset() {
 		super.reset();
@@ -265,13 +267,22 @@ class Ohhi extends CanvasGame {
 				const v = this.grid[y] && this.grid[y][x];
 				const color = v == Ohhi.TWO_USER || v == Ohhi.TWO_SYSTEM ? Ohhi.COLOR_TWO : (v == Ohhi.ONE_USER || v == Ohhi.ONE_SYSTEM ? Ohhi.COLOR_ONE : '#ddd');
 
+				const cx = this.scale(x);
+				const cy = this.scale(y);
+
 				if (this.lastChange && this.lastChange.x == x && this.lastChange.y == y) {
 					this.ctx.fillStyle = 'black';
-					this.ctx.fillRect(this.scale(x) - 2, this.scale(y) - 2, Ohhi.SQUARE + 4, Ohhi.SQUARE + 4);
+					this.ctx.fillRect(cx - 2, cy - 2, Ohhi.SQUARE + 4, Ohhi.SQUARE + 4);
 				}
 
 				this.ctx.fillStyle = color;
-				this.ctx.fillRect(this.scale(x), this.scale(y), Ohhi.SQUARE, Ohhi.SQUARE);
+				this.ctx.fillRect(cx, cy, Ohhi.SQUARE, Ohhi.SQUARE);
+
+				if (v == Ohhi.TWO_SYSTEM || v == Ohhi.ONE_SYSTEM) {
+					const cc = new Coords2D(cx + Ohhi.SQUARE/2, cy + Ohhi.SQUARE/2);
+					const color = v == Ohhi.TWO_SYSTEM ? Ohhi.SHADE_TWO : Ohhi.SHADE_ONE;
+					this.drawText(cc, 'x', {align: 'middle', color});
+				}
 			}
 		}
 	}
@@ -336,7 +347,7 @@ class Ohhi extends CanvasGame {
 
 	createFromExport(chars) {
 		const size = Math.sqrt(chars.length);
-		if (size < 4 || chars.match(/[^012]/) || Math.ceil(size) != Math.floor(size)) {
+		if (size < 4 || chars.match(/[^01234]/) || Math.ceil(size) != Math.floor(size)) {
 			return false;
 		}
 
@@ -384,7 +395,7 @@ class Ohhi extends CanvasGame {
 		worker.postMessage({size});
 		worker.onmessage = e => {
 			if (e.data.grid) {
-				this.loadMap(e.data.grid);
+				this.loadMap(Ohhi.userToSystems(e.data.grid));
 			}
 			$('#newgame').removeClass('loading');
 		};
@@ -393,7 +404,7 @@ class Ohhi extends CanvasGame {
 	loadMap(grid) {
 		this.reset();
 
-		this.grid = Ohhi.userToSystems(grid);
+		this.grid = grid;
 		this.size = this.grid.length;
 		this.gridBackup = JSON.stringify(this.grid);
 		this.canvas.width = this.canvas.height = Ohhi.OFFSET + this.size * (Ohhi.SQUARE + Ohhi.MARGIN) - Ohhi.MARGIN + Ohhi.OFFSET;

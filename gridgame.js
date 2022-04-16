@@ -610,10 +610,14 @@ class CanvasGame extends Game {
 		return new Drawable(this.ctx);
 	}
 
-	drawText( coord, text, {size = '20px', color = '#000', style = ''} = {} ) {
+	drawText( coord, text, {size = '20px', color = '#000', style = '', align = null} = {} ) {
 		typeof size == 'number' && (size = size + 'px');
 		this.ctx.font = `${style} ${size} sans-serif`;
 		this.ctx.fillStyle = color;
+		if ( align === 'middle' ) {
+			this.ctx.textAlign = 'center';
+			this.ctx.textBaseline = 'middle';
+		}
 		this.ctx.fillText(text, coord.x, coord.y);
 	}
 
