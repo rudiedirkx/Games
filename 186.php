@@ -53,6 +53,8 @@ p {
 	<button id="export">Export to URL</button>
 </p>
 
+<p id="cheat-reason"></p>
+
 <script>
 objGame = new Ohhi($('canvas'));
 objGame.createFromExport(location.hash.substr(1)) || objGame.createMap(<?= $size ?>);

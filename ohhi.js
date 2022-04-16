@@ -508,6 +508,7 @@ class Ohhi extends CanvasGame {
 			this.grid[found.y][found.x] = found.color;
 			console.log(found);
 			this.lastChange = found;
+			$('#cheat-reason').setText(found.reason);
 		}
 
 		this.changed = true;
