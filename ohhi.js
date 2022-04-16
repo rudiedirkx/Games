@@ -703,19 +703,56 @@ class OhhiSolver {
 		}
 	}
 
-	findKnownsFromThreeOpens() {
-		return;
+	findKnownsFromThreeOpensForLine(line, axis, i, x, y) {
+			if (line.replace(/[12]/g, '').length != 3) return;
+// console.log(`three open in ${axis}`, i, line);
 
-		const rows = this.getLineRows();
-		const cols = this.getLineCols();
+			const ones = line.replace(/[2_]/g, '').length;
+			const need = line.length / 2 - ones;
+			if (need > 2 || need < 1) return;
+			const twos = line.replace(/[1_]/g, '').length;
+			const target = ones < twos ? '1' : '2';
 
-		for ( let y = 0; y < rows.length; y++ ) {
-			const line = rows[y];
-			if (line.replace(/[12]/g, '').length == 3 && line.match(/__/)) {
-				console.log('three open in row', y, line);
-				const m = line.match(/([12]?)__+([12]?)/);
-				console.log(m);
+			const i1 = line.indexOf('_', 0);
+			const i2 = line.indexOf('_', i1 + 1);
+			const i3 = line.indexOf('_', i2 + 1);
+
+			// 3
+			if (i2 == i1 + 1 && i3 == i2 + 1) {
+				if (line[i1 - 1] == target) {
+					// console.log(`place ${target} at pos ${i3}`);
+					this.remember(this.coordWithColor(x ?? i3, y ?? i3, parseInt(target), `can't have too many potential adjacents on ${axis} = ${i}`));
+				}
+				else if (line[i3 + 1] == target) {
+					// console.log(`place ${target} at pos ${i1}`);
+					this.remember(this.coordWithColor(x ?? i1, y ?? i1, parseInt(target), `can't have too many potential adjacents on ${axis} = ${i}`));
+				}
 			}
+			// 2 1
+			else if (i2 == i1 + 1) {
+				if (line[i1 - 1] == target || line[i2 + 1] == target) {
+					// console.log(`place ${target} at pos ${i3}`);
+					this.remember(this.coordWithColor(x ?? i3, y ?? i3, parseInt(target), `can't fill both opens with ${target} on ${axis} = ${i}`));
+				}
+			}
+			// 1 2
+			else if (i3 == i2 + 1) {
+				if (line[i2 - 1] == target || line[i3 + 1] == target) {
+					// console.log(`place ${target} at pos ${i1}`);
+					this.remember(this.coordWithColor(x ?? i1, y ?? i1, parseInt(target), `can't fill both opens with ${target} on ${axis} = ${i}`));
+				}
+			}
+	}
+
+	findKnownsFromThreeOpens() {
+		const rows = this.getLineRows();
+		for ( let y = 0; y < rows.length; y++ ) {
+			this.findKnownsFromThreeOpensForLine(rows[y], 'y', y, null, y);
+		}
+
+		const cols = this.getLineCols();
+		for ( let x = 0; x < cols.length; x++ ) {
+			this.findKnownsFromThreeOpensForLine(cols[x], 'x', x, x, null);
 		}
 	}
 
