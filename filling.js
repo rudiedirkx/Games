@@ -2,8 +2,8 @@
 
 class Filling extends GridGame {
 
-	reset() {
-		super.reset();
+	createGame() {
+		super.createGame();
 
 		this.closeNeighbors = [
 			new Coords2D(0, -1),
@@ -19,6 +19,10 @@ class Filling extends GridGame {
 			new Coords2D(1, 1),
 			new Coords2D(-1, 1),
 		];
+	}
+
+	reset() {
+		super.reset();
 
 		this.size = 0;
 		this.colors = [];
@@ -26,11 +30,14 @@ class Filling extends GridGame {
 	}
 
 	handleCellDragStart(start) {
-		if (this.m_bGameOver) return;
+		if (this.m_bGameOver) return setTimeout(() => this.createMap(this.size), 300), false;
 
+		clearTimeout(this.checker);
 		this.startTime();
+		this.setMoves(this.m_iMoves + 1);
 
 		this.draggingColor = this.registerNewColor();
+		return true;
 	}
 
 	handleCellDragMove(start, end) {
@@ -67,6 +74,7 @@ class Filling extends GridGame {
 		return {
 			...super.getScore(),
 			level: this.size,
+			moves: this.m_iMoves - this.m_objGrid.getElements('td').filter(td => td.textContent.trim() != '').length,
 		};
 	}
 
@@ -307,8 +315,9 @@ class Filling extends GridGame {
 
 			e.preventDefault();
 
-			draggingStart = e.target;
-			this.handleCellDragStart(draggingStart);
+			if (this.handleCellDragStart(draggingStart)) {
+				draggingStart = e.target;
+			}
 		});
 		this.m_objGrid.on(['mousemove', 'touchmove'], e => {
 			if (!draggingStart) return;
@@ -339,7 +348,7 @@ class Filling extends GridGame {
 		this.listenCellDrag();
 
 		$('#restart').on('click', e => {
-			if (this.m_bGameOver) return;
+			if (this.m_bGameOver) return this.createMap(this.size);
 
 			this.colors.length = 0;
 			this.draggingColor = null;
@@ -363,12 +372,6 @@ class Filling extends GridGame {
 	}
 
 	createStats() {
-	}
-
-	setTime(time) {
-	}
-
-	setMoves(moves) {
 	}
 
 }
