@@ -198,6 +198,7 @@ class Labyrinth extends CanvasGame {
 
 		this.tiles = [];
 		this.keyTile = null;
+		this.players = [];
 		this.player = null;
 		this.canMove = false;
 
@@ -209,7 +210,7 @@ class Labyrinth extends CanvasGame {
 		this.drawFill('#fff');
 		this.drawArrows();
 		this.drawTiles();
-		this.drawPlayer();
+		this.drawPlayers();
 		this.drawKeyTile();
 	}
 
@@ -243,11 +244,15 @@ class Labyrinth extends CanvasGame {
 		}
 	}
 
-	drawPlayer() {
+	drawPlayers() {
+		this.players.forEach(player => this.drawPlayer(player));
+	}
+
+	drawPlayer(player) {
 		const RADIUS = 15;
-		const C = this.player.tile.loc.add(new Coords2D(0.5, 0.5));
-		const P = this.scale(C).add(this.player.offset.multiply(RADIUS));
-		this.drawDot(P, {radius: RADIUS, color: this.player.color});
+		const C = player.tile.loc.add(new Coords2D(0.5, 0.5));
+		const P = this.scale(C).add(player.offset.multiply(RADIUS));
+		this.drawDot(P, {radius: RADIUS, color: player.color});
 		this.drawCircle(P, RADIUS, {width: 1, color: '#000'});
 	}
 
@@ -368,7 +373,6 @@ class Labyrinth extends CanvasGame {
 
 		this.gridTiles(tiles);
 
-		this.player = this.makePlayer(this.randInt(4));
 		this.updateIndex();
 
 		this.treasureStrategy = treasures;
@@ -712,6 +716,8 @@ class SoloLabyrinth extends Labyrinth {
 		const tiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
 		const treasures = this.makeTreasureStrategy(treasuresName, this.createRandomTargets());
 		this.startGameWith(tiles, treasures);
+		this.player = this.makePlayer(this.randInt(4));
+		this.players = [this.player];
 	}
 
 	createRandomTargets() {
@@ -748,6 +754,15 @@ class SoloLabyrinth extends Labyrinth {
 }
 
 class MultiLabyrinth extends Labyrinth {
+	createGame() {
+		super.createGame();
+
+		$$('table.players tr.player').forEach((tr, i) => {
+			tr.css('--color', Labyrinth.PLAYER_COLORS[i]);
+			tr.css('--text', new RgbColor(Labyrinth.PLAYER_COLORS[i]).isDark() ? 'white' : 'black');
+		});
+	}
+
 	startGame(treasuresName, board) {
 		if (!board) {
 			const treasures = this.makeTreasureStrategy(treasuresName, []);
@@ -757,6 +772,13 @@ class MultiLabyrinth extends Labyrinth {
 
 		const dynamicTiles = this.randomizeTiles([...Labyrinth.dynamicTiles]);
 		const keyTile = dynamicTiles.shift();
-		this.startGameWith(dynamicTiles, keyTile, treasuresName);
+		this.startGameWith(dynamicTiles, treasuresName);
+	}
+
+	setPlayers(me, turn, players) {
+		this.players = players.map((info, i) => {
+			return this.makePlayer(i);
+		});
+		this.player = this.players[me];
 	}
 }

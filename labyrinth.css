@@ -51,7 +51,11 @@ canvas {
 	background-color: #afa;
 }
 
-.players .me {
+.players tr.player {
+	background-color: var(--color);
+	color: var(--text);
+}
+.players tr.me {
 	color: lime;
 	font-weight: bold;
 }

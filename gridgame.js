@@ -80,8 +80,8 @@ class RgbColor {
 	static DARK = 138;
 
 	constructor(color) {
-		this.color = color.replace(/^#/, '');
-		[this.r, this.g, this.b] = RgbColor.parseColor(this.color);
+		this.color = color;
+		[this.r, this.g, this.b] = RgbColor.parseColor(color) || RgbColor.throughTemp(color) || RgbColor.invalidColor(color);
 	}
 
 	lightness() {
@@ -93,12 +93,27 @@ class RgbColor {
 	}
 
 	static parseColor(color) {
-		if (color.length == 6 || color.length == 8) {
-			return RgbColor.parse6(color.substr(0, 6));
+		if (color[0] == '#') {
+			if (color.length == 7 || color.length == 9) {
+				return RgbColor.parse6(color.substr(1, 6));
+			}
+			if (color.length == 4 || color.length == 5) {
+				return RgbColor.parse3(color.substr(1, 3));
+			}
 		}
-		if (color.length == 3 || color.length == 4) {
-			return RgbColor.parse3(color.substr(0, 3));
+		if (color.indexOf('rgb(') == 0 || color.indexOf('rgba(') == 0) {
+			return RgbColor.parseTuple(color);
 		}
+	}
+
+	static throughTemp(color) {
+		const el = document.el('div').css('display', 'none').css('border-color', color).appendTo(document.body);
+		const color2 = el.css('border-color');
+		el.remove();
+		return RgbColor.parseColor(color2);
+	}
+
+	invalidColor(color) {
 		throw new Error(`Invalid color: ${color}`);
 	}
 
@@ -112,6 +127,11 @@ class RgbColor {
 
 	static parse3(color) {
 		return RgbColor.parse6(`${color[0]}${color[0]}${color[1]}${color[1]}${color[2]}${color[2]}`);
+	}
+
+	static parseTuple(color) {
+		const m = color.match(/rgba?\((\d+), *(\d+), *(\d+)/);
+		return [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])];
 	}
 }
 

@@ -24,7 +24,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 			<th></th>
 		</tr>
 		<? foreach ($game->players as $plr): ?>
-			<tr class="<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>">
+			<tr class="player <? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>">
 				<td><?= do_html($plr->name) ?></td>
 				<td>
 					<? if ($plr->is_turn): ?>TURN<? endif ?>
@@ -188,6 +188,7 @@ if (isset($_GET['status'])) {
 <script>
 objGame = new MultiLabyrinth($('canvas'), $('#key'));
 objGame.startGame('InOrder', <?= json_encode($player->game->tiles) ?>);
+objGame.setPlayers(<?= $player->player_index ?>, <?= $player->game->turn_player_index ?>, <?= json_encode($player->game->player_metas) ?>)
 objGame.listenControls();
 objGame.startPainting();
 </script>

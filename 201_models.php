@@ -17,6 +17,23 @@ class Game extends Model {
 		return $this->round == 0 && count($this->players) < self::MAX_PLAYERS;
 	}
 
+	protected function get_player_metas() {
+		return array_map(function(Player $plr) {
+			return [
+				'location' => $plr->location,
+			];
+		}, array_values($this->players));
+	}
+
+	protected function get_turn_player_index() {
+		foreach (array_values($this->players) as $i => $plr) {
+			if ($plr->id == $this->turn_player_id) {
+				return $i;
+			}
+		}
+		return -1;
+	}
+
 	public function touch() : void {
 		$this->update(['changed_on' => time()]);
 	}
@@ -68,6 +85,14 @@ class Player extends Model {
 
 	protected function get_is_turn() {
 		return $this->id == $this->game->turn_player_id;
+	}
+
+	protected function get_player_index() {
+		foreach (array_values($this->game->players) as $i => $plr) {
+			if ($plr->id == $this->id) {
+				return $i;
+			}
+		}
 	}
 
 	public function touch() : void {
