@@ -141,28 +141,36 @@ if (!$player) {
 		<p>See all players? <select name="see_all"><?= do_html_options(['0' => 'No', '1' => 'Yes']) ?></select></p>
 		<p><button name="start" value="1">START GAME</button></p>
 	</form>
-	<? if ($debug):
+
+	<h2>Your games</h2>
+	<?php
+	if ($debug) {
 		$games = Game::all('1=1 order by id desc limit 20');
-		Game::eager('players', $games);
-		?>
-		<ul>
-			<? foreach ($games as $gm): ?>
-				<li>
-					<a href="?game=<?= $gm->password ?>"><?= date('j M H:i', $gm->created_on) ?></a> -
-					<?= $gm->board ?> -
-					<?= count($gm->players) ?> players -
-					<? if ($gm->isPlayerComplete()): ?>
-						<b>COMPLETE!</b>
-					<? else: ?>
-						round <?= $gm->round ?>
-						<? if ($gm->is_deletable): ?>
-							- <a href="?delete=<?= $gm->password ?>">delete</a>
-						<? endif ?>
+	}
+	else {
+		$ids = Player::getHistory();
+		$players = Player::finds($ids);
+		$games = Player::eager('game', $players);
+	}
+	Game::eager('players', $games);
+	?>
+	<ul>
+		<? foreach ($games as $gm): ?>
+			<li>
+				<a href="?game=<?= $gm->password ?>"><?= date('j M H:i', $gm->created_on) ?></a> -
+				<?= $gm->board ?> -
+				<?= count($gm->players) ?> players -
+				<? if ($gm->isPlayerComplete()): ?>
+					<b>COMPLETE!</b>
+				<? else: ?>
+					round <?= $gm->round ?>
+					<? if ($gm->is_deletable): ?>
+						- <a href="?delete=<?= $gm->password ?>">delete</a>
 					<? endif ?>
-				</li>
-			<? endforeach ?>
-		</ul>
-	<? endif ?>
+				<? endif ?>
+			</li>
+		<? endforeach ?>
+	</ul>
 	<?php
 	include 'tpl.queries.php';
 	exit;
