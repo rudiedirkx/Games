@@ -126,13 +126,16 @@ class Game extends Model {
 		return $this->round <= count($this->active_players);
 	}
 
-	protected function get_winner() {
-		$players = $this->players;
-		usort($players, function($a, $b) {
-			return $b->score - $a->score;
-		});
-		return $players[0];
-	}
+    protected function get_winner() {
+        $players = $this->players;
+        usort($players, function($a, $b) {
+            if ($b->score - $a->score == 0) {
+                return $b->used_jokers - $a->used_jokers; }
+            else {
+                return $b->score - $a->score;
+            }});
+        return $players[0];
+    }
 
 	protected function get_active_players() {
 		return array_values(array_filter($this->players, fn($plr) => $plr->finished_round != self::KICKED_ROUND));
