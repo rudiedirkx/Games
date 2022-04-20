@@ -129,6 +129,9 @@ class Game extends Model {
 	protected function get_winner() {
 		$players = $this->players;
 		usort($players, function($a, $b) {
+			if ($b->score == $a->score) {
+				return $b->used_jokers - $a->used_jokers;
+			}
 			return $b->score - $a->score;
 		});
 		return $players[0];
