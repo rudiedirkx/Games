@@ -414,6 +414,7 @@ class KeerStatus {
 		return [
 			'status' => $this->getHash(),
 			'interactive' => $this->isInteractive(),
+			'player_complete' => $this->game->isPlayerComplete(),
 			'message' => (string) $this,
 			'dice' => $this->game->dice_array,
 			'others_columns' => $this->player->getOthersColumns(),

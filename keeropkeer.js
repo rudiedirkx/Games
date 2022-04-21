@@ -473,7 +473,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 					}
 
 					if (rsp.status !== $('#status').data('hash')) {
-						if (rsp.interactive) {
+						if (rsp.interactive || rsp.player_complete) {
 							setTimeout(() => location.reload(), 100);
 						}
 						else {
