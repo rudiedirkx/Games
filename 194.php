@@ -30,27 +30,29 @@ function printPlayersTable(Game $game, ?Player $player) {
 			<th></th>
 			<th align="right">Online</th>
 			<th></th>
-			<th></th>
 		</tr>
 		<? foreach ($game->players as $plr): ?>
-			<tr class="<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>">
-				<td><?= do_html($plr->name) ?></td>
+			<tr
+				id="plr-<?= $plr->id ?>"
+				class="
+					<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>
+					<?= $player && $plr->is_kickable ? 'kickable' : '' ?>
+					<?= $plr->is_kicked ? 'kicked' : '' ?>
+					<?= $plr->is_turn ? 'turn' : '' ?>
+				"
+			>
+				<td>
+					<span class="name"><?= do_html($plr->name) ?></span>
+					<span class="turn">&#127922;</span>
+				</td>
 				<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
 					<td><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>
 				<? endif ?>
 				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= Game::MAX_JOKERS - $plr->used_jokers ?></span> / <?= Game::MAX_JOKERS ?></td>
-				<td id="turn-<?= $plr->id ?>">
-					<? if ($plr->is_turn): ?>TURN<? endif ?>
-					<? if ($plr->is_kicked): ?>OUT<? endif ?>
-				</td>
-				<td align="right">
+				<td><button class="kick" data-kick="<?= $plr->id ?>">KICK</button></td>
+				<td align="right" nowrap>
 					<? if (!$plr->is_kicked): ?>
 						<span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></span> ago
-					<? endif ?>
-				</td>
-				<td>
-					<? if (($player->is_leader ?? false) && $plr->is_kickable): ?>
-						<button data-kick="<?= $plr->id ?>">KICK</button>
 					<? endif ?>
 				</td>
 				<td>
@@ -76,18 +78,13 @@ if (!$player) {
 
 	if ($game = Game::get($_GET['game'] ?? null)) {
 		if (isset($_POST['join'], $_POST['name']) && $game->is_joinable) {
-			$password = $db->transaction(function() use ($game) {
-				$game->touch();
-				Player::insert([
-					'game_id' => $game->id,
-					'online' => time(),
-					'password' => $password = get_random(),
-					'name' => $_POST['name'],
-					'finished_round' => $game->round,
-				]);
-				return $password;
-			});
-			return do_redirect("?player=$password");
+			try {
+				$password = $game->addPlayer($_POST['name']);
+				return do_redirect("?player=$password");
+			}
+			catch (MultiPlayerException $ex) {
+				return do_redirect("?game=$game->password&error=" . $ex->getCode());
+			}
 		}
 
 		?>
@@ -99,6 +96,9 @@ if (!$player) {
 		<body style="--color: <?= $boards[$game->board]['color'] ?>">
 
 		<h1>Keer Op Keer MULTIPLAYER</h1>
+		<? if (!empty($_GET['error'])): ?>
+			<p class="error"><?= do_html((new MultiPlayerException($_GET['error']))->getMessage()) ?></p>
+		<? endif ?>
 		<h2>Join game <?= $game->id ?>?</h2>
 		<p>
 			In round <?= $game->round ?>.
@@ -183,7 +183,7 @@ Player::addHistory($player->id);
 if (isset($_GET['status'])) {
 	$status = $player->getStatus();
 	$player->touch();
-	return json_respond($status->toResponseArray());
+	return json_respond($status->toResponseArray($_GET['status']));
 }
 
 elseif (isset($_GET['roll'], $_POST['colors'], $_POST['numbers'])) {

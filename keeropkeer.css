@@ -245,8 +245,22 @@ table.players {
 .players td {
 	padding: 3px;
 }
-.players .me {
+.players .me .name {
 	color: lime;
+	font-weight: bold;
+}
+.players .kicked .name {
+	text-decoration: line-through;
+	font-style: italic;
+}
+.players tr:not(.kickable) .kick,
+.players tr.kicked .kick,
+.players tr:not(.turn) .turn {
+	display: none;
+}
+
+p.error {
+	color: red;
 	font-weight: bold;
 }
 

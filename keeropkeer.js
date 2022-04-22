@@ -459,7 +459,8 @@ class MultiKeerOpKeer extends KeerOpKeer {
 				setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
 			}
 			else {
-				$.get(location.search + '&status=1').on('done', (e, rsp) => {
+				const $status = $('#status');
+				$.get(location.search + '&status=' + $status.data('hash')).on('done', (e, rsp) => {
 					setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
 					lastPoll = Date.now();
 
@@ -472,7 +473,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 						this.updatePlayersFromStatus(rsp.players);
 					}
 
-					if (rsp.status !== $('#status').data('hash')) {
+					if (rsp.status !== $status.data('hash')) {
 						if (rsp.interactive || rsp.player_complete) {
 							setTimeout(() => location.reload(), 100);
 						}
@@ -494,8 +495,12 @@ class MultiKeerOpKeer extends KeerOpKeer {
 			if (jokers) jokers.setText(plr.jokers_left);
 			const score = $(`#score-${id}`);
 			if (score) score.setText(plr.score);
-			const turn = $(`#turn-${id}`);
-			if (turn) turn.setText(plr.turn ?  'TURN' : '');
+			const tr = $(`tr#plr-${id}`);
+			if (tr) {
+				tr.toggleClass('turn', plr.turn);
+				tr.toggleClass('kickable', plr.kickable);
+				tr.toggleClass('kicked', plr.kicked);
+			}
 		});
 	}
 

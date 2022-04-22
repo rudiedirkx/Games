@@ -8,6 +8,49 @@ if ( !$db ) {
 
 $db->ensureSchema(require 'inc.db-schema.php');
 
+class MultiPlayerException extends Exception {
+	const NAME_INVALID = 101;
+	const NAME_EXISTS = 102;
+
+	public function __construct(int $code, ?string $message = null) {
+		parent::__construct($message ?? self::getLabel($code), $code);
+	}
+
+	static public function getLabel(int $code) : string {
+		switch ($code) {
+			case self::NAME_INVALID:
+				return "Invalid name. No special characters allowed.";
+
+			case self::NAME_EXISTS:
+				return "Name already exists. If you joined before, use the PLAY link below.";
+		}
+		return "Error # $code?";
+	}
+}
+
+trait WithMultiplayerPlayers {
+	abstract function relate_players();
+
+	public function validateName(string $name) {
+		if (preg_match('#[^\w \-]#', trim($name))) {
+			throw new MultiPlayerException(MultiPlayerException::NAME_INVALID);
+		}
+	}
+
+	public function validateUniqueName(string $name) {
+		$players = $this->players;
+		$class = get_class(reset($players));
+
+		$exists = $class::first([
+			'game_id' => $this->id,
+			'name' => trim($name),
+		]);
+		if ($exists) {
+			throw new MultiPlayerException(MultiPlayerException::NAME_EXISTS);
+		}
+	}
+}
+
 trait WithMultiplayerPassword {
 	static public function get(?string $password) : ?self {
 		return $password ? self::first(['password' => $password]) : null;

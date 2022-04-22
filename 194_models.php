@@ -3,7 +3,7 @@
 class Model extends db_generic_model {}
 
 class Game extends Model {
-	use WithMultiplayerPassword;
+	use WithMultiplayerPassword, WithMultiplayerPlayers;
 
 	const MAX_JOKERS = 8;
 
@@ -179,11 +179,28 @@ class Game extends Model {
 
 	protected function relate_players() {
 		$round = self::KICKED_ROUND;
-		return $this->to_many(Player::class, 'game_id')->order("(finished_round = $round) asc, id asc");
+		return $this->to_many(Player::class, 'game_id')->order("id asc");
 	}
 
 	protected function relate_num_players() {
 		return $this->to_count(Player::$_table, 'game_id');
+	}
+
+	public function addPlayer(string $name) : string {
+		$this->validateName($name);
+		$this->validateUniqueName($name);
+
+		return self::$_db->transaction(function() use ($name) {
+			$this->touch();
+			Player::insert([
+				'game_id' => $this->id,
+				'online' => time(),
+				'password' => $password = get_random(),
+				'name' => $name,
+				'finished_round' => $this->round,
+			]);
+			return $password;
+		});
 	}
 
 	static public function createNew(string $board, string $playerName, int $seeAll) : Player {
@@ -410,9 +427,14 @@ class KeerStatus {
 		return false;
 	}
 
-	public function toResponseArray() : array {
+	public function toResponseArray(string $userHash = '') : array {
+		$serverHash = $this->getHash();
+		// if ($userHash === $serverHash) {
+		// 	return ['status' => $serverHash];
+		// }
+
 		return [
-			'status' => $this->getHash(),
+			'status' => $serverHash,
 			'interactive' => $this->isInteractive(),
 			'player_complete' => $this->game->isPlayerComplete(),
 			'message' => (string) $this,
@@ -425,8 +447,10 @@ class KeerStatus {
 					'jokers_left' => Game::MAX_JOKERS - $plr->used_jokers,
 					'score' => (int) $plr->score,
 					'turn' => (int) $plr->is_turn,
+					'kickable' => (int) $plr->is_kickable,
+					'kicked' => (int) $plr->is_kicked,
 				];
-			}, array_column($this->game->active_players, null, 'id')),
+			}, array_column($this->game->players, null, 'id')),
 		];
 	}
 
