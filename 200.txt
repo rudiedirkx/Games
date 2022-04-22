@@ -1,0 +1,258 @@
+stones
+
+lv 1
+
+x
+
+lv 2
+
+x
+x
+
+lv 3
+
+xxx
+
+ x
+xx
+
+lv 4
+
+ x
+xxx
+
+xx
+xx
+
+ x
+xx
+x
+
+x
+x
+xx
+
+x
+x
+x
+x
+
+targets
+
+0 pt
+
+x
+x
+
+x
+x
+xx
+
+xx
+ x
+
+ x
+xxx
+
+xx
+ xx
+
+x
+x
+x
+x
+
+xxx
+
+xx
+xx
+
+x
+x
+x
+
+x
+xx
+
+1 pt
+
+ x
+xx
+
+xxx
+ x
+
+ xx
+xxxx
+
+xxxx
+
+xx
+ xx
+  x
+
+xx
+xxx
+
+x
+x
+
+x x
+xxx
+
+xxxx
+
+x
+xx
+xxx
+
+x
+x
+x
+
+x
+x
+x
+xxx
+
+x
+x x
+xxx
+
+2 pt
+
+xxx
+ x
+ x
+
+xx
+xxxx
+  xx
+
+x
+xxx
+xxx
+ xx
+
+x
+xx
+xxx
+x
+
+xx
+xx
+xxx
+
+ x
+xxx
+xxx
+ x
+
+xxxx
+ xxxx
+
+3 pt
+
+xx
+xx
+xxx
+xxx
+
+x
+xx
+xxx
+xxx
+
+xxx
+xxxxx
+
+ x
+xx
+xx
+xxx
+xxx
+
+ xx
+xxx
+xxx
+xxx
+
+xx
+xxx
+xxx
+xx
+
+ xx
+xxx
+xxxx
+
+x
+xx
+xxx
+xxxx
+
+4 pt
+
+   x
+  xx
+xxxx
+xxxxx
+
+   xx
+  xxx
+ xxxx
+xxxxx
+
+ x
+ xxx
+ xxx
+xxxxx
+
+  x
+ xx
+ xx
+ xxx
+xxxxx
+
+    x
+xxxxx
+xxxxx
+  xxx
+
+ xxx
+xxxxx
+xxxxx
+
+ x
+ xx
+xxx
+xxx
+xxx
+
+5 pt
+
+  x
+xxxxx
+xxxxx
+xxxxx
+
+ xxxx
+ xxxx
+xxxx
+xxxx
+
+  xx
+xxxx
+ xxxx
+ xxxx
+ xx
+
+ xxx
+xxxxx
+xxxxx
+ xxx
+
+xxxx
+ xxxx
+ xxxx
+xxxx

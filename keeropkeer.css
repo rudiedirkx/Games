@@ -1,11 +1,12 @@
 :root {
 	--center-border: solid 3px #fff;
 	--color: #000;
+	--text: #fff;
 	--size: 30px;
 }
 body {
 	background-color: var(--color);
-	color: white;
+	color: var(--text);
 	font-family: sans-serif;
 }
 body.layout {
@@ -14,7 +15,7 @@ body.layout {
 	column-gap: 20px;
 	align-items: flex-start;
 }
-a {
+a, a:visited, a:link, a:active {
 	color: inherit;
 }
 th:not([align]) {
@@ -232,7 +233,7 @@ body:not(.with-choosing) #next-turn .choosing {
 	background-color: #97c3e9;
 }
 [data-color="p"] {
-	background-color: #e49baf;
+	background-color: #ee7f9d;
 }
 [data-color="o"] {
 	background-color: orange;
