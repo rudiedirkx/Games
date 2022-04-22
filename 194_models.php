@@ -435,7 +435,8 @@ class KeerStatus {
 
 		return [
 			'status' => $serverHash,
-			'interactive' => $this->isInteractive(),
+			'round' => (int) $this->game->round,
+			// 'interactive' => $this->isInteractive(),
 			'player_complete' => $this->game->isPlayerComplete(),
 			'message' => (string) $this,
 			'dice' => $this->game->dice_array,
@@ -443,7 +444,7 @@ class KeerStatus {
 			'others_colors' => $this->player->getOthersColors(),
 			'players' => array_map(function(Player $plr) {
 				return [
-					'online' => get_time_ago($plr->online_ago),
+					'online' => $plr->online_ago < 3 ? 'now' : get_time_ago($plr->online_ago) . ' ago',
 					'jokers_left' => Game::MAX_JOKERS - $plr->used_jokers,
 					'score' => (int) $plr->score,
 					'turn' => (int) $plr->is_turn,

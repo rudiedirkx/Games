@@ -474,12 +474,8 @@ class MultiKeerOpKeer extends KeerOpKeer {
 					}
 
 					if (rsp.status !== $status.data('hash')) {
-						if (rsp.interactive || rsp.player_complete) {
-							setTimeout(() => location.reload(), 100);
-						}
-						else {
-							this.updateFromStatus(rsp);
-						}
+console.log('no reload, but update', rsp);
+						this.updateFromStatus(rsp);
 					}
 				});
 			}
@@ -505,9 +501,10 @@ class MultiKeerOpKeer extends KeerOpKeer {
 	}
 
 	updateFromStatus(status) {
-console.log('no reload, but update', status);
 		$('#status').data('hash', status.status);
 		$('#status').setHTML(status.message);
+
+		$('#stats-round').setText(status.round);
 
 		$('#dice').setHTML('');
 		if (status.dice && status.dice.colors && status.dice.colors) {
@@ -564,8 +561,9 @@ console.log('no reload, but update', status);
 	handleRoll() {
 		this.roll($('#roll')).then(dice => {
 			$.post(location.search + '&roll=1', $.serialize(dice)).on('done', (e, rsp) => {
-				console.log(rsp);
-				if (rsp.reload) location.reload();
+console.log('roll rsp', rsp);
+				if (rsp.status) this.updateFromStatus(rsp.status);
+				else location.reload();
 			});
 		});
 	}
@@ -592,15 +590,13 @@ console.log('no reload, but update', status);
 		const data = {state, score, color, number, fulls};
 
 		$.post(location.search + '&endturn=1', $.serialize(data)).on('done', (e, rsp) => {
-console.log(rsp);
+console.log('end turn rsp', rsp);
 			document.body.removeClass('with-choosing');
-			if (rsp.reload) {
-				location.reload();
-			}
-			else if (rsp.status) {
+			if (rsp.status) {
 				this.updateFromStatus(rsp.status);
 				this.updatePlayersFromStatus(rsp.status.players);
 			}
+			else location.reload();
 		});
 	}
 
@@ -609,8 +605,8 @@ console.log(rsp);
 
 		const data = {pid};
 		$.post(location.search + '&kick=1', $.serialize(data)).on('done', (e, rsp) => {
-			console.log(rsp);
-			if (rsp.reload) location.reload();
+console.log('kick rsp', rsp);
+			location.reload();
 		});
 	}
 
@@ -618,10 +614,10 @@ console.log(rsp);
 		this.listenCellClick();
 		this.listenDice();
 
-		$$('#roll').on('click', e => {
+		$('#status').on('click', '#roll', e => {
 			this.handleRoll();
 		});
-		$$('#next-turn').on('click', e => {
+		$('#status').on('click', '#next-turn', e => {
 			this.handleEndTurn();
 		});
 

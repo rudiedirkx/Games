@@ -52,7 +52,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 				<td><button class="kick" data-kick="<?= $plr->id ?>">KICK</button></td>
 				<td align="right" nowrap>
 					<? if (!$plr->is_kicked): ?>
-						<span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?></span> ago
+						<span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?> ago</span>
 					<? endif ?>
 				</td>
 				<td>
@@ -196,8 +196,16 @@ elseif (isset($_GET['roll'], $_POST['colors'], $_POST['numbers'])) {
 				'round' => $player->game->round == 0 ? 1 : $player->game->round,
 			]);
 			$player->game->touch();
+
+			$player->clear();
+			$player->game->clear();
+// print_r($player->getStatus()->toResponseArray());
+// exit;
 		});
-		return json_respond(['reload' => 1]);
+		return json_respond([
+			'reload' => 0,
+			'status' => $player->getStatus()->toResponseArray(),
+		]);
 	}
 	return json_respond(['reload' => 2]);
 }
@@ -218,20 +226,20 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 				$player->game->disableDice($_POST['color'], $_POST['number']);
 			}
 
-			if ($ended = $player->game->maybeEndRound()) {
-				$player->clear();
-			}
+			$ended = $player->game->maybeEndRound();
 			$player->game->touch();
+
+			$player->clear();
+			$player->game->clear();
 // var_dump($ended, $player->is_turn);
 // print_r($player->getStatus()->toResponseArray());
 // print_r($db->queries);
 // exit;
 			return $ended;
 		});
-		$reload = $ended && $player->is_turn;
 		return json_respond([
-			'reload' => $reload,
-			'status' => $reload ? null : $player->getStatus()->toResponseArray(),
+			'reload' => 0,
+			'status' => $player->getStatus()->toResponseArray(),
 		]);
 	}
 	return json_respond(['reload' => 2]);
