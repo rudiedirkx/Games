@@ -498,10 +498,19 @@ console.log('no reload, but update', rsp);
 				tr.toggleClass('kickable', plr.kickable);
 				tr.toggleClass('kicked', plr.kicked);
 			}
+			else {
+				location.reload();
+			}
 		});
 	}
 
 	updateFromStatus(status) {
+		if (this.lastStatusTime && this.lastStatusTime > status.time) {
+			console.log(`Skipping polled status`, this.lastStatusTime, status.time);
+			return;
+		}
+		this.lastStatusTime = status.time;
+
 		$('#status').data('hash', status.status);
 		$('#status').setHTML(status.message);
 

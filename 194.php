@@ -20,9 +20,9 @@ $player = Player::get($_GET['player'] ?? null);
 function printPlayersTable(Game $game, ?Player $player) {
 	global $debug;
 	?>
-	<table class="players">
+	<table class="players" style="margin-top: 1em">
 		<tr>
-			<th>Name</th>
+			<th>Player</th>
 			<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
 				<th>Score</th>
 			<? endif ?>
@@ -105,7 +105,6 @@ if (!$player) {
 			Last change: <?= date('Y-m-d H:i', $game->changed_on) ?>.
 			<? if ($game->isPlayerComplete()): ?><b>COMPLETE!</b> See scores:<? endif ?>
 		</p>
-		<p>Current players:</p>
 		<? printPlayersTable($game, null) ?>
 		<? if ($game->is_joinable): ?>
 			<form method="post" action>
@@ -324,7 +323,6 @@ $status = $player->getStatus();
 		</p>
 	</div>
 
-	<p style="margin-bottom: 0">Players:</p>
 	<? printPlayersTable($player->game, $player) ?>
 	<p>Share <a href="<?= do_html($player->game->url) ?>"><?= do_html($player->game->url) ?></a> to invite players.</p>
 </div>
