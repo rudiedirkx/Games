@@ -93,7 +93,7 @@ if (!$player) {
 		<style>body { font-family: sans-serif }</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
-		<body style="--color: <?= $boards[$game->board]['color'] ?>">
+		<body style="--color: <?= $boards[$game->board]['color'] ?>; --text: <?= $boards[$game->board]['text'] ?? '#fff' ?>">
 
 		<h1>Keer Op Keer MULTIPLAYER</h1>
 		<? if (!empty($_GET['error'])): ?>
@@ -276,7 +276,7 @@ $status = $player->getStatus();
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 </head>
 
-<body class="layout multi" style="--color: <?= $boards[$player->game->board]['color'] ?>">
+<body class="layout multi">
 
 <? if (is_local()): ?>
 	<div style="position: fixed; right: 5px; top: 5px; background: #000"><?= rand(10, 99) ?></div>

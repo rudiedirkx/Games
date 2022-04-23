@@ -45,7 +45,7 @@ $boards = [
 	],
 	'yellow' => [
 		'color' => '#ffcd00',
-		'light' => true,
+		'text' => '#555',
 		'map' => [
 			'pggYyyy o ppgggbY',
 			'pgpppyy o ppggbbb',
