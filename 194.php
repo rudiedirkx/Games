@@ -165,7 +165,7 @@ if (!$player) {
 				<? else: ?>
 					round <?= $gm->round ?>
 					<? if ($gm->is_deletable): ?>
-						- <a href="?delete=<?= $gm->password ?>">delete</a>
+						- <a href="?delete=<?= $gm->password ?>" onclick="return confirm('DELETE GAME?')">delete</a>
 					<? endif ?>
 				<? endif ?>
 			</li>

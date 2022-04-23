@@ -119,7 +119,7 @@ class Game extends Model {
 	}
 
 	protected function get_is_deletable() {
-		return $this->round == 0 && count($this->players) < 3;
+		return $this->round == 0 || $this->changed_on < strtotime('-24 hours');
 	}
 
 	protected function get_free_dice() {
@@ -358,7 +358,7 @@ class Player extends Model {
 	}
 
 	protected function get_is_kickable() {
-		return !$this->is_kicked && $this->online_ago > Game::KICKABLE_AFTER;
+		return !$this->is_kicked && $this->online_ago > Game::KICKABLE_AFTER && count($this->game->active_players) > 2 && !$this->game->isColorComplete();
 	}
 
 	protected function get_is_kicked() {
