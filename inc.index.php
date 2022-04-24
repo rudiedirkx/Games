@@ -104,6 +104,6 @@ return [
 	['196',				'Labyrinth / Betoverde Doolhof SOLO',				"Speel De Betoverde Doolhof. Play Labyrinth"],
 	['197',				'Picross 2',									"Picross, but better"],
 	['199',				'Track Switcher / De Spoorwerf',				"Move trains on a train yard"],
-//	['200',				'Project L SOLO',								"Tetris puzzler for points, against the computer"],
+	['200',				'Project L SOLO',								"Tetris puzzler for points, against the computer"],
 	['201',				'Labyrinth / Betoverde Doolhof MULTI',			"Play Labyrinth Speel Betoverde Doolhof online"],
 ];

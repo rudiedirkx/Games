@@ -1,0 +1,15 @@
+table.card {
+	--color: #fff;
+	background-color: #000;
+	border-spacing: 2px;
+	border: solid 20px #000;
+	margin: 1em 0;
+}
+table.card td {
+	width: 24px;
+	height: 24px;
+	text-align: center;
+}
+table.card td.shape {
+	background-color: var(--color);
+}
