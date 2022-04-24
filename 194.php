@@ -52,7 +52,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 				<td><button class="kick" data-kick="<?= $plr->id ?>">KICK</button></td>
 				<td align="right" nowrap>
 					<? if (!$plr->is_kicked): ?>
-						<span id="online-<?= $plr->id ?>"><?= get_time_ago($plr->online_ago) ?> ago</span>
+						<span id="online-<?= $plr->id ?>"><?= $plr->online_ago_text ?></span>
 					<? endif ?>
 				</td>
 				<td>

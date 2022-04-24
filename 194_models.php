@@ -369,6 +369,10 @@ class Player extends Model {
 		return time() - $this->online;
 	}
 
+	protected function get_online_ago_text() {
+		return $this->online_ago < 5 ? 'now' : get_time_ago($this->online_ago) . ' ago';
+	}
+
 	protected function get_can_choose() {
 		return $this->can_end_turn && ($this->game->free_dice || $this->is_turn || !$this->game->turn_player->can_end_turn);
 	}
@@ -445,7 +449,7 @@ class KeerStatus {
 			'others_colors' => $this->player->getOthersColors(),
 			'players' => array_map(function(Player $plr) {
 				return [
-					'online' => $plr->online_ago < 3 ? 'now' : get_time_ago($plr->online_ago) . ' ago',
+					'online' => $plr->online_ago_text,
 					'jokers_left' => Game::MAX_JOKERS - $plr->used_jokers,
 					'score' => (int) $plr->score,
 					'turn' => (int) $plr->is_turn,
