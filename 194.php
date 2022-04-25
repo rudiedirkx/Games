@@ -150,6 +150,7 @@ if (!$player) {
 		$ids = Player::getHistory();
 		$players = Player::finds($ids);
 		$games = Player::eager('game', $players);
+		usort($games, fn($a, $b) => $b->created_on - $a->created_on);
 	}
 	Game::eager('players', $games);
 	?>
