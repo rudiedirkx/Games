@@ -280,7 +280,7 @@ $status = $player->getStatus();
 <body class="layout multi">
 
 <? if (is_local()): ?>
-	<div style="position: fixed; right: 5px; top: 5px; background: #000"><?= rand(10, 99) ?></div>
+	<div style="position: fixed; right: 5px; top: 5px; background: #000; color: #fff"><?= rand(10, 99) ?></div>
 <? endif ?>
 
 <table id="board" class="board game">
@@ -325,6 +325,11 @@ $status = $player->getStatus();
 	</div>
 
 	<? printPlayersTable($player->game, $player) ?>
+
+	<? if (is_local()): ?>
+		<pre id="debug"></pre>
+	<? endif ?>
+
 	<p>Share <a href="<?= do_html($player->game->url) ?>"><?= do_html($player->game->url) ?></a> to invite players.</p>
 </div>
 

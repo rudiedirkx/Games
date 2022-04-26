@@ -439,7 +439,7 @@ class KeerStatus {
 
 		return [
 			'status' => $serverHash,
-			'time' => microtime(1),
+			// 'time' => microtime(1),
 			'round' => (int) $this->game->round,
 			// 'interactive' => $this->isInteractive(),
 			'player_complete' => $this->game->isPlayerComplete(),

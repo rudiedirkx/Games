@@ -234,6 +234,10 @@ class KeerOpKeer extends GridGame {
 		return true;
 	}
 
+	clearFulls() {
+		$$('.full-column, .full-color').removeClass('other').removeClass('self');
+	}
+
 	evalFulls() {
 		const columns = this.evalFullColumns();
 		const colors = this.evalFullColors();
@@ -432,6 +436,9 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		this.usedJokers = 0;
 		this.turnColor = null;
 		this.turnNumber = null;
+
+		this.lastStatus = null;
+		this.ignoringStatusUpdate = false;
 	}
 
 	startGame(boardName, state, usedJokers, othersColumns, othersColors) {
@@ -475,13 +482,24 @@ class MultiKeerOpKeer extends KeerOpKeer {
 					}
 
 					if (rsp.status !== $status.data('hash')) {
+						if (!this.ignoringStatusUpdate) {
 console.log('no reload, but update', rsp);
-						this.updateFromStatus(rsp);
+							this.updateFromStatus(rsp);
+						}
+						else {
+if ($('#debug')) $('#debug').append("ignoring this status update\n");
+							console.warn('ignoring this status update');
+						}
 					}
 				});
 			}
 		};
 		setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+	}
+
+	ignoreStatusUpdate() {
+		this.ignoringStatusUpdate = true;
+		setTimeout(() => this.ignoringStatusUpdate = false, 100);
 	}
 
 	updatePlayersFromStatus(players) {
@@ -505,24 +523,33 @@ console.log('no reload, but update', rsp);
 	}
 
 	updateFromStatus(status) {
-		if (this.lastStatusTime && this.lastStatusTime > status.time) {
-			console.log(`Skipping polled status`, this.lastStatusTime, status.time);
-			return;
-		}
-		this.lastStatusTime = status.time;
-
 		$('#status').data('hash', status.status);
-		$('#status').setHTML(status.message);
+		if (!this.lastStatus || this.lastStatus.message != status.message) {
+			$('#status').setHTML(status.message);
+		}
 
 		$('#stats-round').setText(status.round);
 
-		$('#dice').setHTML('');
 		if (status.dice && status.dice.colors && status.dice.colors) {
-			this.importDice(status.dice);
+			if (!this.lastStatus || this.diceAreDifferent(this.lastStatus.dice, status.dice)) {
+				this.importDice(status.dice);
+			}
+		}
+		else {
+			$('#dice').setHTML('');
 		}
 
+		this.clearFulls();
 		this.importFullColumns(status.others_columns);
 		this.importFullColors(status.others_colors);
+		this.evalFulls();
+
+		this.lastStatus = status;
+	}
+
+	diceAreDifferent(dice1, dice2) {
+console.log(dice1, dice2);
+		return JSON.stringify(dice1) != JSON.stringify(dice2);
 	}
 
 	importDice(dice) {
@@ -572,7 +599,10 @@ console.log('no reload, but update', rsp);
 		this.roll($('#roll')).then(dice => {
 			$.post(location.search + '&roll=1', $.serialize(dice)).on('done', (e, rsp) => {
 console.log('roll rsp', rsp);
-				if (rsp.status) this.updateFromStatus(rsp.status);
+				if (rsp.status) {
+					this.ignoreStatusUpdate();
+					this.updateFromStatus(rsp.status);
+				}
 				else location.reload();
 			});
 		});
@@ -603,6 +633,7 @@ console.log('roll rsp', rsp);
 console.log('end turn rsp', rsp);
 			document.body.removeClass('with-choosing');
 			if (rsp.status) {
+				this.ignoreStatusUpdate();
 				this.updateFromStatus(rsp.status);
 				this.updatePlayersFromStatus(rsp.status.players);
 			}

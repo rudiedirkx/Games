@@ -108,7 +108,7 @@ table.game {
 	height: 2.0em;
 }
 #status.hilite {
-	color: black;
+	color: fuchsia;
 	transition: color 200ms linear;
 }
 #status button {
