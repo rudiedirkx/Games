@@ -347,6 +347,8 @@ $status = $player->getStatus();
 	<? endif; endforeach ?>
 <? endif ?>
 
+<div id="no-connection">No connection?</div>
+
 <script>
 KeerOpKeer.JOKERS = <?= json_encode(Game::MAX_JOKERS) ?>;
 KeerOpKeer.CENTER = <?= json_encode($mapCenter) ?>;

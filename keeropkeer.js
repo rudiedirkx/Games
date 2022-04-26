@@ -427,7 +427,7 @@ class KeerOpKeer extends GridGame {
 
 class MultiKeerOpKeer extends KeerOpKeer {
 
-	static STATUS_REQUEST_MS = 1500;
+	static STATUS_REQUEST_MS = 1100;
 
 	reset() {
 		super.reset();
@@ -437,6 +437,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		this.turnColor = null;
 		this.turnNumber = null;
 
+		this.lastConnection = null;
 		this.lastStatus = null;
 		this.ignoringStatusUpdate = false;
 	}
@@ -472,8 +473,15 @@ class MultiKeerOpKeer extends KeerOpKeer {
 					setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
 					lastPoll = Date.now();
 
-					if (!rsp || !rsp.status) {
-						console.warn(rsp);
+					if (!rsp) {
+						console.warn('Empty status response. No connection?');
+						this.warnNoConnection();
+						return;
+					}
+					this.resetNoConnection();
+
+					if (!rsp.status) {
+						console.warn('status rsp', rsp);
 						return;
 					}
 
@@ -495,6 +503,18 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 			}
 		};
 		setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+	}
+
+	warnNoConnection() {
+		const sec = this.lastConnection ? Math.round((Date.now() - this.lastConnection) / 1000) : 0;
+		if (sec > 5) {
+			$('#no-connection').show();
+		}
+	}
+
+	resetNoConnection() {
+		this.lastConnection = Date.now();
+		$('#no-connection').hide();
 	}
 
 	ignoreStatusUpdate() {
@@ -524,14 +544,14 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 
 	updateFromStatus(status) {
 		$('#status').data('hash', status.status);
-		if (!this.lastStatus || this.lastStatus.message != status.message) {
+		if (this.hasChanged(status, 'message')) {
 			$('#status').setHTML(status.message);
 		}
 
 		$('#stats-round').setText(status.round);
 
-		if (status.dice && status.dice.colors && status.dice.colors) {
-			if (!this.lastStatus || this.diceAreDifferent(this.lastStatus.dice, status.dice)) {
+		if (status.dice && status.dice.colors && status.dice.numbers) {
+			if (this.hasChanged(status, 'dice')) {
 				this.importDice(status.dice);
 			}
 		}
@@ -539,17 +559,18 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 			$('#dice').setHTML('');
 		}
 
-		this.clearFulls();
-		this.importFullColumns(status.others_columns);
-		this.importFullColors(status.others_colors);
-		this.evalFulls();
+		if (this.hasChanged(status, 'others_columns') || this.hasChanged(status, 'others_colors')) {
+			this.clearFulls();
+			this.importFullColumns(status.others_columns);
+			this.importFullColors(status.others_colors);
+			this.evalFulls();
+		}
 
 		this.lastStatus = status;
 	}
 
-	diceAreDifferent(dice1, dice2) {
-console.log(dice1, dice2);
-		return JSON.stringify(dice1) != JSON.stringify(dice2);
+	hasChanged(status, key) {
+		return !this.lastStatus || JSON.stringify(this.lastStatus[key]) != JSON.stringify(status[key]);
 	}
 
 	importDice(dice) {

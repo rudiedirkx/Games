@@ -265,6 +265,18 @@ p.error {
 	font-weight: bold;
 }
 
+#no-connection {
+	display: none;
+	background-color: red;
+	color: white;
+	padding: 5px;
+	text-align: center;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
 @media (max-width: 495px) {
 	:root {
 		--size: 29px;
