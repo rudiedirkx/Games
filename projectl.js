@@ -1,3 +1,5 @@
+"use strict";
+
 class Shape {
 	static ON = 'x';
 
@@ -118,13 +120,13 @@ class SoloProjectL extends Game {
 	startGame() {
 		console.time('draw all shapes');
 		const html1 = this.STONES.map((stone, i) => {
-			return '<div>' + this.createShapeHtml(stone.shape, i, stone.color) + '</div>';
+			return '<div>' + this.createStoneHtml(stone, true) + '</div>';
 		}).join(' ');
 		const html2 = this.TARGETS.map((target, i) => {
-			return '<div>' + this.createShapeHtml(target.shape, target.score, target.stone.color) + '</div>';
+			return '<div>' + this.createTargetHtml(target) + '</div>';
 		}).join(' ');
 		const html3 = this.SHAPES.map((shape, i) => {
-			return '<div>' + this.createShapeHtml(shape, i, '#fff') + '</div>';
+			return `<div><table class="shape">` + this.createShapeRowsHtml(shape, i, '#fff') + `</table></div>`;
 		}).join(' ');
 		document.body.setHTML(`${html1} ---- ${html2} ---- ${html3}`);
 		console.timeEnd('draw all shapes');
@@ -140,11 +142,11 @@ console.log('rotated', rotated);
 			console.log(rotated.grid.join("\n"));
 			return rotated;
 		};
-		document.body.on('click', '[data-shape]', e => {
+		document.body.on('click', 'table[data-shape]', e => {
 			const rotated = rotate(e.subject.data('shape'));
 			const title = e.subject.getElement('.shape').textContent;
 			const color = e.subject.css('--color');
-			e.subject.parentNode.setHTML(this.createShapeHtml(rotated, title, color));
+			e.subject.setHTML(this.createShapeRowsHtml(rotated, title, color)).data('shape', rotated.serialize());
 		});
 		rotate(this.SHAPES[14].serialize());
 
@@ -156,11 +158,9 @@ console.log('rotated', rotated);
 		// });
 	}
 
-	createShapeHtml(shape, title, color) {
-		const si = this.SHAPES.indexOf(shape);
-
+	createShapeRowsHtml(shape, title, color) {
 		var titled = false;
-		const html = [`<table class="card" data-shape="${shape.serialize()}" style="--color: ${color}">`];
+		const html = [];
 		for ( let y = 0; y < shape.heigth; y++ ) {
 			html.push(`<tr>`);
 			for ( let x = 0; x < shape.width; x++ ) {
@@ -172,7 +172,38 @@ console.log('rotated', rotated);
 			}
 			html.push(`</tr>`);
 		}
-		html.push(`</table>`);
+		return html.join('');
+	}
+
+	createStoneHtml(stone, withTitle = false) {
+		const title = withTitle ? this.STONES.indexOf(stone) : '';
+		const data = withTitle ? ` data-shape="${stone.shape.serialize()}"` : '';
+		const html = [
+			`<table class="shape stone" style="--color: ${stone.color}"${data}>`,
+			this.createShapeRowsHtml(stone.shape, title),
+			`</table>`,
+		];
+		return html.join('');
+	}
+
+	createTargetHtml(target) {
+		const title = target.score;
+		var titled = false;
+		const html = [
+			`<table class="shape target">`,
+			`<thead>`,
+			`<tr>`,
+			`<td colspan="${target.shape.width}"></td>`,
+			`<td>`,
+			this.createStoneHtml(target.stone, false),
+			`</td>`,
+			`</tr>`,
+			`</thead>`,
+			`<tbody>`,
+			this.createShapeRowsHtml(target.shape, title),
+			`</tbody>`,
+			`</table>`,
+		];
 		return html.join('');
 	}
 

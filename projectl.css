@@ -1,15 +1,34 @@
-table.card {
+table.shape {
+	--background: #000;
 	--color: #fff;
-	background-color: #000;
+	--size: 24px;
+	--padding: 20px;
+
+	background-color: var(--background);
 	border-spacing: 2px;
-	border: solid 20px #000;
-	margin: 1em 0;
+	border: solid var(--padding) var(--background);
 }
-table.card td {
-	width: 24px;
-	height: 24px;
+table.shape > tbody > tr > td {
+	width: var(--size);
+	height: var(--size);
 	text-align: center;
+	padding: 0;
 }
-table.card td.shape {
+table.shape > tbody > tr > td.shape {
 	background-color: var(--color);
+}
+
+table.shape.stone {
+	--background: transparent;
+	/*--size: 10px;*/
+	--padding: 0px;
+}
+
+table.shape.target table.shape.stone {
+	--size: 10px;
+	margin: 0 0 0.25em;
+}
+
+div > table.shape {
+	margin: 1em 0;
 }
