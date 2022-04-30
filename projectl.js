@@ -4,9 +4,9 @@ class Shape {
 	static ON = 'x';
 
 	constructor(...grid) {
-		this.grid = grid;
-		this.width = Math.max(...this.grid.map(line => line.length));
-		this.heigth = this.grid.length;
+		this.width = Math.max(...grid.map(line => line.length));
+		this.heigth = grid.length;
+		this.grid = grid.map(line => `${line}       `.substr(0, this.width));
 	}
 
 	equal(other) {
@@ -42,6 +42,30 @@ class Shape {
 		}
 
 		return new Shape(...grid.map(line => line.join('')));
+	}
+
+	flip() {
+		const grid = new Array(this.width * this.heigth).fill(' ').chunk(this.width);
+		for ( let y = 0; y < this.heigth; y++ ) {
+			for ( let x = 0; x < this.width; x++ ) {
+				const oppo = this.grid[y][this.width - 1 - x];
+				grid[y][x] = oppo == null ? ' ' : oppo;
+			}
+		}
+
+		return new Shape(...grid.map(line => line.join('')));
+	}
+
+	getOffsetCoords(origin) {
+		const coords = [];
+		for ( let y = 0; y < this.heigth; y++ ) {
+			for ( let x = 0; x < this.width; x++ ) {
+				if (this.grid[y][x] === Shape.ON) {
+					coords.push((new Coords2D(x, y)).subtract(origin));
+				}
+			}
+		}
+		return coords;
 	}
 
 	serialize() {
@@ -93,11 +117,23 @@ class Moats {
 
 class Stone {
 	constructor(color, shape, rotate = false) {
-		this.color = color;
+		this.color = color.trim();
 		this.shape = shape;
 		if (rotate) {
 			this.shape = this.shape.rotate();
 		}
+	}
+
+	get origin() {
+		for ( let x = 0; x < this.shape.width; x++ ) {
+			if (this.shape.grid[0][x] === Shape.ON) {
+				return new Coords2D(x, 0);
+			}
+		}
+	}
+
+	getOffsetCoords() {
+		return this.shape.getOffsetCoords(this.origin);
 	}
 }
 
@@ -128,35 +164,131 @@ class SoloProjectL extends Game {
 		const html3 = this.SHAPES.map((shape, i) => {
 			return `<div><table class="shape">` + this.createShapeRowsHtml(shape, i, '#fff') + `</table></div>`;
 		}).join(' ');
-		document.body.setHTML(`${html1} ---- ${html2} ---- ${html3}`);
+		$('#pieces').setHTML(`<div class="stones">${html1}</div> ---- <div class="targets">${html2}</div> ---- <div class="shapes">${html3}</div>`);
 		console.timeEnd('draw all shapes');
-
-		const rotate = str => {
-// console.log('rotate str', str);
-			const shape = Shape.unserialize(str);
-console.log('shape', shape);
-			console.log(shape.grid.join("\n"));
-// debugger;
-			const rotated = shape.rotate();
-console.log('rotated', rotated);
-			console.log(rotated.grid.join("\n"));
-			return rotated;
-		};
-		document.body.on('click', 'table[data-shape]', e => {
-			const rotated = rotate(e.subject.data('shape'));
-			const title = e.subject.getElement('.shape').textContent;
-			const color = e.subject.css('--color');
-			e.subject.setHTML(this.createShapeRowsHtml(rotated, title, color)).data('shape', rotated.serialize());
-		});
-		rotate(this.SHAPES[14].serialize());
-
-		// this.SHAPES.forEach((shape1, i1) => {
-		// 	const i2 = this.SHAPES.findIndex((shape2, i2) => i1 != i2 && shape1.equal(shape2));
-		// 	if (i2 != -1 && i2 > i1) {
-		// 		console.log(i1, i2);
-		// 	}
-		// });
 	}
+
+	listenControls() {
+		$('.stones').on('click', 'table.stone[data-shape]', e => {
+			this.handleStoneLeftClick(e.subject);
+		});
+		$('.stones').on('contextmenu', 'table.stone[data-shape]', e => {
+			e.preventDefault();
+			this.handleStoneRightClick(e.subject);
+		});
+
+		const context = '.target > tbody > tr > td.shape';
+		$('.targets').on('mouseover', context, e => {
+			this.handleTargetHoverOn(e.subject);
+		});
+		$('.targets').on('mouseout', context, e => {
+			this.handleTargetHoverOff(e.subject);
+		});
+		$('.targets').on('click', context, e => {
+			this.handleTargetClick(e.subject, e.subject.closest('table'));
+		});
+	}
+
+
+
+	rotateSerializedShape(str) {
+		const shape = Shape.unserialize(str);
+		return shape.rotate();
+	}
+
+	flipSerializedShape(str) {
+		const shape = Shape.unserialize(str);
+		return shape.flip();
+	}
+
+	replaceStone(table, shape) {
+		const title = table.getElement('.shape').textContent;
+		const color = table.css('--color');
+		table.setHTML(this.createShapeRowsHtml(shape, title, color)).data('shape', shape.serialize());
+	}
+
+	getStoneTable() {
+		return $('.stone.selected');
+	}
+
+	getStone() {
+		const table = this.getStoneTable();
+		if (table) {
+			return new Stone(table.css('--color'), Shape.unserialize(table.data('shape')));
+		}
+	}
+
+	getCoord(td) {
+		return new Coords2D(td.cellIndex, td.parentNode.sectionRowIndex);
+	}
+
+	getCell(table, C) {
+		if (table.nodeName != 'TBODY') {
+			table = table.tBodies[0];
+		}
+
+		return table.rows[C.y] && table.rows[C.y].cells[C.x];
+	}
+
+	placeStone(stone, targetCells) {
+		targetCells.forEach(td => {
+			td.addClass('filled');
+			td.css('--color', stone.color);
+		});
+	}
+
+
+
+	handleStoneLeftClick(table) {
+		if (!table.hasClass('selected')) {
+			$$('.stone.selected').removeClass('selected');
+			table.addClass('selected');
+			return;
+		}
+
+		this.replaceStone(table, this.rotateSerializedShape(table.data('shape')));
+	}
+
+	handleStoneRightClick(table) {
+		if (!table.hasClass('selected')) return;
+
+		const flipped = this.flipSerializedShape(table.data('shape'));
+		this.replaceStone(table, flipped);
+	}
+
+	handleTargetHoverOn(td) {
+		$$('td.hover').removeClass('hover');
+
+		const stone = this.getStoneTable();
+		if (stone) {
+			td.addClass('hover');
+		}
+	}
+
+	handleTargetHoverOff(td) {
+		td.removeClass('hover');
+	}
+
+	handleTargetClick(td, table) {
+		if (td.hasClass('filled') || !this.getStoneTable()) return;
+
+		const C = this.getCoord(td);
+// console.log(table, td, C);
+
+		const stone = this.getStone();
+		const stoneCoords = stone.getOffsetCoords();
+// console.log(stone, stoneCoords);
+
+		const targetCoords = stoneCoords.map(S => S.add(C));
+		const targetCells = targetCoords.map(C => this.getCell(table, C));
+		const validTargetCells = targetCells.filter(td => td && !td.hasClass('filled'));
+// console.log(targetCoords, targetCells, validTargetCells);
+		if (targetCoords.length == validTargetCells.length) {
+			this.placeStone(stone, targetCells);
+		}
+	}
+
+
 
 	createShapeRowsHtml(shape, title, color) {
 		var titled = false;
@@ -176,10 +308,10 @@ console.log('rotated', rotated);
 	}
 
 	createStoneHtml(stone, withTitle = false) {
-		const title = withTitle ? this.STONES.indexOf(stone) : '';
+		const title = withTitle ? '☼' : '';
 		const data = withTitle ? ` data-shape="${stone.shape.serialize()}"` : '';
 		const html = [
-			`<table class="shape stone" style="--color: ${stone.color}"${data}>`,
+			`<table class="shape stone" style="--color: ${stone.color}; --text: ${RgbColor.isDark(stone.color) ? '#fff' : '#000'}"${data}>`,
 			this.createShapeRowsHtml(stone.shape, title),
 			`</table>`,
 		];
@@ -187,25 +319,26 @@ console.log('rotated', rotated);
 	}
 
 	createTargetHtml(target) {
-		const title = target.score;
 		var titled = false;
 		const html = [
 			`<table class="shape target">`,
 			`<thead>`,
 			`<tr>`,
-			`<td colspan="${target.shape.width}"></td>`,
+			`<td class="score" colspan="${target.shape.width}">${target.score}</td>`,
 			`<td>`,
 			this.createStoneHtml(target.stone, false),
 			`</td>`,
 			`</tr>`,
 			`</thead>`,
 			`<tbody>`,
-			this.createShapeRowsHtml(target.shape, title),
+			this.createShapeRowsHtml(target.shape, ''),
 			`</tbody>`,
 			`</table>`,
 		];
 		return html.join('');
 	}
+
+
 
 	createStones() {
 		return [

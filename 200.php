@@ -22,8 +22,10 @@ require __DIR__ . '/inc.bootstrap.php';
 
 <body>
 
+<div id="pieces"></div>
+
 <script>
 var objGame = new SoloProjectL($('#grid'));
 objGame.startGame();
-// objGame.listenControls();
+objGame.listenControls();
 </script>

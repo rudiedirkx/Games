@@ -106,6 +106,10 @@ class RgbColor {
 		return this.lightness() < RgbColor.DARK;
 	}
 
+	static isDark(color) {
+		return (new this(color)).isDark();
+	}
+
 	static parseColor(color) {
 		if (color[0] == '#') {
 			if (color.length == 7 || color.length == 9) {
