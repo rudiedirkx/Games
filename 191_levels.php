@@ -80,6 +80,18 @@ $boards = [
 			'gpppooo p poooPpp',
 		],
 	],
+	'blue' => [
+		'color' => '#46a8d5',
+		'map' => [
+			'ppggyyY g gppppoo',
+			'OppBbGy g gPgYpoo',
+			'bOobggg p oggggGy',
+			'bbooogp p ooooBby',
+			'gbbpppb B bbObyyG',
+			'ggYypbb y yybboyb',
+			'yyyyPoo o Pyybopp',
+		],
+	],
 ];
 
 return [$columns, $boards];
