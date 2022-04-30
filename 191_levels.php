@@ -8,7 +8,7 @@ $columns = [
 
 $boards = [
 	'gray' => [
-		'color' => '#444',
+		'color' => '#233c3f',
 		'map' => [
 			'gggyyyy G bbbOyyy',
 			'ogYgYyo o pBboogg',
