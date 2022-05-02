@@ -22,10 +22,24 @@ require __DIR__ . '/inc.bootstrap.php';
 
 <body>
 
-<div id="pieces"></div>
+<div id="grid">
+	<div id="col-1-coins" class="col-header num-coins"><output>?</output></div>
+	<div id="col-2-coins" class="col-header num-coins"><output>?</output></div>
+	<div id="col-3-coins" class="col-header num-coins"><output>?</output></div>
+	<div id="deck" class="num-targets">deck<br><output>?</output></div>
+	<div id="targets"></div>
+	<div id="oppo-targets" class="num-targets">oppo<br><output>?</output></div>
+	<div id="oppo-coins" class="num-coins">oppo<br><output>?</output></div>
+	<div id="player-targets" class="num-targets">you<br><output>?</output></div>
+	<div id="hand"></div>
+</div>
+
+<div class="stones-wrapper">
+	<div id="stones"></div>
+</div>
 
 <script>
-var objGame = new SoloProjectL($('#grid'));
+var objGame = new SoloProjectL($('#grid'), $('#stones'));
 objGame.startGame();
 objGame.listenControls();
 </script>

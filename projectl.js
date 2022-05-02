@@ -116,8 +116,9 @@ class Moats {
 }
 
 class Stone {
-	constructor(color, shape, rotate = false) {
+	constructor(color, shape, level = 1, rotate = false) {
 		this.color = color.trim();
+		this.level = level;
 		this.shape = shape;
 		if (rotate) {
 			this.shape = this.shape.rotate();
@@ -147,6 +148,34 @@ class Target {
 
 class SoloProjectL extends Game {
 
+	static EASY_MAX = 2;
+	static EASY_TARGETS = 15;
+	static HARD_TARGETS = 10;
+
+	static START_STONES = [1, 1];
+	static START_OPPO_COINS = 6;
+	static START_COLUMN_COINS = [1, 2, 1];
+
+	constructor($grid, $stones) {
+		super();
+
+		this.$grid = $grid;
+		this.$stones = $stones;
+	}
+
+	reset() {
+		super.reset();
+
+		this.deck = [];
+		this.grid = (new Array(9)).fill(null);
+		// this.hand = [];
+
+		this.oppoCoins = 0;
+		this.columnCoins = [];
+		this.oppoTargets = [];
+		this.playerTargets = [];
+	}
+
 	createGame() {
 		this.SHAPES = this.createShapes();
 		this.STONES = this.createStones();
@@ -154,42 +183,109 @@ class SoloProjectL extends Game {
 	}
 
 	startGame() {
-		console.time('draw all shapes');
-		const html1 = this.STONES.map((stone, i) => {
-			return '<div>' + this.createStoneHtml(stone, true) + '</div>';
-		}).join(' ');
-		const html2 = this.TARGETS.map((target, i) => {
-			return '<div>' + this.createTargetHtml(target) + '</div>';
-		}).join(' ');
-		const html3 = this.SHAPES.map((shape, i) => {
-			return `<div><table class="shape">` + this.createShapeRowsHtml(shape, i, '#fff') + `</table></div>`;
-		}).join(' ');
-		$('#pieces').setHTML(`<div class="stones">${html1}</div> ---- <div class="targets">${html2}</div> ---- <div class="shapes">${html3}</div>`);
-		console.timeEnd('draw all shapes');
+		this.reset();
+
+		this.$stones.setHTML(this.STONES.map((stone, i) => {
+			return '<div>' + this.createStoneHtml(stone, 1) + '</div>';
+		}).join(' '));
+
+		this.deck = this.createDeck();
+		this.fillGrid();
+		this.printGrid();
+
+		this.oppoCoins = SoloProjectL.START_OPPO_COINS;
+		this.columnCoins = SoloProjectL.START_COLUMN_COINS;
+
+		this.printNums();
 	}
 
 	listenControls() {
-		$('.stones').on('click', 'table.stone[data-shape]', e => {
+		// $('#restart').on('click', e => {
+		// 	this.startGame();
+		// });
+
+		$('#stones').on('click', 'table.stone[data-shape]', e => {
 			this.handleStoneLeftClick(e.subject);
 		});
-		$('.stones').on('contextmenu', 'table.stone[data-shape]', e => {
+		$('#stones').on('contextmenu', 'table.stone[data-shape]', e => {
 			e.preventDefault();
 			this.handleStoneRightClick(e.subject);
 		});
 
 		const context = '.target > tbody > tr > td.shape';
-		$('.targets').on('mouseover', context, e => {
-			this.handleTargetHoverOn(e.subject);
+		$('#hand').on('mouseover', context, e => {
+			this.handleTargetFillableHoverOn(e.subject);
 		});
-		$('.targets').on('mouseout', context, e => {
-			this.handleTargetHoverOff(e.subject);
+		$('#hand').on('mouseout', context, e => {
+			this.handleTargetFillableHoverOff(e.subject);
 		});
-		$('.targets').on('click', context, e => {
-			this.handleTargetClick(e.subject, e.subject.closest('table'));
+		$('#hand').on('click', context, e => {
+			this.handleTargetFillableClick(e.subject, e.subject.closest('table'));
+		});
+
+		$('#targets').on('click', '.target', e => {
+			const fillable = e.target.closest(context);
+			if (!fillable) {
+				this.handleTargetClick(e.subject);
+			}
 		});
 	}
 
 
+
+	targetIsFull(table) {
+		return table.tBodies[0].querySelectorAll('.shape:not(.filled)').length == 0;
+	}
+
+	addToHand(i) {
+		const target = this.grid[i];
+		this.grid[i] = null;
+		// this.hand.push(target);
+		this.printGrid();
+
+		const html = `<div class="hand-cell">${this.createTargetHtml(target)}</div>`;
+		const div = document.createElement('div');
+		div.setHTML(html);
+		this.$grid.getElement('#hand').append(div.firstChild);
+
+		setTimeout(() => {
+			this.fillGrid();
+			this.printGrid();
+			this.printNums();
+		}, 500);
+	}
+
+	printNums() {
+		$('#deck output').setText(this.deck.length);
+		$('#oppo-targets output').setText(this.oppoTargets.length);
+		$('#player-targets output').setText(this.playerTargets.length);
+
+		$('#oppo-coins output').setText(this.oppoCoins);
+		this.columnCoins.forEach((num, i) => $(`#col-${i+1}-coins output`).setText(num));
+	}
+
+	printGrid() {
+		this.$grid.getElement('#targets').setHTML(this.grid.map(target => {
+			return `<div class="grid-cell">${target ? this.createTargetHtml(target) : ''}</div>`;
+		}).join(' '));
+	}
+
+	fillGrid() {
+		if (!this.deck.length) return;
+
+		this.grid.forEach((el, i) => {
+			if (!el) {
+				this.grid[i] = this.deck.pop();
+			}
+		});
+	}
+
+	createDeck() {
+		this.TARGETS.sort(_ => Math.random() > 0.5 ? -1 : 1);
+		const easys = this.TARGETS.filter(target => target.score <= SoloProjectL.EASY_MAX);
+		const hards = this.TARGETS.filter(target => target.score > SoloProjectL.EASY_MAX);
+		return [...hards.slice(0, SoloProjectL.HARD_TARGETS), ...easys.slice(0, SoloProjectL.EASY_TARGETS)];
+	}
 
 	rotateSerializedShape(str) {
 		const shape = Shape.unserialize(str);
@@ -214,7 +310,7 @@ class SoloProjectL extends Game {
 	getStone() {
 		const table = this.getStoneTable();
 		if (table) {
-			return new Stone(table.css('--color'), Shape.unserialize(table.data('shape')));
+			return new Stone(table.css('--color'), Shape.unserialize(table.data('shape')), parseInt(table.data('level')));
 		}
 	}
 
@@ -240,6 +336,8 @@ class SoloProjectL extends Game {
 
 
 	handleStoneLeftClick(table) {
+		if (parseInt(table.data('available')) == 0) return;
+
 		if (!table.hasClass('selected')) {
 			$$('.stone.selected').removeClass('selected');
 			table.addClass('selected');
@@ -256,7 +354,7 @@ class SoloProjectL extends Game {
 		this.replaceStone(table, flipped);
 	}
 
-	handleTargetHoverOn(td) {
+	handleTargetFillableHoverOn(td) {
 		$$('td.hover').removeClass('hover');
 
 		const stone = this.getStoneTable();
@@ -265,11 +363,11 @@ class SoloProjectL extends Game {
 		}
 	}
 
-	handleTargetHoverOff(td) {
+	handleTargetFillableHoverOff(td) {
 		td.removeClass('hover');
 	}
 
-	handleTargetClick(td, table) {
+	handleTargetFillableClick(td, table) {
 		if (td.hasClass('filled') || !this.getStoneTable()) return;
 
 		const C = this.getCoord(td);
@@ -279,12 +377,51 @@ class SoloProjectL extends Game {
 		const stoneCoords = stone.getOffsetCoords();
 // console.log(stone, stoneCoords);
 
+		const stoneTable = this.getStoneTable();
+		const stoneIndex = stoneTable.parentNode.elementIndex();
+
 		const targetCoords = stoneCoords.map(S => S.add(C));
 		const targetCells = targetCoords.map(C => this.getCell(table, C));
-		const validTargetCells = targetCells.filter(td => td && !td.hasClass('filled'));
+		const validTargetCells = targetCells.filter(td => td && td.hasClass('shape') && !td.hasClass('filled'));
 // console.log(targetCoords, targetCells, validTargetCells);
 		if (targetCoords.length == validTargetCells.length) {
+			stoneTable.data('available', parseInt(stoneTable.data('available')) - 1);
+			stoneTable.removeClass('selected');
 			this.placeStone(stone, targetCells);
+
+			const usedStones = table.data('used').split(',');
+			usedStones[stoneIndex] = parseInt(usedStones[stoneIndex]) + 1;
+// console.log(usedStones);
+			table.data('used', usedStones.join(','));
+
+			if (this.targetIsFull(table)) {
+				setTimeout(() => {
+					const usedStones = table.data('used').split(',');
+					usedStones[table.data('stone')] = parseInt(usedStones[table.data('stone')]) + 1;
+// console.log(usedStones);
+					const stoneTables = $$('#stones .stone');
+					usedStones.forEach((num, i) => {
+						const add = parseInt(usedStones[i]);
+						if (add) {
+							const stoneTable = stoneTables[i];
+							stoneTable.data('available', parseInt(stoneTable.data('available')) + add);
+						}
+					});
+
+					table.parentNode.remove();
+				}, 500);
+			}
+		}
+	}
+
+	handleTargetClick(table) {
+		if ($$('#hand > *').length < 4) {
+		// if (this.hand.length < 4) {
+			const i = [...this.$grid.getElement('#targets').children].indexOf(table.parentNode);
+			this.addToHand(i);
+
+			const selected = this.getStoneTable();
+			if (selected) selected.removeClass('selected');
 		}
 	}
 
@@ -307,11 +444,12 @@ class SoloProjectL extends Game {
 		return html.join('');
 	}
 
-	createStoneHtml(stone, withTitle = false) {
-		const title = withTitle ? '☼' : '';
-		const data = withTitle ? ` data-shape="${stone.shape.serialize()}"` : '';
+	createStoneHtml(stone, context) {
+		const i = this.STONES.indexOf(stone);
+		const title = context === 1 ? '☼' : '';
+		const data = context === 1 ? ` data-shape="${stone.shape.serialize()}" data-available="${SoloProjectL.START_STONES[i] || 0}"` : '';
 		const html = [
-			`<table class="shape stone" style="--color: ${stone.color}; --text: ${RgbColor.isDark(stone.color) ? '#fff' : '#000'}"${data}>`,
+			`<table class="shape stone" data-level="${stone.level}" style="--color: ${stone.color}; --text: ${RgbColor.isDark(stone.color) ? '#fff' : '#000'}"${data}>`,
 			this.createShapeRowsHtml(stone.shape, title),
 			`</table>`,
 		];
@@ -321,12 +459,12 @@ class SoloProjectL extends Game {
 	createTargetHtml(target) {
 		var titled = false;
 		const html = [
-			`<table class="shape target">`,
+			`<table class="shape target" data-stone="${this.STONES.indexOf(target.stone)}" data-used="${this.STONES.map(_ => 0).join(',')}">`,
 			`<thead>`,
 			`<tr>`,
-			`<td class="score" colspan="${target.shape.width}">${target.score}</td>`,
+			`<td class="score" colspan="${target.shape.width}">+${target.score}</td>`,
 			`<td>`,
-			this.createStoneHtml(target.stone, false),
+			this.createStoneHtml(target.stone, 2),
 			`</td>`,
 			`</tr>`,
 			`</thead>`,
@@ -342,15 +480,15 @@ class SoloProjectL extends Game {
 
 	createStones() {
 		return [
-			new Stone('yellow', this.SHAPES[0]),
-			new Stone('green', this.SHAPES[1], true),
-			new Stone('blue', this.SHAPES[2]),
-			new Stone('orange', this.SHAPES[3]), // area 3
-			new Stone('fuchsia', this.SHAPES[4]),
-			new Stone('red', this.SHAPES[5]),
-			new Stone('orange', this.SHAPES[6], true), // area 4
-			new Stone('lightblue', this.SHAPES[7], true),
-			new Stone('purple', this.SHAPES[8], true),
+			new Stone('yellow', this.SHAPES[0], 1),
+			new Stone('green', this.SHAPES[1], 2, true),
+			new Stone('blue', this.SHAPES[2], 3),
+			new Stone('orange', this.SHAPES[3], 3), // area 3
+			new Stone('fuchsia', this.SHAPES[4], 4),
+			new Stone('red', this.SHAPES[5], 4),
+			new Stone('darkred', this.SHAPES[6], 4, true), // area 4
+			new Stone('lightblue', this.SHAPES[7], 4, true),
+			new Stone('purple', this.SHAPES[8], 4, true),
 		];
 	}
 
@@ -388,6 +526,29 @@ class SoloProjectL extends Game {
 			new Target(2, this.SHAPES[27], this.STONES[7]),
 			new Target(2, this.SHAPES[28], this.STONES[5]),
 			new Target(2, this.SHAPES[29], this.STONES[6]),
+
+			new Target(3, this.SHAPES[30], this.STONES[7]),
+			new Target(3, this.SHAPES[31], this.STONES[2]),
+			new Target(3, this.SHAPES[32], this.STONES[1]),
+			new Target(3, this.SHAPES[33], this.STONES[5]),
+			new Target(3, this.SHAPES[34], this.STONES[4]),
+			new Target(3, this.SHAPES[35], this.STONES[8]),
+			new Target(3, this.SHAPES[36], this.STONES[3]),
+			new Target(3, this.SHAPES[37], this.STONES[6]),
+
+			new Target(4, this.SHAPES[38], this.STONES[1]),
+			new Target(4, this.SHAPES[39], this.STONES[2]),
+			new Target(4, this.SHAPES[40], this.STONES[1]),
+			new Target(4, this.SHAPES[41], this.STONES[3]),
+			new Target(4, this.SHAPES[42], this.STONES[2]),
+			new Target(4, this.SHAPES[43], this.STONES[3]),
+			new Target(4, this.SHAPES[44], this.STONES[0]),
+
+			new Target(5, this.SHAPES[45], this.STONES[0]),
+			new Target(5, this.SHAPES[46], this.STONES[0]),
+			new Target(5, this.SHAPES[47], this.STONES[0]),
+			new Target(5, this.SHAPES[48], this.STONES[0]),
+			new Target(5, this.SHAPES[49], this.STONES[0]),
 		];
 	}
 

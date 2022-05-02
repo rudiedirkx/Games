@@ -1,6 +1,10 @@
 * {
 	user-select: none;
 }
+body {
+	font-family: sans-serif;
+	max-width: 800px;
+}
 
 /**
  * Shapes
@@ -10,7 +14,7 @@ table.shape {
 	--background: #000;
 	--color: #fff;
 	--text: #000;
-	--size: 24px;
+	--size: 20px;
 	--padding: 20px;
 
 	background-color: var(--background);
@@ -47,28 +51,134 @@ table.shape td.shape.hover::after {
 }
 
 /**
- * DEBUG
+ * Game grid
  */
+
+#grid .num-coins {
+	background-color: gold;
+	font-size: 30px;
+	text-align: center;
+	padding: 10px;
+}
+#grid .num-targets {
+	background-color: black;
+	color: white;
+	font-size: 30px;
+	text-align: center;
+	padding: 10px;
+}
+
+#grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr) 1fr;
+	grid-gap: 10px;
+	grid-auto-flow: row;
+	justify-items: center;
+	align-items: center;
+	margin-bottom: 120px;
+}
+#grid .col-header {
+	/*height: 60px;*/
+}
+#grid #oppo-targets {
+	grid-column: 4;
+	grid-row: 2;
+}
+#grid #oppo-coins {
+	grid-column: 4;
+	grid-row: 3;
+}
+#grid #player-targets {
+	grid-column: 4;
+	grid-row: 4;
+}
+#grid #targets {
+	display: contents;
+}
+#grid .grid-cell {
+	min-height: 50px;
+	min-width: 50px;
+	background-color: #eee;
+}
+#grid #hand {
+	justify-self: stretch;
+	align-self: stretch;
+	/*display: contents;*/
+	grid-column: 1 / 5;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	justify-items: center;
+	align-items: center;
+}
+#grid #hand:not(:empty) {
+	margin-top: 5px;
+	border-top: solid 5px #999;
+	padding-top: 5px;
+}
+#grid #hand > * {
+}
+
+/**
+ * Stones footer
+ */
+
+.stones-wrapper {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #fff;
+	padding: 8px;
+	overflow-x: auto;
+}
+#stones {
+	display: flex;
+	/*flex-flow: row wrap;*/
+	gap: 1em;
+	width: 1000px;
+	/*width: fit-content;*/
+}
 
 table.stone.selected {
 	filter: drop-shadow(0px 0px 6px black);
 }
+table.stone[data-available="0"] {
+	opacity: 0.4;
+	transform: scale(0.75);
+}
+#stones table.stone:not([data-available="0"])::after {
+	content: attr(data-available);
+}
 
 /**
- * DEBUG
+ * Targets grid
  */
 
-div.stones {
+x#targets {
 	display: flex;
 	flex-flow: row wrap;
 	gap: 1em;
-	position: sticky;
-	top: 0;
-	background-color: #eee;
-	padding: 8px;
+	background-color: #000;
+}
+x#targets > * {
+	flex: 0 0 30%;
+	width: 30%;
+	/*max-width: 200px;*/
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-div.targets > div > table.shape,
-div.shapes > div > table.shape {
-	margin: 1em 0;
+/**
+ * MOBILE
+ */
+
+@media (max-width: 500px) {
+	table.shape.target {
+		--size: 16px;
+		--padding: 10px;
+	}
+	table.shape.target table.shape.stone {
+		--size: 8px;
+	}
 }
