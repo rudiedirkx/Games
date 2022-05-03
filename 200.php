@@ -35,6 +35,14 @@ require __DIR__ . '/inc.bootstrap.php';
 </div>
 
 <div class="stones-wrapper">
+	<button id="finish-round">
+		Finish round (<span id="used-actions">?</span>/<span id="max-actions">?</span>)
+	</button>
+	<button id="start-master">
+		<span class="start">Start master</span>
+		<span class="end">End master</span>
+	</button>
+	<button id="take-stone">Take stone</button>
 	<div id="stones"></div>
 </div>
 

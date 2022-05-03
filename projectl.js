@@ -152,6 +152,9 @@ class SoloProjectL extends Game {
 	static EASY_TARGETS = 15;
 	static HARD_TARGETS = 10;
 
+	static MAX_IN_HAND = 4;
+	static MAX_ACTIONS = 3;
+
 	static START_STONES = [1, 1];
 	static START_OPPO_COINS = 6;
 	static START_COLUMN_COINS = [1, 2, 1];
@@ -166,9 +169,13 @@ class SoloProjectL extends Game {
 	reset() {
 		super.reset();
 
+		this.waiting = false;
+
 		this.deck = [];
 		this.grid = (new Array(9)).fill(null);
-		// this.hand = [];
+
+		this.setMoves(1);
+		this.resetActions();
 
 		this.oppoCoins = 0;
 		this.columnCoins = [];
@@ -186,8 +193,9 @@ class SoloProjectL extends Game {
 		this.reset();
 
 		this.$stones.setHTML(this.STONES.map((stone, i) => {
-			return '<div>' + this.createStoneHtml(stone, 1) + '</div>';
+			return '<div class="grid-cell">' + this.createStoneHtml(stone, 1) + '</div>';
 		}).join(' '));
+		$('#max-actions').setText(SoloProjectL.MAX_ACTIONS);
 
 		this.deck = this.createDeck();
 		this.fillGrid();
@@ -200,16 +208,23 @@ class SoloProjectL extends Game {
 	}
 
 	listenControls() {
-		// $('#restart').on('click', e => {
-		// 	this.startGame();
-		// });
+		$('#finish-round').on('click', e => {
+			if (!this.waiting && this.actions > 0) {
+				this.finishRound();
+			}
+		});
+		$('#start-master').on('click', e => {
+		});
+		$('#take-stone').on('click', e => {
+			this.waiting || this.takeStone();
+		});
 
 		$('#stones').on('click', 'table.stone[data-shape]', e => {
-			this.handleStoneLeftClick(e.subject);
+			this.waiting || this.handleStoneLeftClick(e.subject);
 		});
 		$('#stones').on('contextmenu', 'table.stone[data-shape]', e => {
 			e.preventDefault();
-			this.handleStoneRightClick(e.subject);
+			this.waiting || this.handleStoneRightClick(e.subject);
 		});
 
 		const context = '.target > tbody > tr > td.shape';
@@ -220,18 +235,90 @@ class SoloProjectL extends Game {
 			this.handleTargetFillableHoverOff(e.subject);
 		});
 		$('#hand').on('click', context, e => {
-			this.handleTargetFillableClick(e.subject, e.subject.closest('table'));
+			this.waiting || this.handleTargetFillableClick(e.subject, e.subject.closest('table'));
 		});
 
 		$('#targets').on('click', '.target', e => {
 			const fillable = e.target.closest(context);
 			if (!fillable) {
-				this.handleTargetClick(e.subject);
+				this.waiting || this.handleTargetClick(e.subject);
 			}
+		});
+
+		const alertScores = scores => {
+			alert(scores.join(' + ') + ' = ' + scores.reduce((T, s) => T + s, 0));
+		};
+		$('#oppo-targets').on('click', e => {
+			const scores = this.oppoTargets.map(target => target.score);
+			alertScores(scores);
+		});
+		$('#player-targets').on('click', e => {
+			const scores = this.playerTargets.map(table => parseInt(table.data('score')));
+			alertScores(scores);
 		});
 	}
 
 
+
+	finishRound() {
+		this.setMoves(this.m_iMoves + 1);
+		this.unselectStone();
+
+		const emptyColumns = [...this.columnCoins.keys()].filter(i => this.columnCoins[i] == 0);
+		if (emptyColumns.length == 0) {
+			this.columnCoins = this.columnCoins.map(coins => coins - 1);
+			this.printNums();
+			return;
+		}
+
+		const targets = this.getTargets().filter((target, i) => emptyColumns.includes(i % 3));
+		const target = targets.sort((a, b) => parseInt(b.data('score')) - parseInt(a.data('score')))[0];
+		const targetIndex = this.getTargetIndex(target);
+
+		this.oppoTargets.push(this.grid[targetIndex]);
+		this.grid[targetIndex] = null;
+		this.printGrid();
+
+		this.waiting = true;
+		setTimeout(() => {
+			const column = targetIndex % 3;
+			this.columnCoins[column] += this.oppoCoins;
+			this.oppoCoins = 0;
+
+			for ( let col = 0; col < 3; col++ ) {
+				if (col != column && this.columnCoins[col] > 0) {
+					this.columnCoins[column]++;
+					this.columnCoins[col]--;
+				}
+			}
+			this.printNums();
+			this.resetActions();
+
+			setTimeout(() => {
+				this.fillGrid();
+				this.printGrid();
+				this.printNums();
+				this.waiting = false;
+			}, 500);
+		}, 500);
+	}
+
+	takeStone() {
+		const table = this.getStones()[0];
+		table.data('available', parseInt(table.data('available')) + 1);
+
+		this.useAction();
+	}
+
+	resetActions() {
+		this.actions = -1;
+		this.useAction();
+	}
+
+	useAction() {
+		this.actions++;
+		$('#used-actions').setText(this.actions);
+	}
 
 	targetIsFull(table) {
 		return table.tBodies[0].querySelectorAll('.shape:not(.filled)').length == 0;
@@ -240,23 +327,39 @@ class SoloProjectL extends Game {
 	addToHand(i) {
 		const target = this.grid[i];
 		this.grid[i] = null;
-		// this.hand.push(target);
 		this.printGrid();
 
-		const html = `<div class="hand-cell">${this.createTargetHtml(target)}</div>`;
+		this.useAction();
+
+		const html = `<div class="grid-cell">${this.createTargetHtml(target)}</div>`;
 		const div = document.createElement('div');
 		div.setHTML(html);
 		this.$grid.getElement('#hand').append(div.firstChild);
 
+		const column = i % 3;
+
+		this.waiting = true;
 		setTimeout(() => {
-			this.fillGrid();
-			this.printGrid();
-			this.printNums();
+			var wait = 0;
+			if (this.columnCoins[column] > 0) {
+				this.columnCoins[column]--;
+				this.oppoCoins++;
+				wait = 500;
+				this.printNums();
+			}
+
+			setTimeout(() => {
+				this.fillGrid();
+				this.printGrid();
+				this.printNums();
+				this.waiting = false;
+			}, wait);
 		}, 500);
 	}
 
 	printNums() {
 		$('#deck output').setText(this.deck.length);
+		$('#deck').toggleClass('hards', this.deck.length <= 10);
 		$('#oppo-targets output').setText(this.oppoTargets.length);
 		$('#player-targets output').setText(this.playerTargets.length);
 
@@ -333,10 +436,28 @@ class SoloProjectL extends Game {
 		});
 	}
 
+	getStones() {
+		return $$('#stones .stone');
+	}
+
+	getTargets() {
+		return this.$grid.getElements('#targets .target');
+	}
+
+	getTargetIndex(table) {
+		return this.getTargets().indexOf(table);
+	}
+
+	unselectStone() {
+		const selected = this.getStoneTable();
+		if (selected) selected.removeClass('selected');
+	}
+
 
 
 	handleStoneLeftClick(table) {
 		if (parseInt(table.data('available')) == 0) return;
+		if (this.actions >= SoloProjectL.MAX_ACTIONS) return;
 
 		if (!table.hasClass('selected')) {
 			$$('.stone.selected').removeClass('selected');
@@ -369,6 +490,7 @@ class SoloProjectL extends Game {
 
 	handleTargetFillableClick(td, table) {
 		if (td.hasClass('filled') || !this.getStoneTable()) return;
+		if (this.actions >= SoloProjectL.MAX_ACTIONS) return;
 
 		const C = this.getCoord(td);
 // console.log(table, td, C);
@@ -394,7 +516,10 @@ class SoloProjectL extends Game {
 // console.log(usedStones);
 			table.data('used', usedStones.join(','));
 
+			this.useAction();
+
 			if (this.targetIsFull(table)) {
+				this.waiting = true;
 				setTimeout(() => {
 					const usedStones = table.data('used').split(',');
 					usedStones[table.data('stone')] = parseInt(usedStones[table.data('stone')]) + 1;
@@ -408,21 +533,23 @@ class SoloProjectL extends Game {
 						}
 					});
 
+					this.playerTargets.push(table);
 					table.parentNode.remove();
+					this.printNums();
+					this.waiting = false;
 				}, 500);
 			}
 		}
 	}
 
 	handleTargetClick(table) {
-		if ($$('#hand > *').length < 4) {
-		// if (this.hand.length < 4) {
-			const i = [...this.$grid.getElement('#targets').children].indexOf(table.parentNode);
-			this.addToHand(i);
+		if (this.actions >= SoloProjectL.MAX_ACTIONS) return;
+		if ($$('#hand > *').length >= SoloProjectL.MAX_IN_HAND) return;
 
-			const selected = this.getStoneTable();
-			if (selected) selected.removeClass('selected');
-		}
+		const i = this.getTargetIndex(table);
+		this.addToHand(i);
+
+		this.unselectStone();
 	}
 
 
@@ -458,12 +585,13 @@ class SoloProjectL extends Game {
 
 	createTargetHtml(target) {
 		var titled = false;
+		target.shape.width = Math.max(2, target.shape.width);
 		const html = [
-			`<table class="shape target" data-stone="${this.STONES.indexOf(target.stone)}" data-used="${this.STONES.map(_ => 0).join(',')}">`,
+			`<table class="shape target" data-score="${target.score}" data-stone="${this.STONES.indexOf(target.stone)}" data-used="${this.STONES.map(_ => 0).join(',')}">`,
 			`<thead>`,
 			`<tr>`,
-			`<td class="score" colspan="${target.shape.width}">+${target.score}</td>`,
-			`<td>`,
+			`<td class="score" colspan="${target.shape.width}">`,
+			`${target.score || '&nbsp;'}`,
 			this.createStoneHtml(target.stone, 2),
 			`</td>`,
 			`</tr>`,
