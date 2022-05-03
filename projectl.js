@@ -268,6 +268,7 @@ class SoloProjectL extends Game {
 		if (emptyColumns.length == 0) {
 			this.columnCoins = this.columnCoins.map(coins => coins - 1);
 			this.printNums();
+			this.resetActions();
 			return;
 		}
 
