@@ -263,17 +263,19 @@ class SoloProjectL extends Game {
 	finishRound() {
 		this.setMoves(this.m_iMoves + 1);
 		this.unselectStone();
+		this.resetActions();
 
 		const emptyColumns = [...this.columnCoins.keys()].filter(i => this.columnCoins[i] == 0);
 		if (emptyColumns.length == 0) {
 			this.columnCoins = this.columnCoins.map(coins => coins - 1);
 			this.printNums();
-			this.resetActions();
 			return;
 		}
 
-		const targets = this.getTargets().filter((target, i) => emptyColumns.includes(i % 3));
+		const targets = this.getTargets().filter((target, i) => target && emptyColumns.includes(i % 3));
 		const target = targets.sort((a, b) => parseInt(b.data('score')) - parseInt(a.data('score')))[0];
+		if (!target) return;
+
 		const targetIndex = this.getTargetIndex(target);
 
 		this.oppoTargets.push(this.grid[targetIndex]);
@@ -293,7 +295,6 @@ class SoloProjectL extends Game {
 				}
 			}
 			this.printNums();
-			this.resetActions();
 
 			setTimeout(() => {
 				this.fillGrid();
@@ -442,7 +443,7 @@ class SoloProjectL extends Game {
 	}
 
 	getTargets() {
-		return this.$grid.getElements('#targets .target');
+		return this.$grid.getElements('#targets > *').map(el => el.firstElementChild);
 	}
 
 	getTargetIndex(table) {
