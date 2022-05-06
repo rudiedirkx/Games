@@ -239,10 +239,7 @@ class SoloProjectL extends Game {
 		});
 
 		$('#targets').on('click', '.target', e => {
-			const fillable = e.target.closest(context);
-			if (!fillable) {
-				this.waiting || this.handleTargetClick(e.subject);
-			}
+			this.waiting || this.handleTargetClick(e.subject);
 		});
 
 		const alertScores = ([score, points]) => {
@@ -282,12 +279,16 @@ class SoloProjectL extends Game {
 		if (emptyColumns.length == 0) {
 			this.columnCoins = this.columnCoins.map(coins => coins - 1);
 			this.printNums();
+			this.startWinCheck();
 			return;
 		}
 
 		const targets = this.getTargets().filter((target, i) => target && emptyColumns.includes(i % 3));
 		const target = targets.sort((a, b) => parseInt(b.data('score')) - parseInt(a.data('score')))[0];
-		if (!target) return;
+		if (!target) {
+			this.startWinCheck();
+			return;
+		}
 
 		const targetIndex = this.getTargetIndex(target);
 
@@ -315,9 +316,7 @@ class SoloProjectL extends Game {
 				this.printNums();
 				this.waiting = false;
 
-				if (this.getHand().length == 0 && this.getTargets().filter(Boolean).length == 0) {
-					this.startWinCheck(1);
-				}
+				this.startWinCheck(1);
 			}, 500);
 		}, 500);
 	}
@@ -337,6 +336,7 @@ class SoloProjectL extends Game {
 	useAction() {
 		this.actions++;
 		$('#used-actions').setText(this.actions);
+		$('#finish-round').toggleClass('can-finish', this.actions > 0).toggleClass('must-finish', this.actions >= SoloProjectL.MAX_ACTIONS);
 	}
 
 	targetIsFull(table) {
@@ -593,12 +593,22 @@ class SoloProjectL extends Game {
 
 
 
+	getScore() {
+		return null;
+	}
+
+	isReady() {
+		const a = this.getHand().length;
+		const b = this.getTargets().filter(Boolean).length;
+		return a == 0 && b == 0;
+	}
+
 	haveWon() {
-		return this.getPlayerScore()[0] >= this.getOppoScore()[0];
+		return this.isReady() && this.getPlayerScore()[0] >= this.getOppoScore()[0];
 	}
 
 	haveLost() {
-		return this.getPlayerScore()[0] < this.getOppoScore()[0];
+		return this.isReady() && this.getPlayerScore()[0] < this.getOppoScore()[0];
 	}
 
 	getScoreText() {

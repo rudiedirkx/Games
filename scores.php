@@ -12,16 +12,31 @@ if (!count($scores)) {
 }
 
 ?>
+<title>Scores</title>
+<style>
+table {
+	border-collapse: collapse;
+}
+table td, table th {
+	padding: 4px 7px;
+	border: solid 0 #aaa;
+	border-width: 1px 0;
+}
+table th {
+	text-align: left;
+}
+</style>
+
 <p>ID = <?= do_html($cookie) ?></p>
 <p>IP = <?= do_html($ip) ?></p>
 
-<table border="1">
+<table>
 	<thead>
 		<tr>
 			<th>Date</th>
 			<th>Game</th>
-			<th>Score</th>
 			<th>Level</th>
+			<th>Score</th>
 			<th>IP</th>
 		</tr>
 	</thead>
@@ -30,8 +45,8 @@ if (!count($scores)) {
 			<tr>
 				<td><?= date('Y-m-d H:i', $score->utc) ?></td>
 				<td><?= $score->game ?></td>
-				<td><?= $score->score ?></td>
 				<td><?= $score->level ?></td>
+				<td><?= $score->score ?></td>
 				<td><?= $score->ip ?></td>
 			</tr>
 		<? endforeach ?>

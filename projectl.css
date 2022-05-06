@@ -148,6 +148,7 @@ table.shape td.shape.hover::after {
 }
 .stones-wrapper button {
 	margin-right: .5em;
+	padding: 10px 5px;
 }
 #stones {
 	flex: 0 0 700px;
@@ -168,6 +169,13 @@ table.stone[data-available="0"] {
 }
 #stones table.stone:not([data-available="0"])::after {
 	content: attr(data-available);
+}
+
+#finish-round.can-finish {
+	color: green;
+}
+#finish-round.must-finish {
+	font-weight: bold;
 }
 
 #start-master.mastering .start,
