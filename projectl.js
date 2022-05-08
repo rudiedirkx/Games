@@ -152,6 +152,7 @@ class SoloProjectL extends Game {
 	static EASY_TARGETS = 15;
 	static HARD_TARGETS = 10;
 
+	static INTERACTIVE_WAIT = 350;
 	static MAX_IN_HAND = 4;
 	static MAX_ACTIONS = 3;
 
@@ -169,7 +170,7 @@ class SoloProjectL extends Game {
 	reset() {
 		super.reset();
 
-		this.waiting = false;
+		this.setWaiting(false);
 
 		this.deck = [];
 		this.grid = (new Array(9)).fill(null);
@@ -290,35 +291,39 @@ class SoloProjectL extends Game {
 			return;
 		}
 
-		const targetIndex = this.getTargetIndex(target);
+		target.parentNode.addClass('hilite');
 
-		this.oppoTargets.push(this.grid[targetIndex]);
-		this.grid[targetIndex] = null;
-		this.printGrid();
-
-		this.waiting = true;
 		setTimeout(() => {
-			const column = targetIndex % 3;
-			this.columnCoins[column] += this.oppoCoins;
-			this.oppoCoins = 0;
+			const targetIndex = this.getTargetIndex(target);
 
-			for ( let col = 0; col < 3; col++ ) {
-				if (col != column && this.columnCoins[col] > 0) {
-					this.columnCoins[column]++;
-					this.columnCoins[col]--;
-				}
-			}
-			this.printNums();
+			this.oppoTargets.push(this.grid[targetIndex]);
+			this.grid[targetIndex] = null;
+			this.printGrid();
 
+			this.setWaiting(true);
 			setTimeout(() => {
-				this.fillGrid();
-				this.printGrid();
-				this.printNums();
-				this.waiting = false;
+				const column = targetIndex % 3;
+				this.columnCoins[column] += this.oppoCoins;
+				this.oppoCoins = 0;
 
-				this.startWinCheck(1);
-			}, 500);
-		}, 500);
+				for ( let col = 0; col < 3; col++ ) {
+					if (col != column && this.columnCoins[col] > 0) {
+						this.columnCoins[column]++;
+						this.columnCoins[col]--;
+					}
+				}
+				this.printNums();
+
+				setTimeout(() => {
+					this.fillGrid();
+					this.printGrid();
+					this.printNums();
+					this.setWaiting(false);
+
+					this.startWinCheck(1);
+				}, SoloProjectL.INTERACTIVE_WAIT);
+			}, SoloProjectL.INTERACTIVE_WAIT);
+		}, SoloProjectL.INTERACTIVE_WAIT);
 	}
 
 	takeStone() {
@@ -326,6 +331,11 @@ class SoloProjectL extends Game {
 		table.data('available', parseInt(table.data('available')) + 1);
 
 		this.useAction();
+	}
+
+	setWaiting(waiting) {
+		this.waiting = waiting;
+		$('.stones-wrapper').toggleClass('waiting', this.waiting);
 	}
 
 	resetActions() {
@@ -372,7 +382,7 @@ class SoloProjectL extends Game {
 
 		const column = i % 3;
 
-		this.waiting = true;
+		this.setWaiting(true);
 		setTimeout(() => {
 			var wait = 0;
 			if (this.columnCoins[column] > 0) {
@@ -386,9 +396,9 @@ class SoloProjectL extends Game {
 				this.fillGrid();
 				this.printGrid();
 				this.printNums();
-				this.waiting = false;
+				this.setWaiting(false);
 			}, wait);
-		}, 500);
+		}, SoloProjectL.INTERACTIVE_WAIT);
 	}
 
 	printNums() {
@@ -557,7 +567,7 @@ class SoloProjectL extends Game {
 			this.useAction();
 
 			if (this.targetIsFull(table)) {
-				this.waiting = true;
+				this.setWaiting(true);
 				setTimeout(() => {
 					const usedStones = table.data('used').split(',');
 					usedStones[table.data('stone')] = parseInt(usedStones[table.data('stone')]) + 1;
@@ -575,8 +585,8 @@ class SoloProjectL extends Game {
 					table.parentNode.remove();
 					this.fillHand();
 					this.printNums();
-					this.waiting = false;
-				}, 500);
+					this.setWaiting(false);
+				}, SoloProjectL.INTERACTIVE_WAIT);
 			}
 		}
 	}
@@ -604,11 +614,11 @@ class SoloProjectL extends Game {
 	}
 
 	haveWon() {
-		return this.isReady() && this.getPlayerScore()[0] >= this.getOppoScore()[0];
+		return this.isReady() && this.getPlayerScore()[0] > this.getOppoScore()[0];
 	}
 
 	haveLost() {
-		return this.isReady() && this.getPlayerScore()[0] < this.getOppoScore()[0];
+		return this.isReady() && this.getPlayerScore()[0] <= this.getOppoScore()[0];
 	}
 
 	getScoreText() {

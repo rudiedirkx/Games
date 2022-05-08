@@ -104,6 +104,9 @@ table.shape td.shape.hover::after {
 	background-color: #eee;
 	position: relative;
 }
+#grid .grid-cell.hilite {
+	box-shadow: 0 0 20px fuchsia;
+}
 #grid #hand {
 	justify-self: stretch;
 	align-self: stretch;
@@ -141,10 +144,13 @@ table.shape td.shape.hover::after {
 	right: 0;
 	bottom: 0;
 	background-color: #eee;
-	border-top: solid 1px #aaa;
+	border-top: solid 2px lime;
 	padding: 8px;
 	overflow-x: auto;
 	display: flex;
+}
+.stones-wrapper.waiting {
+	border-color: red;
 }
 .stones-wrapper button {
 	margin-right: .5em;
@@ -169,6 +175,8 @@ table.stone[data-available="0"] {
 }
 #stones table.stone:not([data-available="0"])::after {
 	content: attr(data-available);
+	display: block;
+	text-align: center;
 }
 
 #finish-round.can-finish {
