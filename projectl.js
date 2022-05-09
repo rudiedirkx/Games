@@ -327,6 +327,8 @@ class SoloProjectL extends Game {
 	}
 
 	takeStone() {
+		if (this.actions >= SoloProjectL.MAX_ACTIONS) return;
+
 		const table = this.getStones()[0];
 		table.data('available', parseInt(table.data('available')) + 1);
 
