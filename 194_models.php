@@ -130,7 +130,7 @@ class Game extends Model {
 		$players = $this->players;
 		usort($players, function($a, $b) {
 			if ($b->score == $a->score) {
-				return $b->used_jokers - $a->used_jokers;
+				return $a->used_jokers - $b->used_jokers;
 			}
 			return $b->score - $a->score;
 		});
