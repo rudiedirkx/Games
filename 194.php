@@ -89,7 +89,7 @@ if (!$player) {
 
 		?>
 		<meta charset="utf-8" />
-		<title>Keer Op Keer MULTI</title>
+		<title>Keer Op Keer # <?= $game->id ?></title>
 		<style>body { font-family: sans-serif }</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
@@ -267,7 +267,7 @@ $status = $player->getStatus();
 
 <head>
 <meta charset="utf-8" />
-<title>Keer Op Keer MULTI</title>
+<title>Keer Op Keer # <?= $player->game->id ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#333" />
 <? include 'tpl.onerror.php' ?>
