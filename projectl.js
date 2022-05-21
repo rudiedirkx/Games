@@ -178,7 +178,7 @@ class SoloProjectL extends Game {
 		this.setMoves(1);
 		this.resetActions();
 
-		this.oppoCoins = 0;
+		this.oppoCoins = this.startOppoCoins = 0;
 		this.columnCoins = [];
 		this.oppoTargets = [];
 		this.playerTargets = [];
@@ -203,7 +203,7 @@ class SoloProjectL extends Game {
 		this.printGrid();
 		this.fillHand();
 
-		this.oppoCoins = SoloProjectL.START_OPPO_COINS;
+		this.oppoCoins = this.startOppoCoins = SoloProjectL.START_OPPO_COINS;
 		this.columnCoins = SoloProjectL.START_COLUMN_COINS;
 
 		this.printNums();
@@ -241,6 +241,10 @@ class SoloProjectL extends Game {
 
 		$('#targets').on('click', '.target', e => {
 			this.waiting || this.handleTargetClick(e.subject);
+		});
+
+		$('#oppo-coins').on('click', e => {
+			this.changeStartOppoCoins();
 		});
 
 		const alertScores = ([score, points]) => {
@@ -324,6 +328,15 @@ class SoloProjectL extends Game {
 				}, SoloProjectL.INTERACTIVE_WAIT);
 			}, SoloProjectL.INTERACTIVE_WAIT);
 		}, SoloProjectL.INTERACTIVE_WAIT);
+	}
+
+	changeStartOppoCoins() {
+		if (this.waiting || this.m_iMoves > 1 || this.actions > 0) return;
+		if (this.startOppoCoins < 3) return;
+
+		this.startOppoCoins -= 3;
+		this.oppoCoins = this.startOppoCoins;
+		this.printNums();
 	}
 
 	takeStone() {
@@ -606,7 +619,12 @@ class SoloProjectL extends Game {
 
 
 	getScore() {
-		return null;
+		const playerScore = this.getPlayerScore()[0];
+		return {
+			...super.getScore(),
+			level: this.startOppoCoins,
+			score: Math.round(100 * playerScore / (this.getOppoScore()[0] + playerScore)),
+		};
 	}
 
 	isReady() {
@@ -633,6 +651,11 @@ class SoloProjectL extends Game {
 
 	getLoseText() {
 		return super.getLoseText() + this.getScoreText();
+	}
+
+	lose() {
+		super.lose();
+		this.maybeSaveScore();
 	}
 
 

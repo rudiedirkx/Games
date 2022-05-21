@@ -389,6 +389,12 @@ class Game {
 		};
 	}
 
+	maybeSaveScore() {
+		if ( !this.m_bCheating ) {
+			this.constructor.saveScore(this.getScore());
+		}
+	}
+
 	static saveScore( score ) {
 		console.log('saving score', score);
 		if ( !score ) return;
@@ -402,9 +408,7 @@ class Game {
 		this.stopTime();
 		this.m_bGameOver = true;
 
-		if ( !this.m_bCheating ) {
-			this.constructor.saveScore(this.getScore());
-		}
+		this.maybeSaveScore();
 
 		setTimeout(() => alert(this.getWinText()), this.ALERT_DELAY);
 	}
