@@ -44,6 +44,9 @@ function printPlayersTable(Game $game, ?Player $player) {
 				<td>
 					<span class="name"><?= do_html($plr->name) ?></span>
 					<span class="turn">&#127922;</span>
+					<? if ($game->isPlayerComplete() && $game->winner == $plr): ?>
+						<span class="winner">&#127881;</span>
+					<? endif ?>
 				</td>
 				<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
 					<td><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>

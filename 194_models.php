@@ -129,10 +129,13 @@ class Game extends Model {
 	protected function get_winner() {
 		$players = $this->players;
 		usort($players, function($a, $b) {
-			if ($b->score == $a->score) {
-				return $a->used_jokers - $b->used_jokers;
-			}
-			return $b->score - $a->score;
+			$x = $b->score - $a->score;
+			if ($x != 0) return $x;
+
+			$x = $a->used_jokers - $b->used_jokers;
+			if ($x != 0) return $x;
+
+			return $b->num_colors - $a->num_colors;
 		});
 		return $players[0];
 	}
@@ -397,6 +400,10 @@ class Player extends Model {
 
 	protected function relate_game() {
 		return $this->to_one(Game::class, 'game_id');
+	}
+
+	protected function relate_num_colors() {
+		return $this->to_count(FullColor::$_table, 'player_id');
 	}
 
 	public function __toString() {
