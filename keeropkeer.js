@@ -525,22 +525,25 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 	}
 
 	updatePlayersFromStatus(players) {
-		r.each(players, (plr, id) => {
+		players.forEach(plr => {
+			const id = plr.id;
 			const online = $(`#online-${id}`);
 			if (online) online.setText(plr.online);
 			const jokers = $(`#jokers-left-${id}`);
-			if (jokers) jokers.setText(plr.jokers_left);
+			if (jokers && plr.jokers_left != null) jokers.setText(plr.jokers_left);
 			const score = $(`#score-${id}`);
-			if (score) score.setText(plr.score);
+			if (score && plr.score != null) score.setText(plr.score);
 			const tr = $(`tr#plr-${id}`);
 			if (tr) {
-				tr.toggleClass('turn', plr.turn);
-				tr.toggleClass('kickable', plr.kickable);
-				tr.toggleClass('kicked', plr.kicked);
+				if (plr.turn != null) tr.toggleClass('turn', plr.turn);
+				if (plr.kickable != null) tr.toggleClass('kickable', plr.kickable);
+				if (plr.kicked != null) tr.toggleClass('kicked', plr.kicked);
 			}
 			else {
 				location.reload();
 			}
+			const table = $(`#board-${id} #grid`);
+			if (table && plr.board) this.importBoardState(plr.board, table);
 		});
 	}
 
@@ -572,7 +575,7 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 	}
 
 	hasChanged(status, key) {
-		return !this.lastStatus || JSON.stringify(this.lastStatus[key]) != JSON.stringify(status[key]);
+		return status[key] && (!this.lastStatus || JSON.stringify(this.lastStatus[key]) != JSON.stringify(status[key]));
 	}
 
 	importDice(dice) {
@@ -608,9 +611,7 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 
 	importBoardState(state, container) {
 		(container || this.m_objGrid).getElements('td').forEach((td, i) => {
-			if (state[i] === 'x') {
-				td.addClass('chosen');
-			}
+			td.toggleClass('chosen', state[i] === 'x');
 		});
 	}
 

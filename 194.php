@@ -342,6 +342,7 @@ $status = $player->getStatus();
 			<h2 style="margin-bottom: 0"><?= do_html($plr) ?></h2>
 			<div
 				class="other-player-board"
+				id="board-<?= $plr->id ?>"
 				data-board='<?= json_encode(do_html($plr->board ?: '')) ?>'
 				data-columns='<?= json_encode($plr->getOthersColumns()) ?>'
 				data-colors='<?= json_encode($plr->getOthersColors()) ?>'
