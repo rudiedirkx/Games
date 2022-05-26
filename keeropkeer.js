@@ -298,7 +298,7 @@ class KeerOpKeer extends GridGame {
 			return T + parseInt(cell.dataset.score);
 		}, 0);
 		const jokers = KeerOpKeer.JOKERS - this.usedJokers;
-		const stars = this.m_objGrid.getElements('[data-color].star:not(.chosen)').length;
+		const stars = this.m_objGrid.getElements('[data-color].star:not(.chosen)').length * 2;
 
 		return cols + colors + jokers - stars;
 	}
