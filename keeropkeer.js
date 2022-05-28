@@ -326,8 +326,9 @@ class KeerOpKeer extends GridGame {
 					setTimeout(rollIter, 60);
 				}
 				else {
-					setTimeout(() => button.disabled = false, 1000);
 					this.selectUniques();
+					button.disabled = true;
+					setTimeout(() => button.disabled = false, 1000);
 					resolve({colors, numbers});
 				}
 			};
