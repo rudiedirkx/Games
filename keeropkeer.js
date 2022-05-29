@@ -79,7 +79,7 @@ class KOKChallengeEnds extends KOKChallengeColumns {
 }
 
 class KOKChallengeSide extends KOKChallengeColumns {
-	constructor(columns, side) {
+	constructor(side) {
 		super(side ? [8, 9, 10, 11, 12, 13, 14] : [0, 1, 2, 3, 4, 5, 6]);
 		this.side = side;
 	}
