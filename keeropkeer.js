@@ -694,10 +694,10 @@ console.log('kick rsp', rsp);
 		this.listenDice();
 
 		$('#status').on('click', '#roll', e => {
-			this.handleRoll();
+			if (e.subject.disabled === false) this.handleRoll();
 		});
 		$('#status').on('click', '#next-turn', e => {
-			this.handleEndTurn();
+			if (e.subject.disabled === false) this.handleEndTurn();
 		});
 
 		$$('[data-kick]').on('click', e => {
