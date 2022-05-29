@@ -472,7 +472,8 @@ class MultiKeerOpKeer extends KeerOpKeer {
 			}
 			else {
 				const $status = $('#status');
-				$.get(location.search + '&status=' + $status.data('hash')).on('done', (e, rsp) => {
+				const hash = this.lastStatus ? $status.data('hash') : 'x';
+				$.get(location.search + '&status=' + hash).on('done', (e, rsp) => {
 					setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
 					lastPoll = Date.now();
 
@@ -492,7 +493,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 						this.updatePlayersFromStatus(rsp.players);
 					}
 
-					if (rsp.status !== $status.data('hash')) {
+					if (rsp.status !== hash) {
 						if (!this.ignoringStatusUpdate) {
 console.log('no reload, but update', rsp);
 							this.updateFromStatus(rsp);
@@ -554,7 +555,9 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 			$('#status').setHTML(status.message);
 		}
 
-		$('#stats-round').setText(status.round);
+		if (status.round != null) {
+			$('#stats-round').setText(status.round);
+		}
 
 		if (status.dice && status.dice.colors && status.dice.numbers) {
 			if (this.hasChanged(status, 'dice')) {
@@ -570,6 +573,13 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 			this.importFullColumns(status.others_columns);
 			this.importFullColors(status.others_colors);
 			this.evalFulls();
+		}
+
+		if (status.full_colors) {
+			r.each(status.full_colors, (num, color) => {
+				const el = $(`#color-${color}-players`);
+				if (el) el.setText(num);
+			});
 		}
 
 		this.lastStatus = status;
@@ -603,10 +613,11 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 	importOtherPlayersBoardState(emptyBoard) {
 		$$('.other-player-board').forEach(el => {
 			el.setHTML(emptyBoard);
+			el.getElement('tfoot').remove();
 			const grid = el.getElement('#grid');
-			this.importBoardState(JSON.parse(el.dataset.board), grid);
-			this.importFullColumns(JSON.parse(el.dataset.columns), grid);
-			this.evalFullColumns(grid);
+			// this.importBoardState(JSON.parse(el.dataset.board), grid);
+			// this.importFullColumns(JSON.parse(el.dataset.columns), grid);
+			// this.evalFullColumns(grid);
 		});
 	}
 

@@ -33,7 +33,7 @@ table.game {
 	border: solid 1px var(--color);
 	text-align: center;
 }
-.game tbody td {
+.game tbody td:not(.transparent) {
 	color: black;
 }
 .game tbody .center {

@@ -312,10 +312,14 @@ $status = $player->getStatus();
 
 	<div class="colors-stats">
 		<table class="colors game">
-			<? foreach ([5, 3] as $score): ?>
+			<? foreach ([5, 3, 0] as $score): ?>
 				<tr>
-					<? foreach (['g', 'y', 'b', 'p', 'o'] as $color): ?>
-						<td class="full-color" data-color="<?= $color ?>" data-score="<?= $score ?>"><?= $score ?></td>
+					<? foreach (Game::COLORS as $color): ?>
+						<? if ($score): ?>
+							<td class="full-color" data-color="<?= $color ?>" data-score="<?= $score ?>"><?= $score ?></td>
+						<? else: ?>
+							<td class="transparent"><span id="color-<?= $color ?>-players">0</span>P</td>
+						<? endif ?>
 					<? endforeach ?>
 				</tr>
 			<? endforeach ?>
@@ -340,13 +344,7 @@ $status = $player->getStatus();
 	<? foreach ($player->game->players as $plr): if ($player->id != $plr->id): ?>
 		<div>
 			<h2 style="margin-bottom: 0"><?= do_html($plr) ?></h2>
-			<div
-				class="other-player-board"
-				id="board-<?= $plr->id ?>"
-				data-board='<?= json_encode(do_html($plr->board ?: '')) ?>'
-				data-columns='<?= json_encode($plr->getOthersColumns()) ?>'
-				data-colors='<?= json_encode($plr->getOthersColors()) ?>'
-			></div>
+			<div class="other-player-board" id="board-<?= $plr->id ?>"></div>
 		</div>
 	<? endif; endforeach ?>
 <? endif ?>
