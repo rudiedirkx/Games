@@ -254,7 +254,9 @@ class Blackbox extends GridGame {
 		this.m_objGrid.on('touchstart', e => {
 			// e.preventDefault();
 			const td = e.target.closest('td');
-			toggle = !td.hasClass('impossible');
+			if (td) {
+				toggle = !td.hasClass('impossible');
+			}
 		});
 		this.m_objGrid.on('touchmove', e => {
 			if (toggle == null) return;
