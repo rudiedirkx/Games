@@ -1,5 +1,5 @@
 // https://homeblox.nl/tests/javascript/rjs/build.html#-ifsetor,-array_intersect,-array_diff,-_classlist,-anyevent_summary,-event_custom_directchange,-element_attr2method,-element_attr2method_html,-element_attr2method_text
-// b653b15359fabb43a8458b2a882127c5abc73ee6
+// e641ab35754715c7aaa2b3a03e07c27d496072b1
 
 (function(W, D) {
 
@@ -402,6 +402,7 @@
 		this.subject = subject;
 		this.time = Date.now();
 	}
+	Eventable.CHECK_MATCHES_DISABLED_TYPES = ['click'];
 	r.extend(Eventable, eventablePrototype = {
 		on: function(eventType, matches, callback) {
 			if ( !callback ) {
@@ -432,6 +433,9 @@
 					var subject = options.subject;
 					if ( e && e.target && matches ) {
 						if ( !(subject = e.target.selfOrAncestor(matches)) ) {
+							return;
+						}
+						if ( Eventable.CHECK_MATCHES_DISABLED_TYPES.contains(e.type) && subject.disabled === true ) {
 							return;
 						}
 					}
