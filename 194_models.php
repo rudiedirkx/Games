@@ -124,8 +124,12 @@ class Game extends Model {
 		return $boards[$this->board]['map'];
 	}
 
+	protected function get_show_scores() {
+		return !$this->see_all || $this->isPlayerComplete();
+	}
+
 	protected function get_is_joinable() {
-		return $this->round < count($this->active_players);
+		return $this->round < 2;
 	}
 
 	protected function get_is_deletable() {
@@ -426,6 +430,10 @@ class Player extends Model {
 		return $this->id == $this->game->turn_player_id;
 	}
 
+	protected function get_is_winner() {
+		return $this->game->isPlayerComplete() && $this->game->winner === $this;
+	}
+
 	protected function get_is_leader() {
 		foreach ($this->game->active_players as $player) {
 			return $this->id == $player->id;
@@ -454,6 +462,13 @@ class FullColor extends Model {
 }
 
 class KeerStatus {
+	const GAME_SHOW_SCORES = 1;
+
+	const PLAYER_TURN = 1;
+	const PLAYER_WINNER = 2;
+	const PLAYER_KICKABLE = 4;
+	const PLAYER_KICKED = 8;
+
 	protected $player;
 	protected $game;
 	protected $text;
@@ -480,16 +495,14 @@ class KeerStatus {
 		$players = [
 			'players' => array_map(function(Player $plr) use ($lean) {
 				$always = [
-					'id' => $plr->id,
+					'id' => (int) $plr->id,
 					'online' => $plr->online_ago_text,
-					'kickable' => (int) $plr->is_kickable,
+					'flags' => $plr->is_turn * self::PLAYER_TURN | $plr->is_winner * self::PLAYER_WINNER | $plr->is_kickable * self::PLAYER_KICKABLE | $plr->is_kicked * self::PLAYER_KICKED,
 				];
 				if ($lean) return $always;
 				return $always + [
 					'jokers_left' => Game::MAX_JOKERS - $plr->used_jokers,
 					'score' => (int) $plr->score,
-					'turn' => (int) $plr->is_turn,
-					'kicked' => (int) $plr->is_kicked,
 					'board' => !$this->game->see_all ? null : $plr->board,
 					// 'colors' => $plr->full_colors,
 				];
@@ -514,6 +527,7 @@ class KeerStatus {
 			// 'interactive' => $this->isInteractive(),
 			// 'player_complete' => $this->game->isPlayerComplete(),
 			'round' => (int) $this->game->round,
+			'flags' => $this->game->show_scores * self::GAME_SHOW_SCORES,
 			'message' => (string) $this,
 			'dice' => $this->game->dice_array,
 			'others_columns' => $this->player->getOthersColumns(),

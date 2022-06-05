@@ -432,6 +432,13 @@ class MultiKeerOpKeer extends KeerOpKeer {
 
 	static STATUS_REQUEST_MS = 1100;
 
+	static GAME_SHOW_SCORES = 1;
+
+	static PLAYER_TURN = 1;
+	static PLAYER_WINNER = 2;
+	static PLAYER_KICKABLE = 4;
+	static PLAYER_KICKED = 8;
+
 	reset() {
 		super.reset();
 
@@ -537,9 +544,12 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 			if (score && plr.score != null) score.setText(plr.score);
 			const tr = $(`tr#plr-${id}`);
 			if (tr) {
-				if (plr.turn != null) tr.toggleClass('turn', plr.turn);
-				if (plr.kickable != null) tr.toggleClass('kickable', plr.kickable);
-				if (plr.kicked != null) tr.toggleClass('kicked', plr.kicked);
+				if (plr.flags != null) {
+					tr.toggleClass('turn', plr.flags & MultiKeerOpKeer.PLAYER_TURN);
+					tr.toggleClass('winner', plr.flags & MultiKeerOpKeer.PLAYER_WINNER);
+					tr.toggleClass('kickable', plr.flags & MultiKeerOpKeer.PLAYER_KICKABLE);
+					tr.toggleClass('kicked', plr.flags & MultiKeerOpKeer.PLAYER_KICKED);
+				}
 			}
 			else {
 				location.reload();
@@ -551,12 +561,17 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 
 	updateFromStatus(status) {
 		$('#status').data('hash', status.status);
+
 		if (this.hasChanged(status, 'message')) {
 			$('#status').setHTML(status.message);
 		}
 
 		if (status.round != null) {
 			$('#stats-round').setText(status.round);
+		}
+
+		if (status.flags != null) {
+			document.body.toggleClass('show-scores', status.flags & MultiKeerOpKeer.GAME_SHOW_SCORES);
 		}
 
 		if (status.dice && status.dice.colors && status.dice.numbers) {

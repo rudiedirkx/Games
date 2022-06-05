@@ -23,9 +23,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 	<table class="players" style="margin-top: 1em">
 		<tr>
 			<th>Player</th>
-			<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
-				<th>Score</th>
-			<? endif ?>
+			<th class="score">Score</th>
 			<th>Jokers</th>
 			<th></th>
 			<th align="right">Online</th>
@@ -34,23 +32,20 @@ function printPlayersTable(Game $game, ?Player $player) {
 		<? foreach ($game->players as $plr): ?>
 			<tr
 				id="plr-<?= $plr->id ?>"
-				class="
-					<? if ($plr->id == ($player->id ?? 0)): ?>me<? endif ?>
-					<?= $player && $plr->is_kickable ? 'kickable' : '' ?>
-					<?= $plr->is_kicked ? 'kicked' : '' ?>
-					<?= $plr->is_turn ? 'turn' : '' ?>
-				"
+				class="<?= implode(' ', array_keys(array_filter([
+					'me' => $plr->id == ($player->id ?? 0),
+					'kicked' => $plr->is_kicked,
+					// 'kickable' => $plr->is_kickable,
+					'turn' => $plr->is_turn,
+					'winner' => $plr->is_winner,
+				]))) ?>"
 			>
 				<td>
 					<span class="name"><?= do_html($plr->name) ?></span>
 					<span class="turn">&#127922;</span>
-					<? if ($game->isPlayerComplete() && $game->winner == $plr): ?>
-						<span class="winner">&#127881;</span>
-					<? endif ?>
+					<span class="winner">&#127881;</span>
 				</td>
-				<? if (is_local() || !$game->see_all || $game->isPlayerComplete()): ?>
-					<td><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>
-				<? endif ?>
+				<td class="score"><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>
 				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= Game::MAX_JOKERS - $plr->used_jokers ?></span> / <?= Game::MAX_JOKERS ?></td>
 				<td><button class="kick" data-kick="<?= $plr->id ?>">KICK</button></td>
 				<td align="right" nowrap>
@@ -96,7 +91,7 @@ if (!$player) {
 		<style>body { font-family: sans-serif }</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
-		<body style="--color: <?= $boards[$game->board]['color'] ?>; --text: <?= $boards[$game->board]['text'] ?? '#fff' ?>">
+		<body class="<?= $game->show_scores ? 'show-scores' : '' ?>" style="--color: <?= $boards[$game->board]['color'] ?>; --text: <?= $boards[$game->board]['text'] ?? '#fff' ?>">
 
 		<h1>Keer Op Keer MULTIPLAYER</h1>
 		<? if (!empty($_GET['error'])): ?>
@@ -106,7 +101,7 @@ if (!$player) {
 		<p>
 			In round <?= $game->round ?>.
 			Last change: <?= date('Y-m-d H:i', $game->changed_on) ?>.
-			<? if ($game->isPlayerComplete()): ?><b>COMPLETE!</b> See scores:<? endif ?>
+			<? if ($game->isPlayerComplete()): ?><b>GAME OVER!</b> See scores:<? endif ?>
 		</p>
 		<? printPlayersTable($game, null) ?>
 		<? if ($game->is_joinable): ?>
@@ -164,12 +159,15 @@ if (!$player) {
 				<?= $gm->board ?> -
 				<?= count($gm->players) ?> players -
 				<? if ($gm->isPlayerComplete()): ?>
-					<b>COMPLETE!</b>
+					<b>GAME OVER!</b>
 				<? else: ?>
 					round <?= $gm->round ?>
 					<? if ($gm->is_deletable): ?>
 						- <a href="?delete=<?= $gm->password ?>" onclick="return confirm('DELETE GAME?')">delete</a>
 					<? endif ?>
+				<? endif ?>
+				<? if ($gm->see_all): ?>
+					(see all)
 				<? endif ?>
 			</li>
 		<? endforeach ?>
@@ -280,7 +278,7 @@ $status = $player->getStatus();
 <script src="<?= html_asset('keeropkeer.js') ?>"></script>
 </head>
 
-<body class="layout multi">
+<body class="layout multi <?= $player->game->show_scores ? 'show-scores' : '' ?>">
 
 <? if (is_local()): ?>
 	<div style="position: fixed; right: 5px; top: 5px; background: #000; color: #fff"><?= rand(10, 99) ?></div>

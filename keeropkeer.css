@@ -256,7 +256,11 @@ table.players {
 }
 .players tr:not(.kickable) .kick,
 .players tr.kicked .kick,
-.players tr:not(.turn) .turn {
+.players tr:not(.turn) .turn,
+.players tr:not(.winner) .winner {
+	display: none;
+}
+body:not(.show-scores) tr > .score {
 	display: none;
 }
 
