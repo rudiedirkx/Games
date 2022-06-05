@@ -465,7 +465,8 @@ class KeerStatus {
 	}
 
 	public function getHash() : string {
-		return sha1(get_class($this) . "$this->text:{$this->game->num_players}:{$this->game->num_columns}:{$this->game->num_colors}");
+		$unready = count($this->game->getUnTurnReadyPlayers());
+		return sha1(get_class($this) . ":{$this->text}:{$this->game->round}:{$unready}:{$this->game->num_players}:{$this->game->num_columns}:{$this->game->num_colors}");
 	}
 
 	public function isInteractive() : bool {
