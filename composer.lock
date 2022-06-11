@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4875e3fe21e23f67310fbceb12fd4f8e",
+    "content-hash": "60f38ccd592c4fff5904c0f45e2e4861",
     "packages": [
         {
             "name": "rdx/db",
-            "version": "1.23",
+            "version": "1.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rudiedirkx/db_generic.git",
-                "reference": "6c3588830e258310a6efa7c91318b758d11ff9ac"
+                "reference": "1346237d664760bdde7120d2b1b51c9212f2f426"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rudiedirkx/db_generic/zipball/6c3588830e258310a6efa7c91318b758d11ff9ac",
-                "reference": "6c3588830e258310a6efa7c91318b758d11ff9ac",
+                "url": "https://api.github.com/repos/rudiedirkx/db_generic/zipball/1346237d664760bdde7120d2b1b51c9212f2f426",
+                "reference": "1346237d664760bdde7120d2b1b51c9212f2f426",
                 "shasum": ""
             },
             "type": "library",
@@ -42,9 +42,9 @@
             "description": "Simple MySQL/SQLite wrapper",
             "support": {
                 "issues": "https://github.com/rudiedirkx/db_generic/issues",
-                "source": "https://github.com/rudiedirkx/db_generic/tree/1.23"
+                "source": "https://github.com/rudiedirkx/db_generic/tree/1.24"
             },
-            "time": "2022-04-20T10:33:20+00:00"
+            "time": "2022-06-11T13:26:02+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -226,5 +226,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }

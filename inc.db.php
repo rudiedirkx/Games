@@ -1,8 +1,11 @@
 <?php
 
-$db = db_mysql::open(array('user' => DB_USER, 'pass' => DB_PASS, 'db' => DB_NAME));
-
-if ( !$db ) {
+try {
+	$db = db_mysql::open(array('user' => DB_USER, 'pass' => DB_PASS, 'db' => DB_NAME));
+	// $db = db_sqlite::open(array('database' => __DIR__ . '/games.sqlite3'));
+	$db->connect();
+}
+catch (db_exception $ex) {
 	exit('No connecto!');
 }
 
