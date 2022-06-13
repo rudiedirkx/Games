@@ -260,7 +260,9 @@ class Player extends Model {
 	}
 
 	public function touch() : void {
-		$this->update(['online' => time()]);
+		if ($this->online < time() - 2) {
+			$this->update(['online' => time()]);
+		}
 	}
 
 	public function getStatus() : KeerStatus {

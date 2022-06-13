@@ -65,8 +65,8 @@ function printPlayersTable(Game $game, ?Player $player) {
 }
 
 if (!$player) {
-	if ($debug && isset($_GET['delete'])) {
-		if ($game = Game::get($_GET['delete'])) {
+	if ($debug && isset($_POST['delete'])) {
+		if ($game = Game::get($_POST['delete'])) {
 			if ($game->is_deletable) {
 				$game->delete();
 			}
@@ -162,8 +162,8 @@ if (!$player) {
 					<b>GAME OVER!</b>
 				<? else: ?>
 					round <?= $gm->round ?>
-					<? if ($gm->is_deletable): ?>
-						- <a href="?delete=<?= $gm->password ?>" onclick="return confirm('DELETE GAME?')">delete</a>
+					<? if ($debug && $gm->is_deletable): ?>
+						- <form method="post" action="?" style="display: inline" onsubmit="return confirm('DELETE GAME?')"><input type="hidden" name="delete" value="<?= do_html($gm->password) ?>" /><button>delete</button></form>
 					<? endif ?>
 				<? endif ?>
 				<? if ($gm->see_all): ?>

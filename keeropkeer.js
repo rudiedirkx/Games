@@ -447,9 +447,10 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		this.turnColor = null;
 		this.turnNumber = null;
 
+		this.lastPoll = 0;
+		this.pollingRequest = null;
 		this.lastConnection = null;
 		this.lastStatus = null;
-		this.ignoringStatusUpdate = false;
 	}
 
 	startGame(boardName, state, usedJokers, othersColumns, othersColors) {
@@ -472,48 +473,45 @@ class MultiKeerOpKeer extends KeerOpKeer {
 	}
 
 	startPollingStatus() {
-		var lastPoll = Date.now();
 		const poll = () => {
-			if (document.hidden) {
-				setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+			if (!document.hidden && this.lastPoll < Date.now() - MultiKeerOpKeer.STATUS_REQUEST_MS) {
+				this.lastPoll = Date.now();
+				this.fetchStatus();
 			}
-			else {
-				const $status = $('#status');
-				const hash = this.lastStatus ? $status.data('hash') : 'x';
-				$.get(location.search + '&status=' + hash).on('done', (e, rsp) => {
-					setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
-					lastPoll = Date.now();
-
-					if (!rsp) {
-						console.warn('Empty status response. No connection?');
-						this.warnNoConnection();
-						return;
-					}
-					this.resetNoConnection();
-
-					if (!rsp.status) {
-						console.warn('status rsp', rsp);
-						return;
-					}
-
-					if (rsp.players) {
-						this.updatePlayersFromStatus(rsp.players);
-					}
-
-					if (rsp.status !== hash) {
-						if (!this.ignoringStatusUpdate) {
-console.log('no reload, but update', rsp);
-							this.updateFromStatus(rsp);
-						}
-						else {
-if ($('#debug')) $('#debug').append("ignoring this status update\n");
-							console.warn('ignoring this status update');
-						}
-					}
-				});
-			}
+			requestAnimationFrame(poll);
 		};
-		setTimeout(poll, MultiKeerOpKeer.STATUS_REQUEST_MS);
+		setTimeout(poll, 300);
+	}
+
+	fetchStatus() {
+		if (this.pollingRequest) this.pollingRequest.abort();
+
+		const $status = $('#status');
+		const hash = this.lastStatus ? $status.data('hash') : 'x';
+		this.pollingRequest = $.get(location.search + '&status=' + hash).on('done', (e, rsp) => {
+			this.lastPoll = Date.now();
+
+			if (!rsp) {
+				console.warn('Empty status response. No connection?');
+				this.warnNoConnection();
+				return;
+			}
+			this.resetNoConnection();
+
+			if (!rsp.status) {
+				console.warn('status rsp', rsp);
+				return;
+			}
+
+			if (rsp.players) {
+				this.updatePlayersFromStatus(rsp.players);
+			}
+
+			if (rsp.status !== hash) {
+console.log('no reload, but update', rsp);
+				this.updateFromStatus(rsp);
+			}
+		});
 	}
 
 	warnNoConnection() {
@@ -526,11 +524,6 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 	resetNoConnection() {
 		this.lastConnection = Date.now();
 		$('#no-connection').hide();
-	}
-
-	ignoreStatusUpdate() {
-		this.ignoringStatusUpdate = true;
-		setTimeout(() => this.ignoringStatusUpdate = false, 100);
 	}
 
 	updatePlayersFromStatus(players) {
@@ -651,7 +644,7 @@ if ($('#debug')) $('#debug').append("ignoring this status update\n");
 			$.post(location.search + '&roll=1', $.serialize(dice)).on('done', (e, rsp) => {
 console.log('roll rsp', rsp);
 				if (rsp.status) {
-					this.ignoreStatusUpdate();
+					this.fetchStatus();
 					this.updateFromStatus(rsp.status);
 				}
 				else location.reload();
@@ -681,12 +674,13 @@ console.log('roll rsp', rsp);
 		const data = {state, score, color, number, fulls};
 
 		this.turnColor = this.turnNumber = null;
+		$$('#dice .selected').removeClass('selected');
 
 		$.post(location.search + '&endturn=1', $.serialize(data)).on('done', (e, rsp) => {
 console.log('end turn rsp', rsp);
 			document.body.removeClass('with-choosing');
 			if (rsp.status) {
-				this.ignoreStatusUpdate();
+				this.fetchStatus();
 				this.updateFromStatus(rsp.status);
 				this.updatePlayersFromStatus(rsp.status.players);
 			}
