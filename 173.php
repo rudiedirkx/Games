@@ -41,10 +41,10 @@ html {
 	--square: 26px;
 }
 body {
-	padding-top: calc(0px + var(--stats-height));
-}
-body.happening {
-	animation: happening 0.5s 2;
+	height: 100vh;
+	width: 100vw;
+	overflow: hidden;
+	touch-action: pan-x pan-y;
 }
 body,
 body[data-size="huge"] {
@@ -72,23 +72,33 @@ body[data-size="blind"] {
 	height: var(--stats-height);
 	line-height: var(--stats-height);
 	background-color: black;
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
 	font-weight: bold;
 	font-family: monospace;
 	text-transform: uppercase;
 	white-space: nowrap;
 }
+body.happening #stats-bar {
+	animation: happening 0.5s 2;
+}
 #stats-bar .stat-time .label {
 	display: none;
 }
 
+#ms {
+	--ms-height: 100vh;
+	height: calc(var(--ms-height) - var(--stats-height));
+	width: 100vw;
+	overflow: scroll;
+	-webkit-overflow-scrolling: auto;
+	overscroll-behavior: none;
+}
+body.mobile #ms {
+	--ms-height: 90vh;
+}
 #ms .padding {
-	padding: 10px;
-	width: calc(20px + var(--w) * (1px + var(--square)));
-	height: calc(20px + var(--h) * (1px + var(--square)));
+	border: solid 20px black;
+	width: calc(40px + var(--w) * (1px + var(--square)));
+	height: calc(40px + var(--h) * (1px + var(--square)));
 }
 table {
 	border-spacing: 0;
@@ -151,12 +161,12 @@ img.preload { visibility: hidden; position: absolute; }
 <? include 'tpl.onerror.php' ?>
 </head>
 
-<body>
+<body class="<?= is_mobile() ? 'mobile' : '' ?>">
 
 <div id="stats-bar">
 	<select id="select-size"></select>
 	<span id="stats"></span>
-	<span id="monsters"></span>
+	<span id="monsters" hidden></span>
 </div>
 
 <div id="ms">
