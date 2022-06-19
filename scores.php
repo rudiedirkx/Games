@@ -36,6 +36,7 @@ table th {
 			<th>Date</th>
 			<th>Game</th>
 			<th>Level</th>
+			<th>Moves</th>
 			<th>Score</th>
 			<th>IP</th>
 		</tr>
@@ -46,6 +47,7 @@ table th {
 				<td><?= date('Y-m-d H:i', $score->utc) ?></td>
 				<td><?= $score->game ?></td>
 				<td><?= $score->level ?></td>
+				<td><?= $score->moves ?></td>
 				<td><?= $score->score ?></td>
 				<td><?= $score->ip ?></td>
 			</tr>
