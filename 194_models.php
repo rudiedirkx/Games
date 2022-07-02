@@ -5,6 +5,15 @@ class Model extends db_generic_model {}
 class Game extends Model {
 	use WithMultiplayerPassword, WithMultiplayerPlayers;
 
+	const FLAG_HIDE_SCORES = 1;
+	const FLAG_SEE_ALL = 2;
+	const FLAG_FREE_DICE = 4;
+	const FLAGS = [
+		'hide scores' => self::FLAG_HIDE_SCORES,
+		'see players' => self::FLAG_SEE_ALL,
+		'free dice' => self::FLAG_FREE_DICE,
+	];
+
 	const COLORS = ['g', 'y', 'b', 'p', 'o'];
 	const MAX_JOKERS = 8;
 
@@ -72,13 +81,7 @@ class Game extends Model {
 	}
 
 	public function endRound() : void {
-		$this->update([
-			'round' => $this->round + 1,
-			'turn_player_id' => $this->getNextTurnPlayerId(),
-			'dice' => null,
-		]);
-
-		if ($this->isColorComplete()) {
+		if ($this->isGameComplete()) {
 			Player::updateAll([
 				'finished_round' => self::COLOR_COMPLETE_ROUND,
 			], [
@@ -87,8 +90,24 @@ class Game extends Model {
 			]);
 			$this->update([
 				'turn_player_id' => null,
+				'dice' => null,
 			]);
 		}
+		else {
+			$this->update([
+				'round' => $this->round + 1,
+				'turn_player_id' => $this->getNextTurnPlayerId(),
+				'dice' => null,
+			]);
+		}
+	}
+
+	public function isGameComplete() : bool {
+		return $this->isRoundsComplete() || $this->isColorComplete();
+	}
+
+	public function isRoundsComplete() : bool {
+		return $this->max_rounds && $this->round >= $this->max_rounds;
 	}
 
 	public function isColorComplete() : bool {
@@ -112,7 +131,7 @@ class Game extends Model {
 
 	protected function get_color_complete_player() {
 		foreach ($this->active_players as $player) {
-			if ($player->finished_round == self::COLOR_COMPLETE_ROUND) {
+			if (count($player->full_colors) >= Game::COLORS_TO_COMPLETE) {
 				return $player;
 			}
 		}
@@ -124,8 +143,33 @@ class Game extends Model {
 		return $boards[$this->board]['map'];
 	}
 
+	protected function get_options_label() {
+		$flags = [];
+		foreach (self::FLAGS as $name => $bits) {
+			if ($this->flags & $bits) {
+				$flags[] = $name;
+			}
+		}
+		if ($this->max_rounds) {
+			$flags[] = "max $this->max_rounds rounds";
+		}
+		return implode(', ', $flags);
+	}
+
+	protected function get_flag_hide_scores() {
+		return ($this->flags & self::FLAG_HIDE_SCORES) > 0;
+	}
+
+	protected function get_flag_see_all() {
+		return ($this->flags & self::FLAG_SEE_ALL) > 0;
+	}
+
+	protected function get_flag_free_dice() {
+		return ($this->flags & self::FLAG_FREE_DICE) > 0;
+	}
+
 	protected function get_show_scores() {
-		return !$this->see_all || $this->isPlayerComplete();
+		return !$this->flag_hide_scores || $this->isPlayerComplete();
 	}
 
 	protected function get_is_joinable() {
@@ -137,10 +181,14 @@ class Game extends Model {
 	}
 
 	protected function get_free_dice() {
-		return $this->round <= count($this->active_players);
+		return $this->flag_free_dice || $this->round <= count($this->active_players);
 	}
 
 	protected function get_winner() {
+		if (!$this->isColorComplete()) {
+			return null;
+		}
+
 		$players = $this->players;
 		usort($players, function($a, $b) {
 			$x = $b->score - $a->score;
@@ -220,14 +268,15 @@ class Game extends Model {
 		});
 	}
 
-	static public function createNew(string $board, string $playerName, int $seeAll) : Player {
-		return self::$_db->transaction(function() use ($board, $playerName, $seeAll) {
+	static public function createNew(string $board, string $playerName, int $maxRounds, int $flags) : Player {
+		return self::$_db->transaction(function() use ($board, $playerName, $maxRounds, $flags) {
 			$gid = self::insert([
 				'created_on' => time(),
 				'changed_on' => time(),
 				'board' => $board,
 				'password' => get_random(),
-				'see_all' => $seeAll,
+				'max_rounds' => $maxRounds,
+				'flags' => $flags,
 			]);
 
 			$pid = Player::insert([
@@ -283,7 +332,7 @@ class Player extends Model {
 		elseif ($this->can_end_turn) {
 			if ($this->game->dice) {
 				if ($this->can_choose) {
-					$label = $this->game->isColorComplete() ? "LAST turn" : "turn";
+					$label = $this->game->isGameComplete() ? "LAST turn" : "turn";
 					return new KeerStatusButton($this, "next-turn", "<span class='choosing'>End $label</span><span class='not-choosing'>SKIP $label</span>");
 				}
 				else {
@@ -294,9 +343,14 @@ class Player extends Model {
 				return new KeerStatus($this, "Waiting for '{$this->game->turn_player}' to roll...");
 			}
 		}
-		elseif ($this->game->isColorComplete()) {
+		elseif ($this->game->isGameComplete()) {
 			if ($this->game->isPlayerComplete()) {
-				return new KeerStatus($this, "GAME OVER! '{$this->game->winner}' won, with score {$this->game->winner->score}.");
+				if (!$this->game->winner && $this->game->max_rounds) {
+					return new KeerStatus($this, "GAME OVER! Everybody loses after {$this->game->max_rounds} rounds.");
+				}
+				else {
+					return new KeerStatus($this, "GAME OVER! '{$this->game->winner}' won, with score {$this->game->winner->score}.");
+				}
 			}
 			else {
 				$unready = $this->game->getUnTurnReadyPlayers();
@@ -401,7 +455,7 @@ class Player extends Model {
 	}
 
 	protected function get_is_kickable() {
-		return !$this->is_kicked && $this->online_ago > Game::KICKABLE_AFTER && count($this->game->active_players) > 2 && !$this->game->isColorComplete();
+		return !$this->is_kicked && $this->online_ago > Game::KICKABLE_AFTER && count($this->game->active_players) > 2 && !$this->game->isGameComplete();
 	}
 
 	protected function get_is_kicked() {
@@ -505,7 +559,7 @@ class KeerStatus {
 				return $always + [
 					'jokers_left' => Game::MAX_JOKERS - $plr->used_jokers,
 					'score' => (int) $plr->score,
-					'board' => !$this->game->see_all ? null : $plr->board,
+					'board' => !$this->game->flag_see_all ? null : $plr->board,
 					// 'colors' => $plr->full_colors,
 				];
 			}, array_values($this->game->players)),

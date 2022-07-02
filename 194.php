@@ -101,6 +101,9 @@ if (!$player) {
 		<p>
 			In round <?= $game->round ?>.
 			Last change: <?= date('Y-m-d H:i', $game->changed_on) ?>.
+			<? if ($game->options_label): ?>
+				Options: <?= do_html($game->options_label) ?>
+			<? endif ?>
 			<? if ($game->isPlayerComplete()): ?><b>GAME OVER!</b> See scores:<? endif ?>
 		</p>
 		<? printPlayersTable($game, null) ?>
@@ -117,8 +120,10 @@ if (!$player) {
 		exit;
 	}
 
-	if (isset($_POST['start'], $_POST['name'], $_POST['board'], $_POST['see_all'])) {
-		$player = Game::createNew($_POST['board'] ?: array_rand($boards), $_POST['name'], $_POST['see_all']);
+	if (isset($_POST['start'], $_POST['name'], $_POST['board'], $_POST['max_rounds'])) {
+		$board = $_POST['board'] ?: array_rand($boards);
+		$flags = array_sum($_POST['flags'] ?? []);
+		$player = Game::createNew($board, $_POST['name'], (int) $_POST['max_rounds'], $flags);
 		return do_redirect("?player=$player->password");
 	}
 
@@ -135,7 +140,13 @@ if (!$player) {
 	<form method="post" action>
 		<p>Your name: <input name="name" required autofocus /></p>
 		<p>Board: <select name="board"><?= do_html_options(array_combine($boardNames, $boardNames), null, '-- RANDOM') ?></select></p>
-		<p>See all players? <select name="see_all"><?= do_html_options(['0' => 'No', '1' => 'Yes']) ?></select></p>
+		<p>
+			Options:
+			<? foreach (Game::FLAGS as $name => $bits): ?>
+				<label><input type="checkbox" name="flags[]" value="<?= $bits ?>"> <?= do_html($name) ?></label>
+			<? endforeach ?>
+		</p>
+		<p>Max rounds: <input type="number" name="max_rounds" min="10" max="60" placeholder="99" /></p>
 		<p><button name="start" value="1">START GAME</button></p>
 	</form>
 
@@ -165,9 +176,6 @@ if (!$player) {
 					<? if ($debug && $gm->is_deletable): ?>
 						- <form method="post" action="?" style="display: inline" onsubmit="return confirm('DELETE GAME?')"><input type="hidden" name="delete" value="<?= do_html($gm->password) ?>" /><button>delete</button></form>
 					<? endif ?>
-				<? endif ?>
-				<? if ($gm->see_all): ?>
-					(see all)
 				<? endif ?>
 			</li>
 		<? endforeach ?>
@@ -323,7 +331,7 @@ $status = $player->getStatus();
 			<? endforeach ?>
 		</table>
 		<p id="stats">
-			Round: <span class="value" id="stats-round"><?= $player->game->round ?></span><br>
+			Round: <span class="value" id="stats-round"><?= $player->game->round ?></span><? if ($player->game->max_rounds): ?> / <?= $player->game->max_rounds ?><? endif ?><br>
 			Jokers: <span class="value" id="stats-jokers">8 / 8</span><br>
 			Score: <span class="value" id="stats-score">?</span><br>
 		</p>
@@ -338,7 +346,7 @@ $status = $player->getStatus();
 	<p>Share <a href="<?= do_html($player->game->url) ?>"><?= do_html($player->game->url) ?></a> to invite players.</p>
 </div>
 
-<? if ($player->game->see_all): ?>
+<? if ($player->game->flag_see_all): ?>
 	<? foreach ($player->game->players as $plr): if ($player->id != $plr->id): ?>
 		<div>
 			<h2 style="margin-bottom: 0"><?= do_html($plr) ?></h2>

@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'version' => 'keeropkeer:2',
+	'version' => 'keeropkeer:3',
 	'tables' => [
 		'keeropkeer_games' => [
 			'id' => ['pk' => true],
@@ -12,7 +12,9 @@ return [
 			'turn_player_id' => ['unsigned' => true, 'references' => ['keeropkeer_players', 'id', 'cascade']],
 			'round' => ['unsigned' => true, 'null' => false, 'default' => 0],
 			'dice',
-			'see_all' => ['unsigned' => true, 'null' => false, 'default' => 0],
+			// 'see_all' => ['unsigned' => true, 'null' => false, 'default' => 0],
+			'flags' => ['unsigned' => true, 'null' => false, 'default' => 0],
+			'max_rounds' => ['unsigned' => true, 'null' => false, 'default' => 0],
 		],
 		'keeropkeer_players' => [
 			'id' => ['pk' => true],
@@ -47,5 +49,14 @@ return [
 				'game_color_unique' => ['columns' => ['game_id', 'color'], 'unique' => true],
 			],
 		],
+	],
+	'updates' => [
+		'keeropkeer-1' => function($db) {
+			$db->update('keeropkeer_games', [
+				'flags' => Game::FLAG_HIDE_SCORES | Game::FLAG_SEE_ALL,
+			], [
+				'see_all' => 1,
+			]);
+		},
 	],
 ];
