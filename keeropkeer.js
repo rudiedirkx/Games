@@ -90,6 +90,17 @@ class KOKChallengeSide extends KOKChallengeColumns {
 	}
 }
 
+class KOKChallengeAllStars extends KOKChallenge {
+	get message() {
+		return `Choose all the stars`;
+	}
+
+	won(game) {
+		const unchosen = game.m_objGrid.getElements('.star:not(.chosen)').length;
+		return unchosen == 0;
+	}
+}
+
 class KOKChallengeNoMistakes extends KOKChallenge {
 	constructor(columns) {
 		super();
@@ -791,6 +802,7 @@ class SoloKeerOpKeer extends KeerOpKeer {
 				return new KOKChallengeColumns(cols);
 			},
 			() => new KOKChallengeAnyColorWithoutColor(KeerOpKeer.COLORS[this.randInt(KeerOpKeer.COLORS.length - 1)]),
+			() => new KOKChallengeAllStars(),
 			// () => new KOKChallengeNoMistakes(),
 		];
 		return types[this.randInt(types.length - 1)]();
