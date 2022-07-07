@@ -8,10 +8,12 @@ class Game extends Model {
 	const FLAG_HIDE_SCORES = 1;
 	const FLAG_SEE_ALL = 2;
 	const FLAG_FREE_DICE = 4;
+	const FLAG_COLORS_WINNER = 8;
 	const FLAGS = [
 		'hide scores' => self::FLAG_HIDE_SCORES,
 		'see players' => self::FLAG_SEE_ALL,
 		'free dice' => self::FLAG_FREE_DICE,
+		'colors winner' => self::FLAG_COLORS_WINNER,
 	];
 
 	const COLORS = ['g', 'y', 'b', 'p', 'o'];
@@ -168,8 +170,14 @@ class Game extends Model {
 		return ($this->flags & self::FLAG_FREE_DICE) > 0;
 	}
 
+	protected function get_flag_colors_winner() {
+		return ($this->flags & self::FLAG_COLORS_WINNER) > 0;
+	}
+
 	protected function get_show_scores() {
-		return !$this->flag_hide_scores || $this->isPlayerComplete();
+		if ($this->flag_colors_winner) return false;
+		if ($this->isPlayerComplete()) return true;
+		return !$this->flag_hide_scores;
 	}
 
 	protected function get_is_joinable() {
@@ -190,15 +198,28 @@ class Game extends Model {
 		}
 
 		$players = $this->players;
-		usort($players, function($a, $b) {
-			$x = $b->score - $a->score;
-			if ($x != 0) return $x;
+		if ($this->flag_colors_winner) {
+			usort($players, function($a, $b) {
+				$x = $b->num_colors <=> $a->num_colors;
+				if ($x != 0) return $x;
 
-			$x = $a->used_jokers - $b->used_jokers;
-			if ($x != 0) return $x;
+				$x = $a->used_jokers <=> $b->used_jokers;
+				return $x;
+			});
+		}
+		else {
+			usort($players, function($a, $b) {
+				$x = $b->score <=> $a->score;
+				if ($x != 0) return $x;
 
-			return $b->num_colors - $a->num_colors;
-		});
+				$x = $a->used_jokers <=> $b->used_jokers;
+				if ($x != 0) return $x;
+
+				$x = $b->num_colors <=> $a->num_colors;
+				return $x;
+			});
+		}
+
 		return $players[0];
 	}
 
