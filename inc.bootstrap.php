@@ -4,7 +4,11 @@ require 'inc.env.php';
 require 'vendor/autoload.php';
 
 if (!is_local()) {
-	ini_set('display_errors', 0);
+	ini_set('display_errors', '0');
+}
+
+if (!ini_get('short_open_tag')) {
+	exit('short_open_tag must be on');
 }
 
 if (php_sapi_name() !== 'cli') {

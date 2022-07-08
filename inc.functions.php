@@ -7,7 +7,7 @@ function get_ip() {
 }
 
 function is_local() {
-	return !isset($_SERVER['HTTP_HOST']) || is_int(strpos($_SERVER['HTTP_HOST'], '.home'));
+	return !isset($_SERVER['HTTP_HOST']) || is_int(strpos($_SERVER['HTTP_HOST'], '.home')) || is_int(strpos($_SERVER['HTTP_HOST'], 'localhost'));
 }
 
 function is_debug_ip() {
