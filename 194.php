@@ -90,6 +90,7 @@ if (!$player) {
 		<title>Keer Op Keer # <?= $game->id ?></title>
 		<style>body { font-family: sans-serif }</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="og:description" content="Options: <?= do_html($game->options_label ?: 'normal') ?>" />
 		<link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
 		<body class="<?= $game->show_scores ? 'show-scores' : '' ?>" style="--color: <?= $boards[$game->board]['color'] ?>; --text: <?= $boards[$game->board]['text'] ?? '#fff' ?>">
 
