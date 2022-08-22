@@ -497,6 +497,12 @@ class BridgesSolver {
 		const required = this.grid[C.y][C.x];
 		if (required > 2) return;
 
+		// @todo Fix logic bug for
+		//     2
+		// 3  (2)
+		//     2
+		// In demo=9
+
 		const targets = this.getTargetsFrom(C).filter(C => this.grid[C.y][C.x] != required);
 		if (targets.length == 1) {
 			this.requireBridge(new Bridge(C, targets[0]));
