@@ -265,7 +265,7 @@ class KeerOpKeer extends GridGame {
 			if ( cells.length == 0 ) {
 				columns.push(n);
 				const [self, other] = table.getElements(`.full-column:nth-child(${n+1})`);
-				if (!self.hasClass('other')) self.addClass('self');
+				if (self && !self.hasClass('other')) self.addClass('self');
 				else if (other) other.addClass('self');
 			}
 		}
@@ -297,7 +297,8 @@ class KeerOpKeer extends GridGame {
 	}
 
 	printScore() {
-		$('#stats-score').setText(this.getNumericScore());
+		const el = $('#stats-score');
+		if (el) el.setText(this.getNumericScore());
 	}
 
 	getNumericScore() {
@@ -617,7 +618,10 @@ console.log('no reload, but update', rsp);
 
 	importFullColumns(columns, container) {
 		const cont = (container || this.m_objGrid).closest('table');
-		columns.forEach(n => cont.getElement(`.full-column:nth-child(${n+1})`).addClass('other'));
+		columns.forEach(n => {
+			const el = cont.getElement(`.full-column:nth-child(${n+1})`);
+			if (el) el.addClass('other');
+		});
 	}
 
 	importFullColors(colors) {

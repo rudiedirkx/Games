@@ -370,7 +370,8 @@ class Player extends Model {
 					return new KeerStatus($this, "GAME OVER! Everybody loses after {$this->game->max_rounds} rounds.");
 				}
 				else {
-					return new KeerStatus($this, "GAME OVER! '{$this->game->winner}' won, with score {$this->game->winner->score}.");
+					$withScore = $this->game->flag_colors_winner ? '' : ", with score {$this->game->winner->score}";
+					return new KeerStatus($this, "GAME OVER! '{$this->game->winner}' won{$withScore}.");
 				}
 			}
 			else {

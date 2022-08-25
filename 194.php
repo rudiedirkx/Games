@@ -303,7 +303,7 @@ $status = $player->getStatus();
 	</thead>
 	<tbody id="grid"></tbody>
 	<tfoot>
-		<? foreach (array_slice($columns, 1, 2) as $row): ?>
+		<? foreach ($player->game->flag_colors_winner ? [] : array_slice($columns, 1, 2) as $row): ?>
 			<tr>
 				<? foreach ($row as $i => $cell): ?>
 					<td class="full-column" data-col="<?= $i ?>" data-score="<?= $cell ?>"><?= $cell ?></td>
@@ -334,7 +334,9 @@ $status = $player->getStatus();
 		<p id="stats">
 			Round: <span class="value" id="stats-round"><?= $player->game->round ?></span><? if ($player->game->max_rounds): ?> / <?= $player->game->max_rounds ?><? endif ?><br>
 			Jokers: <span class="value" id="stats-jokers">8 / 8</span><br>
-			Score: <span class="value" id="stats-score">?</span><br>
+			<? if ($player->game->show_scores): ?>
+				Score: <span class="value" id="stats-score">?</span><br>
+			<? endif ?>
 		</p>
 	</div>
 
