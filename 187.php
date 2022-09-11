@@ -32,6 +32,10 @@ require __DIR__ . '/inc.bootstrap.php';
 	<button id="reveal">Show atoms</button>
 </p>
 
+<div style="text-align: center">
+	<? include 'tpl.blackbox_help.php' ?>
+</div>
+
 <script>
 objGame = new Blackbox($('#blackbox'));
 objGame.createMap();

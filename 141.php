@@ -39,17 +39,6 @@ if ( $_action == "get_secret" ) {
 	exit( empty($_SESSION[S_NAME]['_secret']) ? '' : $_SESSION[S_NAME]['_secret'] );
 }
 
-/** IMAGES **/
-else if ( isset($_GET['image']) ) {
-	$bin = get_image($_GET['image'], false);
-	if ( $bin ) {
-		header('Content-type: image/gif');
-		echo $bin;
-	}
-
-	exit;
-}
-
 ?>
 <!doctype html>
 <html>
@@ -663,28 +652,7 @@ window.onload = function() {
 	</div>
 
 	<div id="about">
-		<p><b>WHAT TO DO</b></p>
-
-		<p>You must find all Atoms! The Atoms are hidden in the grey field.</p>
-
-		<p><b>Atoms to find: <?= $ATOMS ?></b></p>
-		<p>Playtime: <b id="playtime">-</b></p>
-		<p>Score: <b id="score">-</b></p>
-		<p>Hi-score: <b id="hiscore">-</b></p>
-
-		<p>You can fire beams that might tell you the location of the Atoms.</p>
-		<p>You do that by clicking on side cells (the lighter grey ones).</p>
-		<p>A beam turns before it hits an Atom.<br/>If you fire a beam from below and there is an Atom on the left somewhere, the beam will turn to the right:</p>
-		<p><img src="?image=bb2"></p>
-		<p><b>When the beam reaches another side cell, both cells are colored!</b></p>
-		<p>If it hits an atom its absorbed:</p>
-		<p><img src="?image=bb1"></p>
-		<p><b>The side cell (where the beam came from) is then GREY!</b></p>
-		<p>It's also possible that a beam makes a U-turn and gets right back where it came from.</p>
-		<p>Either it doesnt get the chance to enter the field (there's an atom right or left of where the beam enters)</p>
-		<p>or it must make a U-turn:</p>
-		<p><img src="?image=bb3"></p>
-		<p><b>The side cell is then WHITE!</b></p>
+		<? include 'tpl.blackbox_help.php' ?>
 	</div>
 </div>
 
@@ -706,35 +674,4 @@ function rand_string( $f_iChars = 16 ) {
 		$szRandString .= $arrChars[array_rand($arrChars)];
 	}
 	return $szRandString;
-}
-
-function get_image( $image, $base64 = true ) {
-	$data = '';
-	switch ( $image ) {
-		case 'right':
-			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACK4yPqcsd4pqAUU1az8V58+h9UtiFomWeSKpqZvXCXvZsdD3duF7zjw/UFQAAOw==';
-			break;
-		case 'left':
-			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACK4yPqcvN4h6MSViK7MVBb+p9TihKZERqaDqNKfbCIdd5dF2CuX4fbQ9kFAAAOw==';
-			break;
-		case 'up':
-			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACI4yPqcvtD6OcTQgarJ1ax949IFiNpGKaSZoeLIvF8kzXdlAAADs=';
-			break;
-		case 'down':
-			$data = 'R0lGODlhFAAWAKEAAP///8z//wAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAACIoyPqcvtD6OcNImLs8Zne4582yKCpPh80Shl1VXF8kzXUAEAOw==';
-			break;
-		case 'bb1':
-			$data = 'R0lGODlhXwBrAIAAAAAAAP///yH/C01hZ2ljVmlld2VyAp4Anm12aXCUAAAAHAAAACAAAAABAAAABAAAAAAAAP////////D//f/w//3/8P/t//D/7f/w/+3/8P/t//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8IAAAAD//f/w//3/8P/9//D//f/w//3/8P/9//CAAAAA////8P////D////wACH5BAAAAAAALAAAAABfAGsAAAL/jI+py+0PYwK02ouz3rz7TxmAxIykYp5Iqopue7CtrNKnaZO5uAc99HvgYDFHqBE0El9JpLHXLC19LyIUOo0uhksaqArTosAz1Idcy6Jvwp14oqZ22865/b2iS+3WtU6/FdcnN4jkJhjmJ/FzFMiXSAhpWFcIiVdkePhYFslZ0ji2mdY5+qlZyXmpyEMpaYm4deqaCutoOzuqSsomygvyCxwsfLb712s8qKtc68uMjNt8jLmHmuvMI+v5Kj3STQ1tvOzIBScdQQ5O7nV9vgpkyyIjnlwbr2T+XrwodF8d7Z+nlTZa+LDg46evXb9bA60VXNjwH7hpDEttA0gxFEaF//O+aZzIkV3CjgQ3jhSJkOTHlRZLgjx58N6wmTRrdnCHUGA5kylFGuQp0yfElg5N/nzZ86FOXvSUeiQqMWLAp0wvvjwqdV/CfEszQg0ntKvWpkaHVnWZdZXKqF+9TkUa1GnFs0Wvmn2Gtq1alHHLilVI1u5frlbTwgRaZ+1blnTZNl68E27isFTx5rKJOfNMnHfdeh5bWO9hyXsUf96aM/Tj06ZDymVs2XFsyLRna2092nBSv5VB5129N+bk15F19xXcG7Bq28ERl6Y8l3k+3FhF70Ye3Xddw9WBT4cOW7ts8bU5D77OvbPy39K7S0cv2j352+CLW5epOb/+m1Pm9zH/D+B6AQ5IYHIFHgigLggueB6DDr73YISpSUghhBVeaB6GFSqoYYEcdjjghyCOWGEBADs=';
-			break;
-		case 'bb2':
-			$data = 'R0lGODlhXwBrAIAAAAAAAP///yH/C01hZ2ljVmlld2VyAp4Anm12aXCUAAAAHAAAACAAAAABAAAABAAAAAAAAP////////D//f/w9/3/8Pf9//D3/f/w9/3/8Pf9//D//f/w//3/8P/9//D//f/w//AAEP/9//D//f/w//3/8P/9//D//f/w//3/8P/9//D//f/w//3/8IAAAAD//f/w//3/8P/9//D//f/w//3/8P/9//CAAAAA////8P////D////wACH5BAAAAAAALAAAAABfAGsAAAL/jI+py+0PYwK02ouz3rz7TxmAxIykYp5Iqopue7CtrNKnacf5Cwd79IPgHKFG8HEk9l6/YmnpgyaNvIXTKs0uh5NPdabtcVfe6DYMG5d20+f5HbxO0GA4kk2vaeP4t3h/R+WXBkjU9zdYxyeI2Ehotnb46KhoKFlHqQdpJbeSd1NodKmZCbrJyTipWomUirmq2YaVSPoIcoubq1smi/JJ0jt3WvtaHPsrEexpR2taCvxFLO1siwxkLRRNbbzt5jvcHQ59/a0cg92aLKPGPf6cyj7tDpvNhC6ym+9h39xlY64tnRmA4ITNeudtILZO5/olVOgwoERyFBsSjKMk4jJh/xcFHqQ3rmPGh/KSTaznyiBIkwVZpty4kpzIlw0R1tOHM6fOCic9fvxmM91MkjDbsRz6U6VRmQtHxrzZlKbLahqb3BOEFGhScUejEp3HyqZVjUK9bgV7rKrTpVDVSq0Y9unYoBmzKr3Llanbr1Pjsp37tOzes33Til1bUu/htyipLuYL17BcxHnbPiYc2dTOzZxv9aRcFC9azWa1shV82XRiy5MZ+5T8F3Rh0oNVV0bdGnJjv6sBn65bWvTskMFD3wZeW3hm4smNj2aeWvlu2L1lL+/avGZg5NGdD8feXftvrMXFr8Yd27V11ul1v6Yd/rN68tnlu6/bOb/+C1Ce9zH/D+B3AQ5IoHcFHhggQQguOB+DDl73YIQCSkhhgxVeqOCFCGaoYYEcdjjghyCOeGEBADs=';
-			break;
-		case 'bb3':
-			$data = 'R0lGODlhXwBrAJEAAAAAAIAAAP///wAAACH/C01hZ2ljVmlld2VyAggC/212aXDUAQAAHAAAACAAAAAEAAAADgAAAAAAAIAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACIiIiIiIiIiIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiAiIiIiIiIiAiIiIiICIiIiIiIiIiICIiIiIgIiIiIiIiIiIgIiIiIiAiIiIiIiIiIiAiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiEiICIiIiIiIiIiIiIiEiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIv8iIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIgAAAAAAAAAAAAAAAAACIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiIiIiIiIiICIiIiIiIiIiIiIiIiIgIiIiIiIiIiIiIiIiIiAiIiIiIiIiAAAAAAAAAAAAAAAAAAIiIiIiIiESIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIKIiIiIiIiIiIiIgAh+QQAAAAAACwAAAAAXwBrAAAC/5SPqcvtD2MCtNqLs968+08ZgMSMpGKeSKqKbnuwrazSp2mLeQzz5f7q4RohBxCyKxJ7r+Tx+HBGmYLhb8qUGqnW2McnnHyDsK7OAy6L0eRZW7zNGoHQOJ3OncfDVf1SToQHeLenFljo1nf4x3fFaEj4mOhYkqdIuVAnCbd58+Yl2IiilGnpFGqYSYpiGog6Ofpa8+mFOLtYOeiXKzpq63nJWwrYmZaoKQyrfAvS7PwMPYY83HvLN81KnAppWQ183b29DIw9wRCAnp5sza19gI4An+1NYqasnoBvzH4cLhDgAOAKf8zCyTsnkJaEcgODwUrYACLDfeQMQpBIsKI2iP/nGtJbqDACC44LMLoruPGiR3EoRZFUYPKjyJBI4qmkWK9VygcxWWp0eZMmFnA7A64cl9Mhu5f5jvJruY2pTZwgdRWN6PQbpGgaAnjwyjXsBqGFpL7LmpQoUJ5oq6qNGlSp1n5XO1KdaXWt0bs188Jly3doO71YA/9KOpGMWQM9kVZNHGzxv7Z43z6MCzkz2UeSGz/9+Xfv5nWgLwMeTW1w6MKo56k2LVpu2tdLMWdEbPG0bLe0tXam3Ndybd2a/cJmvbty79m/DRd7nDt28WtiL4DlcL26dnvDpd+GXrckcMF0Cdttbc54d+TTl/Nujn68nejsv+NtDz95cPfK87eeL7/aefqRB9VxAv5X4HoH2tcXfradVJqC4jlHGm7hwSTfc/fRtyCEFpo3YXwUDuMgcQxiUaJ3HoIHIoYjugaggSEOeBiLAc6IYIS+PShTg9tRkF1XP25HhYBGFolkklNNmJBkSj4ZVz7pTAlllT1INSWVVm5JgllZOsllmF5qGWaZsSFkZprIoalmm0u6CWeUcc7pIp12NnVnnnoyUQAAOw==';
-			break;
-	}
-
-	if ( $data ) {
-		return $base64 ? $data : base64_decode($data);
-	}
 }
