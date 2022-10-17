@@ -45,6 +45,9 @@ $thumbsRange = count($thumbs) - 1;
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="theme-color" content="#333" />
+<link rel="icon" type="image/png" href="favicon-128.png" sizes="128x128" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 <meta charset="utf-8" />
 <title><?= strtoupper($_SERVER['HTTP_HOST']) ?></title>
 <style>
