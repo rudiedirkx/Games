@@ -260,6 +260,15 @@ class Game {
 		return int;
 	}
 
+	static randomB64(length) {
+		const source = this._b64();
+		const chars = new Array(length);
+		for ( let i = 0; i < length; i++ ) {
+			chars[i] = source[parseInt(Math.random() * source.length)];
+		}
+		return chars.join('');
+	}
+
 	static _b64() {
 		if (!Game._b64chars) {
 			const chars = [];

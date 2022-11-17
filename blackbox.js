@@ -3,6 +3,7 @@ class Blackbox extends GridGame {
 	reset() {
 		super.reset();
 
+		this.seed = '';
 		this.beams = [];
 	}
 
@@ -12,12 +13,15 @@ class Blackbox extends GridGame {
 		this.m_objGrid.getElements('td.grid').removeClass('atom').removeClass('hilite').removeClass('impossible').removeClass('beam');
 	}
 
-	createMap() {
+	createMap(seed) {
 		this.reset();
 		this.resetMap();
 
+		this.seed = seed || Game.randomB64(40);
+		const rng = new Math.seedrandom(this.seed);
+
 		const coords = this.makeAllCoords();
-		coords.sort(() => Math.random() > 0.5 ? 1 : -1);
+		coords.sort(() => rng() > 0.5 ? 1 : -1);
 		coords.slice(0, Blackbox.ATOMS).forEach(C => this.m_objGrid.rows[C.y].cells[C.x].addClass('atom'));
 
 		// this.m_objGrid.addClass('show-atoms');

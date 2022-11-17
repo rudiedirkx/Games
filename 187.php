@@ -16,6 +16,7 @@ require __DIR__ . '/inc.bootstrap.php';
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('blackbox.js') ?>"></script>
+<script src="<?= html_asset('js/seedrandom.js') ?>"></script>
 </head>
 
 <body style="padding: 8px">
