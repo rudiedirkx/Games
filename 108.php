@@ -11,7 +11,7 @@ define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
 <title>DEFEND YOUR CASTLE</title>
 <script>
 if (top.location!=this.location)
-	top.location='<?=$_SERVER[SCRIPT_NAME]?>';
+	top.location='<?= $_SERVER['SCRIPT_NAME'] ?>';
 </script>
 </head>
 

@@ -11,7 +11,7 @@ define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
 <title>JAVACAVE</title>
 <script>
 if (top.location!=this.location)
-	top.location='<?=$_SERVER[SCRIPT_NAME]?>';
+	top.location='<?= $_SERVER['SCRIPT_NAME'] ?>';
 </script>
 <style>
 body { cursor:default;background-color:#999999;color:#ffffff;font-family:century gothic;font-size:15px; }

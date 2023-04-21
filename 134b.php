@@ -54,7 +54,7 @@ td[data-chosen="1"]:after,
 <script src="<?= html_asset("tictactoe.js") ?>"></script>
 </head>
 
-<body class="<?= $bodyClass ?>">
+<body>
 
 <table>
 	<tbody id="grid">
