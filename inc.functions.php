@@ -15,7 +15,7 @@ function is_debug_ip() {
 }
 
 function is_mobile() {
-	return is_int(stripos($_SERVER['HTTP_USER_AGENT'], 'mobile'));
+	return is_int(stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'mobile'));
 }
 
 function get_best_moves(db_generic $db, int $game) : array {

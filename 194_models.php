@@ -236,7 +236,7 @@ class Game extends Model {
 	}
 
 	protected function get_dice_array() {
-		return json_decode($this->dice, true) ?: new stdClass;
+		return $this->dice ? json_decode($this->dice, true) ?: new stdClass;
 	}
 
 	protected function get_url() {
@@ -467,7 +467,7 @@ class Player extends Model {
 	protected function get_board_state() {
 		$map = array_map(fn($line) => strtolower(str_replace(' ', '', $line)), $this->game->map);
 		$map = str_split(implode('', $map));
-		foreach (str_split($this->board) as $i => $done) {
+		foreach (str_split($this->board ?? '') as $i => $done) {
 			if ($done === 'x') {
 				$map[$i] = strtoupper($map[$i]);
 			}
