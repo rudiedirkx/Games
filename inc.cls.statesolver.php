@@ -23,7 +23,7 @@ class StateSolver
 	protected $_ready;
 
 	// Constructor
-	public function __construct($sudoku)
+	public function __construct(array $sudoku)
 	{
 		// Single level array (keys 0 through 80)
 		$this->sudoku = $sudoku;
@@ -81,6 +81,7 @@ class StateSolver
 		{
 			// Get the corresponding candidatelists
 			$this->_getCandidateLists($this->_emptyCells[$eIndex], $column, $row, $region);
+// echo "[$column, $row, $region]\n";
 
 			// Check if $i occurs in all three candidatelists
 			for ($i = 1; $i < 10; $i++)
@@ -88,6 +89,7 @@ class StateSolver
 				if ($this->_isCandidate($this->_candidates[$column], $i) && $this->_isCandidate($this->_candidates[$row], $i) && $this->_isCandidate($this->_candidates[$region], $i))
 				{
 					// Suitable candidate found, use it!
+// echo "find " . $this->_emptyCells[$eIndex] . " = $i\n";
 					$this->sudoku[$this->_emptyCells[$eIndex]] = $i;
 
 					// Exclude this number from the candidatelists
@@ -107,6 +109,8 @@ class StateSolver
 						return;
 
 					// Reset the cell
+// echo "reset " . $this->_emptyCells[$eIndex] . "\n";
+// dd($this);
 					$this->sudoku[$this->_emptyCells[$eIndex]] = 0;
 
 					// Put the candidates back in the lists
@@ -127,8 +131,8 @@ class StateSolver
 	protected function _getCandidateLists($position, &$column, &$row, &$region)
 	{
 		$column = $position % 9;
-		$row = floor(9 + $position / 9);
-		$region = floor(18 + floor($column / 3) + 3 * floor(($row - 9) / 3));
+		$row = (int) floor(9 + $position / 9);
+		$region = (int) floor(18 + floor($column / 3) + 3 * floor(($row - 9) / 3));
 	}
 
 	// Excludes a number from the list of candidates

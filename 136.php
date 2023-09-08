@@ -4,6 +4,8 @@
 require __DIR__ . '/inc.bootstrap.php';
 require __DIR__ . '/inc.db.php';
 
+require __DIR__ . '/inc.cls.statesolver.php';
+
 define( "BASEPAGE",	basename($_SERVER['SCRIPT_NAME']) );
 define( "EOL",		defined('PHP_EOL') ? PHP_EOL : "\n" );
 
@@ -97,13 +99,11 @@ input::-webkit-inner-spin-button {
 <?php
 
 if ( isset($_GET['play']) ) {
-	$inhoud = $db->select_one('sudoku', 'inhoud', array('type' => 9, 'id' => $_GET['play']));
-	$arrSudoku = explode(',', $inhoud);
-	if ( !empty($_GET['solution']) ) {
-		$arrSudoku = De_Oplossing_In_Array($arrSudoku);
-	}
+	$inhoud = explode(',', $db->select_one('sudoku', 'inhoud', array('type' => 9, 'id' => $_GET['play'])));
+	$vakje = array_values(array_map(intval(...), $inhoud));
+	$solution = De_Oplossing_In_Array($vakje);
 
-	printSudokuField($arrSudoku);
+	printSudokuField($vakje);
 }
 else {
 	printSudokuField();
@@ -116,7 +116,7 @@ else {
 <tr><th colspan="3">Play existing Sudoku:</td></tr>
 <?php
 
-$q = $db->fetch("SELECT * FROM sudoku WHERE 0 < oplosbaar AND 9 = type ORDER BY graad ASC, time DESC");
+$q = $db->fetch("SELECT * FROM sudoku WHERE 0 < oplosbaar AND 9 = type ORDER BY id DESC");
 foreach ( $q as $r ) {
 	echo '<tr>';
 	echo '<td align="right">' . $r['id'] . '</td>';
@@ -249,179 +249,3 @@ function De_Oplossing_In_Array($sudoku) {
 	$stateSolver->findSolution();
 	return $stateSolver->sudoku;
 }
-
-
-
-class StateSolver
-{
-	/////////////////////////
-	/// PUBLIC ATTRIBUTES ///
-	/////////////////////////
-
-	// Holds the sudoku puzzel as an array
-	// public
-	var $sudoku;
-
-	//////////////////////////
-	/// PRIVATE ATTRIBUTES ///
-	//////////////////////////
-
-	// Holds the 27 candidatelists as an array
-	// private
-	var $_candidates;
-
-	// Holds the list of empty cells as an array
-	// private
-	var $_emptyCells;
-
-	// Determines whether or not the algorithm has found a solution
-	// private
-	var $_ready;
-
-	////////////////////
-	/// CONSTRUCTORS ///
-	////////////////////
-
-	function __construct($sudoku)
-	// public
-	{
-		$this->sudoku = $sudoku;
-	}
-
-	//////////////////////
-	/// PUBLIC METHODS ///
-	//////////////////////
-
-	// Initialize the solving algorithm
-	// public
-	function findSolution()
-	{
-		$column = 0;
-		$row = 0;
-		$region = 0;
-		$eIndex = 0;
-
-		// Fill the candidatelists with all 9 bits set
-		for ($i = 0; $i < 27; $i++)
-		{
-			$this->_candidates[$i] = 511;
-		}
-
-		// Exclude invalid candidates and get empty cells
-		for ($i = 0; $i < 81; $i++)
-		{
-			if ($this->sudoku[$i] == 0)
-			{
-				// Add this empty cell to the list
-				$this->_emptyCells[$eIndex++] = $i;
-			}
-			else
-			{
-				// Exclude this number from the candidatelists
-				$this->_getCandidateLists($i, $column, $row, $region);
-
-				$this->_exclude($this->_candidates[$column], $this->sudoku[$i]);
-				$this->_exclude($this->_candidates[$row], $this->sudoku[$i]);
-				$this->_exclude($this->_candidates[$region], $this->sudoku[$i]);
-			}
-		}
-
-		// Set the ready flag to false
-		$this->_ready = false;
-
-		// Run the recursive backtracking algorithm
-		$this->_solve(0);
-	}
-
-	///////////////////////
-	/// PRIVATE METHODS ///
-	///////////////////////
-
-	// Recursive backtracking solver
-	// private
-	function _solve($eIndex)
-	{
-		$column = 0;
-		$row = 0;
-		$region = 0;
-
-		// See if haven't reached the end of the pattern
-		if ($eIndex < count($this->_emptyCells))
-		{
-			// Get the corresponding candidatelists
-			$this->_getCandidateLists($this->_emptyCells[$eIndex], $column, $row, $region);
-
-			// Check if $i occurs in all three candidatelists
-			for ($i = 1; $i < 10; $i++)
-			{
-				if ($this->_isCandidate($this->_candidates[$column], $i) && $this->_isCandidate($this->_candidates[$row], $i) && $this->_isCandidate($this->_candidates[$region], $i))
-				{
-					// Suitable candidate found, use it!
-					$this->sudoku[$this->_emptyCells[$eIndex]] = $i;
-
-					// Exclude this number from the candidatelists
-					$this->_exclude($this->_candidates[$column], $i);
-					$this->_exclude($this->_candidates[$row], $i);
-					$this->_exclude($this->_candidates[$region], $i);
-
-					// Don't advance if a solution has been found
-					if ($this->_ready)
-						return;
-
-					// Advance to the next cell
-					$this->_solve($eIndex + 1);
-
-					// Don't revert if a solution has been found
-					if ($this->_ready)
-						return;
-
-					// Reset the cell
-					$this->sudoku[$this->_emptyCells[$eIndex]] = 0;
-
-					// Put the candidates back in the lists
-					$this->_include($this->_candidates[$column], $i);
-					$this->_include($this->_candidates[$row], $i);
-					$this->_include($this->_candidates[$region], $i);
-				}
-			}
-		}
-		else
-		{
-			// A solution has been found, get out of recursion
-			$this->_ready = true;
-		}
-	}
-
-	// Obtains the corresponding candidatelist indices
-	// private
-	function _getCandidateLists($position, &$column, &$row, &$region)
-	{
-		$column = $position % 9;
-		$row = floor(9 + $position / 9);
-		$region = floor(18 + floor($column / 3) + 3 * floor(($row - 9) / 3));
-	}
-
-	// Excludes a number from the list of candidates
-	// private
-	function _exclude(&$bitSet, $bit)
-	{
-		$bitSet &= ~(1 << $bit -1);
-	}
-
-	// Includes a number into the list of candidates
-	// private
-	function _include(&$bitSet, $bit)
-	{
-		$bitSet |= (1 << $bit - 1);
-	}
-
-	// Determines if number occurs in the specified list of candidates
-	// private
-	function _isCandidate($bitSet, $bit)
-	{
-		return (($bitSet & (1 << $bit - 1)) == 0) ? false : true;
-	}
-}
-
-
-?>
