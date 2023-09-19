@@ -236,7 +236,7 @@ class Game extends Model {
 	}
 
 	protected function get_dice_array() {
-		return $this->dice ? json_decode($this->dice, true) ?: new stdClass;
+		return $this->dice ? json_decode($this->dice, true) : new stdClass;
 	}
 
 	protected function get_url() {
