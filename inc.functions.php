@@ -1,5 +1,7 @@
 <?php
 
+use Wikimedia\IPSet;
+
 define('THUMB_SIZE', 91);
 
 function get_ip() {
@@ -11,7 +13,11 @@ function is_local() {
 }
 
 function is_debug_ip() {
-	return defined('DEBUG_IPS') && in_array(get_ip(), DEBUG_IPS);
+	if (defined('DEBUG_IPS') && ($ip = get_ip())) {
+		$set = new IPSet(DEBUG_IPS);
+		return $set->match($ip);
+	}
+	return false;
 }
 
 function is_mobile() {

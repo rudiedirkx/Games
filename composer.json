@@ -3,7 +3,8 @@
     "type": "project",
     "require": {
         "rdx/db": "^1.24",
-        "symfony/var-dumper": "^6.0"
+        "symfony/var-dumper": "^6.0",
+        "wikimedia/ip-set": "^4.0"
     },
     "autoload": {
         "files": ["inc.functions.php"]
