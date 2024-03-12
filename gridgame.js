@@ -799,7 +799,8 @@ class GridGame extends Game {
 	}
 
 	getCell( coord ) {
-		return this.m_objGrid.rows[coord.y] && this.m_objGrid.rows[coord.y].cells[coord.x];
+		return this.m_objGrid.querySelector(`tr:nth-child(${coord.y + 1}) > td:nth-child(${coord.x + 1})`)
+		// return this.m_objGrid.rows[coord.y] && this.m_objGrid.rows[coord.y].cells[coord.x];
 	}
 
 	getNextCell( coord, dir ) {

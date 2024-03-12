@@ -92,6 +92,7 @@ if (!$player) {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="og:description" content="Options: <?= do_html($game->options_label ?: 'normal') ?>" />
 		<link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
+		<script>window.onerror = function(er,b,c,d) { alert(er+'\n\nin file '+b+'\n\non line '+c); };</script>
 		<body class="<?= $game->show_scores ? 'show-scores' : '' ?>" style="--color: <?= $boards[$game->board]['color'] ?>; --text: <?= $boards[$game->board]['text'] ?? '#fff' ?>">
 
 		<h1>Keer Op Keer MULTIPLAYER</h1>

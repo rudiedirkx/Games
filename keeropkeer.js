@@ -133,7 +133,7 @@ class KeerOpKeer extends GridGame {
 		const sel = choosing ? '.chosen, .choosing' : '.chosen';
 		const adj = Coords2D.dir4Coords.find(O => {
 			const cell = this.getCell(O.add(C));
-			return cell && cell.is(sel);
+			return cell && cell.matches(sel);
 		});
 		return adj != null;
 	}
