@@ -442,7 +442,8 @@ class KeerOpKeer extends GridGame {
 
 class MultiKeerOpKeer extends KeerOpKeer {
 
-	static STATUS_REQUEST_MS = 1100;
+	static STATUS_REQUEST_MS = 900;
+	static STATUS_REQUEST_ALWAYS_MS = 5000;
 
 	static GAME_SHOW_SCORES = 1;
 
@@ -486,13 +487,16 @@ class MultiKeerOpKeer extends KeerOpKeer {
 
 	startPollingStatus() {
 		const poll = () => {
-			if (!document.hidden && this.lastPoll < Date.now() - MultiKeerOpKeer.STATUS_REQUEST_MS) {
+			if (this.lastPoll < Date.now() - (document.hidden ? MultiKeerOpKeer.STATUS_REQUEST_ALWAYS_MS : MultiKeerOpKeer.STATUS_REQUEST_MS)) {
 				this.lastPoll = Date.now();
 				this.fetchStatus();
 			}
-			requestAnimationFrame(poll);
 		};
-		setTimeout(poll, 300);
+		setTimeout(() => {
+			poll();
+			requestAnimationFrame(poll);
+		}, 300);
+		setInterval(poll, 1000);
 	}
 
 	fetchStatus() {
@@ -602,11 +606,18 @@ console.log('no reload, but update', rsp);
 			});
 		}
 
+		this.updateFavicon();
+
 		this.lastStatus = status;
 	}
 
 	hasChanged(status, key) {
 		return status[key] && (!this.lastStatus || JSON.stringify(this.lastStatus[key]) != JSON.stringify(status[key]));
+	}
+
+	updateFavicon() {
+		const icon = $('button#next-turn, button#roll') ? '/favicon-hilite.ico' : '/favicon.ico';
+		$('#favicon').href = icon;
 	}
 
 	importDice(dice) {

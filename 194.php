@@ -281,6 +281,7 @@ $status = $player->getStatus();
 <title>Keer Op Keer # <?= $player->game->id ?></title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="theme-color" content="#333" />
+<link rel="icon" href="/favicon.ico" id="favicon" />
 <? include 'tpl.onerror.php' ?>
 <link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
