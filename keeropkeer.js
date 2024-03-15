@@ -489,7 +489,7 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		const poll = () => {
 			if (this.lastPoll < Date.now() - (document.hidden ? MultiKeerOpKeer.STATUS_REQUEST_ALWAYS_MS : MultiKeerOpKeer.STATUS_REQUEST_MS)) {
 				this.lastPoll = Date.now();
-				this.fetchStatus();
+				this.fetchStatus(!document.hidden);
 			}
 		};
 		setTimeout(() => {
@@ -499,12 +499,13 @@ class MultiKeerOpKeer extends KeerOpKeer {
 		setInterval(poll, 1000);
 	}
 
-	fetchStatus() {
+	fetchStatus(online = true) {
 		if (this.pollingRequest) this.pollingRequest.abort();
 
 		const $status = $('#status');
 		const hash = this.lastStatus ? $status.data('hash') : 'x';
-		this.pollingRequest = $.get(location.search + '&status=' + hash).on('done', (e, rsp) => {
+		const background = online ? '' : '&background=1';
+		this.pollingRequest = $.get(location.search + '&status=' + hash + background).on('done', (e, rsp) => {
 			this.lastPoll = Date.now();
 
 			if (!rsp) {
