@@ -193,7 +193,7 @@ Player::addHistory($player->id);
 
 if (isset($_GET['status'])) {
 	$status = $player->getStatus();
-	if (empty($_GET['background'])) $player->touch();
+	$player->touch();
 	return json_respond($status->toResponseArray($_GET['status']));
 }
 
