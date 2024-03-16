@@ -1,5 +1,20 @@
 "use strict";
 
+class WorkerInterval {
+	worker = null;
+
+	constructor(callback, interval) {
+		const blob = new Blob([`setInterval(() => postMessage(0), ${interval});`]);
+		const workerScript = URL.createObjectURL(blob);
+		this.worker = new Worker(workerScript);
+		this.worker.onmessage = callback;
+	}
+
+	stop() {
+		this.worker.terminate();
+	}
+}
+
 class KOKChallenge {
 	won() {
 		return false;
@@ -491,12 +506,9 @@ class MultiKeerOpKeer extends KeerOpKeer {
 				this.lastPoll = Date.now();
 				this.fetchStatus(!document.hidden);
 			}
-		};
-		setTimeout(() => {
-			poll();
 			requestAnimationFrame(poll);
-		}, 300);
-		setInterval(poll, 1000);
+		};
+		setInterval(poll, 300);
 	}
 
 	fetchStatus(online = true) {
