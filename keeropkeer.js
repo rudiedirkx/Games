@@ -443,7 +443,7 @@ class KeerOpKeer extends GridGame {
 class MultiKeerOpKeer extends KeerOpKeer {
 
 	static STATUS_REQUEST_MS = 900;
-	static STATUS_REQUEST_ALWAYS_MS = 5000;
+	static STATUS_REQUEST_ALWAYS_MS = 7000;
 
 	static GAME_SHOW_SCORES = 1;
 
