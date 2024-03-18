@@ -111,7 +111,7 @@ table.game {
 	color: fuchsia;
 	transition: color 200ms linear;
 }
-#status button {
+button {
 	padding: 8px 16px;
 }
 #challenge.hilite {
@@ -127,18 +127,23 @@ table.game {
 	margin-right: 1em;
 	margin-bottom: 0;
 }
-.dice-cont {
+/*.dice-cont {
 	display: flex;
-}
-.dice-cont,
+}*/
+/*.dice-cont,*/
 .dice-line:not(:empty) {
 	margin-top: 1em;
 }
-.dice-cont button {
+/*.dice-cont button {
 	height: 36px;
 	line-height: 36px;
 	padding: 0 16px;
 }
+.dice-cont button,
+.dice-cont em {
+	margin-right: 20px;
+}*/
+
 #dice {
 	user-select: none;
 	display: flex;
@@ -185,11 +190,6 @@ table.game {
 }
 #dice > .number.disabled {
 	order: 99;
-}
-
-.dice-cont button,
-.dice-cont em {
-	margin-right: 20px;
 }
 
 body.solo #next-turn > .state {

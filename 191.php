@@ -59,7 +59,7 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 			<span class="state end">End game</span>
 			<span class="state restart">New game</span>
 		</button>
-		<span id="dice"></span>
+		<div id="dice" class="dice-line"></div>
 	</p>
 
 	<p id="challenge"></p>

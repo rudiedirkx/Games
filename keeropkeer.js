@@ -509,10 +509,17 @@ class MultiKeerOpKeer extends KeerOpKeer {
 			requestAnimationFrame(poll);
 		};
 		setInterval(poll, 300);
+		new WorkerInterval(poll, 3000);
+
+		this.webpushOpen = false;
+		setTimeout(() => this.webpushOpen = true, 2000);
 	}
 
 	fetchStatus(online = true) {
 		if (this.pollingRequest) this.pollingRequest.abort();
+
+		const dt = new Date();
+		document.title = '(' + dt.getHours() + ':' + ('0' + dt.getMinutes()).slice(-2) + ':' + ('0' + dt.getSeconds()).slice(-2) + ') ' + document.title.replace(/^[\(\):\d]+ /, '');
 
 		const $status = $('#status');
 		const hash = this.lastStatus ? $status.data('hash') : 'x';
@@ -619,7 +626,10 @@ console.log('no reload, but update', rsp);
 			});
 		}
 
-		this.updateFavicon();
+		const myTurn = $('button#next-turn, button#roll') != null;
+// console.log('myTurn', myTurn);
+		this.updateFavicon(myTurn);
+		this.pushMessage(myTurn);
 
 		this.lastStatus = status;
 	}
@@ -628,9 +638,29 @@ console.log('no reload, but update', rsp);
 		return status[key] && (!this.lastStatus || JSON.stringify(this.lastStatus[key]) != JSON.stringify(status[key]));
 	}
 
-	updateFavicon() {
-		const icon = $('button#next-turn, button#roll') ? '/favicon-hilite.ico' : '/favicon.ico';
-		$('#favicon').href = icon;
+	updateFavicon(myTurn) {
+		const icon = myTurn ? '/favicon-hilite.ico' : '/favicon.ico';
+		if ($('#favicon').attr('href') != icon) {
+			$('#favicon').href = icon;
+		}
+	}
+
+	testPushMessage() {
+		if (this.swReg && this.swReg.active) {
+			this.swReg.active.postMessage({
+				test: true,
+				game: this.gameNo,
+			});
+		}
+	}
+
+	pushMessage(myTurn) {
+		if (document.hidden && this.webpushOpen && this.swReg && this.swReg.active) {
+			this.swReg.active.postMessage({
+				turn: myTurn,
+				game: this.gameNo,
+			});
+		}
 	}
 
 	importDice(dice) {

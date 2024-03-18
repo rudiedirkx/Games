@@ -91,8 +91,8 @@ if (!$player) {
 		<style>body { font-family: sans-serif }</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="og:description" content="Options: <?= do_html($game->options_label ?: 'normal') ?>" />
+		<? include 'tpl.onerror.php' ?>
 		<link rel="stylesheet" href="<?= html_asset('keeropkeer.css') ?>" />
-		<script>window.onerror = function(er,b,c,d) { alert(er+'\n\nin file '+b+'\n\non line '+c); };</script>
 		<body class="<?= $game->show_scores ? 'show-scores' : '' ?>" style="--color: <?= $boards[$game->board]['color'] ?>; --text: <?= $boards[$game->board]['text'] ?? '#fff' ?>">
 
 		<h1>Keer Op Keer MULTIPLAYER</h1>
@@ -349,6 +349,10 @@ $status = $player->getStatus();
 	<? endif ?>
 
 	<p>Share <a href="<?= do_html($player->game->url) ?>"><?= do_html($player->game->url) ?></a> to invite players.</p>
+	<p id="enable-webpush">
+		<button>Enable push notifications</button>
+		<span>Background v<span id="sw-version">?</span></span>
+	</p>
 </div>
 
 <? if ($player->game->flag_see_all): ?>
@@ -367,6 +371,7 @@ KeerOpKeer.JOKERS = <?= json_encode(Game::MAX_JOKERS) ?>;
 KeerOpKeer.CENTER = <?= json_encode($mapCenter) ?>;
 KeerOpKeer.BOARDS = <?= json_encode($boards) ?>;
 var objGame = new MultiKeerOpKeer($('#grid'));
+objGame.gameNo = <?= $player->game->id ?>;
 objGame.startGame(
 	<?= json_encode($player->game->board) ?>,
 	<?= json_encode($player->board ?: '') ?>,
@@ -376,4 +381,37 @@ objGame.startGame(
 );
 objGame.listenControls();
 <? if ($player->game->dice): ?>objGame.importDice(<?= json_encode($player->game->dice_array) ?>);<? endif ?>
+</script>
+<script>
+navigator.serviceWorker.addEventListener('message', function(e) {
+// console.log('message', e);
+	if (e.data && e.data.version) {
+		$('#sw-version').setText(e.data.version);
+	}
+});
+navigator.serviceWorker.register('/194.js').then(async function(reg) {
+// console.log(reg, reg.active, reg.installing);
+	// const sub = await reg.pushManager.getSubscription();
+// console.log(sub);
+	(reg.active || reg.installing).postMessage({
+		version: true,
+	});
+
+// alert(Notification.permission);
+	if (Notification.permission == 'granted') {
+		objGame.swReg = reg;
+		$('#enable-webpush button').hide();
+	}
+	$('#enable-webpush button').on('click', async function(e) {
+		const accepted = await Notification.requestPermission();
+		if (accepted == 'granted') {
+			objGame.swReg = reg;
+			objGame.testPushMessage();
+			$('#enable-webpush button').hide();
+		}
+		else {
+			alert(accepted);
+		}
+	});
+});
 </script>
