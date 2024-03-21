@@ -501,15 +501,17 @@ class MultiKeerOpKeer extends KeerOpKeer {
 	}
 
 	startPollingStatus() {
+// if (!window.polls) window.polls = 0;
 		const poll = () => {
+// window.polls++;
 			if (this.lastPoll < Date.now() - (document.hidden ? MultiKeerOpKeer.STATUS_REQUEST_ALWAYS_MS : MultiKeerOpKeer.STATUS_REQUEST_MS)) {
 				this.lastPoll = Date.now();
 				this.fetchStatus(!document.hidden);
 			}
-			requestAnimationFrame(poll);
+			// requestAnimationFrame(poll);
 		};
-		setInterval(poll, 300);
-		new WorkerInterval(poll, 3000);
+		// setInterval(poll, 300);
+		new WorkerInterval(poll, 300);
 
 		this.webpushOpen = false;
 		setTimeout(() => this.webpushOpen = true, 2000);
