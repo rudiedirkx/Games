@@ -76,6 +76,7 @@ table.game {
 	width: calc(var(--size) - 14px);
 	height: calc(var(--size) - 14px);
 	font-size: calc(var(--size) - 14px);
+	filter: grayscale(1);
 }
 .game .chosen:after {
 	font-weight: bold;
