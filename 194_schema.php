@@ -24,7 +24,7 @@ return [
 			'online' => ['unsigned' => true, 'default' => 0],
 			'finished_round' => ['unsigned' => true, 'null' => false, 'default' => 0],
 			'board',
-			'used_jokers' => ['unsigned' => true, 'null' => false, 'default' => 0],
+			'used_jokers',
 			'score' => ['type' => 'int', 'null' => false, 'default' => 0],
 		],
 		'keeropkeer_columns' => [
@@ -57,6 +57,16 @@ return [
 			], [
 				'see_all' => 1,
 			]);
+		},
+		'keeropkeer-2' => function($db) {
+			$db->query("
+				alter table keeropkeer_players
+				change used_jokers used_jokers varchar(255) null default null
+			");
+			$db->query("
+				update keeropkeer_players
+				set used_jokers = substr('________', 1, cast(used_jokers as unsigned))
+			");
 		},
 	],
 ];

@@ -573,6 +573,8 @@ console.log('no reload, but update', rsp);
 			if (jokers && plr.jokers_left != null) jokers.setText(plr.jokers_left);
 			const score = $(`#score-${id}`);
 			if (score && plr.score != null) score.setText(plr.score);
+			const skipped = $(`#skipped-${id}`);
+			if (skipped && plr.skipped != null) skipped.setText(plr.skipped);
 			const tr = $(`tr#plr-${id}`);
 			if (tr) {
 				if (plr.flags != null) {
@@ -702,7 +704,7 @@ console.log('no reload, but update', rsp);
 
 	importBoardState(state, container) {
 		(container || this.m_objGrid).getElements('td').forEach((td, i) => {
-			td.toggleClass('chosen', state[i] === 'x');
+			td.toggleClass('chosen', (state[i] || ' ') != ' ');
 		});
 	}
 
@@ -755,7 +757,7 @@ console.log('end turn rsp', rsp);
 				this.updateFromStatus(rsp.status);
 				this.updatePlayersFromStatus(rsp.status.players);
 			}
-			else location.reload();
+			// else location.reload();
 		});
 	}
 

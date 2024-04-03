@@ -15,6 +15,8 @@ $db->ensureSchema(require '194_schema.php');
 [$columns, $boards] = require '191_levels.php';
 $mapCenter = ceil(count($columns[0]) / 2) - 1;
 
+Game::$roundChars = [...range('A', 'Z'), ...range('a', 'z')];
+
 $player = Player::get($_GET['player'] ?? null);
 
 function printPlayersTable(Game $game, ?Player $player) {
@@ -25,6 +27,7 @@ function printPlayersTable(Game $game, ?Player $player) {
 			<th>Player</th>
 			<th class="score">Score</th>
 			<th>Jokers</th>
+			<th>Skipped</th>
 			<th></th>
 			<th align="right">Online</th>
 			<th></th>
@@ -46,7 +49,8 @@ function printPlayersTable(Game $game, ?Player $player) {
 					<span class="winner">&#127881;</span>
 				</td>
 				<td class="score"><span id="score-<?= $plr->id ?>"><?= $plr->score ?></span></td>
-				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= Game::MAX_JOKERS - $plr->used_jokers ?></span> / <?= Game::MAX_JOKERS ?></td>
+				<td nowrap><span id="jokers-left-<?= $plr->id ?>"><?= Game::MAX_JOKERS - $plr->num_used_jokers ?></span> / <?= Game::MAX_JOKERS ?></td>
+				<td class="skipped"><span id="skipped-<?= $plr->id ?>"><?= $plr->num_skipped_rounds ?></span></td>
 				<td><button class="kick" data-kick="<?= $plr->id ?>">KICK</button></td>
 				<td align="right" nowrap>
 					<? if (!$plr->is_kicked): ?>
@@ -225,11 +229,14 @@ elseif (isset($_GET['endturn'], $_POST['state'], $_POST['score'], $_POST['color'
 	if ($player->can_end_turn) {
 		$ended = $db->transaction(function($db) use ($player) {
 			$jokers = $player->getUseJokersUpdate($_POST['color'] === '?', $_POST['number'] === '0');
-			$player->update($jokers + [
+			$board = Player::addBoardDiff($player->board ?? '', $_POST['state'], $player->game->round);
+			$update = $jokers + [
 				'finished_round' => $player->game->round,
-				'board' => $_POST['state'],
+				'board' => $board,
 				'score' => $_POST['score'],
-			]);
+			];
+// dd($update);
+			$player->update($update);
 			$player->registerFullColumns($_POST['fulls']['columns'] ?? []);
 			$player->registerFullColors($_POST['fulls']['colors'] ?? []);
 
@@ -375,7 +382,7 @@ objGame.gameNo = <?= $player->game->id ?>;
 objGame.startGame(
 	<?= json_encode($player->game->board) ?>,
 	<?= json_encode($player->board ?: '') ?>,
-	<?= (int) $player->used_jokers ?>,
+	<?= $player->num_used_jokers ?>,
 	<?= json_encode($player->getOthersColumns()) ?>,
 	<?= json_encode($player->getOthersColors()) ?>,
 );

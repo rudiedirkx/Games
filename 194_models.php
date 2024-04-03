@@ -27,6 +27,8 @@ class Game extends Model {
 
 	static $_table = 'keeropkeer_games';
 
+	static public array $roundChars;
+
 	public function getActivePlayer(int $pid) : ?Player {
 		foreach ($this->active_players as $plr) {
 			if ($plr->id == $pid) {
@@ -203,7 +205,7 @@ class Game extends Model {
 				$x = $b->num_colors <=> $a->num_colors;
 				if ($x != 0) return $x;
 
-				$x = $a->used_jokers <=> $b->used_jokers;
+				$x = $a->num_used_jokers <=> $b->num_used_jokers;
 				return $x;
 			});
 		}
@@ -212,7 +214,7 @@ class Game extends Model {
 				$x = $b->score <=> $a->score;
 				if ($x != 0) return $x;
 
-				$x = $a->used_jokers <=> $b->used_jokers;
+				$x = $a->num_used_jokers <=> $b->num_used_jokers;
 				if ($x != 0) return $x;
 
 				$x = $b->num_colors <=> $a->num_colors;
@@ -284,6 +286,7 @@ class Game extends Model {
 				'password' => $password = get_random(),
 				'name' => $name,
 				'finished_round' => $this->round,
+				'used_jokers' => '',
 			]);
 			return $password;
 		});
@@ -312,6 +315,10 @@ class Game extends Model {
 			return Player::find($pid);
 		});
 	}
+
+	static public function roundChar(int $round) : string {
+		return self::$roundChars[($round - 1) % count(self::$roundChars)];
+	}
 }
 
 class Player extends Model {
@@ -320,6 +327,17 @@ class Player extends Model {
 	const HISTORY_COOKIE_NAME = 'kok_pids';
 
 	static $_table = 'keeropkeer_players';
+
+	static public function addBoardDiff(string $from, string $to, int $round) : string {
+		$roundChar = Game::roundChar($round);
+		$length = max(strlen($from), strlen($to));
+		for ($i = 0; $i < $length; $i++) {
+			if (($to[$i] ?? ' ') != ' ' && ($from[$i] ?? ' ') == ' ') {
+				$from[$i] = $roundChar;
+			}
+		}
+		return $from;
+	}
 
 	public function kick() {
 		$this->update([
@@ -445,8 +463,9 @@ class Player extends Model {
 
 	public function getUseJokersUpdate(bool $color, bool $number) : array {
 		if ($color || $number) {
+			$roundChar = Game::roundChar($this->game->round);
 			return [
-				'used_jokers' => $this->used_jokers + intval($color) + intval($number),
+				'used_jokers' => $this->used_jokers . ($color ? $roundChar : '') . ($number ? $roundChar : ''),
 			];
 		}
 		return [];
@@ -464,11 +483,35 @@ class Player extends Model {
 		return $fulls;
 	}
 
+	protected function get_num_used_jokers() : int {
+		return strlen($this->used_jokers);
+	}
+
+	protected function get_num_skipped_rounds() : int {
+		return count($this->skipped_rounds);
+	}
+
+	protected function get_skipped_rounds() : array {
+		if (!$this->finished_round) return [];
+
+		$currentChar = Game::roundChar($this->finished_round);
+		$skipped = [];
+		foreach (Game::$roundChars as $i => $roundChar) {
+			if (!str_contains($this->board, $roundChar)) {
+				$skipped[] = $i + 1;
+			}
+
+			if ($currentChar == $roundChar) break;
+		}
+
+		return $skipped;
+	}
+
 	protected function get_board_state() {
 		$map = array_map(fn($line) => strtolower(str_replace(' ', '', $line)), $this->game->map);
 		$map = str_split(implode('', $map));
 		foreach (str_split($this->board ?? '') as $i => $done) {
-			if ($done === 'x') {
+			if (strlen(trim($done))) {
 				$map[$i] = strtoupper($map[$i]);
 			}
 		}
@@ -579,7 +622,8 @@ class KeerStatus {
 				];
 				if ($lean) return $always;
 				return $always + [
-					'jokers_left' => Game::MAX_JOKERS - $plr->used_jokers,
+					'jokers_left' => Game::MAX_JOKERS - $plr->num_used_jokers,
+					'skipped' => $plr->num_skipped_rounds,
 					'score' => (int) $plr->score,
 					'board' => !$this->game->flag_see_all ? null : $plr->board,
 					// 'colors' => $plr->full_colors,
