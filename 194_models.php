@@ -494,7 +494,11 @@ class Player extends Model {
 	protected function get_skipped_rounds() : array {
 		if (!$this->finished_round) return [];
 
-		$currentChar = Game::roundChar($this->finished_round);
+		if (preg_match('#^[ x]*$#', $this->board ?? '')) {
+			return [];
+		}
+
+		$currentChar = Game::roundChar($this->finished_round == Game::COLOR_COMPLETE_ROUND ? $this->game->round : $this->finished_round);
 		$skipped = [];
 		foreach (Game::$roundChars as $i => $roundChar) {
 			if (!str_contains($this->board, $roundChar)) {
