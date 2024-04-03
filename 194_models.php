@@ -308,6 +308,7 @@ class Game extends Model {
 				'online' => time(),
 				'password' => get_random(),
 				'name' => $playerName,
+				'used_jokers' => '',
 			]);
 
 			Game::updateAll(['turn_player_id' => $pid], ['id' => $gid]);
