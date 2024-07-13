@@ -15,6 +15,7 @@ Minesweeper.prototype = {
 				alert(rsp ? rsp.error : this.responseText);
 				return;
 			}
+console.log(rsp);
 
 			self.m_szField = f_field;
 			self.m_bGameOver = false;
@@ -34,9 +35,13 @@ Minesweeper.prototype = {
 				}
 				html += '</tr>';
 			}
-			$('#ms_tbody').innerHTML = html;
+			const tb = $('#ms_tbody');
+			tb.innerHTML = html;
+			tb.fire('ms:fetch');
 
-			$('#ms_tbody').fire('ms:fetch');
+			const sizer = tb.closest('.sizer');
+			sizer.style.setProperty('--size-x', rsp.size.x);
+			sizer.style.setProperty('--size-y', rsp.size.y);
 		});
 		return false;
 	},

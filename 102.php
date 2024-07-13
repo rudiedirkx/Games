@@ -220,9 +220,11 @@ div#loading {
 		<table id="field" style="border:solid 1px #777;"><tr><td class="wrap">
 			<table style="border:solid 10px #bbb;"><tr><td class="wrap">
 				<table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td class="wrap">
-					<table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;"><tbody id="ms_tbody">
-						<!-- tiles here -->
-					</tbody></table>
+					<div class="sizer">
+						<table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;"><tbody id="ms_tbody">
+							<!-- tiles here -->
+						</tbody></table>
+					</div>
 				</td></tr></table>
 			</td></tr></table>
 		</td></tr></table>

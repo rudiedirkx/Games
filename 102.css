@@ -43,6 +43,10 @@ table#field,
 #field td {
 	padding: 0;
 }
+.sizer {
+	width: calc(var(--size-x)* var(--inside-cell));
+	height: calc(var(--size-y)* var(--inside-cell));
+}
 #ms_tbody td {
 	width: var(--inside-cell);
 	height: var(--inside-cell);
