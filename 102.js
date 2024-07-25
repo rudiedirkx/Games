@@ -129,6 +129,11 @@ console.log(rsp);
 			return;
 		}
 
+		document.body.addClass('blip');
+		setTimeout(function() {
+			document.body.removeClass('blip');
+		}, 100);
+
 		o.toggleClass('f');
 		if ( o.hasClass('f') ) {
 			o.removeClass('ow').removeClass('n');

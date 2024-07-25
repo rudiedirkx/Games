@@ -10,6 +10,17 @@ body {
 	min-height: 100vh;
 }
 
+body.blip {
+	background-color: #ddd;
+}
+body.blip #left,
+body.blip #right {
+	background-color: #ccc;
+}
+body.blip #content {
+	opacity: 0.8;
+}
+
 #container {
 	display: flex;
 	flex-direction: column;
