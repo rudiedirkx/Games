@@ -170,6 +170,7 @@ if ( $_SERVER['REQUEST_METHOD'] != 'GET' ) {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title><?= $title ?></title>
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+<script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('102.js') ?>"></script>
 <link rel="stylesheet" href="<?= html_asset('102.css') ?>" />
 <style>

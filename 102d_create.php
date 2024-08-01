@@ -121,7 +121,7 @@ String.repeat = function(str, num) {
 							echo '<tr>' . "\n";
 							echo '<!-- ADD: left -->' . "\n";
 							for ( $x=0; $x<$g_arrSides[1]; $x++ ) {
-								$tileIndex = $arrMap && isset($arrMap[$y][$x]) && $arrMap[$y][$x] != ' ' ? $arrMap[$y][$x] : -1;
+								$tileIndex = $arrMap && isset($arrMap[$y][$x]) && is_numeric($arrMap[$y][$x]) ? $arrMap[$y][$x] : -1;
 								$tileClass = $tileIndex > -1 ? 'o' . $tileIndex : '';
 								echo '<td data-tile="' . $tileIndex . '" class="' . $tileClass . '" title="[' . $x . ', ' . $y . ']"></td>';
 							}

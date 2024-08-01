@@ -19,9 +19,10 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 <head>
 	<title>MS 2c - Test - Board Analysis</title>
 	<link rel="stylesheet" href="102.css" />
-	<script src="js/rjs-custom.js"></script>
-	<script src="102.js"></script>
-	<script src="102c.js"></script>
+	<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
+	<script src="<?= html_asset('gridgame.js') ?>"></script>
+	<script src="<?= html_asset('102.js') ?>"></script>
+	<script src="<?= html_asset('102c.js') ?>"></script>
 </head>
 
 <body>
