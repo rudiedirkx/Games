@@ -8,6 +8,8 @@
 html,
 body {
 	min-height: 100vh;
+	min-width: 100%;
+	width: fit-content;
 }
 
 body.blip {

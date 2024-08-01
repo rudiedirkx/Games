@@ -19,6 +19,7 @@ console.log(rsp);
 
 			self.m_szField = f_field;
 			self.m_bGameOver = false;
+			self.m_iGameOverTime = 0;
 			self.m_iMines = rsp.mines;
 			self.m_arrFlags = [];
 
@@ -92,6 +93,7 @@ console.log(rsp);
 
 			if ( rsp.gameover ) {
 				self.m_bGameOver = true;
+				self.m_iGameOverTime = Date.now();
 				self.m_arrFlags = $$('#ms_tbody td.f');
 			}
 
@@ -146,7 +148,9 @@ console.log(rsp);
 	},
 
 	restart: function() {
-		return this.fetchMap(this.m_szField);
+		if ( !this.m_iGameOverTime || Date.now() - this.m_iGameOverTime > 1000 ) {
+			this.fetchMap(this.m_szField);
+		}
 	},
 
 	export: function(success, error) {
