@@ -299,7 +299,7 @@ this.mf_Trace('findPatterns(' + pattern.join(', ') + ')');
 		const addLeft = Coords2D.dir4Coords[(P.dir - 1 + 4) % 4];
 		const leftCoords = P.coords.map(C => C.add(addLeft));
 		const leftTiles = leftCoords.map(C => this.mf_GetTile(C.x, C.y));
-		if (!leftTiles.every(tile => tile == 0)) {
+		if (!leftTiles.every(tile => tile > -1)) {
 			return false;
 		}
 

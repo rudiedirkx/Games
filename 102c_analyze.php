@@ -60,7 +60,7 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	</td></tr></table>
 </td></tr></table>
 
-<div style="margin: 10px; margin-top: 0">
+<div>
 	<p>
 		<input type="button" value="SaveMinesThisRound()" onclick="solver.mf_SaveMinesThisRound()" />
 		<input type="button" value="SaveMinesThisRound() + mark all" onclick="solver.mf_SaveThisRoundAndMarkAll(), solver.mf_ResetTrace()" />
