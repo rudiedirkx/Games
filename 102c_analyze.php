@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/inc.bootstrap.php';
+
 $g_arrMaps = require 'inc.102.maps.php';
 
 $iMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $_GET['map'] : 0;
@@ -18,7 +20,7 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 
 <head>
 	<title>MS 2c - Test - Board Analysis</title>
-	<link rel="stylesheet" href="102.css" />
+	<link rel="stylesheet" href="<?= html_asset('102.css') ?>" />
 	<script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 	<script src="<?= html_asset('gridgame.js') ?>"></script>
 	<script src="<?= html_asset('102.js') ?>"></script>

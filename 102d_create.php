@@ -1,5 +1,7 @@
 <?php
 
+require __DIR__ . '/inc.bootstrap.php';
+
 $g_arrMaps = require 'inc.102.maps.php';
 
 $g_arrSides = array(16, 30);

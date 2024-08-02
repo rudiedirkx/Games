@@ -172,6 +172,7 @@ if ( $_SERVER['REQUEST_METHOD'] != 'GET' ) {
 <script src="<?= html_asset('js/rjs-custom.js') ?>"></script>
 <script src="<?= html_asset('gridgame.js') ?>"></script>
 <script src="<?= html_asset('102.js') ?>"></script>
+<script src="<?= html_asset('102c.js') ?>"></script>
 <link rel="stylesheet" href="<?= html_asset('102.css') ?>" />
 <style>
 * {
@@ -193,7 +194,6 @@ div#loading {
 	color: #fff;
 }
 </style>
-<script src="/102c.js"></script>
 </head>
 
 <body>
