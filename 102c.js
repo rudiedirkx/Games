@@ -1,4 +1,108 @@
 
+class Pattern {
+	constructor(pattern) {
+		this.pattern = pattern;
+	}
+
+	/*public*/ find(solver) {
+		return [];
+	}
+
+	/*public*/ mark(solver, found) {
+	}
+
+	/*protected*/ isClosedIfFree(solver, found) {
+		found.closeds = solver.getClosedIfFree(found);
+		return found.closeds != null;
+	}
+
+	/*protected*/ isMapEdge(solver, found) {
+		const D = Coords2D.dir4Coords[found.dir];
+		const edge = found.coords[0];
+		const next = edge.subtract(D);
+		const nextTile = solver.mf_GetTile(next.x, next.y);
+		return nextTile === false;
+	}
+
+	/*protected*/ markKnowns(solver, found, knowns) {
+		for (var i = 0; i < found.closeds.length; i++) {
+			if (this.knowns[i] != null) {
+				solver.m_arrKnowns[found.closeds[i].join('_')] = this.knowns[i];
+			}
+		}
+	}
+}
+
+class ClosedIfFreePattern extends Pattern {
+	constructor(pattern, knowns) {
+		super(pattern);
+		this.knowns = knowns;
+	}
+
+	find(solver) {
+		const founds0 = solver.findPatterns(this.pattern);
+		const founds = founds0.filter(found => {
+			return this.isClosedIfFree(solver, found);
+		});
+		return founds;
+	}
+
+	mark(solver, found) {
+		this.markKnowns(solver, found, this.knowns);
+	}
+}
+
+class StartAndClosedIfFreePattern extends Pattern {
+	constructor(pattern, knowns) {
+		super(pattern);
+		this.knowns = knowns;
+	}
+
+	find(solver) {
+		const founds0 = solver.findPatterns(this.pattern);
+		const founds = founds0.filter(found => {
+			return this.isMapEdge(solver, found) && this.isClosedIfFree(solver, found);
+		});
+		return founds;
+	}
+
+	mark(solver, found) {
+		this.markKnowns(solver, found, this.knowns);
+	}
+}
+
+class ClosedOpposite232Pattern extends Pattern {
+	constructor() {
+		super([2, 3, 2]);
+		this.knowns = [1, 0, 1];
+	}
+
+	find(solver) {
+		const founds0 = solver.findPatterns(this.pattern);
+		const founds = founds0.filter(found => {
+			return this.is232Pattern(solver, found);
+		});
+		return founds;
+	}
+
+	is232Pattern(solver, found) {
+		const sides = solver.getPatternSides(found);
+		const rightTilesClosed = sides.rightTiles.every(tile => tile == -1);
+		if (rightTilesClosed) {
+			found.closeds = sides.rightCoords;
+			if (sides.leftTiles[0] > 0 && sides.leftTiles[1] == -1 && sides.leftTiles[2] > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	mark(solver, found) {
+		this.markKnowns(solver, found, this.knowns);
+	}
+}
+
 class FoundPattern {
 	constructor(coords, dir) {
 		this.coords = coords;
@@ -6,14 +110,30 @@ class FoundPattern {
 	}
 }
 
+class FoundPatternSides {
+	constructor(leftCoords, leftTiles, rightCoords, rightTiles) {
+		this.leftCoords = leftCoords;
+		this.leftTiles = leftTiles;
+		this.rightCoords = rightCoords;
+		this.rightTiles = rightTiles;
+	}
+}
+
 class MinesweeperSolver {
 
 	static autoClickDelay = 0;
-	static DEBUG = 2;
+	static DEBUG = 0;
 
 	constructor(table, sweeper) {
 		this.m_table = table;
 		this.m_objMinesweeper = sweeper;
+
+		this.patterns = [
+			new ClosedIfFreePattern([1, 2, 1], [1, 0, 1]),
+			new ClosedIfFreePattern([1, 2, 2, 1], [0, 1, 1, 0]),
+			new StartAndClosedIfFreePattern([1, 1, 9], [null, null, 0]),
+			new ClosedOpposite232Pattern(),
+		];
 
 		this.resetProps();
 	}
@@ -208,44 +328,27 @@ this.mf_Trace('mf_SaveMinesThisRound');
 			}
 		}
 
-		// Found some mines!
+		// Found some certains!
 		var iFoundMines = this.mf_FilterKnowns(1).length - iOldMines;
+		var iFoundNonos = this.mf_FilterKnowns(0).length - iOldNonos;
 
-		if ( iFoundMines == 0 ) {
+		if ( iFoundMines == 0 && iFoundNonos == 0 ) {
+			console.log('Found nothing with simple analysis, but advanced:');
+
 			// Advanced 1: patterns
-			var patterns;
-
-			// pattern 1: 1 2 1
-			patterns = this.findPatterns([1, 2, 1]);
-			for (var i = 0; i < patterns.length; i++) {
-				const P = patterns[i];
-				const closeds = this.getClosedIfFree(P);
-				if (closeds) {
-					this.m_arrKnowns[closeds[0].join('_')] = 1;
-					this.m_arrKnowns[closeds[1].join('_')] = 0;
-					this.m_arrKnowns[closeds[2].join('_')] = 1;
-				}
-			}
-
-			// pattern 1: 1 2 2 1
-			patterns = this.findPatterns([1, 2, 2, 1]);
-			for (var i = 0; i < patterns.length; i++) {
-				const P = patterns[i];
-				const closeds = this.getClosedIfFree(P);
-				if (closeds) {
-					this.m_arrKnowns[closeds[0].join('_')] = 0;
-					this.m_arrKnowns[closeds[1].join('_')] = 1;
-					this.m_arrKnowns[closeds[2].join('_')] = 1;
-					this.m_arrKnowns[closeds[3].join('_')] = 0;
+			for (let pattern of this.patterns) {
+				const patterns = pattern.find(this);
+				for (var i = 0; i < patterns.length; i++) {
+					pattern.mark(this, patterns[i]);
 				}
 			}
 
 			iFoundMines = this.mf_FilterKnowns(1).length - iOldMines;
+			iFoundNonos = this.mf_FilterKnowns(0).length - iOldNonos;
 		}
 
-		if ( iFoundMines ) {
+		if ( iFoundMines || iFoundNonos ) {
 			this.mf_EliminateFields();
-			var iFoundNonos = this.mf_FilterKnowns(0).length - iOldNonos;
 
 			console.log('Found', iFoundMines, 'new mines, and', iFoundNonos, 'new nonos');
 			done && done.call(this, true);
@@ -258,13 +361,16 @@ this.mf_Trace('mf_SaveMinesThisRound');
 
 	findPatterns(pattern) {
 this.mf_Trace('findPatterns(' + pattern.join(', ') + ')');
-		const isPalindrome = pattern.join('_') == pattern.reverse().join('_');
+		// const isPalindrome = pattern.join('_') == pattern.reverse().join('_');
 		const searchDirs = /*isPalindrome ? 2 :*/ 4;
 
 		const patterns = [];
-		for ( var y = 0; y < this.m_arrBoard.length; y++ ) {
-			for ( var x = 0; x < this.m_arrBoard[y].length; x++ ) {
-				if ( this.m_arrBoard[y][x] == pattern[0] ) {
+		const h = this.m_arrBoard.length;
+		const w = this.m_arrBoard[0].length;
+		for ( var y = -1; y <= h; y++ ) {
+			for ( var x = -1; x <= w; x++ ) {
+				const tile = this.m_arrBoard[y] ? (this.m_arrBoard[y][x] ?? null) : null;
+				if ( this.patternTileMatches(pattern[0], tile) ) {
 					const C = new Coords2D(x, y);
 					for (var d = 0; d < searchDirs; d++) {
 						const found = this.findPattern(pattern, C, d);
@@ -286,7 +392,7 @@ this.mf_Trace('findPatterns(' + pattern.join(', ') + ')');
 		for (var i = 1; i < pattern.length; i++) {
 			C = C.add(dirCoord);
 			const tile = this.mf_GetTile(C.x, C.y);
-			if (tile !== pattern[i]) {
+			if (!this.patternTileMatches(pattern[i], tile)) {
 				return null;
 			}
 			coords.push(C);
@@ -295,22 +401,38 @@ this.mf_Trace('findPatterns(' + pattern.join(', ') + ')');
 		return new FoundPattern(coords, dirIndex);
 	}
 
-	getClosedIfFree(P) {
-		const addLeft = Coords2D.dir4Coords[(P.dir - 1 + 4) % 4];
-		const leftCoords = P.coords.map(C => C.add(addLeft));
+	patternTileMatches(patternTile, foundTile) {
+		return foundTile === patternTile || (patternTile === 9 && foundTile > 0);
+	}
+
+	getClosedIfFree(found) {
+		const sides = this.getPatternSides(found);
+
+		const leftTilesOpen = sides.leftTiles.every(tile => tile > -1);
+		const rightTilesClosed = sides.rightTiles.every(tile => tile == -1);
+		if (leftTilesOpen && rightTilesClosed) {
+			return sides.rightCoords;
+		}
+
+		const leftTilesClosed = sides.leftTiles.every(tile => tile == -1);
+		const rightTilesOpen = sides.rightTiles.every(tile => tile > -1);
+		if (leftTilesClosed && rightTilesOpen) {
+			return sides.leftCoords;
+		}
+
+		return null;
+	}
+
+	getPatternSides(found) {
+		const addLeft = Coords2D.dir4Coords[(found.dir - 1 + 4) % 4];
+		const leftCoords = found.coords.map(C => C.add(addLeft));
 		const leftTiles = leftCoords.map(C => this.mf_GetTile(C.x, C.y));
-		if (!leftTiles.every(tile => tile > -1)) {
-			return false;
-		}
 
-		const addRight = Coords2D.dir4Coords[(P.dir + 1 + 4) % 4];
-		const rightCoords = P.coords.map(C => C.add(addRight));
+		const addRight = Coords2D.dir4Coords[(found.dir + 1 + 4) % 4];
+		const rightCoords = found.coords.map(C => C.add(addRight));
 		const rightTiles = rightCoords.map(C => this.mf_GetTile(C.x, C.y));
-		if (!rightTiles.every(tile => tile == -1)) {
-			return false;
-		}
 
-		return rightCoords;
+		return new FoundPatternSides(leftCoords, leftTiles, rightCoords, rightTiles);
 	}
 
 	/**
