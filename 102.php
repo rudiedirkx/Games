@@ -28,6 +28,10 @@ if ( !isset($_GET['session']) ) {
 
 define('SESSION', $_GET['session']);
 
+$_SESSION['ms2']['sessions'] = array_filter($_SESSION['ms2']['sessions'] ?? [], function(array $session) {
+	return empty($session['starttime']) || $session['starttime'] > strtotime('-2 hours');
+});
+
 
 // require_once('connect.php');
 define('S_NAME', 'ms2');
@@ -48,6 +52,11 @@ $_FIELDS = array(
 		"name"	=> "Expert",
 		"sides" => array(30, 16),
 		"mines" => 99,
+	),
+	"d" => array(
+		"name"	=> "XXL",
+		"sides" => array(70, 40),
+		"mines" => 350,
 	),
 );
 

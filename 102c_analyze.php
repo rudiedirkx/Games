@@ -29,12 +29,16 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 
 <body>
 
-<p>
-	<select onchange="this.value&&(document.location='?map='+this.value)"><?= _mapsOptions($g_arrMaps, $iMap, '-- CUSTOM --') ?></select>
-	<? if ($iMap): ?>
-		<a href="102d_create.php?map=<?= $iMap ?>">&gt; create</a>
-	<? endif ?>
-</p>
+<form method="post" action="102d_create.php">
+	<p>
+		<select onchange="this.value&&(document.location='?map='+this.value)"><?= _mapsOptions($g_arrMaps, $iMap, '-- CUSTOM --') ?></select>
+		|
+		<? foreach ($arrMap as $row): ?>
+			<input name="map[]" type="hidden" value="<?= do_html($row) ?>" />
+		<? endforeach ?>
+		<button>create</button>
+	</p>
+</form>
 
 <table id="field" style="border:solid 1px #777;"><tr><td>
 	<table style="border:solid 10px #bbb;"><tr><td>
