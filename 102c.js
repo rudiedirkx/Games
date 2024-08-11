@@ -191,6 +191,16 @@ class MinesweeperSolver {
 		this.resetProps();
 	}
 
+	mf_GetBoardKnowns() {
+		const knowns = {};
+		const cells = this.m_table.querySelectorAll('.n, .f');
+		for ( const cell of cells ) {
+			const id = cell.cellIndex + '_' + cell.parentNode.rowIndex;
+			knowns[id] = cell.classList.contains('f') ? 1 : 0;
+		}
+		return knowns;
+	}
+
 	mf_GetBoard() {
 		return [].map.call(this.m_table.rows, function(row) {
 			return [].map.call(row.cells, function(cell) {

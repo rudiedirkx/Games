@@ -4,6 +4,11 @@ require __DIR__ . '/inc.bootstrap.php';
 
 $g_arrMaps = require 'inc.102.maps.php';
 
+$arrMapsWithoutKnowns = array_keys(array_filter($g_arrMaps, function(array $map) {
+	$map = implode('', $map);
+	return strlen($map) == strlen(str_replace(['f', 'n'], '', $map));
+}));
+
 $iMap = isset($_GET['map'], $g_arrMaps[$_GET['map']]) ? $_GET['map'] : 0;
 $arrMap = $g_arrMaps[$iMap];
 
@@ -71,7 +76,9 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	</p>
 	<p>
 		<input type="button" value="SaveAllMines()" onclick="solver.mf_SaveAllMines()" />
-		<input type="button" value="SaveAllMines() + mark all" onclick="solver.mf_SaveAndMarkAll()" style="font-weight: bold" />
+		<input type="button" value="SaveAllMines() + mark all" onclick="testShouldKnowns()" style="font-weight: bold" />
+		<span id="should-knowns-ok" style="color: green" hidden>FOUND ALL</span>
+		<span id="should-knowns-nok" style="color: red" hidden>MISSED SOME</span>
 	</p>
 	<p>
 		<input type="button" value="MarkSavedMines()" onclick="solver.mf_MarkSavedMines()" />
@@ -79,12 +86,30 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	</p>
 </div>
 
+<? if (count($arrMapsWithoutKnowns)): ?>
+	<p>
+		Maps without knowns:
+		<?= implode(', ', array_map(fn($n) => sprintf('<a href="?map=%d">%d</a>', $n, $n+1), $arrMapsWithoutKnowns)) ?>
+	</p>
+<? endif ?>
+
 <script>
 (['dicht', 0, 1, 2, 3, 4, 5, 6, 7, 8]).forEach(function(img) {
 	(new Image).src = 'images/' + (typeof img == 'number' ? 'open_' + img : img) + '.gif';
 });
 
-solver = new MinesweeperSolver($('#ms_tbody'));
+const solver = new MinesweeperSolver($('#ms_tbody'));
+const before = solver.mf_GetBoardKnowns();
+// console.log(before);
+
+function testShouldKnowns() {
+	solver.mf_SaveAndMarkAll();
+	const after = solver.mf_GetBoardKnowns();
+	// console.log(after);
+	const missed = Object.keys(before).filter(key => after[key] == null);
+	// console.log(missed);
+	$('#should-knowns-' + (missed.length ? 'nok' : 'ok')).show();
+}
 
 $('#ms_tbody')
 	.on('click', 'td', function(e) {
