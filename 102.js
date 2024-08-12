@@ -2,6 +2,8 @@
 function Minesweeper(field, session) {
 	this.m_szName = '?';
 	this.session = session;
+	this.m_bCheating = false;
+
 	this.fetchMap(field);
 };
 Minesweeper.prototype = {
@@ -99,8 +101,18 @@ console.log(rsp);
 
 			self.handleChanges(rsp.updates);
 
-			if ( self.m_bGameOver && rsp.updates.length > 1 && rsp.updates.last().last() === 'x' ) {
-				self.showWrongFlags();
+			if ( self.m_bGameOver ) {
+				if ( rsp.updates.length > 1 && rsp.updates.last().last() === 'x' ) {
+					self.showWrongFlags();
+				}
+
+				if ( !self.m_bCheating ) {
+					Game.saveScore({
+						level: rsp.level,
+						time: rsp.time,
+						score: rsp.win ? 1 : 0,
+					});
+				}
 			}
 
 			if ( rsp.msg ) {

@@ -146,16 +146,20 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = array_filter($_SESSION[S_NAME]['sessions'][SESSION]['map']);
 	$iClosed = array_sum(array_map('count', $_SESSION[S_NAME]['sessions'][SESSION]['map']));
 
+	$playtime = time() - $_SESSION[S_NAME]['sessions'][SESSION]['starttime'];
+	$level = 1 + array_search($_SESSION[S_NAME]['sessions'][SESSION]['field'], array_keys($_FIELDS));
+
 	$szMsg = '';
+	$bWin = false;
 	if ( !$bGameOver && $iClosed === $_SESSION[S_NAME]['sessions'][SESSION]['mines'] ) {
 		$bGameOver = true;
 
 		$arrLevel = $_FIELDS[ $_SESSION[S_NAME]['sessions'][SESSION]['field'] ];
-		$playtime = time()-$_SESSION[S_NAME]['sessions'][SESSION]['starttime'];
 
 		$m = floor($playtime / 60);
 		$s = $playtime % 60;
 		$szMsg = "You win!\n\nIt took you " . $m . ":" . str_pad($s, 2, '0', STR_PAD_LEFT) . ".";
+		$bWin = true;
 	}
 
 	header('Content-type: text/json');
@@ -163,6 +167,9 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 		'updates' => $arrUpdates,
 		'msg' => $szMsg,
 		'gameover' => $bGameOver,
+		'win' => $bWin,
+		'level' => $level,
+		'time' => $playtime,
 	)));
 }
 
@@ -279,6 +286,7 @@ var objMinesweeper = new Minesweeper('<?= @$_SESSION[S_NAME]['sessions'][SESSION
 // SOLVER //
 function getSolver() {
 	MinesweeperSolver.DEBUG = 0;
+	objMinesweeper.m_bCheating = true;
 	return new MinesweeperSolver($('#ms_tbody'), objMinesweeper);
 }
 // SOLVER //
