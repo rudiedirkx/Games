@@ -93,6 +93,8 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	</p>
 <? endif ?>
 
+<p><a href="102f_analyze_all.php">Analyze all</a></p>
+
 <script>
 (['dicht', 0, 1, 2, 3, 4, 5, 6, 7, 8]).forEach(function(img) {
 	(new Image).src = 'images/' + (typeof img == 'number' ? 'open_' + img : img) + '.gif';
