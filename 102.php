@@ -55,8 +55,8 @@ $_FIELDS = array(
 	),
 	"d" => array(
 		"name"	=> "XXL",
-		"sides" => array(70, 40),
-		"mines" => 350,
+		"sides" => array(50, 80),
+		"mines" => 500,
 	),
 );
 
