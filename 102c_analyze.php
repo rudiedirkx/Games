@@ -45,7 +45,7 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	</p>
 </form>
 
-<table id="field" style="border:solid 1px #777;"><tr><td>
+<table id="field" style="margin:0; border:solid 1px #777;"><tr><td>
 	<table style="border:solid 10px #bbb;"><tr><td>
 		<table style="border-style:solid;border-width:3px;border-color:#777 #eee #eee #777;"><tr><td>
 			<table border="0" cellpadding="0" cellspacing="0" style="font-size:4px;">

@@ -45,7 +45,7 @@ $g_arrMaps = require 'inc.102.maps.php';
 			</td></tr></table>
 		</td></tr></table>
 		<div>
-			<p><a href="102c_analyze.php?map=<?= $n ?>">analyze</a></p>
+			<p><a href="102c_analyze.php?map=<?= $n ?>">Analyze # <?= $n + 1 ?></a></p>
 			<p class="ms-board-message"></p>
 			<p><button class="mark-found" type="button">Mark</button></p>
 		</div>

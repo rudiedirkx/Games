@@ -1,5 +1,7 @@
 
 class Pattern {
+	static ANY_NUMBER = 9;
+
 	constructor(pattern) {
 		this.pattern = pattern;
 	}
@@ -87,10 +89,10 @@ class ClosedOpposite232Pattern extends Pattern {
 
 	is232Pattern(solver, found) {
 		const sides = solver.getPatternSides(found);
-		const rightTilesClosed = sides.rightTiles.every(tile => tile == -1);
+		const rightTilesClosed = sides.rightTiles.every(tile => tile == MinesweeperSolver.CLOSED);
 		if (rightTilesClosed) {
 			found.closeds = sides.rightCoords;
-			if (sides.leftTiles[0] > 0 && sides.leftTiles[1] == -1 && sides.leftTiles[2] > 0) {
+			if (sides.leftTiles[0] > 0 && sides.leftTiles[1] == MinesweeperSolver.CLOSED && sides.leftTiles[2] > 0) {
 				return true;
 			}
 		}
@@ -124,14 +126,17 @@ class MinesweeperSolver {
 	static autoClickDelay = 0;
 	static DEBUG = 0;
 
+	static CLOSED = 9;
+
 	constructor(table, sweeper) {
+
 		this.m_table = table;
 		this.m_objMinesweeper = sweeper;
 
 		this.patterns = [
 			new ClosedIfFreePattern([1, 2, 1], [1, 0, 1]),
 			new ClosedIfFreePattern([1, 2, 2, 1], [0, 1, 1, 0]),
-			new StartAndClosedIfFreePattern([1, 1, 9], [null, null, 0]),
+			new StartAndClosedIfFreePattern([1, 1, Pattern.ANY_NUMBER], [null, null, 0]),
 			new ClosedOpposite232Pattern(),
 		];
 
@@ -139,8 +144,10 @@ class MinesweeperSolver {
 	}
 
 	resetProps() {
+console.time('mf_GetBoard');
 		this.m_arrBoard = this.mf_GetBoard(this.m_table);
-		this.m_arrSides = [ this.m_arrBoard.length, this.m_arrBoard[0].length ];
+console.timeEnd('mf_GetBoard');
+		// this.m_arrSides = [this.m_arrBoard.height, this.m_arrBoard.width];
 		this.m_arrKnowns = {};
 		this.m_arrClickableNoNoMines = [];
 		this.mf_ResetTrace();
@@ -201,23 +208,27 @@ class MinesweeperSolver {
 		return knowns;
 	}
 
-	mf_GetBoard() {
-		return [].map.call(this.m_table.rows, function(row) {
-			return [].map.call(row.cells, function(cell) {
-				var cn = cell.className;
-
-				cell.classList.remove('solver');
-				cell.classList.remove('f');
-				cell.classList.remove('ow');
-				cell.classList.remove('n');
-				var c = cell.className;
-				var n = c.substr(1);
-
-				cell.className = cn;
-
-				return n ? +n : -1;
-			});
+	mf_GetBoard(table) {
+		const grid = new GameGrid(table.rows[0].cells.length, table.rows.length);
+		table.getElements('td').forEach((cell, i) => {
+			grid.setIndex(i, this.mf_GetCellInt(cell, MinesweeperSolver.CLOSED));
 		});
+		return grid;
+	}
+
+	mf_GetCellInt(cell) {
+		var cn = cell.className;
+
+		cell.classList.remove('solver');
+		cell.classList.remove('f');
+		cell.classList.remove('ow');
+		cell.classList.remove('n');
+		var c = cell.className;
+		var n = c.substr(1);
+
+		cell.className = cn;
+
+		return n ? +n : MinesweeperSolver.CLOSED;
 	}
 
 	mf_SaveAndMarkAndClickAll(done) {
@@ -330,9 +341,10 @@ this.mf_Trace('mf_SaveMinesThisRound');
 		var iOldNonos = knowns[0];
 
 		// Analyze all open fields
-		for ( var y=0; y<this.m_arrBoard.length; y++ ) {
-			for ( var x=0; x<this.m_arrBoard[y].length; x++ ) {
-				if ( typeof this.m_arrBoard[y][x] == 'number' && this.m_arrBoard[y][x] > 0 ) {
+		for ( var y=0; y<this.m_arrBoard.height; y++ ) {
+			for ( var x=0; x<this.m_arrBoard.width; x++ ) {
+				const val = this.m_arrBoard.get(x, y);
+				if ( val != null && val > 0 && val != MinesweeperSolver.CLOSED ) {
 					this.mf_AnalyseOneField(x, y);
 				}
 			}
@@ -375,11 +387,11 @@ this.mf_Trace('findPatterns(' + pattern.join(', ') + ')');
 		const searchDirs = /*isPalindrome ? 2 :*/ 4;
 
 		const patterns = [];
-		const h = this.m_arrBoard.length;
-		const w = this.m_arrBoard[0].length;
+		const h = this.m_arrBoard.height;
+		const w = this.m_arrBoard.width;
 		for ( var y = -1; y <= h; y++ ) {
 			for ( var x = -1; x <= w; x++ ) {
-				const tile = this.m_arrBoard[y] ? (this.m_arrBoard[y][x] ?? null) : null;
+				const tile = this.m_arrBoard.get(x, y);
 				if ( this.patternTileMatches(pattern[0], tile) ) {
 					const C = new Coords2D(x, y);
 					for (var d = 0; d < searchDirs; d++) {
@@ -412,20 +424,20 @@ this.mf_Trace('findPatterns(' + pattern.join(', ') + ')');
 	}
 
 	patternTileMatches(patternTile, foundTile) {
-		return foundTile === patternTile || (patternTile === 9 && foundTile > 0);
+		return foundTile === patternTile || (patternTile === Pattern.ANY_NUMBER && foundTile > 0);
 	}
 
 	getClosedIfFree(found) {
 		const sides = this.getPatternSides(found);
 
-		const leftTilesOpen = sides.leftTiles.every(tile => tile > -1);
-		const rightTilesClosed = sides.rightTiles.every(tile => tile == -1);
+		const leftTilesOpen = sides.leftTiles.every(tile => tile > MinesweeperSolver.CLOSED);
+		const rightTilesClosed = sides.rightTiles.every(tile => tile == MinesweeperSolver.CLOSED);
 		if (leftTilesOpen && rightTilesClosed) {
 			return sides.rightCoords;
 		}
 
-		const leftTilesClosed = sides.leftTiles.every(tile => tile == -1);
-		const rightTilesOpen = sides.rightTiles.every(tile => tile > -1);
+		const leftTilesClosed = sides.leftTiles.every(tile => tile == MinesweeperSolver.CLOSED);
+		const rightTilesOpen = sides.rightTiles.every(tile => tile > MinesweeperSolver.CLOSED);
 		if (leftTilesClosed && rightTilesOpen) {
 			return sides.leftCoords;
 		}
@@ -469,10 +481,10 @@ this.mf_Log('(' + x + ', ' + y + ') is solved');
 	 */
 	mf_EliminateFields() {
 this.mf_Trace('mf_EliminateFields');
-		for ( var y=0; y<this.m_arrBoard.length; y++ ) {
-			for ( var x=0; x<this.m_arrBoard[y].length; x++ ) {
-				var id = 'tile_' + x + '_' + y;
-				if ( typeof this.m_arrBoard[y][x] == 'number' && this.m_arrBoard[y][x] > 0 ) {
+		for ( var y=0; y<this.m_arrBoard.height; y++ ) {
+			for ( var x=0; x<this.m_arrBoard.width; x++ ) {
+				const val = this.m_arrBoard.get(x, y);
+				if ( val != null && val > 0 && val != MinesweeperSolver.CLOSED ) {
 					this.mf_EliminateFieldsAround(x, y);
 				}
 			}
@@ -493,7 +505,7 @@ this.mf_Trace('mf_EliminateFieldsAround(' + x + ', ' + y + ')');
 				var id = coord.join('_');
 				var iSTile = this.mf_GetTile(id);
 
-				if ( iSTile == -1 && this.m_arrKnowns[id] == null ) {
+				if ( iSTile == MinesweeperSolver.CLOSED && this.m_arrKnowns[id] == null ) {
 					this.m_arrKnowns[id] = 0;
 				}
 			}, this);
@@ -535,7 +547,7 @@ this.mf_Trace('mf_GetPotentialMines(~' + f_arrCoords.length + ')');
 			var id = coord.join('_');
 			var iTile = this.mf_GetTile(id);
 
-			if ( iTile == -1 && this.m_arrKnowns[id] != 0 ) {
+			if ( iTile == MinesweeperSolver.CLOSED && this.m_arrKnowns[id] != 0 ) {
 				arrTiles.push(coord);
 			}
 		}, this);
@@ -550,7 +562,7 @@ this.mf_Trace('mf_GetKnownMines(~' + f_arrCoords.length + ')');
 			var id = coord.join('_');
 			var iTile = this.mf_GetTile(id);
 
-			if ( iTile == -1 && this.m_arrKnowns[id] == 1 ) {
+			if ( iTile == MinesweeperSolver.CLOSED && this.m_arrKnowns[id] == 1 ) {
 				arrTiles.push(coord);
 			}
 		}, this);
@@ -585,11 +597,7 @@ this.mf_Trace('mf_GetTile(' + x + ', ' + y + ')', false);
 			y = Number(coord[1]);
 		}
 
-		if ( this.m_arrBoard[y] && this.m_arrBoard[y][x] != null ) {
-			return this.m_arrBoard[y][x];
-		}
-
-		return false;
+		return this.m_arrBoard.get(x, y) ?? false;
 	}
 
 }
