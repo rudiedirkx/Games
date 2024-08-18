@@ -430,14 +430,14 @@ this.mf_Trace('findPatterns(' + pattern.join(', ') + ')');
 	getClosedIfFree(found) {
 		const sides = this.getPatternSides(found);
 
-		const leftTilesOpen = sides.leftTiles.every(tile => tile > MinesweeperSolver.CLOSED);
+		const leftTilesOpen = sides.leftTiles.every(tile => tile >= 0 && tile != MinesweeperSolver.CLOSED);
 		const rightTilesClosed = sides.rightTiles.every(tile => tile == MinesweeperSolver.CLOSED);
 		if (leftTilesOpen && rightTilesClosed) {
 			return sides.rightCoords;
 		}
 
 		const leftTilesClosed = sides.leftTiles.every(tile => tile == MinesweeperSolver.CLOSED);
-		const rightTilesOpen = sides.rightTiles.every(tile => tile > MinesweeperSolver.CLOSED);
+		const rightTilesOpen = sides.rightTiles.every(tile => tile >= 0 && tile != MinesweeperSolver.CLOSED);
 		if (leftTilesClosed && rightTilesOpen) {
 			return sides.leftCoords;
 		}
