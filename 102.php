@@ -219,8 +219,8 @@ div#loading {
 </div>
 
 <div id="container">
-	<div id="left">
-		<a class="cheat" href="#" onclick="getSolver().mf_SaveAndMarkAndClickAll(function(change) { console.warn('change', change); change || alert('I can only help those who help themselves!'); }); return false">Cheat!</a>
+	<div id="left" style="text-align: center">
+		<label><input type="checkbox" id="cheating" /> Cheating</label>
 		&nbsp;
 		<a class="export" href="#" onclick="
 			objMinesweeper.export(function(rows) {
@@ -284,6 +284,17 @@ window.on('xhrDone', function() {
 var objMinesweeper = new Minesweeper('<?= @$_SESSION[S_NAME]['sessions'][SESSION]['field'] ?: $g_szDefaultField ?>', '<?= $_GET['session'] ?>');
 
 // SOLVER //
+$('#cheating').on('change', function(e) {
+	if (this.checked) startSolving();
+});
+function startSolving() {
+	objMinesweeper._solving = true;
+	getSolver().mf_SaveAndMarkAndClickAll(function(change) {
+		console.warn('change', change);
+		objMinesweeper._solving = false;
+		// if (!change) alert('I can only help those who help themselves!');
+	});
+}
 function getSolver() {
 	MinesweeperSolver.DEBUG = 0;
 	objMinesweeper.m_bCheating = true;
@@ -300,7 +311,13 @@ $('#ms_tbody')
 	.on('click', '#ms_tbody td', function(e) {
 		e.preventDefault();
 		objMinesweeper.openField(this);
-	});
+	})
+	.on('ms:open', function(e) {
+		if (!objMinesweeper.m_bGameOver && $('#cheating').checked && !objMinesweeper._solving) {
+			setTimeout(startSolving, 100);
+		}
+	})
+;
 </script>
 </body>
 
