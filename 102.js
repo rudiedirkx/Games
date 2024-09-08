@@ -106,13 +106,11 @@ console.log(rsp);
 					self.showWrongFlags();
 				}
 
-				if ( !self.m_bCheating ) {
-					Game.saveScore({
-						level: rsp.level,
-						time: rsp.time,
-						score: rsp.win ? 1 : 0,
-					});
-				}
+				Game.saveScore({
+					level: rsp.level,
+					time: rsp.time,
+					score: (rsp.win ? 1 : 0) + (self.m_bCheating ? 10 : 0),
+				});
 			}
 
 			if ( rsp.msg ) {

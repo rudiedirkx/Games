@@ -289,9 +289,18 @@ $('#cheating').on('change', function(e) {
 });
 function startSolving() {
 	objMinesweeper._solving = true;
-	getSolver().mf_SaveAndMarkAndClickAll(function(change) {
+
+	const solver = getSolver();
+	const beforeKnowns = solver.mf_GetBoardKnowns();
+	solver.mf_SaveAndMarkAndClickAll(function(change) {
 		console.warn('change', change);
 		objMinesweeper._solving = false;
+		Object.keys(beforeKnowns).forEach(C => {
+			const [x, y] = C.split('_');
+			const el = this.m_table.rows[y].cells[x];
+			if (el.className.trim() == '') el.addClass('f');
+		});
+		objMinesweeper.updateFlagCounter();
 		// if (!change) alert('I can only help those who help themselves!');
 	});
 }
