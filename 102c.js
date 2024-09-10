@@ -92,7 +92,11 @@ class ClosedOpposite232Pattern extends Pattern {
 		const rightTilesClosed = sides.rightTiles.every(tile => tile == MinesweeperSolver.CLOSED);
 		if (rightTilesClosed) {
 			found.closeds = sides.rightCoords;
-			if (sides.leftTiles[0] > 0 && sides.leftTiles[1] == MinesweeperSolver.CLOSED && sides.leftTiles[2] > 0) {
+			if (
+				(sides.leftTiles[0] > 0 && sides.leftTiles[0] != MinesweeperSolver.CLOSED) &&
+				sides.leftTiles[1] == MinesweeperSolver.CLOSED &&
+				(sides.leftTiles[2] > 0 && sides.leftTiles[2] != MinesweeperSolver.CLOSED)
+			) {
 				return true;
 			}
 		}
