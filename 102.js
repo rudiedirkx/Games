@@ -185,7 +185,7 @@ Minesweeper.prototype = {
 			var row = '';
 			tr.getChildren().each(function(cell) {
 				var c = ' ';
-				if ( cell.className.trim() && !cell.hasClass('f') ) {
+				if ( cell.className.trim() && !cell.hasClass('f') && !cell.hasClass('n') ) {
 					c = cell.className.substr(1);
 				}
 				row += c;

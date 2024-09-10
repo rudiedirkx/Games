@@ -32,8 +32,8 @@ body.blip #content {
 	height: 100vh;
 }
 #content {
-	text-align: center;
-	padding: 10px;
+	text-align: left;
+	padding: 10px 0;
 }
 #left,
 #right {
@@ -50,7 +50,7 @@ body.blip #content {
 }
 
 table#field {
-	margin: 0 auto;
+	margin: 0;
 }
 table#field,
 #field table {

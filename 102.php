@@ -255,7 +255,7 @@ div#loading {
 </div>
 
 <div id="container">
-	<div id="left" style="text-align: center">
+	<div id="left">
 		<label><input type="checkbox" id="cheating" /> Cheating</label>
 		&nbsp;
 		<a href="#" onclick="return objMinesweeper.restartMap()">Restart</a>
