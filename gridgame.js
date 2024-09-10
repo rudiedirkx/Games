@@ -235,6 +235,14 @@ class GameGrid {
 		return new this.constructor(this.width, this.content.slice(0));
 	}
 
+	toGridArray() {
+		const grid = [];
+		for (var i = 0; i < this.height; i++) {
+			grid.push([...this.content.slice(i * this.width, i * this.width + this.width)]);
+		}
+		return grid;
+	}
+
 	static unserialize64(width, str) {
 		const arr = [...str].map(n => Game.unb64(n));
 		return new this(width, new Uint8Array(arr));

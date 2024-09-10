@@ -17,36 +17,52 @@ Minesweeper.prototype = {
 				alert(rsp ? rsp.error : this.responseText);
 				return;
 			}
-console.log(rsp);
 
 			self.m_szField = f_field;
-			self.m_bGameOver = false;
-			self.m_iGameOverTime = 0;
 			self.m_iMines = rsp.mines;
-			self.m_arrFlags = [];
-
-			$('#mines_to_find').textContent = String(self.m_iMines);
-			$('#flags_left').textContent = String(self.m_iMines);
-			$('#mine_percentage').textContent = String(Math.round(100 * rsp.mines / (rsp.size.y * rsp.size.x)));
-
-			// Save new map
-			var html = '';
-			for ( var y=0; y<rsp.size.y; y++ ) {
-				html += '<tr>';
-				for ( var x=0; x<rsp.size.x; x++ ) {
-					html += '<td></td>';
-				}
-				html += '</tr>';
-			}
-			const tb = $('#ms_tbody');
-			tb.innerHTML = html;
-			tb.fire('ms:fetch');
-
-			const sizer = tb.closest('.sizer');
-			sizer.style.setProperty('--size-x', rsp.size.x);
-			sizer.style.setProperty('--size-y', rsp.size.y);
+			self.printMap(rsp.size.x, rsp.size.y);
 		});
 		return false;
+	},
+
+	restartMap: function() {
+		var data = 'restart=1';
+		var options = {execScripts: false}
+		var self = this;
+		$.post('?restart&session=' + this.session, data, options).on('load', function(e) {
+			var rsp = this.responseJSON;
+			self.printMap(rsp.size.x, rsp.size.y);
+			self.handleChanges(rsp.updates);
+		});
+		return false;
+	},
+
+	printMap: function(w, h) {
+		this.m_bGameOver = false;
+		this.m_iGameOverTime = 0;
+		this.m_arrFlags = [];
+
+		$('#mines_to_find').textContent = String(this.m_iMines);
+		$('#flags_left').textContent = String(this.m_iMines);
+		$('#mine_percentage').textContent = String(Math.round(100 * this.m_iMines / (w * h)));
+
+		// Save new map
+		var html = '';
+		for ( var y=0; y<h; y++ ) {
+			html += '<tr>';
+			for ( var x=0; x<w; x++ ) {
+				html += '<td></td>';
+			}
+			html += '</tr>';
+		}
+
+		const tb = $('#ms_tbody');
+		tb.innerHTML = html;
+		tb.fire('ms:fetch');
+
+		const sizer = tb.closest('.sizer');
+		sizer.style.setProperty('--size-x', w);
+		sizer.style.setProperty('--size-y', h);
 	},
 
 	handleChanges: function(cs) {
@@ -76,7 +92,7 @@ console.log(rsp);
 
 	openField: function(o, done) {
 		if ( this.m_bGameOver ) {
-			return this.restart();
+			return this.newGame();
 		}
 
 		if ( !this.isOpenableField(o) ) {
@@ -134,7 +150,7 @@ console.log(rsp);
 
 	toggleFlag: function(o) {
 		if ( this.m_bGameOver ) {
-			return this.restart();
+			return this.newGame();
 		}
 
 		if ( !this.isFlaggableField(o) ) {
@@ -157,18 +173,13 @@ console.log(rsp);
 		$('#flags_left').textContent = String(this.m_iMines - used);
 	},
 
-	restart: function() {
+	newGame: function() {
 		if ( !this.m_iGameOverTime || Date.now() - this.m_iGameOverTime > 1000 ) {
 			this.fetchMap(this.m_szField);
 		}
 	},
 
 	export: function(success, error) {
-		if ( this.m_bGameOver ) {
-			error && error.call(this);
-			return;
-		}
-
 		var rows = [];
 		$('#ms_tbody').getChildren().each(function(tr) {
 			var row = '';

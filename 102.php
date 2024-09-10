@@ -70,6 +70,7 @@ if ( isset($_POST['fetch_map'], $_POST['field']) ) {
 
 	$arrLevel = $_FIELDS[ $_POST['field'] ];
 	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = array();
+	$_SESSION[S_NAME]['sessions'][SESSION]['initial'] = null;
 	$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = 0;
 	$_SESSION[S_NAME]['sessions'][SESSION]['field'] = $_POST['field'];
 	$_SESSION[S_NAME]['sessions'][SESSION]['mines'] = (int)$arrLevel['mines'];
@@ -84,6 +85,37 @@ if ( isset($_POST['fetch_map'], $_POST['field']) ) {
 
 	header('Content-type: text/json');
 	exit(json_encode($arrMap));
+}
+
+// Restart current game //
+else if ( isset($_POST['restart'], $_SESSION[S_NAME]['sessions'][SESSION]['initial']) ) {
+	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = json_decode($_SESSION[S_NAME]['sessions'][SESSION]['initial']['map'], true);
+
+	[$f_x, $f_y] = $_SESSION[S_NAME]['sessions'][SESSION]['initial']['click'];
+
+	$f = $_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x];
+	$arrUpdates = [];
+	$arrUpdates[] = [$f_x, $f_y, $f];
+	unset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x]);
+
+	if ( 0 === $f ) {
+		$minesweeper->click_on_surrounders($arrUpdates, $f_x, $f_y);
+	}
+
+	$_SESSION[S_NAME]['sessions'][SESSION]['map'] = array_filter($_SESSION[S_NAME]['sessions'][SESSION]['map']);
+
+	$arrLevel = $_FIELDS[ $_SESSION[S_NAME]['sessions'][SESSION]['field'] ];
+
+	header('Content-type: text/json');
+	exit(json_encode(array(
+		'field' => $_SESSION[S_NAME]['sessions'][SESSION]['field'],
+		'size' => array(
+			'x' => $arrLevel['sides'][0],
+			'y' => $arrLevel['sides'][1],
+		),
+		'mines'	=> $arrLevel['mines'],
+		'updates' => $arrUpdates,
+	)));
 }
 
 // Click on field //
@@ -103,6 +135,10 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 			$f_x,
 			$f_y
 		);
+		$_SESSION[S_NAME]['sessions'][SESSION]['initial'] = [
+			'map' => json_encode($_SESSION[S_NAME]['sessions'][SESSION]['map']),
+			'click' => [$f_x, $f_y],
+		];
 
 		$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = time();
 	}
@@ -110,7 +146,7 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 	// Check valid coordinate
 	if ( !isset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x]) ) {
 		header('Content-type: text/json');
-		exit(json_encode(array('updates' => array(), 'msg' => '', 'gameover' => false)));
+		exit(json_encode(array('updates' => array(), 'msg' => 'Invalid coordinate', 'gameover' => false)));
 	}
 
 	$bGameOver = false;
@@ -221,6 +257,8 @@ div#loading {
 <div id="container">
 	<div id="left" style="text-align: center">
 		<label><input type="checkbox" id="cheating" /> Cheating</label>
+		&nbsp;
+		<a href="#" onclick="return objMinesweeper.restartMap()">Restart</a>
 		&nbsp;
 		<a class="export" href="#" onclick="
 			objMinesweeper.export(function(rows) {
