@@ -143,10 +143,9 @@ else if ( isset($_POST['click'], $_POST['x'], $_POST['y']) ) {
 		$_SESSION[S_NAME]['sessions'][SESSION]['starttime'] = time();
 	}
 
-	// Check valid coordinate
 	if ( !isset($_SESSION[S_NAME]['sessions'][SESSION]['map'][$f_y][$f_x]) ) {
 		header('Content-type: text/json');
-		exit(json_encode(array('updates' => array(), 'msg' => 'Invalid coordinate', 'gameover' => false)));
+		exit(json_encode(array('updates' => array(), 'msg' => '', 'gameover' => false)));
 	}
 
 	$bGameOver = false;
