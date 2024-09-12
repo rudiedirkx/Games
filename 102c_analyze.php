@@ -42,6 +42,8 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 			<input name="map[]" type="hidden" value="<?= do_html($row) ?>" />
 		<? endforeach ?>
 		<button>create</button>
+		|
+		<button id="cpa">create php array</button>
 	</p>
 </form>
 
@@ -68,6 +70,8 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 		</td></tr></table>
 	</td></tr></table>
 </td></tr></table>
+
+<textarea tabindex="-1" rows="19" cols="50" id="export"></textarea>
 
 <div>
 	<p>
@@ -100,7 +104,8 @@ $g_arrSides = array(count($arrMap), strlen($arrMap[0]));
 	(new Image).src = 'images/' + (typeof img == 'number' ? 'open_' + img : img) + '.gif';
 });
 
-const solver = new MinesweeperSolver($('#ms_tbody'));
+const $tbody = $('#ms_tbody');
+const solver = new MinesweeperSolver($tbody);
 const before = solver.mf_GetBoardKnowns();
 // console.log(before);
 
@@ -113,19 +118,26 @@ function testShouldKnowns() {
 	$('#should-knowns-' + (missed.length ? 'nok' : 'ok')).show();
 }
 
-$('#ms_tbody')
-	.on('click', 'td', function(e) {
-		if (!this.className || this.className == 'n') {
-			this.toggleClass('n');
-		}
-	})
-	.on('contextmenu', 'td', function(e) {
-		e.preventDefault();
+$tbody.on('click', 'td', function(e) {
+	if (!this.className || this.className == 'n') {
+		this.toggleClass('n');
+	}
+});
+$tbody.on('contextmenu', 'td', function(e) {
+	e.preventDefault();
 
-		if (!this.className || this.className == 'f') {
-			this.toggleClass('f');
-		}
-	});
+	if (!this.className || this.className == 'f') {
+		this.toggleClass('f');
+	}
+});
+
+// CREATE PHP ARRAY
+$('#cpa').on('click', function(e) {
+	e.preventDefault();
+
+	$('#export').value = MinesweeperSolver.exportPhp($tbody);
+	$('#export').select();
+});
 </script>
 
 </body>

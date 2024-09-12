@@ -604,4 +604,23 @@ this.mf_Trace('mf_GetTile(' + x + ', ' + y + ')', false);
 		return this.m_arrBoard.get(x, y) ?? false;
 	}
 
+	static exportPhp(tbody) {
+		var trs = tbody.children;
+		var szPhpArray = "\tarray(\n";
+		for ( var i=0; i<trs.length; i++ ) {
+			szPhpArray += "\t\t'";
+			var tds = trs[i].children;
+			for ( var j=0; j<tds.length; j++ ) {
+				var cls = tds[j].classList;
+				if (cls.contains('f')) szPhpArray += 'f';
+				else if (cls.contains('n')) szPhpArray += 'n';
+				else if (cls.length) szPhpArray += String(cls).substr(1);
+				else szPhpArray += ' ';
+			}
+			szPhpArray += "',\n";
+		}
+		szPhpArray += "\t),\n";
+		return szPhpArray;
+	}
+
 }

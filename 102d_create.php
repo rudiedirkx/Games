@@ -39,6 +39,7 @@ if ( isset($g_arrMaps[$iMap]) ) {
 <title>Create Minesweeper Field</title>
 <link rel="stylesheet" href="102.css" />
 <script src="/js/rjs-custom.js"></script>
+<script src="gridgame.js"></script>
 <script>
 var g_arrImgs = ['dicht', 0, 1, 2, 3, 4, 5, 6, 7, 8];
 g_arrImgs.forEach(function(img, i) {
@@ -158,6 +159,7 @@ String.repeat = function(str, num) {
 <textarea tabindex="-1" rows="19" cols="50" id="export"></textarea>
 
 <script src="102.js"></script>
+<script src="102c.js"></script>
 <script>
 var $tbody = $('#ms_tbody');
 
@@ -230,19 +232,7 @@ $$('.more-less button.remove').on('click', function(e) {
 $('#cpa').on('click', function(e) {
 	e.preventDefault();
 
-	var trs = $tbody.children;
-	var szPhpArray = "\tarray(\n";
-	for ( var i=0; i<trs.length; i++ ) {
-		szPhpArray += "\t\t'";
-		var tds = trs[i].children;
-		for ( var j=0; j<tds.length; j++ ) {
-			var tile = Number(tds[j].dataset.tile);
-			szPhpArray += tile == -1 ? ' ' : String(tile);
-		}
-		szPhpArray += "',\n";
-	}
-	szPhpArray += "\t),\n";
-	$('#export').value = szPhpArray;
+	$('#export').value = MinesweeperSolver.exportPhp($tbody);
 	$('#export').select();
 });
 </script>
