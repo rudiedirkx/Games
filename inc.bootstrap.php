@@ -13,7 +13,7 @@ if (!ini_get('short_open_tag')) {
 
 if (php_sapi_name() !== 'cli') {
 	if (empty($_COOKIE['games'])) {
-		setcookie('games', $_COOKIE['games'] = get_random(40), strtotime('+2 years'), '/');
+		setcookie('games', $_COOKIE['games'] = get_random(20), strtotime('+2 years'), '/');
 	}
 	elseif ( rand(0, 9) == 0 ) {
 		setcookie('games', $_COOKIE['games'], strtotime('+2 years'), '/');

@@ -3,6 +3,11 @@
 require __DIR__ . '/inc.bootstrap.php';
 require __DIR__ . '/inc.db.php';
 
+if (($_GET['reset'] ?? '') === 'cookie') {
+	setcookie('games', '', 1, '/');
+	return do_redirect('scores.php');
+}
+
 $cookie = $_COOKIE['games'];
 $ip = get_ip();
 
@@ -27,7 +32,7 @@ table th {
 }
 </style>
 
-<p>ID = <?= do_html($cookie) ?></p>
+<p>ID = <?= do_html($cookie) ?> <button type="button" onclick="location='?reset=cookie'">Reset</button></p>
 <p>IP = <?= do_html($ip) ?></p>
 
 <table>
