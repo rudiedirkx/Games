@@ -1,7 +1,7 @@
 <?php
 
 class MinesweeperMaker {
-	public function create_map( $f_width, $f_height, $f_m, $f_x, $f_y ) {
+	public function create_map( int $f_width, int $f_height, int $f_m, int $f_x, int $f_y ) : array {
 		$arrMap = array_fill(0, $f_height, array_fill(0, $f_width, 0));
 
 		$iMines = 0;

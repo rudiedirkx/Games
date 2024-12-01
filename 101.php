@@ -92,7 +92,7 @@ function Laat_Kaarten_Zien($who) {
 function Reset_Game() {
 	// Alle waarden worden gewist.
 	// Heel het spel is leeg.
-	$_SESSION['blackjack'] = FALSE;
+	$_SESSION['blackjack'] = [];
 	$_SESSION['blackjack']['player']['balance']=0;
 	$_SESSION['blackjack']['dealer']['i']=0;
 	$_SESSION['blackjack']['player']['i']=0;
@@ -101,13 +101,13 @@ function End_Game() {
 	// Alle waarden, behalve ['balance'], worden gewist.
 	// Alle cookies zijn leeg. Een nieuw spel kan worden gestart!
 	$balance = $_SESSION['blackjack']['player']['balance'];
-	$_SESSION['blackjack'] = FALSE;
+	$_SESSION['blackjack'] = [];
 	$_SESSION['blackjack']['player']['balance'] = $balance;
 }
 function Score_Opslaan() {
 	// Logboek. Resultaten, winsten, scores worden opgeslagen in logboek.
 	// De nieuwe balance van de player wordt ook opgeslagen.
-	$bet = $_SESSION['blackjack']['player']['bet'];
+	$bet = $_SESSION['blackjack']['player']['bet'] ?? 0;
 	if (Bereken_Score('player') > 21)
 	{
 		// PLAYER BUST -> DEALER WINT
@@ -187,7 +187,8 @@ if ( $action == "deal") {
 	{
 		Nieuwe_Kaart('dealer');
 	}
-	if ($_POST['bet'] > $_SESSION['blackjack']['player']['balance'])
+	$bet = $_POST['bet'] ?? 0;
+	if ($bet > $_SESSION['blackjack']['player']['balance'])
 	{
 		Reset_Game();
 
@@ -198,7 +199,7 @@ if ( $action == "deal") {
 		$_SESSION['blackjack']['player']['i']=0;
 	if ($_SESSION['blackjack']['player']['i']<1)
 	{
-		$_SESSION['blackjack']['player']['bet'] = $_POST['bet'];
+		$_SESSION['blackjack']['player']['bet'] = $bet;
 		Nieuwe_Kaart('player');
 	}
 	Nieuwe_Kaart('player');
@@ -358,4 +359,4 @@ if (isset($_SESSION['blackjack']['winner'])) {
 	</td></tr></table>
 </body>
 
-<pre><?php print_r($_SESSION['blackjack']) ?></pre>
+<!-- <pre><?php print_r($_SESSION['blackjack']) ?></pre> -->
