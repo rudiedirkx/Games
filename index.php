@@ -1,6 +1,10 @@
 <?php
 // INDEX
 
+// header('HTTP/1.1 500 Uptime test');
+// echo "Error 500 for uptime monitor test\n";
+// exit;
+
 require __DIR__ . '/inc.bootstrap.php';
 
 $g_iWidth		= 13;
@@ -288,6 +292,10 @@ foreach ( $g_arrUseGames AS $i => $game ) {
 
 })();
 </script>
+
+<?php if (DA_URL): ?>
+	<script src="<?= DA_URL ?>"></script>
+<?php endif ?>
 </body>
 
 </html>
