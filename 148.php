@@ -81,25 +81,13 @@ table select {
 	color				: #ccc;
 }
 </style>
-<script type="text/javascript" src="http://jouwmoeder.nl/js/general_1_2_6.js"></script>
+<script type="text/javascript" src="/js/rjs-custom.js"></script>
 <script type="text/javascript">
 <!--//
-var _F;
-addEventHandler(window, 'load', function() {
+window.on('load', function() {
 	// Hints enabling/disabling
-	foreach ( $('hints').getElementsByTagName('li'), function(k, v) {
-		v.onclick = function() {
-			this.className = 'done' != this.className ? 'done' : '';
-		}
-	});
-	// Assign form and reset selectboxes
-	_F = document.forms[0];
-	_F.reset();
-	// Asign names to selectboxes
-	foreach ( $('_tb').rows, function(k, row) {
-		foreach ( row.cells, function(k, sb) {
-
-		});
+	$$('#hints li').on('click', function(e) {
+		this.toggleClass('done');
 	});
 });
 //-->
@@ -121,9 +109,6 @@ addEventHandler(window, 'load', function() {
 	<tr><th>Smoke</th><?php echo str_repeat('<td><select name="smoke[]"><option>--</option><option>'.implode('</option><option>', $arrSmokes).'</option></select></td>', 5); ?></tr>
 	<tr><th>Pet</th><?php echo str_repeat('<td><select name="pet[]"><option>--</option><option>'.implode('</option><option>', $arrPets).'</option></select></td>', 5); ?></tr>
 </tbody>
-<tfoot>
-	<tr><td colspan="6" align="center"><a href="#" onclick="_F.reset();return false;">Reset</a><!-- | <a href="#" onclick="_F.submit();return false;">Check</a>--></td></tr>
-</tfoot>
 </table>
 </form>
 
