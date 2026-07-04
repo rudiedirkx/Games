@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh No - Smart OCR Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #222; color: #eee; padding: 20px; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .panel { background: #333; padding: 15px; border-radius: 8px; }
+        img { max-width: 100%; height: auto; border: 1px solid #555; }
+        canvas { border: 1px solid #555; background: #fff; }
+        pre { background: #111; padding: 15px; border-radius: 5px; font-size: 16px; line-height: 1.5; }
+        #status { font-weight: bold; color: #50fa7b; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <h2>Oh No - Grid Scanner</h2>
+    <div id="status">Waiting for image...</div>
+
+    <div class="container">
+        <div class="panel">
+            <h3>Original Screenshot</h3>
+            <img id="sourceImage" src="ohno-numbers-1.jpg" alt="Oh No Puzzle">
+        </div>
+
+        <div class="panel">
+            <h3>OCR Debug View (Tight Crop)</h3>
+            <p style="font-size: 0.8em; color: #aaa;">This shows the tightly cropped bounding boxes. Text is normalized to black, background to white.</p>
+            <canvas id="debugCanvas"></canvas>
+        </div>
+
+        <div class="panel">
+            <h3>Extracted Grid</h3>
+            <pre id="outputGrid">Processing...</pre>
+        </div>
+    </div>
+
+<script>
+    window.onload = () => {
+        const img = document.getElementById('sourceImage');
+        if (img.complete && img.naturalHeight !== 0) {
+            processPuzzle(img);
+        } else {
+            img.onload = () => processPuzzle(img);
+            img.onerror = () => document.getElementById('status').innerText = "Error: Could not load local image.";
+        }
+    };
+
+    /**
+     * Calculates a safe box size based on the grid distance to ensure
+     * we stay entirely inside the circle, avoiding the white canvas gaps.
+     */
+    function getSafeBoxSize(centersHor) {
+        if (centersHor.length < 2) return 30; // Fallback
+        const distance = centersHor[1] - centersHor[0];
+        return Math.floor(distance * 0.55); // 55% guarantees we stay inside the circle
+    }
+
+    async function processPuzzle(img) {
+        document.getElementById('status').innerText = "Initializing Tesseract Worker (v5)...";
+
+        // 1. Setup Tesseract (v5 syntax automatically initializes)
+        const worker = await Tesseract.createWorker('eng');
+        await worker.setParameters({
+            tessedit_char_whitelist: '123456789',
+            tessedit_pageseg_mode: '10', // PSM 10: Treat image as a single character
+        });
+
+        document.getElementById('status').innerText = "Analyzing Grid Layout...";
+
+        // 2. Extract Centers
+        // NOTE: These are mocked centers based on standard 9x9 crop.
+        // You will replace these with the dynamic output from your 'pixelsToGrid' logic.
+        const centersHor = [41, 95, 148, 201, 255, 308, 361, 414, 467];
+        const centersVer = [41, 95, 148, 201, 255, 308, 361, 414, 467];
+
+        // 3. Calculate dynamic box size
+        const BOX_SIZE = getSafeBoxSize(centersHor);
+
+        // Setup Debug Canvas
+        const debugCanvas = document.getElementById('debugCanvas');
+        debugCanvas.width = img.naturalWidth;
+        debugCanvas.height = img.naturalHeight;
+        const debugCtx = debugCanvas.getContext('2d');
+        debugCtx.fillStyle = '#ffffff';
+        debugCtx.fillRect(0, 0, debugCanvas.width, debugCanvas.height);
+
+        document.getElementById('status').innerText = "Running Smart OCR on Cells...";
+
+        const gridPromises = [];
+
+        // 4. Loop through grid and prep promises
+        for (let y = 0; y < centersVer.length; y++) {
+            const rowPromises = [];
+
+            for (let x = 0; x < centersHor.length; x++) {
+                const cx = centersHor[x];
+                const cy = centersVer[y];
+
+                // Extract and normalize the cell
+                const cellCanvas = prepCellForOCR(img, cx, cy, BOX_SIZE);
+
+                // Draw onto debug canvas exactly where it belongs
+                debugCtx.drawImage(cellCanvas, cx - (BOX_SIZE/2), cy - (BOX_SIZE/2));
+
+                // Queue up the Tesseract job
+                rowPromises.push(worker.recognize(cellCanvas).then(result => {
+                    const num = result.data.text.trim();
+                    return num ? num : '-';
+                }));
+            }
+            gridPromises.push(Promise.all(rowPromises));
+        }
+
+        // 5. Execute all OCR jobs concurrently
+        const finalGrid = await Promise.all(gridPromises);
+
+        document.getElementById('status').innerText = "Done!";
+        await worker.terminate();
+
+        // 6. Render Output
+        renderOutput(finalGrid);
+    }
+
+    /**
+     * Extracts a cell, auto-detects the theme (light vs dark text),
+     * and normalizes the text perfectly to stark black on pure white.
+     */
+    function prepCellForOCR(sourceImage, centerX, centerY, boxSize) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        canvas.width = boxSize;
+        canvas.height = boxSize;
+
+        const half = Math.floor(boxSize / 2);
+        ctx.drawImage(
+            sourceImage,
+            centerX - half, centerY - half, boxSize, boxSize,
+            0, 0, boxSize, boxSize
+        );
+
+        const imageData = ctx.getImageData(0, 0, boxSize, boxSize);
+        const data = imageData.data;
+
+        // Sample the top-left pixel of our crop to determine the circle's base color.
+        // Because getSafeBoxSize keeps us inside the circle, this hits the background color.
+        const bgR = data[0], bgG = data[1], bgB = data[2];
+        const bgLuma = (0.299 * bgR + 0.587 * bgG + 0.114 * bgB);
+
+        // Threshold: > 180 means the circle is light (like grey), so we expect black text.
+        const hasBlackText = bgLuma > 180;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            const luma = (0.299 * r + 0.587 * g + 0.114 * b);
+
+            if (hasBlackText) {
+                // Theme: Black text on light circles
+                if (luma < 100) {
+                    data[i] = 0; data[i + 1] = 0; data[i + 2] = 0; // Text -> Black
+                } else {
+                    data[i] = 255; data[i + 1] = 255; data[i + 2] = 255; // Circle BG -> White
+                }
+            } else {
+                // Theme: White text on dark/colored circles
+                if (luma > 180) {
+                    data[i] = 0; data[i + 1] = 0; data[i + 2] = 0; // Text -> Black
+                } else {
+                    data[i] = 255; data[i + 1] = 255; data[i + 2] = 255; // Circle BG -> White
+                }
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        return canvas;
+    }
+
+    function renderOutput(grid) {
+        const pre = document.getElementById('outputGrid');
+        let text = "";
+        grid.forEach(row => {
+            text += row.map(cell => cell.padEnd(2, ' ')).join(' ') + "\n";
+        });
+        pre.innerText = text;
+    }
+</script>
+</body>
+</html>
