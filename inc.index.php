@@ -106,4 +106,5 @@ return [
 	['199',				'Track Switcher / De Spoorwerf',				"Move trains on a train yard"],
 	['200',				'Project L SOLO',								"Tetris puzzler for points, against the computer"],
 	['201',				'Labyrinth / Betoverde Doolhof MULTI',			"Play Labyrinth Speel Betoverde Doolhof online"],
+	['202',				'Keer Op Keer 2 SOLO',							'Speel Play Solo Keer Op Keer 2 online'],
 ];

@@ -70,16 +70,22 @@ table.game {
 }
 .game .choosing:after,
 .game .chosen:after {
-	content: "\274C";
-	top: 7px;
-	left: 7px;
-	width: calc(var(--size) - 14px);
-	height: calc(var(--size) - 14px);
-	font-size: calc(var(--size) - 14px);
-	filter: grayscale(1);
+	content: "\2716";
+	top: 0;
+	left: 0;
+	width: var(--size);
+	height: var(--size);
+	font-size: calc(var(--size) - 8px);
+	font-weight: bold;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.game .choosing:after {
+	color: rgba(0, 0, 0, 0.45);
 }
 .game .chosen:after {
-	font-weight: bold;
+	color: #000;
 }
 .other:after {
 	content: "";
@@ -331,4 +337,64 @@ p.error {
 	:root {
 		--size: 20px;
 	}
+}
+
+#special-info:not(:empty) {
+	margin-top: 0.5em;
+	font-style: italic;
+}
+
+#dice > .special {
+	margin-left: 10px;
+	background-color: white;
+	color: black;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	line-height: 1;
+}
+#dice > .special[data-special="die"] {
+	font-size: 28px;
+}
+
+.game tbody td.full-row {
+	color: var(--text);
+	font-weight: bold;
+	border-left: solid 2px var(--text);
+}
+.game .row-head {
+	border: none;
+	background: transparent;
+}
+
+.tracks {
+	margin-top: 1em;
+}
+.tracks p {
+	margin: 0.2em 0;
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
+.track {
+	display: inline-flex;
+	gap: 3px;
+	font-size: 22px;
+	line-height: 1;
+}
+#hearts .heart:before {
+	content: "\2661";
+}
+#hearts .heart.marked:before {
+	content: "\2665";
+}
+#golden .golden:before {
+	content: "\2685";
+	font-size: 28px;
+	opacity: 0.3;
+}
+#golden .golden.marked:before {
+	content: "\2685";
+	opacity: 1;
 }
