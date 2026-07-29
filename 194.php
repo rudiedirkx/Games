@@ -13,6 +13,7 @@ Model::$_db = $db;
 $db->ensureSchema(require '194_schema.php');
 
 [$columns, $boards] = require '191_levels.php';
+
 $mapCenter = ceil(count($columns[0]) / 2) - 1;
 
 Game::$roundChars = [...range('A', 'Z'), ...range('a', 'z')];

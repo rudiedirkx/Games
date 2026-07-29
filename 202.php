@@ -2,7 +2,7 @@
 // Keer op keer 2 SOLO
 
 require __DIR__ . '/inc.bootstrap.php';
-[$columns, $boards, $rowScores, $heartScores, $goldenCount] = require '202_levels.php';
+[$columns, $boards, $config] = require '202_levels.php';
 
 $board = isset($_GET['board'], $boards[$_GET['board']]) ? $_GET['board'] : array_rand($boards);
 $mapCenter = ceil(count($columns[0]) / 2) - 1;
@@ -24,11 +24,13 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <script src="<?= html_asset('keeropkeer2.js') ?>"></script>
 </head>
 
-<body class="layout solo">
+<body class="layout solo kok2" style="--color: <?= do_html($boards[$board]['color']) ?>; --text: <?= do_html($boards[$board]['text']) ?>">
 
 <table class="board game kok2">
 	<thead>
 		<tr>
+			<td class="row-head"></td>
+			<td class="row-head"></td>
 			<? foreach ($columns[0] as $i => $cell): ?>
 				<td data-col="<?= $i ?>" class="<?= $mapCenter == $i ? 'center' : '' ?>"><?= $cell ?></td>
 			<? endforeach ?>
@@ -37,14 +39,22 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 	</thead>
 	<tbody id="grid"></tbody>
 	<tfoot>
-		<? foreach (array_slice($columns, 1, 1) as $row): ?>
-			<tr>
-				<? foreach ($row as $i => $cell): ?>
-					<td class="full-column" data-col="<?= $i ?>" data-score="<?= $cell ?>"><?= $cell ?></td>
-				<? endforeach ?>
-				<td class="row-head"></td>
-			</tr>
-		<? endforeach ?>
+		<tr>
+			<td class="row-head"></td>
+			<td class="row-head"></td>
+			<? foreach ($columns[1] as $i => $cell): ?>
+				<td class="full-column" data-col="<?= $i ?>" data-score="<?= $cell ?>"><?= $cell ?></td>
+			<? endforeach ?>
+			<td class="row-head"></td>
+		</tr>
+		<tr>
+			<td class="row-head"></td>
+			<td class="row-head"></td>
+			<? foreach ($columns[0] as $i => $cell): ?>
+				<td class="col-heart" data-col="<?= $i ?>"></td>
+			<? endforeach ?>
+			<td class="row-head"></td>
+		</tr>
 	</tfoot>
 </table>
 
@@ -74,8 +84,8 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 	</table>
 
 	<div class="tracks">
-		<p>Hearts: <span id="hearts" class="track"><? for ($i = 0; $i < count($heartScores); $i++): ?><span class="heart"></span><? endfor ?></span></p>
-		<p>Bonus dice: <span id="golden" class="track"><? for ($i = 0; $i < $goldenCount; $i++): ?><span class="golden"></span><? endfor ?></span></p>
+		<p class="track-line">Hearts <span id="hearts" class="track"><? for ($i = 0; $i < $config['hearts']; $i++): ?><span class="heart"></span><? endfor ?></span></p>
+		<p class="track-line">Special dice <span id="uses" class="track"><? for ($i = 0; $i < $config['uses']; $i++): ?><span class="use"></span><? endfor ?></span></p>
 	</div>
 
 	<p>
@@ -88,8 +98,10 @@ $mapCenter = ceil(count($columns[0]) / 2) - 1;
 <script>
 KeerOpKeer.CENTER = <?= json_encode($mapCenter) ?>;
 KeerOpKeer.BOARDS = <?= json_encode($boards) ?>;
-KeerOpKeer2.ROW_SCORES = <?= json_encode($rowScores) ?>;
-KeerOpKeer2.HEART_SCORES = <?= json_encode($heartScores) ?>;
+KeerOpKeer.JOKERS = <?= json_encode($config['jokers']) ?>;
+KeerOpKeer2.ROW_REWARDS = <?= json_encode($config['rowRewards']) ?>;
+KeerOpKeer2.HEART_MAX = <?= json_encode($config['hearts']) ?>;
+KeerOpKeer2.USES_MAX = <?= json_encode($config['uses']) ?>;
 var objGame = new SoloKeerOpKeer2($('#grid'));
 objGame.startGame(<?= json_encode($board) ?>);
 objGame.listenControls();

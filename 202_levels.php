@@ -2,8 +2,25 @@
 
 [$columns, $boards] = require '191_levels.php';
 
-$rowScores = [3, 2, 1, 1, 1, 2, 3];
-$heartScores = [1, 2, 3, 4, 5];
-$goldenCount = 6;
+$columns[1][7] = 2; // First time col H gets 2 points in kok2, not 1 like kok1
 
-return [$columns, $boards, $rowScores, $heartScores, $goldenCount];
+$boards = array_filter($boards, function($board) {
+	return !empty($board['gold']);
+});
+
+$rowRewards = ['die', 'bomb', 'heart', 'bomb', 'die', 'heart', 'bomb'];
+
+$dieRows = count(array_filter($rowRewards, function($r) {
+	return $r == 'die';
+}));
+$goldCount = count(reset($boards)['gold'] ?? []);
+$uses = 1 + $goldCount + 1 + $dieRows;
+
+$config = [
+	'rowRewards' => $rowRewards,
+	'hearts' => 5,
+	'uses' => $uses,
+	'jokers' => 6,
+];
+
+return [$columns, $boards, $config];

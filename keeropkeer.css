@@ -33,6 +33,9 @@ table.game {
 	border: solid 1px var(--color);
 	text-align: center;
 }
+.game thead td {
+	font-weight: bold;
+}
 .game tbody td:not(.transparent) {
 	color: black;
 }
@@ -342,6 +345,7 @@ p.error {
 #special-info:not(:empty) {
 	margin-top: 0.5em;
 	font-style: italic;
+	max-width: 22em;
 }
 
 #dice > .special {
@@ -351,50 +355,130 @@ p.error {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 24px;
+	font-size: 22px;
 	line-height: 1;
+	overflow: hidden;
 }
-#dice > .special[data-special="die"] {
-	font-size: 28px;
+#dice > .special[data-special="stars"] {
+	font-size: 14px;
+}
+#dice > .special.unavailable {
+	opacity: 0.4;
+	cursor: default;
+}
+#dice > .special .face {
+	display: block;
 }
 
-.game tbody td.full-row {
-	color: var(--text);
-	font-weight: bold;
-	border-left: solid 2px var(--text);
-}
 .game .row-head {
 	border: none;
 	background: transparent;
+	padding: 0;
+}
+.game tbody td.row-score,
+.game tbody td.row-label {
+	background: transparent;
+	color: var(--text);
+	font-weight: bold;
+}
+.game tbody td.row-label {
+	border: none;
+}
+.game tbody td.row-score.self {
+	text-decoration: line-through;
+	opacity: 0.5;
+}
+.game tbody td.row-reward {
+	background: transparent;
+	border: none;
+	font-size: calc(var(--size) - 6px);
+	line-height: var(--size);
+}
+.game .row-reward[data-reward="bomb"]:before { content: "💣"; }
+.game .row-reward[data-reward="heart"]:before { content: "❤️"; }
+.game .row-reward[data-reward="die"]:before { content: "\1F3B2"; }
+
+.game .cell.gold {
+	position: relative;
+}
+.game .cell.gold:before {
+	content: "\1F3B2";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: var(--size);
+	height: var(--size);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: calc(var(--size) - 6px);
+	color: #6b5200;
+}
+
+.game .col-heart {
+	background: transparent;
+	color: var(--text);
+	font-weight: bold;
+	position: relative;
+	line-height: var(--size);
+	font-size: calc(var(--size) - 12px);
+}
+.game .col-heart:before {
+	content: "\2665";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: var(--size);
+	height: var(--size);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: crimson;
+	opacity: 0.3;
+	font-size: var(--size);
 }
 
 .tracks {
 	margin-top: 1em;
 }
 .tracks p {
-	margin: 0.2em 0;
+	margin: 0.3em 0;
 	display: flex;
 	align-items: center;
 	gap: 0.5em;
 }
 .track {
 	display: inline-flex;
+	flex-wrap: wrap;
 	gap: 3px;
 	font-size: 22px;
 	line-height: 1;
 }
 #hearts .heart:before {
 	content: "\2661";
+	color: var(--text);
 }
 #hearts .heart.marked:before {
 	content: "\2665";
+	color: crimson;
 }
-#golden .golden:before {
-	content: "\2685";
-	font-size: 28px;
-	opacity: 0.3;
+#uses .use {
+	position: relative;
 }
-#golden .golden.marked:before {
-	content: "\2685";
+#uses .use:before {
+	content: "\1F3B2";
+	opacity: 0.25;
+}
+#uses .use.unlocked:before {
 	opacity: 1;
+}
+#uses .use.spent:after {
+	content: "\2715";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+	color: crimson;
+	font-weight: bold;
 }

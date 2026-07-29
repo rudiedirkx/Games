@@ -92,6 +92,20 @@ $boards = [
 			'yyyyPoo o Pyybopp',
 		],
 	],
+	'silver' => [
+		'color' => '#c9c9c9',
+		'text' => '#333',
+		'gold' => [[1, 2], [4, 3], [14, 2], [11, 4], [5, 6]],
+		'map' => [
+			'ppOyyPp g gyYOoob',
+			'byyyoop p bByypoo',
+			'bybbboo O bggyppo',
+			'oBbGbyy b ooggGpp',
+			'ooppgbb b yoopyyY',
+			'ggpoggG y ypppbBg',
+			'YggoPgg y Ppbbbgg',
+		],
+	],
 ];
 
 return [$columns, $boards];
