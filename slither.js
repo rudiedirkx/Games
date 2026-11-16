@@ -142,7 +142,6 @@ class Slither extends CanvasGame {
 		this.roundedCorners = [];
 
 		this.drawGrid();
-		this.drawDisableds();
 		this.drawEnableds();
 		this.drawRoundedCorners();
 		this.drawDots();
@@ -156,13 +155,30 @@ class Slither extends CanvasGame {
 	}
 
 	drawGrid() {
-		for (var y = Slither.OFFSET; y < this.canvas.height; y += Slither.SQUARE) {
-			this.drawLine(new Coords2D(Slither.WHITESPACE, y), new Coords2D(this.canvas.width - Slither.WHITESPACE, y), {color: '#fff', width: 1});
+		const right = this.scale(this.width);
+		const bottom = this.scale(this.height);
+
+		for (let i = 0; i <= this.height; i++) {
+			const y = this.scale(i);
+			this.drawGridLine(new Coords2D(Slither.WHITESPACE, y), new Coords2D(Slither.OFFSET, y));
+			this.drawGridLine(new Coords2D(right, y), new Coords2D(this.canvas.width - Slither.WHITESPACE, y));
 		}
 
-		for (var x = Slither.OFFSET; x < this.canvas.width; x += Slither.SQUARE) {
-			this.drawLine(new Coords2D(x, Slither.WHITESPACE), new Coords2D(x, this.canvas.height - Slither.WHITESPACE), {color: '#fff', width: 1});
+		for (let i = 0; i <= this.width; i++) {
+			const x = this.scale(i);
+			this.drawGridLine(new Coords2D(x, Slither.WHITESPACE), new Coords2D(x, Slither.OFFSET));
+			this.drawGridLine(new Coords2D(x, bottom), new Coords2D(x, this.canvas.height - Slither.WHITESPACE));
 		}
+
+		this.connectors.forEach(conn => {
+			if (!this.disableds.includes(conn)) {
+				this.drawGridLine(this.scale(conn.from), this.scale(conn.to));
+			}
+		});
+	}
+
+	drawGridLine(from, to) {
+		this.drawLine(from, to, {color: '#fff', width: 1});
 	}
 
 	drawEnableds() {
@@ -203,14 +219,6 @@ class Slither extends CanvasGame {
 
 			// this.drawCircle(C, SlitherRoundedCorner.SIZE * Slither.SQUARE, {width: 8, color});
 		});
-	}
-
-	drawDisableds() {
-		this.disableds.forEach(conn => this.drawConnection(conn, '#bde4a3'));
-	}
-
-	drawConnection(conn, color) {
-		this.drawLine(this.scale(conn.from), this.scale(conn.to), {color, width: 8});
 	}
 
 	drawDots() {
