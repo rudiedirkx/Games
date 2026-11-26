@@ -14,46 +14,27 @@ class Shape {
 	}
 
 	rotate() {
-		const size = Math.max(this.width, this.heigth);
-		const moats = Moats.get(size);
-// console.log(moats);
-
-		let grid = new Array(size * size).fill(' ').chunk(size);
-		moats.moats.forEach((coords, mi) => {
-			// const shift = Math.ceil(Math.sqrt(coords.length)) - 1;
-			const shift = size - 1 - mi * 2;
-// console.log(mi, 'shift', shift);
-			coords.forEach((from, fi) => {
-				const orig = this.grid[from.y] && this.grid[from.y][from.x];
-				if (orig === Shape.ON) {
-					const ti = (fi + shift) % coords.length;
-// console.log(mi, fi, ti);
-					const to = coords[ti];
-					grid[to.y][to.x] = Shape.ON;
-				}
-			});
-		});
-
-		if (this.width > this.heigth) {
-			grid = grid.map(line => line.slice(this.width - this.heigth));
+		const lines = [];
+		for ( let x = 0; x < this.width; x++ ) {
+			let line = '';
+			for ( let y = this.heigth - 1; y >= 0; y-- ) {
+				line += this.grid[y][x];
+			}
+			lines.push(line);
 		}
-		else if (this.heigth > this.width) {
-			grid = grid.slice(0, this.width);
-		}
-
-		return new Shape(...grid.map(line => line.join('')));
+		return new Shape(...lines);
 	}
 
 	flip() {
-		const grid = new Array(this.width * this.heigth).fill(' ').chunk(this.width);
+		const lines = [];
 		for ( let y = 0; y < this.heigth; y++ ) {
-			for ( let x = 0; x < this.width; x++ ) {
-				const oppo = this.grid[y][this.width - 1 - x];
-				grid[y][x] = oppo == null ? ' ' : oppo;
+			let line = '';
+			for ( let x = this.width - 1; x >= 0; x-- ) {
+				line += this.grid[y][x];
 			}
+			lines.push(line);
 		}
-
-		return new Shape(...grid.map(line => line.join('')));
+		return new Shape(...lines);
 	}
 
 	getOffsetCoords(origin) {
@@ -74,44 +55,6 @@ class Shape {
 
 	static unserialize(grid) {
 		return new this(...grid.split('.'));
-	}
-}
-
-class Moats {
-	static _cache = {};
-
-	constructor(size) {
-		this.size = size;
-		this.moats = [];
-
-		const center = Math.floor(this.size / 2);
-		for ( let i = 0; i < center; i++ ) {
-			this.moats.push(this.make(i));
-		}
-		if (this.size % 2) {
-			this.moats.push([new Coords2D(center, center)]);
-		}
-	}
-
-	make(offset) {
-		const coords = [];
-		for ( let i = 1 + offset; i < this.size - offset; i++ ) {
-			coords.push(new Coords2D(i, offset));
-		}
-		for ( let i = 1 + offset; i < this.size - offset; i++ ) {
-			coords.push(new Coords2D(this.size - 1 - offset, i));
-		}
-		for ( let i = this.size - 2 - offset; i >= offset; i-- ) {
-			coords.push(new Coords2D(i, this.size - 1 - offset));
-		}
-		for ( let i = this.size - 2 - offset; i >= offset; i-- ) {
-			coords.push(new Coords2D(offset, i));
-		}
-		return coords;
-	}
-
-	static get(size) {
-		return this._cache[size] ? this._cache[size] : (this._cache[size] = new Moats(size));
 	}
 }
 
