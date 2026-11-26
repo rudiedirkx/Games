@@ -59,11 +59,11 @@ return [
 			]);
 		},
 		'keeropkeer-2' => function($db) {
-			$db->query("
+			$db->execute("
 				alter table keeropkeer_players
 				change used_jokers used_jokers varchar(255) null default null
 			");
-			$db->query("
+			$db->execute("
 				update keeropkeer_players
 				set used_jokers = substr('________', 1, cast(used_jokers as unsigned))
 			");

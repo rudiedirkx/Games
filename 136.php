@@ -21,11 +21,8 @@ if ( isset($_POST['sudoku'], $_POST['level']) ) {
 		'time' => time(),
 		'type' => 9,
 	);
-	if ( $db->insert('sudoku', $data) ) {
-		exit('OK' . $db->insert_id());
-	}
-
-	exit($db->error());
+	$db->insert('sudoku', $data);
+	exit('OK' . $db->insert_id());
 }
 
 // check
@@ -116,7 +113,7 @@ else {
 <tr><th colspan="3">Play existing Sudoku:</td></tr>
 <?php
 
-$q = $db->fetch("SELECT * FROM sudoku WHERE 0 < oplosbaar AND 9 = type ORDER BY id DESC");
+$q = $db->fetch_assoc("SELECT * FROM sudoku WHERE 0 < oplosbaar AND 9 = type ORDER BY id DESC");
 foreach ( $q as $r ) {
 	echo '<tr>';
 	echo '<td align="right">' . $r['id'] . '</td>';

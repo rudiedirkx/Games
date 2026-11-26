@@ -112,7 +112,7 @@ function change_focus(i)
 if (isset($_GET['goforplay']) && (isset($_GET['vakje']) || (isset($_GET['id']) && is_numeric($_GET['id']))))
 {
 	// ingevulde veldjes (stuk of 25)
-	$vakje = isset($_GET['id']) ? explode(',', $db->select_one("sudoku", "inhoud", "id='".(int)$_GET['id']."';")) : array_values($_GET['vakje']);
+	$vakje = isset($_GET['id']) ? explode(',', $db->select_one("sudoku", "inhoud", "id = ?", [(int)$_GET['id']])) : array_values($_GET['vakje']);
 	$vakje = array_values(array_map(intval(...), $vakje));
 
 	echo "<table border=1 cellpadding=0 cellspacing=0 style='border:solid 4px black;'><form name=oplossing method=post><input type=hidden name=oplossen value=1><input type=hidden name=sudoku_id value=".((isset($_GET['id']))?$_GET['id']:$id)."><tr>";
@@ -151,7 +151,7 @@ else
 	}
 	echo "</table><select name=graad><option value='medium'>DIFFICULTY<option value='easy'>EASY<option value='medium'>MEDIUM<option value='hard'>HARD</select><br><br><input type=submit value=\"SAVE & PLAY\"></form><br><br><br>";
 	echo "Or open an old one:<br>";
-	$q = $db->select("sudoku", "type = '9' AND graad != '' ORDER BY id DESC");
+	$q = $db->select_assoc("sudoku", "type = '9' AND graad != '' ORDER BY id DESC");
 	$a = array();
 	foreach ($q as $r) {
 		if (isset($a[$r['graad']]))

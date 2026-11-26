@@ -1,8 +1,7 @@
 <?php
 
 try {
-	$db = db_mysql::open(array('user' => DB_USER, 'pass' => DB_PASS, 'db' => DB_NAME));
-	// $db = db_sqlite::open(array('database' => __DIR__ . '/games.sqlite3'));
+	$db = new db_mysql(DB_NAME, 'localhost', DB_USER, DB_PASS);
 	$db->connect();
 }
 catch (db_exception $ex) {

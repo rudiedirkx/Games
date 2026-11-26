@@ -11,9 +11,9 @@ if (($_GET['reset'] ?? '') === 'cookie') {
 $cookie = $_COOKIE['games'];
 $ip = get_ip();
 
-$scores = $db->select('scores', "cookie = ? order by id desc limit 500", [$cookie])->all();
+$scores = $db->select('scores', "cookie = ? order by id desc limit 500", [$cookie]);
 if (!count($scores)) {
-	$scores = $db->select('scores', "ip = ? order by id desc limit 500", [$ip])->all();
+	$scores = $db->select('scores', "ip = ? order by id desc limit 500", [$ip]);
 }
 
 ?>

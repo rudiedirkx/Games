@@ -126,7 +126,7 @@ table.s td.bb { border-bottom	: solid 5px black; }
 
 if ( isset($_GET['goforplay'], $_GET['id']) ) {
 	// ingevulde veldjes (stuk of 25)
-	$r = $db->select_one("sudoku", "inhoud", "type = 4 AND id = ".(int)$_GET['id'].";");
+	$r = $db->select_one("sudoku", "inhoud", "type = 4 AND id = ?", [(int)$_GET['id']]);
 	if ( !$r ) {
 		exit('Is no puzzle!');
 	}
@@ -141,7 +141,7 @@ else {
 
 echo '<br /><table border="1" cellpadding="4">';
 echo '<tr><th colspan="3">Play existing Sudoku:</td></tr>';
-$q = $db->select("sudoku", "0 < oplosbaar AND 4 = type ORDER BY graad ASC, time DESC");
+$q = $db->select_assoc("sudoku", "0 < oplosbaar AND 4 = type ORDER BY graad ASC, time DESC");
 foreach ($q as $r) {
 	echo '<tr>';
 	echo '<td align="right">'.$r['id'].'</td>';

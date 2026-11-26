@@ -88,10 +88,7 @@ class Game extends Model {
 		if ($this->isGameComplete()) {
 			Player::updateAll([
 				'finished_round' => self::COLOR_COMPLETE_ROUND,
-			], [
-				'game_id' => $this->id,
-				'finished_round <> ' . self::KICKED_ROUND,
-			]);
+			], 'game_id = ? AND finished_round <> ?', [$this->id, self::KICKED_ROUND]);
 			$this->update([
 				'turn_player_id' => null,
 				'dice' => null,
@@ -266,7 +263,6 @@ class Game extends Model {
 	}
 
 	protected function relate_players() {
-		$round = self::KICKED_ROUND;
 		return $this->to_many(Player::class, 'game_id')->order("id asc");
 	}
 
@@ -294,7 +290,7 @@ class Game extends Model {
 
 	static public function createNew(string $board, string $playerName, int $maxRounds, int $flags) : Player {
 		return self::$_db->transaction(function() use ($board, $playerName, $maxRounds, $flags) {
-			$gid = self::insert([
+			$game = self::create([
 				'created_on' => time(),
 				'changed_on' => time(),
 				'board' => $board,
@@ -303,17 +299,17 @@ class Game extends Model {
 				'flags' => $flags,
 			]);
 
-			$pid = Player::insert([
-				'game_id' => $gid,
+			$player = Player::create([
+				'game_id' => $game->id,
 				'online' => time(),
 				'password' => get_random(),
 				'name' => $playerName,
 				'used_jokers' => '',
 			]);
 
-			Game::updateAll(['turn_player_id' => $pid], ['id' => $gid]);
+			$game->update(['turn_player_id' => $player->id]);
 
-			return Player::find($pid);
+			return $player;
 		});
 	}
 
@@ -545,7 +541,7 @@ class Player extends Model {
 	}
 
 	protected function get_can_roll() {
-		return $this->game->can_roll && $this->is_turn && ($this->round == 0 || $this->can_end_turn);
+		return $this->game->can_roll && $this->is_turn && ($this->game->round == 0 || $this->can_end_turn);
 	}
 
 	protected function get_can_end_turn() {

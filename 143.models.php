@@ -21,7 +21,7 @@ class Game extends Model {
 	static public function newGame() {
 		return self::$_db->transaction(function() {
 			$turn = rand(0, 1) ? 'white' : 'black';
-			$gid = Game::insert([
+			$game = Game::create([
 				'turn' => $turn,
 				'password' => '',
 				'created_on' => time(),
@@ -32,8 +32,8 @@ class Game extends Model {
 			$login = null;
 			foreach ( array('white', 'black') AS $color ) {
 				$password = Player::password();
-				$pid = Player::insert([
-					'game_id' => $gid,
+				$player = Player::create([
+					'game_id' => $game->id,
 					'password' => $password,
 					'color' => $color,
 				]);
@@ -42,9 +42,9 @@ class Game extends Model {
 					$login = $password;
 				}
 
-				Ball::insertAll(array_map(function(string $coord) use ($pid) {
+				Ball::insertAll(array_map(function(string $coord) use ($player) {
 					$data = array_combine(array('x', 'y', 'z'), explode(':', $coord));
-					$data['player_id'] = $pid;
+					$data['player_id'] = $player->id;
 					return $data;
 				}, $balls[$color]));
 			}
@@ -70,10 +70,7 @@ class Player extends Model {
 	}
 
 	protected function get_opponent() {
-		return Player::first([
-			'game_id' => $this->game_id,
-			"id <> $this->id",
-		]);
+		return Player::first('game_id = ? AND id <> ?', [$this->game_id, $this->id]);
 	}
 
 	static public function password() {

@@ -160,7 +160,7 @@ class Table extends Model {
 		$this->update([
 			'cards' => implode(',', array_slice($cards, 0, 5)),
 		]);
-		foreach ($this->players as $i => $plr) {
+		foreach (array_values($this->players) as $i => $plr) {
 			$plr->update([
 				'state' => Player::STATE_UNBET,
 				'cards' => implode(',', array_slice($cards, 5 + 2 * $i, 2)),

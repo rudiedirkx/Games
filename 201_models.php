@@ -52,22 +52,22 @@ class Game extends Model {
 
 	static public function createNew(string $playerName) : Player {
 		return self::$_db->transaction(function() use ($playerName) {
-			$gid = self::insert([
+			$game = self::create([
 				'created_on' => time(),
 				'changed_on' => time(),
 				'password' => get_random(),
 			]);
 
-			$pid = Player::insert([
-				'game_id' => $gid,
+			$player = Player::create([
+				'game_id' => $game->id,
 				'online' => time(),
 				'password' => get_random(),
 				'name' => $playerName,
 			]);
 
-			Game::updateAll(['turn_player_id' => $pid], ['id' => $gid]);
+			$game->update(['turn_player_id' => $player->id]);
 
-			return Player::find($pid);
+			return $player;
 		});
 	}
 }

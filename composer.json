@@ -2,9 +2,9 @@
     "name": "rdx/games",
     "type": "project",
     "require": {
-        "rdx/db": "^1.24",
+        "rdx/db": "^2.4",
         "symfony/var-dumper": "^6.0",
-        "wikimedia/ip-set": "^4.0"
+        "wikimedia/ip-utils": "^6.0"
     },
     "autoload": {
         "files": ["inc.functions.php"]
@@ -20,7 +20,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.1.8"
+            "php": "8.4.1"
         }
     }
 }
