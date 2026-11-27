@@ -58,6 +58,7 @@ button, select, input {
 		<span id="stats-time">?</span>
 		&nbsp;
 		<button id="restart">Restart</button>
+		<button id="cheat">Cheat</button>
 		&nbsp;
 		<button id="save">Save</button>
 		<button id="load">Load</button>
@@ -84,7 +85,11 @@ button, select, input {
 <? endif ?>
 objGame = new Slither($('canvas'));
 objGame.listenControls();
-objGame.loadFromSaved() || objGame.loadLevel(<?= json_encode($_GET['level'] ?? 'easy-0') ?>);
+<? if (isset($_GET['level'])): ?>
+objGame.loadFromSaved() || objGame.loadLevel(<?= json_encode($_GET['level']) ?>);
+<? else: ?>
+objGame.loadFromSaved() || objGame.loadLevel(objGame.resumeLevel());
+<? endif ?>
 objGame.startPainting();
 </script>
 </body>

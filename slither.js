@@ -108,6 +108,7 @@ class Slither extends CanvasGame {
 		this.connectors = [];
 		this.enableds = [];
 		this.disableds = [];
+		this.realLevel = false;
 
 		// Drawing cache
 		this.roundedCorners = [];
@@ -347,12 +348,121 @@ class Slither extends CanvasGame {
 		return this.loadLevel(lvl);
 	}
 
+	levelOrder() {
+		const ids = [];
+		for (const difc of Object.keys(Slither.LEVELS)) {
+			const levels = Slither.LEVELS[difc];
+			for (let n = 0; n < levels.length; n++) {
+				ids.push(difc + '-' + n);
+			}
+		}
+		return ids;
+	}
+
+	parseCompleted() {
+		const groups = {};
+		const raw = localStorage.getItem('slitherCompleted') || '';
+		for (const part of raw.split(',')) {
+			const dash = part.indexOf('-');
+			if (dash < 0) {
+				continue;
+			}
+			const difc = part.slice(0, dash);
+			const digits = part.slice(dash + 1);
+			const set = new Set();
+			for (let i = 0; i + 2 <= digits.length; i += 2) {
+				set.add(parseInt(digits.slice(i, i + 2), 10));
+			}
+			groups[difc] = set;
+		}
+		return groups;
+	}
+
+	writeCompleted(groups) {
+		const parts = [];
+		for (const difc of Object.keys(Slither.LEVELS)) {
+			const set = groups[difc];
+			if (!set || set.size === 0) {
+				continue;
+			}
+			const nums = [...set].sort((a, b) => a - b);
+			let digits = '';
+			for (const n of nums) {
+				digits += String(n).padStart(2, '0');
+			}
+			parts.push(difc + '-' + digits);
+		}
+		localStorage.setItem('slitherCompleted', parts.join(','));
+	}
+
+	markCompleted() {
+		const parts = this.levelNum.split('-');
+		const difc = parts[0];
+		const n = parseInt(parts[1], 10);
+		if (isNaN(n)) {
+			return;
+		}
+
+		const groups = this.parseCompleted();
+		if (!groups[difc]) {
+			groups[difc] = new Set();
+		}
+		groups[difc].add(n);
+		this.writeCompleted(groups);
+	}
+
+	resumeLevel() {
+		const order = this.levelOrder();
+		const groups = this.parseCompleted();
+		const lastIndex = order.length - 1;
+
+		const done = [];
+		for (const id of order) {
+			const parts = id.split('-');
+			const difc = parts[0];
+			const n = parseInt(parts[1], 10);
+			const set = groups[difc];
+			done.push(set ? set.has(n) : false);
+		}
+
+		let highest = -1;
+		for (let i = 0; i < done.length; i++) {
+			if (done[i]) {
+				highest = i;
+			}
+		}
+
+		if (highest < 0) {
+			return order[0];
+		}
+		if (highest < lastIndex) {
+			return order[highest + 1];
+		}
+
+		let runStart = highest;
+		while (runStart > 0 && done[runStart - 1]) {
+			runStart--;
+		}
+
+		let prevEnd = -1;
+		for (let i = 0; i < runStart; i++) {
+			if (done[i]) {
+				prevEnd = i;
+			}
+		}
+		if (prevEnd < 0) {
+			return order[0];
+		}
+		return order[prevEnd + 1];
+	}
+
 	loadLevel(lvl, trySaved = true) {
 		const map = this.getLevel(lvl);
 		if (!map) return false;
 
 		this.loadMap(map);
 		this.setLevelNum(lvl);
+		this.realLevel = true;
 
 		if (trySaved) {
 			const saved = this.getAutoSaved();
@@ -383,8 +493,23 @@ class Slither extends CanvasGame {
 
 	createLevel(size) {
 		// const size = 5 + parseInt(Math.random() * 8);
+		// const builder = this.generateWithBuilder2(size);
+		const builder = this.generateWithBuilder(size);
+
+		const connectors = builder.makeConnections();
+		const full = this.clueMap(connectors, size, size);
+		const map = SlitherSolver.dig(full, size, size);
+
+		const lvl = this.levelNum;
+		this.loadMap(map);
+		this.levelNum = lvl;
+		this.m_bGameOver = false;
+		this.changed = true;
+	}
+
+	generateWithBuilder(size) {
 		let attempts = 0;
-		var builder;
+		let builder;
 		while (attempts < 1000) {
 			attempts++;
 			builder = new SlitherBuilder(size, size);
@@ -392,20 +517,19 @@ class Slither extends CanvasGame {
 			while (!builder.done) {
 				builder.walk();
 			}
-// console.log(builder);
 			if (builder.success()) {
 				break;
 			}
 		}
-console.log(size, attempts);
+console.log('size', size, 'attempts', attempts);
+		return builder;
+	}
 
-		const lvl = this.levelNum;
-		this.loadMap(builder.createEmptyMap());
-		this.levelNum = lvl;
-		this.m_bGameOver = true;
-		this.enableds = builder.makeConnections();
-		this.paint();
-		this.drawDot(this.scale(builder.start), {color: 'red'});
+	generateWithBuilder2(size) {
+		const builder = new SlitherBuilder2(size, size);
+		const ok = builder.build();
+console.log('size', size, 'backtracks', builder.backtracks, 'restarts', builder.restarts);
+		return builder;
 	}
 
 	createLevelStep() {
@@ -482,6 +606,89 @@ console.log(this.builder);
 		return conditions;
 	}
 
+	clueMap(connectors, width, height) {
+		const present = new Set();
+		connectors.forEach(conn => {
+			const key = conn.x + ',' + conn.y + ',' + conn.orient;
+			present.add(key);
+		});
+
+		const rows = [];
+		for (let y = 0; y < height; y++) {
+			let row = '';
+			for (let x = 0; x < width; x++) {
+				const edges = [
+					x + ',' + y + ',hor',
+					x + ',' + y + ',ver',
+					x + ',' + (y + 1) + ',hor',
+					(x + 1) + ',' + y + ',ver',
+				];
+				let n = 0;
+				for (const key of edges) {
+					if (present.has(key)) {
+						n++;
+					}
+				}
+				row += String(n);
+			}
+			rows.push(row);
+		}
+
+		return rows;
+	}
+
+	conditionsToMap() {
+		const grid = [];
+		for (let y = 0; y < this.height; y++) {
+			grid.push(new Array(this.width).fill(' '));
+		}
+		for (const cond of this.conditions) {
+			grid[cond.y][cond.x] = String(cond.number);
+		}
+		return grid.map(row => row.join(''));
+	}
+
+	connKey(conn) {
+		return conn.orient + ':' + conn.x + ',' + conn.y;
+	}
+
+	cheat() {
+		const map = this.conditionsToMap();
+		const clues = SlitherSolver.cluesFromMap(map, this.width, this.height);
+		const solver = new SlitherSolver(clues, this.width, this.height);
+		const res = solver.countSolutions(1);
+console.log('cheat: count', res.count, res.aborted ? '(aborted)' : '');
+		if (!res.first) {
+			return false;
+		}
+
+		const want = new Set();
+		for (const e of solver.onEdges(res.first)) {
+			const orient = e.type === 'h' ? 'hor' : 'ver';
+			want.add(orient + ':' + e.x + ',' + e.y);
+		}
+		const have = new Set();
+		for (const conn of this.enableds) {
+			have.add(this.connKey(conn));
+		}
+
+		for (const conn of this.connectors) {
+			const key = this.connKey(conn);
+			const shouldBeOn = want.has(key);
+			const currentlyOn = have.has(key);
+			if (shouldBeOn === currentlyOn) {
+				continue;
+			}
+			if (shouldBeOn && this.disableds.includes(conn)) {
+				this.toggleDisabled(conn);
+			}
+			this.toggleEnabled(conn);
+			return true;
+		}
+
+		return false;
+	}
+
 	setLevelNum(lvl) {
 		this.levelNum = lvl;
 		$('#level').value = lvl;
@@ -498,7 +705,9 @@ console.log(this.builder);
 			this[inList].push(conn);
 		}
 
-		localStorage.setItem('slitherAutoSave', this.levelNum + '-' + this.exportBoard());
+		if (this.realLevel) {
+			localStorage.setItem('slitherAutoSave', this.levelNum + '-' + this.exportBoard());
+		}
 
 		this.changed = true;
 	}
@@ -509,6 +718,9 @@ console.log(this.builder);
 			if (this.m_bGameOver) {
 				this.changed = true;
 				localStorage.removeItem('slitherAutoSave');
+				if (this.realLevel) {
+					this.markCompleted();
+				}
 			}
 		});
 	}
@@ -623,6 +835,10 @@ console.log(this.builder);
 			this.createLevel(parseInt($('#create-size').value));
 			console.timeEnd('createLevel');
 		});
+
+		$('#cheat').on('click', e => {
+			this.cheat();
+		});
 	}
 
 	listenContextClick() {
@@ -645,10 +861,14 @@ console.log(this.builder);
 }
 
 class SlitherBuilder {
+	static minPoints(width, height) {
+		return 0.9 * width * height - Math.max(width, height);
+	}
+
 	constructor(width, height) {
 		this.width = width;
 		this.height = height;
-		this.minPoints = 0.8 * this.width * this.height - Math.max(this.width, this.height);
+		this.minPoints = SlitherBuilder.minPoints(this.width, this.height);
 
 		this.start = null;
 		this.path = [];
@@ -743,5 +963,507 @@ class SlitherBuilder {
 
 	createEmptyMap() {
 		return Array(this.height).fill(0).map(() => ' '.repeat(this.width));
+	}
+}
+
+class SlitherBuilder2 {
+	constructor(width, height) {
+		this.width = width;
+		this.height = height;
+		this.cols = width + 1;
+		this.rows = height + 1;
+		this.minPoints = SlitherBuilder.minPoints(this.width, this.height);
+
+		this.start = null;
+		this.path = [];
+		this.visited = [];
+		this.forward = 0;
+		this.backtracks = 0;
+		this.restarts = 0;
+	}
+
+	build(maxBacktracks) {
+		const dotCount = this.cols * this.rows;
+
+		if (maxBacktracks == null) {
+			maxBacktracks = 1000 * dotCount;
+		}
+
+		this.maxBacktracks = maxBacktracks;
+
+		let restarts = 0;
+		while (restarts <= 50) {
+			this.resetState();
+
+			const sx = Math.floor(Math.random() * this.cols);
+			const sy = Math.floor(Math.random() * this.rows);
+			this.start = new Coords2D(sx, sy);
+			this.visited[sx][sy] = true;
+			this.path.push(this.start);
+
+			if (this.extend(this.start)) {
+				this.restarts = restarts;
+				return true;
+			}
+
+			restarts++;
+		}
+
+		this.restarts = restarts;
+		return false;
+	}
+
+	resetState() {
+		this.visited = [];
+		for (let x = 0; x < this.cols; x++) {
+			const col = new Array(this.rows).fill(false);
+			this.visited.push(col);
+		}
+		this.path = [];
+		this.forward = 0;
+		this.backtracks = 0;
+	}
+
+	shuffled(list) {
+		const out = list.slice();
+		for (let i = out.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			const t = out[i];
+			out[i] = out[j];
+			out[j] = t;
+		}
+		return out;
+	}
+
+	inside(C) {
+		if (C.x < 0 || C.x >= this.cols) {
+			return false;
+		}
+		if (C.y < 0 || C.y >= this.rows) {
+			return false;
+		}
+		return true;
+	}
+
+	extend(cur) {
+		if (this.backtracks > this.maxBacktracks) {
+			return false;
+		}
+
+		const dirs = this.shuffled(Coords2D.dir4Coords);
+		for (const d of dirs) {
+			const nb = cur.add(d);
+
+			if (!this.inside(nb)) {
+				continue;
+			}
+
+			if (this.start.equal(nb)) {
+				if (this.success()) {
+					return true;
+				}
+				continue;
+			}
+
+			if (this.visited[nb.x][nb.y]) {
+				continue;
+			}
+
+			this.visited[nb.x][nb.y] = true;
+			this.path.push(nb);
+			this.forward++;
+
+			if (this.extend(nb)) {
+				return true;
+			}
+
+			this.path.pop();
+			this.visited[nb.x][nb.y] = false;
+			this.backtracks++;
+		}
+
+		return false;
+	}
+
+	success() {
+		if (this.path.length < this.minPoints) {
+			return false;
+		}
+
+		const xs = this.path.map(C => C.x);
+		const ys = this.path.map(C => C.y);
+		if (Math.min(...xs) > 0 || Math.max(...xs) < this.width) {
+			return false;
+		}
+		if (Math.min(...ys) > 0 || Math.max(...ys) < this.height) {
+			return false;
+		}
+
+		return true;
+	}
+
+	makeConnections() {
+		const conns = [];
+		for (let i = 1; i < this.path.length; i++) {
+			const from = this.path[i - 1];
+			const to = this.path[i];
+			conns.push(SlitherConnector.fromPoints(from, to));
+		}
+
+		const first = this.path[0];
+		const last = this.path[this.path.length - 1];
+		conns.push(SlitherConnector.fromPoints(last, first));
+
+		return conns;
+	}
+
+	createEmptyMap() {
+		return Array(this.height).fill(0).map(() => ' '.repeat(this.width));
+	}
+}
+
+class SlitherSolver {
+	constructor(clues, width, height) {
+		this.width = width;
+		this.height = height;
+		this.clues = clues;
+		this.model = SlitherSolver.buildModel(width, height);
+	}
+
+	static buildModel(width, height) {
+		const edges = [];
+		const edgeIndex = {};
+
+		function vertexId(x, y) {
+			return y * (width + 1) + x;
+		}
+		function cellId(x, y) {
+			return y * width + x;
+		}
+		function addEdge(type, x, y, v1, v2, cells) {
+			const id = edges.length;
+			const key = type + ':' + x + ',' + y;
+			edgeIndex[key] = id;
+			edges.push({ id, key, type, x, y, v1, v2, cells });
+		}
+
+		for (let y = 0; y <= height; y++) {
+			for (let x = 0; x < width; x++) {
+				const cells = [];
+				if (y - 1 >= 0) {
+					cells.push(cellId(x, y - 1));
+				}
+				if (y <= height - 1) {
+					cells.push(cellId(x, y));
+				}
+				addEdge('h', x, y, vertexId(x, y), vertexId(x + 1, y), cells);
+			}
+		}
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x <= width; x++) {
+				const cells = [];
+				if (x - 1 >= 0) {
+					cells.push(cellId(x - 1, y));
+				}
+				if (x <= width - 1) {
+					cells.push(cellId(x, y));
+				}
+				addEdge('v', x, y, vertexId(x, y), vertexId(x, y + 1), cells);
+			}
+		}
+
+		return {
+			width,
+			height,
+			edges,
+			edgeIndex,
+			vertexCount: (width + 1) * (height + 1),
+			cellCount: width * height,
+		};
+	}
+
+	static cluesFromMap(map, width, height) {
+		const clues = new Array(width * height).fill(null);
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				const row = map[y] || '';
+				const ch = row[x];
+				if (ch == null) {
+					continue;
+				}
+				const trimmed = ch.trim();
+				if (trimmed === '') {
+					continue;
+				}
+				const n = parseInt(trimmed, 10);
+				if (!isNaN(n)) {
+					clues[y * width + x] = n;
+				}
+			}
+		}
+		return clues;
+	}
+
+	static shuffle(a) {
+		for (let i = a.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			const t = a[i];
+			a[i] = a[j];
+			a[j] = t;
+		}
+		return a;
+	}
+
+	static dig(fullClueRows, width, height) {
+		const grid = fullClueRows.map(row => row.split(''));
+		const cells = [];
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
+				cells.push([x, y]);
+			}
+		}
+		SlitherSolver.shuffle(cells);
+
+		for (const cell of cells) {
+			const x = cell[0];
+			const y = cell[1];
+			if (grid[y][x] === ' ') {
+				continue;
+			}
+
+			const saved = grid[y][x];
+			grid[y][x] = ' ';
+
+			const map = grid.map(row => row.join(''));
+			const clues = SlitherSolver.cluesFromMap(map, width, height);
+			const solver = new SlitherSolver(clues, width, height);
+			const res = solver.countSolutions(2);
+
+			if (res.aborted || res.count !== 1) {
+				grid[y][x] = saved;
+			}
+		}
+
+		return grid.map(row => row.join(''));
+	}
+
+	addToOrder(order, seen, key) {
+		const id = this.model.edgeIndex[key];
+		if (id == null) {
+			return;
+		}
+		if (seen[id]) {
+			return;
+		}
+		seen[id] = true;
+		order.push(id);
+	}
+
+	edgeOrder() {
+		const seen = new Array(this.model.edges.length).fill(false);
+		const order = [];
+		for (let y = 0; y < this.height; y++) {
+			for (let x = 0; x < this.width; x++) {
+				this.addToOrder(order, seen, 'h:' + x + ',' + y);
+				this.addToOrder(order, seen, 'h:' + x + ',' + (y + 1));
+				this.addToOrder(order, seen, 'v:' + x + ',' + y);
+				this.addToOrder(order, seen, 'v:' + (x + 1) + ',' + y);
+			}
+		}
+		for (let i = 0; i < this.model.edges.length; i++) {
+			if (!seen[i]) {
+				seen[i] = true;
+				order.push(i);
+			}
+		}
+		return order;
+	}
+
+	countSolutions(limit = 2, nodeBudget = 2000000) {
+		const model = this.model;
+		this.limit = limit;
+		this.nodeBudget = nodeBudget;
+		this.nodes = 0;
+		this.aborted = false;
+
+		this.vOn = new Array(model.vertexCount).fill(0);
+		this.vUnd = new Array(model.vertexCount).fill(0);
+		this.cOn = new Array(model.cellCount).fill(0);
+		this.cUnd = new Array(model.cellCount).fill(0);
+
+		for (const e of model.edges) {
+			this.vUnd[e.v1]++;
+			this.vUnd[e.v2]++;
+			for (const c of e.cells) {
+				this.cUnd[c]++;
+			}
+		}
+
+		this.state = new Array(model.edges.length).fill(0);
+		this.order = this.edgeOrder();
+		this.result = { count: 0, first: null };
+
+		this.decide(0);
+
+		return { count: this.result.count, first: this.result.first, aborted: this.aborted };
+	}
+
+	decide(pos) {
+		if (this.aborted) {
+			return;
+		}
+		if (this.result.count >= this.limit) {
+			return;
+		}
+		this.nodes++;
+		if (this.nodes > this.nodeBudget) {
+			this.aborted = true;
+			return;
+		}
+
+		if (pos === this.order.length) {
+			if (this.isSingleLoop()) {
+				this.result.count++;
+				if (!this.result.first) {
+					this.result.first = this.state.slice();
+				}
+			}
+			return;
+		}
+
+		const e = this.model.edges[this.order[pos]];
+		for (const on of [false, true]) {
+			const ok = this.applyEdge(e, on);
+			if (ok) {
+				this.state[e.id] = on ? 1 : 0;
+				this.decide(pos + 1);
+			}
+			this.undoEdge(e, on);
+			if (this.aborted) {
+				return;
+			}
+			if (this.result.count >= this.limit) {
+				return;
+			}
+		}
+	}
+
+	applyEdge(e, on) {
+		this.vUnd[e.v1]--;
+		this.vUnd[e.v2]--;
+		for (const c of e.cells) {
+			this.cUnd[c]--;
+		}
+		if (on) {
+			this.vOn[e.v1]++;
+			this.vOn[e.v2]++;
+			for (const c of e.cells) {
+				this.cOn[c]++;
+			}
+		}
+		return this.viable(e);
+	}
+
+	undoEdge(e, on) {
+		this.vUnd[e.v1]++;
+		this.vUnd[e.v2]++;
+		for (const c of e.cells) {
+			this.cUnd[c]++;
+		}
+		if (on) {
+			this.vOn[e.v1]--;
+			this.vOn[e.v2]--;
+			for (const c of e.cells) {
+				this.cOn[c]--;
+			}
+		}
+	}
+
+	viable(e) {
+		for (const v of [e.v1, e.v2]) {
+			if (this.vOn[v] > 2) {
+				return false;
+			}
+			if (this.vOn[v] === 1 && this.vUnd[v] === 0) {
+				return false;
+			}
+		}
+		for (const c of e.cells) {
+			const clue = this.clues[c];
+			if (clue == null) {
+				continue;
+			}
+			if (this.cOn[c] > clue) {
+				return false;
+			}
+			if (this.cOn[c] + this.cUnd[c] < clue) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	pushAdj(map, vertex, edge) {
+		if (!map.has(vertex)) {
+			map.set(vertex, []);
+		}
+		map.get(vertex).push(edge);
+	}
+
+	isSingleLoop() {
+		const onEdges = [];
+		for (const e of this.model.edges) {
+			if (this.state[e.id] === 1) {
+				onEdges.push(e);
+			}
+		}
+		if (onEdges.length === 0) {
+			return false;
+		}
+
+		const vAdj = new Map();
+		for (const e of onEdges) {
+			this.pushAdj(vAdj, e.v1, e);
+			this.pushAdj(vAdj, e.v2, e);
+		}
+		for (const list of vAdj.values()) {
+			if (list.length !== 2) {
+				return false;
+			}
+		}
+
+		const startEdge = onEdges[0];
+		let comeEdge = startEdge;
+		let curVertex = startEdge.v2;
+		let visited = 1;
+		while (curVertex !== startEdge.v1) {
+			const list = vAdj.get(curVertex);
+			let nextEdge = list[0];
+			if (nextEdge === comeEdge) {
+				nextEdge = list[1];
+			}
+			comeEdge = nextEdge;
+			if (nextEdge.v1 === curVertex) {
+				curVertex = nextEdge.v2;
+			}
+			else {
+				curVertex = nextEdge.v1;
+			}
+			visited++;
+			if (visited > onEdges.length) {
+				return false;
+			}
+		}
+		return visited === onEdges.length;
+	}
+
+	onEdges(state) {
+		const edges = [];
+		for (const e of this.model.edges) {
+			if (state[e.id] === 1) {
+				edges.push(e);
+			}
+		}
+		return edges;
 	}
 }
